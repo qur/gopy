@@ -4,7 +4,7 @@
 
 package py
 
-// #cgo CFLAGS: -I/gen64/usr/include/python2.7 -Werror
+// #cgo CFLAGS: -I/usr/include/python2.7 -Werror
 // #cgo LDFLAGS: -lpython2.7 -lffi
 // #include <Python.h>
 import "C"
