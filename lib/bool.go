@@ -1,0 +1,50 @@
+// Copyright 2011 Julian Phillips.  All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package py
+
+// #include <Python.h>
+// static inline int boolCheck(PyObject *o) { return PyBool_Check(o); }
+// static inline PyObject *pyTrue(void) { return Py_True; }
+// static inline PyObject *pyFalse(void) { return Py_False; }
+import "C"
+
+import (
+	"fmt"
+)
+
+type Bool struct {
+	BaseObject
+}
+
+var True = &Bool{BaseObject{C.pyTrue()}}
+var False = &Bool{BaseObject{C.pyFalse()}}
+
+func boolCheck(obj Object) bool {
+	return C.boolCheck(c(obj)) != 0
+}
+
+func newBool(obj *C.PyObject) *Bool {
+	if obj == c(True) {
+		return True
+	}
+	if obj == c(False) {
+		return False
+	}
+	return nil
+}
+
+func (b *Bool) Bool() bool {
+	if b == True {
+		return true
+	}
+	if b == False {
+		return false
+	}
+	panic(fmt.Errorf("TypeError: not a bool"))
+}
+
+func (b *Bool) String() string {
+	return fmt.Sprintf("%v", b.Bool())
+}
