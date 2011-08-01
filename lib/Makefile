@@ -19,6 +19,7 @@ CGOFILES=\
 	bool.go \
 	list.go \
 	long.go \
+	float.go \
 	python.go
 
 CGO_OFILES=\

@@ -186,6 +186,8 @@ func (obj *BaseObject) actual() Object {
 		return &Int{*obj}
 	case &C.PyLong_Type:
 		return &Long{*obj}
+	case &C.PyFloat_Type:
+		return &Float{*obj}
 	case &C.PyModule_Type:
 		return &Module{*obj}
 	}

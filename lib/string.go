@@ -10,8 +10,8 @@ import "C"
 
 import (
 //	"fmt"
-//	"os"
-//	"unsafe"
+	"os"
+	"unsafe"
 )
 
 type String struct {
@@ -27,6 +27,16 @@ func newString(obj *C.PyObject) *String {
 		return nil
 	}
 	return &String{BaseObject{obj}}
+}
+
+func String_FromString(s string) (*String, os.Error) {
+	cs := C.CString(s)
+	defer C.free(unsafe.Pointer(cs))
+	ret := C.PyString_FromString(cs)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newString(ret), nil
 }
 
 func (s *String) String() string {
