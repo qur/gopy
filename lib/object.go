@@ -45,6 +45,9 @@ func newBaseObject(obj *C.PyObject) *BaseObject {
 }
 
 func c(obj Object) *C.PyObject {
+	if obj == nil {
+		return nil
+	}
 	return obj.Base().o
 }
 
@@ -162,16 +165,17 @@ func (obj *BaseObject) Dir() (Object, os.Error) {
 	return obj2ObjErr(ret)
 }
 
-var types = make(map[*C.PyTypeObject]interface{})
+var types = make(map[*C.PyTypeObject]*Class)
 
-func registerType(pyType *C.PyTypeObject, goType interface{}) {
-	types[pyType] = goType
+func registerType(pyType *C.PyTypeObject, class *Class) {
+	types[pyType] = class
 }
 
 func (obj *BaseObject) actual() Object {
-	t, ok := types[(*C.PyTypeObject)(c(obj).ob_type)]
+	class, ok := types[(*C.PyTypeObject)(c(obj).ob_type)]
 	if ok {
 		o := unsafe.Pointer(uintptr(unsafe.Pointer(c(obj))) + uintptr(C.headSize()))
+		t := unsafe.Typeof(class.Pointer)
 		ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&o)).(Object)
 		if ok {
 			return ret

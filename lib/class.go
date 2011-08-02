@@ -29,6 +29,7 @@ package py
 import "C"
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"strings"
@@ -42,6 +43,9 @@ import (
 // e.g. "test.MyClass"
 //
 // Flags and Doc are currently unused.
+//
+// Type holds a Pointer to the Type instance for this class, this is filled in
+// by calling Create().
 //
 // Pointer should be set to a pointer of the struct type that will represent an
 // instance of the Python class.  This struct must contain an embedded
@@ -72,6 +76,7 @@ type Class struct {
 	Name    string
 	Flags   int
 	Doc     string
+	Type    *Type
 	Pointer interface{}
 }
 
@@ -161,7 +166,15 @@ func newGoClass(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the class context
 	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
 
-	var obj *C.PyObject
+	class, ok := types[pyType]
+	if !ok {
+		raise(fmt.Errorf("TypeError: Not a recognised type"))
+		return nil
+	}
+
+	var obj Object
+	var err os.Error
+
 	if ctxt.new != nil {
 		// Get args and kwds ready to use, by turning them into pointers of the
 		// appropriate type
@@ -171,27 +184,18 @@ func newGoClass(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 		// Turn the function into something we can call
 		f := (*func(*Class, *Tuple, *Dict) (Object, os.Error))(unsafe.Pointer(&ctxt.new))
 
-		// TODO: need to get hold of a pointer the the Class that defines this
-		// type - and add an Alloc method to it.
-		o, err := (*f)(nil, a, k)
-		if err != nil {
-			raise(err)
-			return nil
-		}
-		obj = c(o)
+		obj, err = (*f)(class, a, k)
 	} else {
 		// Create a new Python instance
-		obj = C.typeAlloc(pyType, 0)
+		obj, err = class.Alloc(0)
 	}
 
-	// Turn the Python self into a Go struct self
-	self := (*BaseObject)(unsafe.Pointer(uintptr(unsafe.Pointer(obj)) + uintptr(C.headSize())))
+	if err != nil {
+		raise(err)
+		return nil
+	}
 
-	// We need to setup the internal pointer, so that the instance can act like
-	// an Object
-	self.o = obj
-
-	return unsafe.Pointer(obj)
+	return unsafe.Pointer(c(obj))
 }
 
 //export initGoClass
@@ -305,9 +309,27 @@ type prop struct {
 	set unsafe.Pointer
 }
 
+func (class *Class) Alloc(n int64) (Object, os.Error) {
+	pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.Type)))
+
+	obj := C.typeAlloc(pyType, 0)
+	if obj == nil {
+		return nil, exception()
+	}
+
+	// Turn the Python self into a Go struct self
+	self := (*BaseObject)(unsafe.Pointer(uintptr(unsafe.Pointer(obj)) + uintptr(C.headSize())))
+
+	// We need to setup the internal pointer, so that the instance can act like
+	// an Object
+	self.o = obj
+
+	return newBaseObject(obj).actual(), nil
+}
+
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
-func (c Class) Create() (Object, os.Error) {
+func (c *Class) Create() (*Type, os.Error) {
 	typ := reflect.TypeOf(c.Pointer)
 
 	pyType := C.newType()
@@ -321,7 +343,7 @@ func (c Class) Create() (Object, os.Error) {
 		return nil, exception()
 	}
 
-	registerType(pyType, unsafe.Typeof(c.Pointer))
+	registerType(pyType, c)
 
 	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
 
@@ -372,5 +394,7 @@ func (c Class) Create() (Object, os.Error) {
 		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, prop.get, prop.set))
 	}
 
-	return newBaseObject((*C.PyObject)(unsafe.Pointer(pyType))), nil
+	c.Type = newType((*C.PyObject)(unsafe.Pointer(pyType)))
+
+	return c.Type, nil
 }
