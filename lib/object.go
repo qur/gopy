@@ -20,6 +20,7 @@ import (
 
 type Object interface {
 	Base() *BaseObject
+	Type() *Type
 	Decref()
 	Incref()
 	IsTrue() bool
@@ -49,6 +50,11 @@ func c(obj Object) *C.PyObject {
 
 func (obj *BaseObject) Base() *BaseObject {
 	return obj
+}
+
+func (obj *BaseObject) Type() *Type {
+	o := obj.o.ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(o)))
 }
 
 func (obj *BaseObject) Decref() {
@@ -190,6 +196,8 @@ func (obj *BaseObject) actual() Object {
 		return &Float{*obj}
 	case &C.PyModule_Type:
 		return &Module{*obj}
+	case &C.PyType_Type:
+		return &Type{*obj}
 	}
 	return obj
 }

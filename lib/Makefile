@@ -21,6 +21,7 @@ CGOFILES=\
 	long.go \
 	float.go \
 	run.go \
+	type.go \
 	python.go
 
 CGO_OFILES=\
