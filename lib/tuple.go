@@ -12,6 +12,7 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"unsafe"
 )
 
 type Tuple struct {
@@ -26,10 +27,7 @@ func tupleCheck(obj Object) bool {
 }
 
 func newTuple(obj *C.PyObject) *Tuple {
-	if obj == nil {
-		return nil
-	}
-	return &Tuple{BaseObject{obj}}
+	return (*Tuple)(unsafe.Pointer(obj))
 }
 
 func buildTuple(format string, args ...interface{}) (*Tuple, os.Error) {
@@ -94,10 +92,7 @@ func (t *Tuple) SetItem(pos int64, obj Object) os.Error {
 	return int2Err(ret)
 }
 
-func (t *Tuple) _Resize(size int64) os.Error {
-	ret := C._PyTuple_Resize(&t.BaseObject.o, C.Py_ssize_t(size))
-	return int2Err(ret)
-}
+// _PyTuple_Resize
 
 // PyTuple_ClearFreeList()
 

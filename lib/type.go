@@ -27,10 +27,7 @@ func typeCheck(obj Object) bool {
 }
 
 func newType(obj *C.PyObject) *Type {
-	if obj == nil {
-		return nil
-	}
-	return &Type{BaseObject{obj}}
+	return (*Type)(unsafe.Pointer(obj))
 }
 
 func (t *Type) Alloc(n int64) (Object, os.Error) {

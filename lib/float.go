@@ -11,6 +11,7 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"unsafe"
 )
 
 type Float struct {
@@ -22,10 +23,7 @@ func floatCheck(obj Object) bool {
 }
 
 func newFloat(obj *C.PyObject) *Float {
-	if obj == nil {
-		return nil
-	}
-	return &Float{BaseObject{obj}}
+	return (*Float)(unsafe.Pointer(obj))
 }
 
 func Float_FromFloat64(v float64) (*Float, os.Error) {

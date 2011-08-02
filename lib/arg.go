@@ -108,7 +108,7 @@ func BuildValue(format string, values ...interface{}) (Object, os.Error) {
 		case Object:
 			b := v.Base()
 			cValues[i]._type = &C.ffi_type_pointer
-			cValues[i].value = unsafe.Pointer(&b.o)
+			cValues[i].value = unsafe.Pointer(&b)
 		case int:
 			iv := C.int(v)
 			cValues[i]._type = &C.ffi_type_sint

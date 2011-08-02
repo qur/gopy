@@ -28,10 +28,7 @@ func moduleCheck(obj Object) bool {
 }
 
 func newModule(obj *C.PyObject) *Module {
-	if obj == nil {
-		return nil
-	}
-	return &Module{BaseObject{obj}}
+	return (*Module)(unsafe.Pointer(obj))
 }
 
 type Method struct {

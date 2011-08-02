@@ -27,10 +27,10 @@ type Object interface {
 	Not() bool
 }
 
-var None *NoneObject = &NoneObject{BaseObject{&C._Py_NoneStruct}}
+var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
 
 type BaseObject struct {
-	o *C.PyObject
+	C.PyObject
 }
 
 type NoneObject struct {
@@ -38,17 +38,14 @@ type NoneObject struct {
 }
 
 func newBaseObject(obj *C.PyObject) *BaseObject {
-	if obj == nil {
-		return nil
-	}
-	return &BaseObject{obj}
+	return (*BaseObject)(unsafe.Pointer(obj))
 }
 
 func c(obj Object) *C.PyObject {
 	if obj == nil {
 		return nil
 	}
-	return obj.Base().o
+	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
 }
 
 func (obj *BaseObject) Base() *BaseObject {
@@ -56,16 +53,16 @@ func (obj *BaseObject) Base() *BaseObject {
 }
 
 func (obj *BaseObject) Type() *Type {
-	o := obj.o.ob_type
+	o := c(obj).ob_type
 	return newType((*C.PyObject)(unsafe.Pointer(o)))
 }
 
 func (obj *BaseObject) Decref() {
-	C.decref(obj.o)
+	C.decref(c(obj))
 }
 
 func (obj *BaseObject) Incref() {
-	C.incref(obj.o)
+	C.incref(c(obj))
 }
 
 func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, os.Error) {
@@ -94,7 +91,7 @@ func (obj *BaseObject) CallMethod(name string, format string, args ...interface{
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	f := C.PyObject_GetAttrString(obj.o, cname)
+	f := C.PyObject_GetAttrString(c(obj), cname)
 	if f == nil {
 		return nil, fmt.Errorf("AttributeError: %s", name)
 	}
@@ -125,7 +122,7 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, o
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	f := C.PyObject_GetAttrString(obj.o, cname)
+	f := C.PyObject_GetAttrString(c(obj), cname)
 	if f == nil {
 		return nil, fmt.Errorf("AttributeError: %s", name)
 	}
@@ -174,34 +171,34 @@ func registerType(pyType *C.PyTypeObject, class *Class) {
 func (obj *BaseObject) actual() Object {
 	class, ok := types[(*C.PyTypeObject)(c(obj).ob_type)]
 	if ok {
-		o := unsafe.Pointer(uintptr(unsafe.Pointer(c(obj))) + uintptr(C.headSize()))
 		t := unsafe.Typeof(class.Pointer)
-		ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&o)).(Object)
+		ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&obj)).(Object)
 		if ok {
 			return ret
 		}
 	}
+	o := unsafe.Pointer(obj)
 	switch C.getBasePyType(c(obj)) {
 	case &C.PyList_Type:
-		return &List{*obj}
+		return (*List)(o)
 	case &C.PyTuple_Type:
-		return &Tuple{*obj}
+		return (*Tuple)(o)
 	case &C.PyDict_Type:
-		return &Dict{*obj}
+		return (*Dict)(o)
 	case &C.PyString_Type:
-		return &String{*obj}
+		return (*String)(o)
 	case &C.PyBool_Type:
 		return newBool(c(obj))
 	case &C.PyInt_Type:
-		return &Int{*obj}
+		return (*Int)(o)
 	case &C.PyLong_Type:
-		return &Long{*obj}
+		return (*Long)(o)
 	case &C.PyFloat_Type:
-		return &Float{*obj}
+		return (*Float)(o)
 	case &C.PyModule_Type:
-		return &Module{*obj}
+		return (*Module)(o)
 	case &C.PyType_Type:
-		return &Type{*obj}
+		return (*Type)(o)
 	}
 	return obj
 }

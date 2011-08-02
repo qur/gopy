@@ -23,10 +23,7 @@ func stringCheck(obj Object) bool {
 }
 
 func newString(obj *C.PyObject) *String {
-	if obj == nil {
-		return nil
-	}
-	return &String{BaseObject{obj}}
+	return (*String)(unsafe.Pointer(obj))
 }
 
 func String_FromString(s string) (*String, os.Error) {

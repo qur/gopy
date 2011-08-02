@@ -10,6 +10,7 @@ import "C"
 
 import (
 	"fmt"
+	"unsafe"
 )
 
 type Int struct {
@@ -24,10 +25,7 @@ func intCheck(obj Object) bool {
 }
 
 func newInt(obj *C.PyObject) *Int {
-	if obj == nil {
-		return nil
-	}
-	return &Int{BaseObject{obj}}
+	return (*Int)(unsafe.Pointer(obj))
 }
 
 func Int_FromInt(i int) *Int {

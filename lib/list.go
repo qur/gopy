@@ -12,6 +12,7 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"unsafe"
 )
 
 type List struct {
@@ -23,10 +24,7 @@ func listCheck(obj Object) bool {
 }
 
 func newList(obj *C.PyObject) *List {
-	if obj == nil {
-		return nil
-	}
-	return &List{BaseObject{obj}}
+	return (*List)(unsafe.Pointer(obj))
 }
 
 func List_New(size int64) (*List, os.Error) {

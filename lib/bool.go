@@ -6,8 +6,8 @@ package py
 
 // #include <Python.h>
 // static inline int boolCheck(PyObject *o) { return PyBool_Check(o); }
-// static inline PyObject *pyTrue(void) { return Py_True; }
-// static inline PyObject *pyFalse(void) { return Py_False; }
+// static inline void *pyTrue(void) { return Py_True; }
+// static inline void *pyFalse(void) { return Py_False; }
 import "C"
 
 import (
@@ -18,8 +18,8 @@ type Bool struct {
 	BaseObject
 }
 
-var True = &Bool{BaseObject{C.pyTrue()}}
-var False = &Bool{BaseObject{C.pyFalse()}}
+var True = (*Bool)(C.pyTrue())
+var False = (*Bool)(C.pyFalse())
 
 func boolCheck(obj Object) bool {
 	return C.boolCheck(c(obj)) != 0
@@ -32,7 +32,7 @@ func newBool(obj *C.PyObject) *Bool {
 	if obj == c(False) {
 		return False
 	}
-	return nil
+	panic(fmt.Errorf("TypeError: not a bool"))
 }
 
 func (b *Bool) Bool() bool {

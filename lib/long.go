@@ -10,6 +10,7 @@ import "C"
 
 import (
 	"fmt"
+	"unsafe"
 )
 
 type Long struct {
@@ -24,10 +25,7 @@ func longCheck(obj Object) bool {
 }
 
 func newLong(obj *C.PyObject) *Long {
-	if obj == nil {
-		return nil
-	}
-	return &Long{BaseObject{obj}}
+	return (*Long)(unsafe.Pointer(obj))
 }
 
 func Long_FromInt64(i int64) *Long {

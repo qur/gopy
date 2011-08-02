@@ -27,10 +27,7 @@ func dictCheck(obj Object) bool {
 }
 
 func newDict(obj *C.PyObject) *Dict {
-	if obj == nil {
-		return nil
-	}
-	return &Dict{BaseObject{obj}}
+	return (*Dict)(unsafe.Pointer(obj))
 }
 
 func Dict_New() (*Dict, os.Error) {

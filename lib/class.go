@@ -11,7 +11,6 @@ package py
 // }
 // static inline int typeReady(PyTypeObject *o) {
 //     int ret;
-//     o->tp_basicsize += sizeof(PyObject);
 //     if (o->tp_new == NULL) {
 //         o->tp_new = PyType_GenericNew;
 //     }
@@ -87,9 +86,6 @@ func callClassMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
 
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(pyobj) + uintptr(C.headSize()))
-
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
 	a := newTuple((*C.PyObject)(args))
@@ -99,7 +95,7 @@ func callClassMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// reflect.Type object stored in the context
 	f := (*func(p unsafe.Pointer, a *Tuple, k *Dict) (Object, os.Error))(unsafe.Pointer(&m))
 
-	ret, err := (*f)(self, a, k)
+	ret, err := (*f)(pyobj, a, k)
 	if err != nil {
 		raise(err)
 		return nil
@@ -110,9 +106,6 @@ func callClassMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 //export setClassProperty
 func setClassProperty(obj, arg, closure unsafe.Pointer) int {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
@@ -123,7 +116,7 @@ func setClassProperty(obj, arg, closure unsafe.Pointer) int {
 	// Turn the function into something we can call
 	f := (*func(p unsafe.Pointer, a Object) os.Error)(unsafe.Pointer(&m))
 
-	err := (*f)(self, a)
+	err := (*f)(obj, a)
 	if err != nil {
 		raise(err)
 		return -1
@@ -134,9 +127,6 @@ func setClassProperty(obj, arg, closure unsafe.Pointer) int {
 
 //export getClassProperty
 func getClassProperty(obj, closure unsafe.Pointer) unsafe.Pointer {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
@@ -144,7 +134,7 @@ func getClassProperty(obj, closure unsafe.Pointer) unsafe.Pointer {
 	// Turn the function into something we can call
 	f := (*func(p unsafe.Pointer) (Object, os.Error))(unsafe.Pointer(&m))
 
-	ret, err := (*f)(self)
+	ret, err := (*f)(obj)
 	if err != nil {
 		raise(err)
 		return nil
@@ -200,9 +190,6 @@ func newGoClass(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 //export initGoClass
 func initGoClass(obj, args, kwds unsafe.Pointer) int {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -214,7 +201,7 @@ func initGoClass(obj, args, kwds unsafe.Pointer) int {
 	a := newTuple((*C.PyObject)(args))
 	k := newDict((*C.PyObject)(kwds))
 
-	err := (*f)(self, a, k)
+	err := (*f)(obj, a, k)
 	if err != nil {
 		// Turn err into exception
 		return -1
@@ -225,16 +212,13 @@ func initGoClass(obj, args, kwds unsafe.Pointer) int {
 
 //export reprGoClass
 func reprGoClass(obj unsafe.Pointer) unsafe.Pointer {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Get the class context
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer) string)(unsafe.Pointer(&ctxt.repr))
 
-	s := C.CString((*f)(self))
+	s := C.CString((*f)(obj))
 	defer C.free(unsafe.Pointer(s))
 
 	return unsafe.Pointer(C.PyString_FromString(s))
@@ -242,16 +226,13 @@ func reprGoClass(obj unsafe.Pointer) unsafe.Pointer {
 
 //export strGoClass
 func strGoClass(obj unsafe.Pointer) unsafe.Pointer {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Get the class context
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer) string)(unsafe.Pointer(&ctxt.str))
 
-	s := C.CString((*f)(self))
+	s := C.CString((*f)(obj))
 	defer C.free(unsafe.Pointer(s))
 
 	return unsafe.Pointer(C.PyString_FromString(s))
@@ -259,9 +240,6 @@ func strGoClass(obj unsafe.Pointer) unsafe.Pointer {
 
 //export callGoClass
 func callGoClass(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -273,7 +251,7 @@ func callGoClass(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	a := newTuple((*C.PyObject)(args))
 	k := newDict((*C.PyObject)(kwds))
 
-	ret, err := (*f)(self, a, k)
+	ret, err := (*f)(obj, a, k)
 	if err != nil {
 		raise(err)
 		return nil
@@ -284,9 +262,6 @@ func callGoClass(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 //export compareGoClass
 func compareGoClass(obj1, obj2 unsafe.Pointer) int {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj1) + uintptr(C.headSize()))
-
 	// Get the class context
 	ctxt := getClassContext(obj1)
 
@@ -295,7 +270,7 @@ func compareGoClass(obj1, obj2 unsafe.Pointer) int {
 
 	o := newBaseObject((*C.PyObject)(obj2)).actual()
 
-	ret, err := (*f)(self, o)
+	ret, err := (*f)(obj1, o)
 	if err != nil {
 		raise(err)
 		return -1
@@ -306,23 +281,17 @@ func compareGoClass(obj1, obj2 unsafe.Pointer) int {
 
 //export mapLenGoClass
 func mapLenGoClass(obj unsafe.Pointer) C.Py_ssize_t {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Get the class context
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer) int64)(unsafe.Pointer(&ctxt.mp_len))
 
-	return C.Py_ssize_t((*f)(self))
+	return C.Py_ssize_t((*f)(obj))
 }
 
 //export mapGetGoClass
 func mapGetGoClass(obj, arg unsafe.Pointer) unsafe.Pointer {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -331,7 +300,7 @@ func mapGetGoClass(obj, arg unsafe.Pointer) unsafe.Pointer {
 
 	key := newBaseObject((*C.PyObject)(arg)).actual()
 
-	ret, err := (*f)(self, key)
+	ret, err := (*f)(obj, key)
 	if err != nil {
 		raise(err)
 		return nil
@@ -342,9 +311,6 @@ func mapGetGoClass(obj, arg unsafe.Pointer) unsafe.Pointer {
 
 //export mapSetGoClass
 func mapSetGoClass(obj, arg1, arg2 unsafe.Pointer) int {
-	// Turn the Python self into a Go struct self
-	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
-
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -354,7 +320,7 @@ func mapSetGoClass(obj, arg1, arg2 unsafe.Pointer) int {
 	key := newBaseObject((*C.PyObject)(arg1)).actual()
 	value := newBaseObject((*C.PyObject)(arg2)).actual()
 
-	err := (*f)(self, key, value)
+	err := (*f)(obj, key, value)
 	if err != nil {
 		raise(err)
 		return -1
@@ -375,13 +341,6 @@ func (class *Class) Alloc(n int64) (Object, os.Error) {
 	if obj == nil {
 		return nil, exception()
 	}
-
-	// Turn the Python self into a Go struct self
-	self := (*BaseObject)(unsafe.Pointer(uintptr(unsafe.Pointer(obj)) + uintptr(C.headSize())))
-
-	// We need to setup the internal pointer, so that the instance can act like
-	// an Object
-	self.o = obj
 
 	return newBaseObject(obj).actual(), nil
 }
