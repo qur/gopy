@@ -20,6 +20,7 @@ CGOFILES=\
 	list.go \
 	long.go \
 	float.go \
+	run.go \
 	python.go
 
 CGO_OFILES=\
