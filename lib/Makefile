@@ -21,6 +21,7 @@ CGOFILES=\
 	long.go \
 	float.go \
 	run.go \
+	eval.go \
 	type.go \
 	python.go
 
