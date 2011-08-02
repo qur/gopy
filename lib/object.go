@@ -168,6 +168,9 @@ func registerType(pyType *C.PyTypeObject, class *Class) {
 }
 
 func (obj *BaseObject) actual() Object {
+	if obj == nil {
+		return nil
+	}
 	class, ok := types[(*C.PyTypeObject)(c(obj).ob_type)]
 	if ok {
 		t := unsafe.Typeof(class.Pointer)
