@@ -66,6 +66,11 @@ func Err_Format(f string, args ...interface{}) {
 	C.PyErr_SetString(C.PyExc_Exception, s)
 }
 
+func KeyError(format string, args ...interface{}) os.Error {
+	msg := fmt.Sprintf(format, args...)
+	return &Error{C.PyExc_KeyError, msg}
+}
+
 func int2Err(i C.int) os.Error {
 	if i < 0 {
 		return exception()
