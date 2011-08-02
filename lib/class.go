@@ -304,6 +304,65 @@ func compareGoClass(obj1, obj2 unsafe.Pointer) int {
 	return ret
 }
 
+//export mapLenGoClass
+func mapLenGoClass(obj unsafe.Pointer) C.Py_ssize_t {
+	// Turn the Python self into a Go struct self
+	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
+
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer) int64)(unsafe.Pointer(&ctxt.mp_len))
+
+	return C.Py_ssize_t((*f)(self))
+}
+
+//export mapGetGoClass
+func mapGetGoClass(obj, arg unsafe.Pointer) unsafe.Pointer {
+	// Turn the Python self into a Go struct self
+	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
+
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer, Object) (Object, os.Error))(unsafe.Pointer(&ctxt.mp_get))
+
+	key := newBaseObject((*C.PyObject)(arg)).actual()
+
+	ret, err := (*f)(self, key)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export mapSetGoClass
+func mapSetGoClass(obj, arg1, arg2 unsafe.Pointer) int {
+	// Turn the Python self into a Go struct self
+	self := unsafe.Pointer(uintptr(obj) + uintptr(C.headSize()))
+
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer, Object, Object) os.Error)(unsafe.Pointer(&ctxt.mp_set))
+
+	key := newBaseObject((*C.PyObject)(arg1)).actual()
+	value := newBaseObject((*C.PyObject)(arg2)).actual()
+
+	err := (*f)(self, key, value)
+	if err != nil {
+		raise(err)
+		return -1
+	}
+
+	return 0
+}
+
 type prop struct {
 	get unsafe.Pointer
 	set unsafe.Pointer
@@ -373,6 +432,12 @@ func (c *Class) Create() (*Type, os.Error) {
 			ctxt.call = f
 		case "PyCompare":
 			ctxt.compare = f
+		case "PyMapLen":
+			ctxt.mp_len = f
+		case "PyMapGet":
+			ctxt.mp_get = f
+		case "PyMapSet":
+			ctxt.mp_set = f
 		case "Py":
 			s := C.CString(parts[1])
 			C.setTypeAttr(pyType, s, C.newMethod(s, f))

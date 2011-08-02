@@ -21,6 +21,10 @@ typedef struct {
     void *str;
     void *call;
     void *compare;
+    void *mp_len;
+    void *mp_get;
+    void *mp_set;
+    PyMappingMethods mp_meth;
 } ClassContext;
 
 extern PyMethodDef *newMethodDef();

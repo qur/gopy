@@ -203,6 +203,14 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     if (ctxt->str)     type->tp_str     = (reprfunc)    strGoClass;
     if (ctxt->call)    type->tp_call    = (ternaryfunc) callGoClass;
     if (ctxt->compare) type->tp_compare = (cmpfunc)     compareGoClass;
+
+    if (ctxt->mp_len || ctxt->mp_get || ctxt->mp_set) {
+        PyMappingMethods *m = &ctxt->mp_meth;
+        type->tp_as_mapping = m;
+        if (ctxt->mp_len) m->mp_length        = (lenfunc)       mapLenGoClass;
+        if (ctxt->mp_get) m->mp_subscript     = (binaryfunc)    mapGetGoClass;
+        if (ctxt->mp_set) m->mp_ass_subscript = (objobjargproc) mapSetGoClass;
+    }
 }
 
 PyTypeObject *getBasePyType(PyObject *o) {
