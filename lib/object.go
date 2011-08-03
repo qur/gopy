@@ -170,6 +170,10 @@ func (obj *BaseObject) actual() Object {
 	if obj == nil {
 		return nil
 	}
+	o := unsafe.Pointer(obj)
+	if o == unsafe.Pointer(None) {
+		return None
+	}
 	class, ok := types[(*C.PyTypeObject)(c(obj).ob_type)]
 	if ok {
 		t := unsafe.Typeof(class.Pointer)
@@ -178,7 +182,6 @@ func (obj *BaseObject) actual() Object {
 			return ret
 		}
 	}
-	o := unsafe.Pointer(obj)
 	switch C.getBasePyType(c(obj)) {
 	case &C.PyList_Type:
 		return (*List)(o)
