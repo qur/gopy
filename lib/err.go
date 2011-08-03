@@ -5,6 +5,7 @@
 package py
 
 // #include <Python.h>
+// static inline void incref(PyObject *obj) { Py_INCREF(obj); }
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
 // static inline void xdecref(PyObject *obj) { Py_XDECREF(obj); }
 import "C"
@@ -68,6 +69,7 @@ func Err_Format(f string, args ...interface{}) {
 
 func KeyError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
+	C.incref(C.PyExc_KeyError)
 	return &Error{C.PyExc_KeyError, nil, msg}
 }
 
