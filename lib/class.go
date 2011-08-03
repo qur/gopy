@@ -332,6 +332,40 @@ type prop struct {
 	set unsafe.Pointer
 }
 
+func methSigMatches(got reflect.Type, _want interface{}) os.Error {
+	// Note: Methods take the receiver as the first argument, which the want
+	// signature doesn't include.
+
+	if got.NumIn() == 0 {
+		// The receiver is missing!
+		return fmt.Errorf("Method without reciever!")
+	}
+
+	want := reflect.TypeOf(_want)
+
+	if got.NumIn()-1 != want.NumIn() {
+		return fmt.Errorf("Method should have %d arguments, not %d", want.NumIn(), got.NumIn()-1)
+	}
+
+	if got.NumOut() != want.NumOut() {
+		return fmt.Errorf("Method should have %d return values, not %d", want.NumOut(), got.NumOut())
+	}
+
+	for i := 0; i < want.NumIn(); i++ {
+		if got.In(i+1) != want.In(i) {
+			return fmt.Errorf("Method argument %d should be %v, not %v", i+1, want.In(i), got.In(i+1))
+		}
+	}
+
+	for i := 0; i < want.NumOut(); i++ {
+		if got.Out(i) != want.Out(i) {
+			return fmt.Errorf("Method return value %d should be %v, not %v", i+1, want.Out(i), got.Out(i))
+		}
+	}
+
+	return nil
+}
+
 func (class *Class) Alloc(n int64) (Object, os.Error) {
 	pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.Type)))
 
@@ -373,36 +407,82 @@ func (c *Class) Create() (*Type, os.Error) {
 
 	for i := 0; i < typ.NumMethod(); i++ {
 		m := typ.Method(i)
-		f := unsafe.Pointer(m.Func.Pointer())
 		if !strings.HasPrefix(m.Name, "Py") {
 			continue
 		}
+		t := m.Func.Type()
+		f := unsafe.Pointer(m.Func.Pointer())
+		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
 		parts := strings.SplitN(m.Name, "_", 2)
 		switch parts[0] {
 		case "PyInit":
+			err := methSigMatches(t, func(a *Tuple, k *Dict) os.Error(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			ctxt.init = f
 		case "PyRepr":
+			err := methSigMatches(t, func() string(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			ctxt.repr = f
 		case "PyStr":
+			err := methSigMatches(t, func() string(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			ctxt.str = f
 		case "PyCall":
+			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, os.Error)(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			ctxt.call = f
 		case "PyCompare":
+			err := methSigMatches(t, func(Object) (int, os.Error)(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			ctxt.compare = f
 		case "PyMapLen":
+			err := methSigMatches(t, func() int64(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			ctxt.mp_len = f
 		case "PyMapGet":
+			err := methSigMatches(t, func(Object) (Object, os.Error)(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			ctxt.mp_get = f
 		case "PyMapSet":
+			err := methSigMatches(t, func(k,v Object) os.Error(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			ctxt.mp_set = f
 		case "Py":
+			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, os.Error)(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			s := C.CString(parts[1])
 			C.setTypeAttr(pyType, s, C.newMethod(s, f))
 		case "PySet":
+			err := methSigMatches(t, func(Object) os.Error(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			p := props[parts[1]]
 			p.set = f
 			props[parts[1]] = p
 		case "PyGet":
+			err := methSigMatches(t, func() (Object, os.Error)(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
 			p := props[parts[1]]
 			p.get = f
 			props[parts[1]] = p
