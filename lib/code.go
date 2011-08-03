@@ -18,4 +18,3 @@ func codeCheck(obj Object) bool {
 	}
 	return C.codeCheck(c(obj)) != 0
 }
-
