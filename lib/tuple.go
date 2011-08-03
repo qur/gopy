@@ -4,7 +4,7 @@
 
 package py
 
-// #include <Python.h>
+// #include "utils.h"
 // static inline int tupleCheck(PyObject *o) { return PyTuple_Check(o); }
 // static inline int tupleCheckE(PyObject *o) { return PyTuple_CheckExact(o); }
 import "C"

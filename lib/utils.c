@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include <ffi/ffi.h>
-
-#include "Python.h"
-#include "_cgo_export.h"
 #include "utils.h"
+#include "_cgo_export.h"
 
 
 PyMethodDef *newMethodDef() {

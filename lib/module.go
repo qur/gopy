@@ -4,7 +4,6 @@
 
 package py
 
-// #include <Python.h>
 // #include "utils.h"
 // static inline int moduleCheck(PyObject *o) { return PyModule_Check(o); }
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }

@@ -4,7 +4,6 @@
 
 package py
 
-// #include <Python.h>
 // #include "utils.h"
 // static inline PyTypeObject *newType(void) {
 //     return calloc(1, sizeof(PyTypeObject));

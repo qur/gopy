@@ -4,7 +4,7 @@
 
 package py
 
-// #include <Python.h>
+// #include "utils.h"
 // static inline long longCheck(PyObject *o) { return PyLong_Check(o); }
 import "C"
 

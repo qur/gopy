@@ -4,7 +4,6 @@
 
 package py
 
-// #include <Python.h>
 // #include "utils.h"
 // static inline void incref(PyObject *obj) { Py_INCREF(obj); }
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }

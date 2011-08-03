@@ -4,7 +4,7 @@
 
 package py
 
-// #include <Python.h>
+// #include "utils.h"
 // static inline int stringCheck(PyObject *o) { return PyString_Check(o); }
 import "C"
 

@@ -4,7 +4,6 @@
 
 package py
 
-// #include <Python.h>
 // #include "utils.h"
 // static inline int typeCheck(PyObject *o) { return PyType_Check(o); }
 // static inline int typeCheckE(PyObject *o) { return PyType_CheckExact(o); }
