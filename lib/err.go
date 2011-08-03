@@ -17,6 +17,7 @@ import (
 
 type Error struct {
 	kind *C.PyObject
+	tb   *C.PyObject
 	msg  string
 }
 
@@ -24,22 +25,21 @@ func (e *Error) String() string {
 	return fmt.Sprintf("<TYPE>: %s", e.msg)
 }
 
-func exception() (e os.Error) {
-	e = nil
-	var t *C.PyObject
-	var v *C.PyObject
-	var tb *C.PyObject
-	C.PyErr_Fetch(&t, &v, &tb)
-	if v != nil {
-		s := C.PyObject_Str(v)
-		cs := C.PyString_AsString(s)
-		e = fmt.Errorf("%s", C.GoString(cs))
-		C.decref(s)
+func exception() os.Error {
+	if C.PyErr_Occurred() == nil {
+		return nil
 	}
-	C.xdecref(t)
-	C.xdecref(v)
-	C.xdecref(tb)
-	return
+
+	var t, v, tb *C.PyObject
+
+	defer C.xdecref(v)
+
+	C.PyErr_Fetch(&t, &v, &tb)
+
+	s := C.PyObject_Str(v)
+	defer C.decref(s)
+
+	return &Error{t, tb, C.GoString(C.PyString_AsString(s))}
 }
 
 func raise(err os.Error) {
@@ -68,7 +68,7 @@ func Err_Format(f string, args ...interface{}) {
 
 func KeyError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
-	return &Error{C.PyExc_KeyError, msg}
+	return &Error{C.PyExc_KeyError, nil, msg}
 }
 
 func int2Err(i C.int) os.Error {
