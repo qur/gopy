@@ -28,6 +28,7 @@ typedef struct {
 } ClassContext;
 
 extern PyMethodDef *newMethodDef();
+extern void set_call_noargs(PyCFunction *f);
 extern void set_call_args(PyCFunction *f);
 extern void set_call_keywords(PyCFunction *f);
 

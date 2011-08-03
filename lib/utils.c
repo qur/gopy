@@ -10,6 +10,10 @@ PyMethodDef *newMethodDef() {
     return (PyMethodDef *)calloc(1, sizeof(PyMethodDef));
 }
 
+void set_call_noargs(PyCFunction *f) {
+    *f = (PyCFunction)callWithoutArgs;
+}
+
 void set_call_args(PyCFunction *f) {
     *f = (PyCFunction)callWithArgs;
 }

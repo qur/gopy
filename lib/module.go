@@ -43,6 +43,23 @@ func saveFunc(f interface{}) *C.PyObject {
 	return C.PyInt_FromLong(C.long(len(funcs) - 1))
 }
 
+//export callWithoutArgs
+func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
+	_idx := (*C.PyObject)(self)
+	idx := C.PyInt_AsLong(_idx)
+	f, ok := funcs[idx].(func() (Object, os.Error))
+	if !ok {
+		fmt.Printf("invalid index: %d\n", idx)
+		return nil
+	}
+	ret, err := f()
+	if err != nil {
+		raise(err)
+		return nil
+	}
+	return unsafe.Pointer(c(ret))
+}
+
 //export callWithArgs
 func callWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	_idx := (*C.PyObject)(self)
@@ -125,6 +142,10 @@ func InitModule(name string, methods []Method) (*Module, os.Error) {
 		ml.ml_doc = C.CString(method.Doc)
 
 		switch f := method.Func.(type) {
+
+		case func() (Object, os.Error):
+			C.set_call_noargs(&ml.ml_meth)
+			ml.ml_flags = C.METH_NOARGS
 
 		case func(a *Tuple) (Object, os.Error):
 			C.set_call_args(&ml.ml_meth)
