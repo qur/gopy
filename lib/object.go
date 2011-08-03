@@ -35,6 +35,10 @@ type NoneObject struct {
 	BaseObject
 }
 
+func (n *NoneObject) String() string {
+	return "None"
+}
+
 func newBaseObject(obj *C.PyObject) *BaseObject {
 	return (*BaseObject)(unsafe.Pointer(obj))
 }
