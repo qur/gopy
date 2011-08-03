@@ -222,5 +222,6 @@ PyTypeObject *getBasePyType(PyObject *o) {
     if (PyFloat_Check(o)) return &PyFloat_Type;
     if (PyModule_Check(o)) return &PyModule_Type;
     if (PyType_Check(o)) return &PyType_Type;
+    if (PyCode_Check(o)) return &PyCode_Type;
     return o->ob_type;
 }

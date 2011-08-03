@@ -23,6 +23,7 @@ CGOFILES=\
 	run.go \
 	eval.go \
 	type.go \
+	code.go \
 	python.go
 
 CGO_OFILES=\

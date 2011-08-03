@@ -207,6 +207,8 @@ func (obj *BaseObject) actual() Object {
 		return (*Module)(o)
 	case &C.PyType_Type:
 		return (*Type)(o)
+	case &C.PyCode_Type:
+		return (*Code)(o)
 	}
 	return obj
 }
