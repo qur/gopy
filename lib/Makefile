@@ -4,7 +4,7 @@
 
 include $(GOROOT)/src/Make.inc
 
-TARG=lib
+TARG=github.com/qur/gopy/lib
 
 CGOFILES=\
 	object.go \
