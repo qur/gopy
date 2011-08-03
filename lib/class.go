@@ -22,7 +22,6 @@ package py
 // static inline int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {
 //     return PyDict_SetItemString(tp->tp_dict, name, o);
 // }
-// static inline uintptr_t headSize(void) { return sizeof(PyObject); }
 // static inline PyObject *typeAlloc(PyTypeObject *type, Py_ssize_t n) { return type->tp_alloc(type, n); }
 import "C"
 

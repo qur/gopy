@@ -7,7 +7,6 @@ package py
 // #include "utils.h"
 // static inline void incref(PyObject *obj) { Py_INCREF(obj); }
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
-// static inline uintptr_t headSize(void) { return sizeof(PyObject); }
 import "C"
 
 import (
