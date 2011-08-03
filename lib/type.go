@@ -10,6 +10,7 @@ package py
 import "C"
 
 import (
+	"fmt"
 	"os"
 	"unsafe"
 )
@@ -33,4 +34,12 @@ func (t *Type) Alloc(n int64) (Object, os.Error) {
 	ct := (*C.PyTypeObject)(unsafe.Pointer(c(t)))
 	ret := C.PyType_GenericAlloc(ct, C.Py_ssize_t(n))
 	return obj2ObjErr(ret)
+}
+
+func (t *Type) String() string {
+	pyS := C.PyObject_Str(c(t))
+	if pyS == nil {
+		return "<unknown type>"
+	}
+	return C.GoString(C.PyString_AsString(pyS))
 }
