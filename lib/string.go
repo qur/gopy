@@ -42,3 +42,11 @@ func (s *String) String() string {
 	}
 	return C.GoString(ret)
 }
+
+func (s *String) Format(args *Tuple) (*String, os.Error) {
+	ret := C.PyString_Format(c(s), c(args))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newString(ret), nil
+}
