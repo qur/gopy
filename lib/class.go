@@ -75,6 +75,7 @@ type Class struct {
 	Doc     string
 	Type    *Type
 	Pointer interface{}
+	New     func(*Class, *Tuple, *Dict) (Object, os.Error)
 }
 
 //export callClassMethod
@@ -151,9 +152,6 @@ func newGoClass(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)(typ)
 
-	// Get the class context
-	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
-
 	class, ok := types[pyType]
 	if !ok {
 		raise(fmt.Errorf("TypeError: Not a recognised type"))
@@ -163,16 +161,13 @@ func newGoClass(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	var obj Object
 	var err os.Error
 
-	if ctxt.new != nil {
+	if class.New != nil {
 		// Get args and kwds ready to use, by turning them into pointers of the
 		// appropriate type
 		a := newTuple((*C.PyObject)(args))
 		k := newDict((*C.PyObject)(kwds))
 
-		// Turn the function into something we can call
-		f := (*func(*Class, *Tuple, *Dict) (Object, os.Error))(unsafe.Pointer(&ctxt.new))
-
-		obj, err = (*f)(class, a, k)
+		obj, err = class.New(class, a, k)
 	} else {
 		// Create a new Python instance
 		obj, err = class.Alloc(0)

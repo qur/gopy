@@ -15,7 +15,6 @@ typedef struct {
 
 typedef struct {
     void *zero;
-    void *new;
     void *init;
     void *repr;
     void *str;
