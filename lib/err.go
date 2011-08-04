@@ -79,6 +79,12 @@ func KeyError(format string, args ...interface{}) os.Error {
 	return &Error{C.PyExc_KeyError, nil, msg}
 }
 
+func AttributeError(format string, args ...interface{}) os.Error {
+	msg := fmt.Sprintf(format, args...)
+	C.incref(C.PyExc_AttributeError)
+	return &Error{C.PyExc_AttributeError, nil, msg}
+}
+
 func int2Err(i C.int) os.Error {
 	if i < 0 {
 		return exception()
