@@ -208,6 +208,8 @@ func (obj *BaseObject) actual() Object {
 		return (*Type)(o)
 	case &C.PyCode_Type:
 		return (*Code)(o)
+	case &C.PyCFunction_Type:
+		return (*CFunction)(o)
 	}
 	return obj
 }

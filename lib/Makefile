@@ -24,6 +24,7 @@ CGOFILES=\
 	eval.go \
 	type.go \
 	code.go \
+	cfunction.go \
 	python.go
 
 CGO_OFILES=\
