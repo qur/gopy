@@ -15,6 +15,7 @@ typedef struct {
 
 typedef struct {
     void *zero;
+    void *dealloc;
     void *init;
     void *repr;
     void *str;

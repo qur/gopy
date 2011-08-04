@@ -7,6 +7,7 @@ package py
 // #include "utils.h"
 // static inline void incref(PyObject *obj) { Py_INCREF(obj); }
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
+// static inline void typeFree(PyTypeObject *type, PyObject *o) { type->tp_free(o); }
 import "C"
 
 import (
@@ -22,6 +23,7 @@ type Object interface {
 	Incref()
 	IsTrue() bool
 	Not() bool
+	Free()
 }
 
 var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
@@ -64,6 +66,12 @@ func (obj *BaseObject) Decref() {
 
 func (obj *BaseObject) Incref() {
 	C.incref(c(obj))
+}
+
+func (obj *BaseObject) Free() {
+	o := c(obj)
+	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
+	C.typeFree(pyType, o)
 }
 
 func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, os.Error) {

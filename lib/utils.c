@@ -198,7 +198,10 @@ PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
 
 void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     ctxt->zero = NULL;
-    type->tp_new = (newfunc)newGoClass;
+
+    type->tp_new     = (newfunc)    newGoClass;
+    type->tp_dealloc = (destructor) deallocGoClass;
+
     if (ctxt->init)    type->tp_init    = (initproc)    initGoClass;
     if (ctxt->repr)    type->tp_repr    = (reprfunc)    reprGoClass;
     if (ctxt->str)     type->tp_str     = (reprfunc)    strGoClass;

@@ -181,6 +181,21 @@ func newGoClass(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(obj))
 }
 
+//export deallocGoClass
+func deallocGoClass(obj unsafe.Pointer) {
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	if ctxt.dealloc != nil {
+		// Turn the function into something we can call
+		f := (*func(unsafe.Pointer))(unsafe.Pointer(&ctxt.dealloc))
+
+		(*f)(obj)
+	} else {
+		(*BaseObject)(obj).Free()
+	}
+}
+
 //export initGoClass
 func initGoClass(obj, args, kwds unsafe.Pointer) int {
 	// Get the class context
@@ -390,6 +405,7 @@ func (c *Class) Create() (*Type, os.Error) {
 
 	registerType(pyType, c)
 
+	// Get the context
 	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
 
 	// We don't use tp_methods, and it is read when calling PyType_Ready - so we
@@ -410,6 +426,12 @@ func (c *Class) Create() (*Type, os.Error) {
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
 		parts := strings.SplitN(m.Name, "_", 2)
 		switch parts[0] {
+		case "PyDealloc":
+			err := methSigMatches(t, (func())(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
+			ctxt.dealloc = f
 		case "PyInit":
 			err := methSigMatches(t, func(a *Tuple, k *Dict) os.Error(nil))
 			if err != nil {
