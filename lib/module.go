@@ -6,6 +6,7 @@ package py
 
 // #include "utils.h"
 // static inline int moduleCheck(PyObject *o) { return PyModule_Check(o); }
+// static inline int moduleCheckE(PyObject *o) { return PyModule_CheckExact(o); }
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
 import "C"
 
@@ -173,6 +174,43 @@ func InitModule(name string, methods []Method) (*Module, os.Error) {
 	return newModule(m), nil
 }
 
+func Module_New(name string) (*Module, os.Error) {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+
+	ret := C.PyModule_New(cname)
+	if ret == nil {
+		return nil, exception()
+	}
+
+	return newModule(ret), nil
+}
+
+func (mod *Module) CheckExact() bool {
+	return C.moduleCheckE(c(mod)) != 0
+}
+
+func (mod *Module) Dict() *Dict {
+	ret := C.PyModule_GetDict(c(mod))
+	return newDict(ret)
+}
+
+func (mod *Module) Name() (string, os.Error) {
+	ret := C.PyModule_GetName(c(mod))
+	if ret == nil {
+		return "", exception()
+	}
+	return C.GoString(ret), nil
+}
+
+func (mod *Module) Filename() (string, os.Error) {
+	ret := C.PyModule_GetFilename(c(mod))
+	if ret == nil {
+		return "", exception()
+	}
+	return C.GoString(ret), nil
+}
+
 func (mod *Module) AddObject(name string, obj Object) os.Error {
 	if obj == nil {
 		return fmt.Errorf("ValueError: obj == nil!")
@@ -182,7 +220,33 @@ func (mod *Module) AddObject(name string, obj Object) os.Error {
 	defer C.free(unsafe.Pointer(cname))
 
 	ret := C.PyModule_AddObject(c(mod), cname, c(obj))
+	if ret < 0 {
+		return exception()
+	}
 
+	return nil
+}
+
+func (mod *Module) AddIntConstant(name string, value int) os.Error {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+
+	ret := C.PyModule_AddIntConstant(c(mod), cname, C.long(value))
+	if ret < 0 {
+		return exception()
+	}
+
+	return nil
+}
+
+func (mod *Module) AddStringConstant(name, value string) os.Error {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+
+	cvalue := C.CString(value)
+	defer C.free(unsafe.Pointer(cvalue))
+
+	ret := C.PyModule_AddStringConstant(c(mod), cname, cvalue)
 	if ret < 0 {
 		return exception()
 	}
