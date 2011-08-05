@@ -57,6 +57,43 @@ int doParseTuple(PyObject *args, char *fmt, void *values[], int c) {
     return (int)result;
 }
 
+int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt, char *kwlist[], void *values[], int c) {
+    ffi_cif cif;
+    ffi_status status;
+    ffi_sarg result;
+    int i;
+
+    ffi_type **arg_types = calloc(c + 4, sizeof(ffi_type *));
+    void **arg_values = calloc(c + 4, sizeof(void *));
+
+    for (i = 0; i < c + 4; i++) {
+        arg_types[i] = &ffi_type_pointer;
+    }
+
+    status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, c+4,
+                          &ffi_type_sint, arg_types);
+
+    if (status != FFI_OK) {
+        PyErr_Format(PyExc_TypeError, "ffi_prep_cif failed: %d", status);
+        return -1;
+    }
+
+    arg_values[0] = &args;
+    arg_values[1] = &kwds;
+    arg_values[2] = &fmt;
+    arg_values[3] = &kwlist;
+    for (i = 0; i < c; i++) {
+        arg_values[i+4] = &values[i];
+    }
+
+    ffi_call(&cif, FFI_FN(PyArg_ParseTupleAndKeywords), &result, arg_values);
+
+    free(arg_types);
+    free(arg_values);
+
+    return (int)result;
+}
+
 PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
     ffi_cif cif;
     ffi_status status;

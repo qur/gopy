@@ -33,6 +33,7 @@ extern void set_call_args(PyCFunction *f);
 extern void set_call_keywords(PyCFunction *f);
 
 extern int doParseTuple(PyObject *args, char *fmt, void *values[], int c);
+extern int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt, char *kwlist[], void *values[], int c);
 extern PyObject *doBuildValue(char *fmt, ArgValue values[], int c);
 
 extern PyObject *newMethod(char *name, void *func);

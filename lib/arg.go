@@ -13,10 +13,7 @@ import (
 	"unsafe"
 )
 
-func Arg_ParseTuple(args *Tuple, format string, values ...interface{}) os.Error {
-	if args == nil {
-		return fmt.Errorf("Arg_ParseTuple: args was nil")
-	}
+func packValues(values []interface{}) ([]unsafe.Pointer, os.Error) {
 	cValues := make([]unsafe.Pointer, len(values))
 	for i, value := range values {
 		switch v := value.(type) {
@@ -49,15 +46,13 @@ func Arg_ParseTuple(args *Tuple, format string, values ...interface{}) os.Error 
 		case *float64:
 			cValues[i] = unsafe.Pointer(new(C.double))
 		default:
-			return fmt.Errorf("Unsupported type: %T", v)
+			return nil, fmt.Errorf("Unsupported type: %T", v)
 		}
 	}
-	f := C.CString(format)
-	defer C.free(unsafe.Pointer(f))
-	ret := C.doParseTuple(c(args), f, &cValues[0], C.int(len(cValues)))
-	if ret == 0 {
-		return exception()
-	}
+	return cValues, nil
+}
+
+func unpackValues(cValues []unsafe.Pointer, values []interface{}) os.Error {
 	for i, value := range values {
 		switch v := value.(type) {
 		case *string:
@@ -93,6 +88,55 @@ func Arg_ParseTuple(args *Tuple, format string, values ...interface{}) os.Error 
 		}
 	}
 	return nil
+}
+
+func Arg_ParseTuple(args *Tuple, format string, values ...interface{}) os.Error {
+	if args == nil {
+		return fmt.Errorf("Arg_ParseTuple: args was nil")
+	}
+
+	cValues, err := packValues(values)
+	if err != nil {
+		return nil
+	}
+
+	f := C.CString(format)
+	defer C.free(unsafe.Pointer(f))
+
+	ret := C.doParseTuple(c(args), f, &cValues[0], C.int(len(cValues)))
+	if ret == 0 {
+		return exception()
+	}
+
+	return unpackValues(cValues, values)
+}
+
+func Arg_ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string, values ...interface{}) os.Error {
+	if args == nil {
+		return fmt.Errorf("Arg_ParseTuple: args was nil")
+	}
+
+	cValues, err := packValues(values)
+	if err != nil {
+		return nil
+	}
+
+	f := C.CString(format)
+	defer C.free(unsafe.Pointer(f))
+
+	klist := make([]*C.char, len(kwlist)+1)
+
+	for i, k := range kwlist {
+		klist[i] = C.CString(k)
+		defer C.free(unsafe.Pointer(klist[i]))
+	}
+
+	ret := C.doParseTupleKwds(c(args), c(kw), f, &klist[0], &cValues[0], C.int(len(cValues)))
+	if ret == 0 {
+		return exception()
+	}
+
+	return unpackValues(cValues, values)
 }
 
 func BuildValue(format string, values ...interface{}) (Object, os.Error) {
