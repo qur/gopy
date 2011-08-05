@@ -475,7 +475,7 @@ func (c *Class) Create() (*Type, os.Error) {
 			}
 			ctxt.mp_get = f
 		case "PyMapSet":
-			err := methSigMatches(t, func(k,v Object) os.Error(nil))
+			err := methSigMatches(t, func(k, v Object) os.Error(nil))
 			if err != nil {
 				return nil, fmt.Errorf("%s: %s", fn, err)
 			}
