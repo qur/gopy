@@ -153,11 +153,15 @@ func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	field := fields[idx]
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
+	var o Object
+
 	if field.Type == otyp {
-		return unsafe.Pointer(c(*(*Object)(item)))
+		o = *(*Object)(item)
+	} else {
+		o = unsafe.Unreflect(field.Type, item).(Object)
 	}
 
-	o := unsafe.Unreflect(field.Type, item).(Object)
+	o.Incref()
 	return unsafe.Pointer(c(o))
 }
 
