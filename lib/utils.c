@@ -219,7 +219,7 @@ static PyObject *objmemb_get(PyGoObjMember *self, PyObject *obj, PyObject *type)
 }
 
 static int objmemb_set(PyGoObjMember *self, PyObject *obj, PyObject *value) {
-    return goClassObjSet(obj, self->field);
+    return goClassObjSet(obj, self->field, value);
 }
 
 static PyObject *objmemb_doc(PyGoObjMember *self, void *closure) {
