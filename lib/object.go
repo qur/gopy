@@ -60,8 +60,20 @@ func (obj *BaseObject) Type() *Type {
 	return newType((*C.PyObject)(unsafe.Pointer(o)))
 }
 
+func Decref(obj Object) {
+	if obj != nil {
+		C.decref(c(obj))
+	}
+}
+
 func (obj *BaseObject) Decref() {
 	C.decref(c(obj))
+}
+
+func Incref(obj Object) {
+	if obj != nil {
+		C.incref(c(obj))
+	}
 }
 
 func (obj *BaseObject) Incref() {
