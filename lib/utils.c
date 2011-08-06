@@ -293,6 +293,87 @@ PyObject *newObjMember(int idx, char *doc) {
     return (PyObject *)self;
 }
 
+typedef struct {
+    PyObject_HEAD
+    char *doc;
+    int field;
+} PyGoNatMember;
+
+static PyObject *natmemb_get(PyGoNatMember *self, PyObject *obj, PyObject *type) {
+    return goClassNatGet(obj, self->field);
+}
+
+static int natmemb_set(PyGoNatMember *self, PyObject *obj, PyObject *value) {
+    return goClassNatSet(obj, self->field, value);
+}
+
+static PyObject *natmemb_doc(PyGoNatMember *self, void *closure) {
+    return PyString_FromString(self->doc);
+}
+
+static PyGetSetDef natmemb_getset[] = {
+    {"__doc__", (getter)natmemb_doc},
+    {NULL}
+};
+
+static PyTypeObject goNatMemberType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "GoNatMember",             /*tp_name*/
+    sizeof(PyGoNatMember),     /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    0,                         /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "GoNatMember objects",     /* tp_doc */
+    0,                         /* tp_traverse */
+    0,                         /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    0,                         /* tp_methods */
+    0,                         /* tp_members */
+    natmemb_getset,            /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    (descrgetfunc)natmemb_get, /* tp_descr_get */
+    (descrsetfunc)natmemb_set, /* tp_descr_set */
+};
+static int goNatMemberInit = 0;
+
+PyObject *newNatMember(int idx, char *doc) {
+    PyGoNatMember *self;
+
+    if (!goNatMemberInit) {
+        goNatMemberType.tp_new = PyType_GenericNew;
+        if (PyType_Ready(&goNatMemberType) < 0) return NULL;
+        goNatMemberInit = 1;
+    }
+
+    self = (PyGoNatMember *)goNatMemberType.tp_alloc(&goNatMemberType, 0);
+
+    if (self != NULL) {
+        self->doc   = doc;
+        self->field = idx;
+    }
+
+    return (PyObject *)self;
+}
+
 PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
     PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
 

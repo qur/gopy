@@ -201,6 +201,44 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	return -1
 }
 
+//export goClassNatGet
+func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
+	field := fields[idx]
+	item := unsafe.Pointer(uintptr(obj) + field.Offset)
+
+	switch field.Type.Kind() {
+	case reflect.Int:
+		i := (*int)(item)
+		return unsafe.Pointer(C.PyInt_FromLong(C.long(*i)))
+	}
+
+	raise(fmt.Errorf("Not Implemented"))
+	return nil
+}
+
+//export goClassNatSet
+func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
+	field := fields[idx]
+	item := unsafe.Pointer(uintptr(obj) + field.Offset)
+
+	// This is the new value we are being asked to set
+	value := newBaseObject((*C.PyObject)(obj2)).actual()
+
+	switch field.Type.Kind() {
+	case reflect.Int:
+		v := int(C.PyInt_AsLong(c(value)))
+		if exceptionRaised() {
+			return -1
+		}
+		i := (*int)(item)
+		*i = v
+		return 0
+	}
+
+	raise(fmt.Errorf("Not Implemented"))
+	return -1
+}
+
 func getClassContext(obj unsafe.Pointer) *C.ClassContext {
 	o := (*C.PyObject)(obj)
 	return (*C.ClassContext)(unsafe.Pointer(o.ob_type.tp_methods))
@@ -453,6 +491,23 @@ func registerField(field reflect.StructField) C.int {
 	return C.int(len(fields) - 1)
 }
 
+var exportable = map[reflect.Kind]bool{
+	reflect.Bool: true,
+	reflect.Int: true,
+	reflect.Int8: true,
+	reflect.Int16: true,
+	reflect.Int32: true,
+	reflect.Int64: true,
+	reflect.Uint: true,
+	reflect.Uint8: true,
+	reflect.Uint16: true,
+	reflect.Uint32: true,
+	reflect.Uint64: true,
+	reflect.Uintptr: true,
+	reflect.Float32: true,
+	reflect.Float64: true,
+}
+
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
 func (c *Class) Create() (*Type, os.Error) {
@@ -494,41 +549,13 @@ func (c *Class) Create() (*Type, os.Error) {
 			C.setTypeAttr(pyType, s, C.newObjMember(registerField(field), d))
 			continue
 		}
-		fmt.Printf("... go name: %s\n", field.Name)
-		fmt.Printf("    py name: %s\n", field.Tag.Get("Py"))
-		fmt.Printf("    py doc:  %s\n", field.Tag.Get("PyDoc"))
-		switch field.Type.Kind() {
-		case reflect.Bool:
-			fmt.Printf(" - bool instance - \n")
-		case reflect.Int:
-			fmt.Printf(" - int instance - \n")
-		case reflect.Int8:
-			fmt.Printf(" - int8 instance - \n")
-		case reflect.Int16:
-			fmt.Printf(" - int16 instance - \n")
-		case reflect.Int32:
-			fmt.Printf(" - int32 instance - \n")
-		case reflect.Int64:
-			fmt.Printf(" - int64 instance - \n")
-		case reflect.Uint:
-			fmt.Printf(" - uint instance - \n")
-		case reflect.Uint8:
-			fmt.Printf(" - uint8 instance - \n")
-		case reflect.Uint16:
-			fmt.Printf(" - uint16 instance - \n")
-		case reflect.Uint32:
-			fmt.Printf(" - uint32 instance - \n")
-		case reflect.Uint64:
-			fmt.Printf(" - uint64 instance - \n")
-		case reflect.Uintptr:
-			fmt.Printf(" - uintptr instance - \n")
-		case reflect.Float32:
-			fmt.Printf(" - float32 instance - \n")
-		case reflect.Float64:
-			fmt.Printf(" - float64 instance - \n")
-		default:
+		if !exportable[field.Type.Kind()] {
 			return nil, fmt.Errorf("Cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 		}
+		s := C.CString(pyname)
+		defer C.free(unsafe.Pointer(s))
+		d := C.CString(pydoc)
+		C.setTypeAttr(pyType, s, C.newNatMember(registerField(field), d))
 	}
 
 	props := make(map[string]prop)

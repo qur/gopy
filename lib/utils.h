@@ -38,6 +38,7 @@ extern PyObject *doBuildValue(char *fmt, ArgValue values[], int c);
 
 extern PyObject *newMethod(char *name, void *func);
 extern PyObject *newObjMember(int idx, char *doc);
+extern PyObject *newNatMember(int idx, char *doc);
 extern PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set);
 
 extern void setClassContext(PyTypeObject *type, ClassContext *ctxt);

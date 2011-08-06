@@ -26,6 +26,10 @@ func (e *Error) String() string {
 	return fmt.Sprintf("<TYPE>: %s", e.msg)
 }
 
+func exceptionRaised() bool {
+	return C.PyErr_Occurred() != nil
+}
+
 func exception() os.Error {
 	if C.PyErr_Occurred() == nil {
 		return nil
