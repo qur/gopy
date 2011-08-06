@@ -15,6 +15,10 @@ package py
 //     }
 //     ret = PyType_Ready(o);
 //     if (ret == 0) {
+//         // We don't use tp_methods, and it is read when calling PyType_Ready
+//         // - so we use it to hide a classContext struct.  The classContext
+//         // starts with a NULL pointer just in case, so it looks like an
+//         // empty methods list if Python does try to process it.
 //         o->tp_methods = calloc(1, sizeof(ClassContext));
 //     }
 //     return ret;
@@ -78,6 +82,8 @@ type Class struct {
 	New     func(*Class, *Tuple, *Dict) (Object, os.Error)
 }
 
+var otyp = reflect.TypeOf(new(Object)).Elem()
+
 //export callClassMethod
 func callClassMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
@@ -140,6 +146,59 @@ func getClassProperty(obj, closure unsafe.Pointer) unsafe.Pointer {
 	}
 
 	return unsafe.Pointer(c(ret))
+}
+
+//export goClassObjGet
+func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
+	field := fields[idx]
+	item := unsafe.Pointer(uintptr(obj) + field.Offset)
+
+	if field.Type == otyp {
+		return unsafe.Pointer(c(*(*Object)(item)))
+	}
+
+	o := unsafe.Unreflect(field.Type, item).(Object)
+	return unsafe.Pointer(c(o))
+}
+
+//export goClassObjSet
+func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
+	field := fields[idx]
+	item := unsafe.Pointer(uintptr(obj) + field.Offset)
+
+	// This is the new value we are being asked to set
+	value := newBaseObject((*C.PyObject)(obj2)).actual()
+
+	// Special case for Object fields, we don't need reflect for these.  We have
+	// to be careful with refcounts, as decref could invoke desctructor code
+	// etc.
+	if field.Type == otyp {
+		o := (*Object)(item)
+		tmp := *o
+		Incref(value)
+		*o = value
+		Decref(tmp)
+		return 0
+	}
+
+	vt := reflect.TypeOf(value)
+	o := unsafe.Unreflect(reflect.PtrTo(field.Type), unsafe.Pointer(&item))
+	ov := reflect.ValueOf(o).Elem()
+
+	// If the value is assignable to the field, then we do it, with the same
+	// refcount dance as above.
+	if vt.AssignableTo(field.Type) {
+		tmp := ov.Interface().(Object)
+		Incref(value)
+		ov.Set(reflect.ValueOf(value))
+		Decref(tmp)
+		return 0
+	}
+
+	// The given value wasn't assignable to the field - raise an error
+	tn := ov.Type().Elem().Name()
+	raise(TypeError("Cannot assign '%T' to '*%v'", value, tn))
+	return -1
 }
 
 func getClassContext(obj unsafe.Pointer) *C.ClassContext {
@@ -387,6 +446,13 @@ func (class *Class) Alloc(n int64) (Object, os.Error) {
 	return newBaseObject(obj).actual(), nil
 }
 
+var fields []reflect.StructField
+
+func registerField(field reflect.StructField) C.int {
+	fields = append(fields, field)
+	return C.int(len(fields) - 1)
+}
+
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
 func (c *Class) Create() (*Type, os.Error) {
@@ -408,11 +474,62 @@ func (c *Class) Create() (*Type, os.Error) {
 	// Get the context
 	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
 
-	// We don't use tp_methods, and it is read when calling PyType_Ready - so we
-	// use it to hide a classContext struct.  The classContext starts with a
-	// NULL pointer just in case, so it looks like an empty methods list if
-	// Python does try to process it.
-	pyType.tp_methods = (*C.struct_PyMethodDef)(unsafe.Pointer(ctxt))
+	btyp := typ.Elem()
+	for i := 0; i < btyp.NumField(); i++ {
+		field := btyp.Field(i)
+		pyname := field.Tag.Get("Py")
+		pydoc := field.Tag.Get("PyDoc")
+		if pyname == "" && pydoc == "" {
+			continue
+		}
+		if pyname == "" {
+			pyname = field.Name
+		}
+		if field.Type.Implements(otyp) {
+			// field is some type of object, so we can use the generic object
+			// member get/set code.
+			s := C.CString(pyname)
+			defer C.free(unsafe.Pointer(s))
+			d := C.CString(pydoc)
+			C.setTypeAttr(pyType, s, C.newObjMember(registerField(field), d))
+			continue
+		}
+		fmt.Printf("... go name: %s\n", field.Name)
+		fmt.Printf("    py name: %s\n", field.Tag.Get("Py"))
+		fmt.Printf("    py doc:  %s\n", field.Tag.Get("PyDoc"))
+		switch field.Type.Kind() {
+		case reflect.Bool:
+			fmt.Printf(" - bool instance - \n")
+		case reflect.Int:
+			fmt.Printf(" - int instance - \n")
+		case reflect.Int8:
+			fmt.Printf(" - int8 instance - \n")
+		case reflect.Int16:
+			fmt.Printf(" - int16 instance - \n")
+		case reflect.Int32:
+			fmt.Printf(" - int32 instance - \n")
+		case reflect.Int64:
+			fmt.Printf(" - int64 instance - \n")
+		case reflect.Uint:
+			fmt.Printf(" - uint instance - \n")
+		case reflect.Uint8:
+			fmt.Printf(" - uint8 instance - \n")
+		case reflect.Uint16:
+			fmt.Printf(" - uint16 instance - \n")
+		case reflect.Uint32:
+			fmt.Printf(" - uint32 instance - \n")
+		case reflect.Uint64:
+			fmt.Printf(" - uint64 instance - \n")
+		case reflect.Uintptr:
+			fmt.Printf(" - uintptr instance - \n")
+		case reflect.Float32:
+			fmt.Printf(" - float32 instance - \n")
+		case reflect.Float64:
+			fmt.Printf(" - float64 instance - \n")
+		default:
+			return nil, fmt.Errorf("Cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
+		}
+	}
 
 	props := make(map[string]prop)
 

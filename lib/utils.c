@@ -208,6 +208,87 @@ PyObject *newMethod(char *name, void *func) {
     return (PyObject *)self;
 }
 
+typedef struct {
+    PyObject_HEAD
+    char *doc;
+    int field;
+} PyGoObjMember;
+
+static PyObject *objmemb_get(PyGoObjMember *self, PyObject *obj, PyObject *type) {
+    return goClassObjGet(obj, self->field);
+}
+
+static int objmemb_set(PyGoObjMember *self, PyObject *obj, PyObject *value) {
+    return goClassObjSet(obj, self->field);
+}
+
+static PyObject *objmemb_doc(PyGoObjMember *self, void *closure) {
+    return PyString_FromString(self->doc);
+}
+
+static PyGetSetDef objmemb_getset[] = {
+    {"__doc__", (getter)objmemb_doc},
+    {NULL}
+};
+
+static PyTypeObject goObjMemberType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "GoObjMember",             /*tp_name*/
+    sizeof(PyGoObjMember),     /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    0,                         /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "GoObjMember objects",     /* tp_doc */
+    0,                         /* tp_traverse */
+    0,                         /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    0,                         /* tp_methods */
+    0,                         /* tp_members */
+    objmemb_getset,            /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    (descrgetfunc)objmemb_get, /* tp_descr_get */
+    (descrsetfunc)objmemb_set, /* tp_descr_set */
+};
+static int goObjMemberInit = 0;
+
+PyObject *newObjMember(int idx, char *doc) {
+    PyGoObjMember *self;
+
+    if (!goObjMemberInit) {
+        goObjMemberType.tp_new = PyType_GenericNew;
+        if (PyType_Ready(&goObjMemberType) < 0) return NULL;
+        goObjMemberInit = 1;
+    }
+
+    self = (PyGoObjMember *)goObjMemberType.tp_alloc(&goObjMemberType, 0);
+
+    if (self != NULL) {
+        self->doc   = doc;
+        self->field = idx;
+    }
+
+    return (PyObject *)self;
+}
+
 PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
     PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
 
