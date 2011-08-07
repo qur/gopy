@@ -619,7 +619,7 @@ var (
 	pyVoidFunc        = (func())(nil)
 	pyReprFunc        = func() string(nil)
 	pyLenFunc         = func() int64(nil)
-	pyInquiryFunc     = func() int(nil)
+	pyInquiryFunc     = func() (bool, os.Error)(nil)
 	pyUnaryFunc       = func() (Object, os.Error)(nil)
 	pyBinaryFunc      = func(Object) (Object, os.Error)(nil)
 	pyTernaryFunc     = func(a, b Object) (Object, os.Error)(nil)
