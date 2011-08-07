@@ -37,5 +37,8 @@ func (i *Int) Int() int {
 }
 
 func (i *Int) String() string {
+	if i == nil {
+		return "<nil>"
+	}
 	return fmt.Sprintf("%v", i.Int())
 }

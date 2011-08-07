@@ -110,5 +110,8 @@ func (t *Tuple) Slice() []Object {
 }
 
 func (t *Tuple) String() string {
+	if t == nil {
+		return "<nil>"
+	}
 	return fmt.Sprintf("%v", t.Slice())
 }

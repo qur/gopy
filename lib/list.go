@@ -116,5 +116,8 @@ func (l *List) Slice() []Object {
 }
 
 func (l *List) String() string {
+	if l == nil {
+		return "<nil>"
+	}
 	return fmt.Sprintf("%v", l.Slice())
 }

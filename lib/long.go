@@ -36,6 +36,9 @@ func (l *Long) Int64() int64 {
 	return int64(C.PyLong_AsLongLong(c(l)))
 }
 
-func (i *Long) String() string {
-	return fmt.Sprintf("%v", i.Int64())
+func (l *Long) String() string {
+	if l == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%v", l.Int64())
 }

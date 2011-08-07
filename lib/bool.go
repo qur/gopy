@@ -46,5 +46,8 @@ func (b *Bool) Bool() bool {
 }
 
 func (b *Bool) String() string {
+	if b == nil {
+		return "<nil>"
+	}
 	return fmt.Sprintf("%v", b.Bool())
 }

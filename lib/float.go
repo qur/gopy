@@ -52,5 +52,8 @@ func (f *Float) Float64() float64 {
 }
 
 func (f *Float) String() string {
+	if f == nil {
+		return "<nil>"
+	}
 	return fmt.Sprintf("%v", f.Float64())
 }

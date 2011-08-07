@@ -185,5 +185,8 @@ func (d *Dict) MapString() (map[string]Object, os.Error) {
 }
 
 func (d *Dict) String() string {
+	if d == nil {
+		return "<nil>"
+	}
 	return fmt.Sprintf("%v", d.Map())
 }

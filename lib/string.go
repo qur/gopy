@@ -36,6 +36,9 @@ func String_FromString(s string) (*String, os.Error) {
 }
 
 func (s *String) String() string {
+	if s == nil {
+		return "<nil>"
+	}
 	ret := C.PyString_AsString(c(s))
 	if ret == nil {
 		panic(exception())
