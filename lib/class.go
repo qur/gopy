@@ -605,6 +605,52 @@ var exportable = map[reflect.Kind]bool{
 	reflect.Float64: true,
 }
 
+type goMethod struct {
+	field string
+	sig   interface{}
+}
+
+// Function signatures for methods that implement Python methods.  Note, the
+// first argument is always the receiver, and is not included in these
+// signatures (hence the names are one greater than the number of arguments
+// taken).
+var (
+	pyInitFunc        = func(*Tuple, *Dict) os.Error(nil)
+	pyVoidFunc        = (func())(nil)
+	pyReprFunc        = func() string(nil)
+	pyLenFunc         = func() int64(nil)
+	pyUnaryFunc       = func() (Object, os.Error)(nil)
+	pyBinaryFunc      = func(Object) (Object, os.Error)(nil)
+	pyTernaryFunc     = func(a, b Object) (Object, os.Error)(nil)
+	pyBinaryCallFunc  = func(*Tuple) (Object, os.Error)(nil)
+	pyTernaryCallFunc = func(*Tuple, *Dict) (Object, os.Error)(nil)
+	pyCompareFunc     = func(Object) (int, os.Error)(nil)
+	pyObjObjArgFunc   = func(a, b Object) os.Error(nil)
+)
+
+var methodMap = map[string]goMethod{
+	"PyDealloc": {"dealloc", pyVoidFunc},
+	"PyInit":    {"init", pyInitFunc},
+	"PyRepr":    {"repr", pyReprFunc},
+	"PyStr":     {"str", pyReprFunc},
+	"PyCall":    {"call", pyTernaryCallFunc},
+	"PyCompare": {"compare", pyCompareFunc},
+	"PyMapLen":  {"mp_len", pyLenFunc},
+	"PyMapGet":  {"mp_get", pyBinaryFunc},
+	"PyMapSet":  {"mp_set", pyObjObjArgFunc},
+}
+
+func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
+	t := reflect.TypeOf(ctxt).Elem()
+	f, ok := t.FieldByName(name)
+	if !ok {
+		panic("Tried to set a non-existant context field")
+	}
+	base := uintptr(unsafe.Pointer(ctxt))
+	fptr := (*unsafe.Pointer)(unsafe.Pointer(base + f.Offset))
+	*fptr = fn
+}
+
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
 func (c *Class) Create() (*Type, os.Error) {
@@ -665,62 +711,17 @@ func (c *Class) Create() (*Type, os.Error) {
 		t := m.Func.Type()
 		f := unsafe.Pointer(m.Func.Pointer())
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
+		meth, ok := methodMap[m.Name]
+		if ok {
+			err := methSigMatches(t, meth.sig)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
+			ctxtSet(ctxt, meth.field, f)
+			continue
+		}
 		parts := strings.SplitN(m.Name, "_", 2)
 		switch parts[0] {
-		case "PyDealloc":
-			err := methSigMatches(t, (func())(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.dealloc = f
-		case "PyInit":
-			err := methSigMatches(t, func(a *Tuple, k *Dict) os.Error(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.init = f
-		case "PyRepr":
-			err := methSigMatches(t, func() string(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.repr = f
-		case "PyStr":
-			err := methSigMatches(t, func() string(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.str = f
-		case "PyCall":
-			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, os.Error)(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.call = f
-		case "PyCompare":
-			err := methSigMatches(t, func(Object) (int, os.Error)(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.compare = f
-		case "PyMapLen":
-			err := methSigMatches(t, func() int64(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.mp_len = f
-		case "PyMapGet":
-			err := methSigMatches(t, func(Object) (Object, os.Error)(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.mp_get = f
-		case "PyMapSet":
-			err := methSigMatches(t, func(k, v Object) os.Error(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxt.mp_set = f
 		case "Py":
 			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, os.Error)(nil))
 			if err != nil {
