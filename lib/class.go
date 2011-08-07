@@ -13,6 +13,9 @@ package py
 //     if (o->tp_new == NULL) {
 //         o->tp_new = PyType_GenericNew;
 //     }
+//     if (o->tp_flags & Py_TPFLAGS_HAVE_GC) {
+//         enableClassGc(o);
+//     }
 //     ret = PyType_Ready(o);
 //     if (ret == 0) {
 //         // We don't use tp_methods, and it is read when calling PyType_Ready
@@ -27,6 +30,10 @@ package py
 //     return PyDict_SetItemString(tp->tp_dict, name, o);
 // }
 // static inline PyObject *typeAlloc(PyTypeObject *type, Py_ssize_t n) { return type->tp_alloc(type, n); }
+// static inline int doVisit(PyObject *o, void *v, void *a) {
+//     visitproc visit = v;
+//     return visit(o, a);
+// }
 import "C"
 
 import (
@@ -35,6 +42,10 @@ import (
 	"reflect"
 	"strings"
 	"unsafe"
+)
+
+const (
+	TPFLAGS_HAVE_GC = uint32(C.Py_TPFLAGS_HAVE_GC)
 )
 
 // A Class struct instance is used to define a Python class that has been
@@ -75,7 +86,7 @@ import (
 //
 type Class struct {
 	Name    string
-	Flags   int
+	Flags   uint32
 	Doc     string
 	Type    *Type
 	Pointer interface{}
@@ -241,6 +252,77 @@ func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 
 	raise(fmt.Errorf("Not Implemented"))
 	return -1
+}
+
+//export goClassTraverse
+func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
+	// Get the Python type object
+	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
+
+	class, ok := types[pyType]
+	if !ok {
+		raise(fmt.Errorf("TypeError: Not a recognised type"))
+		return -1
+	}
+
+	typ := unsafe.Typeof(class.Pointer)
+	st := reflect.TypeOf(unsafe.Unreflect(typ, unsafe.Pointer(&obj))).Elem()
+
+	for i := 0; i < st.NumField(); i++ {
+		field := st.Field(i)
+		if !field.Type.AssignableTo(otyp) {
+			continue
+		}
+		v := unsafe.Pointer(uintptr(obj) + field.Offset)
+		var o Object
+		if field.Type == otyp {
+			o = *(*Object)(v)
+		} else {
+			o = *(**BaseObject)(v)
+		}
+		ret := C.doVisit(c(o), visit, arg)
+		if ret != 0 {
+			return int(ret)
+		}
+	}
+
+	return 0
+}
+
+//export goClassClear
+func goClassClear(obj unsafe.Pointer) int {
+	// Get the Python type object
+	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
+
+	class, ok := types[pyType]
+	if !ok {
+		raise(fmt.Errorf("TypeError: Not a recognised type"))
+		return -1
+	}
+
+	typ := unsafe.Typeof(class.Pointer)
+	st := reflect.TypeOf(unsafe.Unreflect(typ, unsafe.Pointer(&obj))).Elem()
+
+	for i := 0; i < st.NumField(); i++ {
+		field := st.Field(i)
+		if !field.Type.AssignableTo(otyp) {
+			continue
+		}
+		v := unsafe.Pointer(uintptr(obj) + field.Offset)
+		if field.Type == otyp {
+			o := (*Object)(v)
+			tmp := *o
+			*o = nil
+			Decref(tmp)
+		} else {
+			o := (**BaseObject)(v)
+			tmp := *o
+			*o = nil
+			Decref(tmp)
+		}
+	}
+
+	return 0
 }
 
 func getClassContext(obj unsafe.Pointer) *C.ClassContext {
@@ -488,6 +570,14 @@ func (class *Class) Alloc(n int64) (Object, os.Error) {
 	return newBaseObject(obj).actual(), nil
 }
 
+func Clear(obj Object) os.Error {
+	ret := goClassClear(unsafe.Pointer(c(obj)))
+	if ret < 0 {
+		return exception()
+	}
+	return nil
+}
+
 var fields []reflect.StructField
 
 func registerField(field reflect.StructField) C.int {
@@ -520,7 +610,7 @@ func (c *Class) Create() (*Type, os.Error) {
 	pyType := C.newType()
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.long(c.Flags)
 
 	if C.typeReady(pyType) < 0 {
 		C.free(unsafe.Pointer(pyType.tp_name))

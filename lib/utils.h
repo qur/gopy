@@ -41,6 +41,8 @@ extern PyObject *newObjMember(int idx, char *doc);
 extern PyObject *newNatMember(int idx, char *doc);
 extern PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set);
 
+extern void enableClassGc(PyTypeObject *type);
+
 extern void setClassContext(PyTypeObject *type, ClassContext *ctxt);
 
 extern PyTypeObject *getBasePyType(PyObject *o);

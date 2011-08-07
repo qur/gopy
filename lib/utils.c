@@ -399,6 +399,11 @@ PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
     return PyDescr_NewGetSet(type, gsp);
 }
 
+void enableClassGc(PyTypeObject *type) {
+    type->tp_traverse = (traverseproc) goClassTraverse;
+    type->tp_clear    = (inquiry)      goClassClear;
+}
+
 void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     ctxt->zero = NULL;
 
