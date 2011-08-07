@@ -619,6 +619,7 @@ var (
 	pyVoidFunc        = (func())(nil)
 	pyReprFunc        = func() string(nil)
 	pyLenFunc         = func() int64(nil)
+	pyInquiryFunc     = func() int(nil)
 	pyUnaryFunc       = func() (Object, os.Error)(nil)
 	pyBinaryFunc      = func(Object) (Object, os.Error)(nil)
 	pyTernaryFunc     = func(a, b Object) (Object, os.Error)(nil)
@@ -629,15 +630,53 @@ var (
 )
 
 var methodMap = map[string]goMethod{
-	"PyDealloc": {"dealloc", pyVoidFunc},
-	"PyInit":    {"init", pyInitFunc},
-	"PyRepr":    {"repr", pyReprFunc},
-	"PyStr":     {"str", pyReprFunc},
-	"PyCall":    {"call", pyTernaryCallFunc},
-	"PyCompare": {"compare", pyCompareFunc},
-	"PyMapLen":  {"mp_len", pyLenFunc},
-	"PyMapGet":  {"mp_get", pyBinaryFunc},
-	"PyMapSet":  {"mp_set", pyObjObjArgFunc},
+	"PyDealloc":        {"dealloc", pyVoidFunc},
+	"PyInit":           {"init", pyInitFunc},
+	"PyRepr":           {"repr", pyReprFunc},
+	"PyStr":            {"str", pyReprFunc},
+	"PyCall":           {"call", pyTernaryCallFunc},
+	"PyCompare":        {"compare", pyCompareFunc},
+	"PyMapLen":         {"mp_len", pyLenFunc},
+	"PyMapGet":         {"mp_get", pyBinaryFunc},
+	"PyMapSet":         {"mp_set", pyObjObjArgFunc},
+	"PyNumAdd":         {"nb_add", pyBinaryFunc},
+	"PyNumSubtract":    {"nb_subtract", pyBinaryFunc},
+	"PyNumMultiply":    {"nb_multiply", pyBinaryFunc},
+	"PyNumDivide":      {"nb_divide", pyBinaryFunc},
+	"PyNumRemainder":   {"nb_remainder", pyBinaryFunc},
+	"PyNumDivmod":      {"nb_divmod", pyBinaryFunc},
+	"PyNumPower":       {"nb_power", pyTernaryFunc},
+	"PyNumNegative":    {"nb_negative", pyUnaryFunc},
+	"PyNumPositive":    {"nb_positive", pyUnaryFunc},
+	"PyNumAbsolute":    {"nb_absolute", pyUnaryFunc},
+	"PyNumNonzero":     {"nb_nonzero", pyInquiryFunc},
+	"PyNumInvert":      {"nb_invert", pyUnaryFunc},
+	"PyNumLshift":      {"nb_lshift", pyBinaryFunc},
+	"PyNumRshift":      {"nb_rshift", pyBinaryFunc},
+	"PyNumAnd":         {"nb_and", pyBinaryFunc},
+	"PyNumXor":         {"nb_xor", pyBinaryFunc},
+	"PyNumOr":          {"nb_or", pyBinaryFunc},
+	"PyNumInt":         {"nb_int", pyUnaryFunc},
+	"PyNumLong":        {"nb_long", pyUnaryFunc},
+	"PyNumFloat":       {"nb_float", pyUnaryFunc},
+	"PyNumOct":         {"nb_oct", pyUnaryFunc},
+	"PyNumHex":         {"nb_hex", pyUnaryFunc},
+	"PyNumIpAdd":       {"nb_ip_add", pyBinaryFunc},
+	"PyNumIpSubtract":  {"nb_ip_subtract", pyBinaryFunc},
+	"PyNumIpMultiply":  {"nb_ip_multiply", pyBinaryFunc},
+	"PyNumIpDivide":    {"nb_ip_divide", pyBinaryFunc},
+	"PyNumIpRemainder": {"nb_ip_remainder", pyBinaryFunc},
+	"PyNumIpPower":     {"nb_ip_power", pyTernaryFunc},
+	"PyNumIpLshift":    {"nb_ip_lshift", pyBinaryFunc},
+	"PyNumIpRshift":    {"nb_ip_rshift", pyBinaryFunc},
+	"PyNumIpAnd":       {"nb_ip_and", pyBinaryFunc},
+	"PyNumIpXor":       {"nb_ip_xor", pyBinaryFunc},
+	"PyNumIpOr":        {"nb_ip_or", pyBinaryFunc},
+	"PyNumFloorDiv":    {"nb_floordiv", pyBinaryFunc},
+	"PyNumTrueDiv":     {"nb_truediv", pyBinaryFunc},
+	"PyNumIpFloorDiv":  {"nb_ip_floordiv", pyBinaryFunc},
+	"PyNumIpTrueDiv":   {"nb_ip_truediv", pyBinaryFunc},
+	"PyNumIndex":       {"nb_index", pyUnaryFunc},
 }
 
 func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
@@ -649,6 +688,17 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 	base := uintptr(unsafe.Pointer(ctxt))
 	fptr := (*unsafe.Pointer)(unsafe.Pointer(base + f.Offset))
 	*fptr = fn
+	parts := strings.Split(name, "_")
+	if len(parts) > 1 {
+		bt := reflect.TypeOf(ctxt.bits)
+		bf, ok := bt.FieldByName(parts[0])
+		if !ok {
+			return
+		}
+		base := uintptr(unsafe.Pointer(&ctxt.bits))
+		bptr := (*int)(unsafe.Pointer(base + bf.Offset))
+		*bptr = 1
+	}
 }
 
 // Create creates and returns a pointer to a PyTypeObject that is the Python
@@ -659,7 +709,7 @@ func (c *Class) Create() (*Type, os.Error) {
 	pyType := C.newType()
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.long(c.Flags)
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.Py_TPFLAGS_CHECKTYPES | C.long(c.Flags)
 
 	if C.typeReady(pyType) < 0 {
 		C.free(unsafe.Pointer(pyType.tp_name))

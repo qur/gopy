@@ -416,12 +416,55 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     if (ctxt->call)    type->tp_call    = (ternaryfunc) callGoClass;
     if (ctxt->compare) type->tp_compare = (cmpfunc)     compareGoClass;
 
-    if (ctxt->mp_len || ctxt->mp_get || ctxt->mp_set) {
+    if (ctxt->bits.mp) {
         PyMappingMethods *m = &ctxt->mp_meth;
         type->tp_as_mapping = m;
         if (ctxt->mp_len) m->mp_length        = (lenfunc)       mapLenGoClass;
         if (ctxt->mp_get) m->mp_subscript     = (binaryfunc)    mapGetGoClass;
         if (ctxt->mp_set) m->mp_ass_subscript = (objobjargproc) mapSetGoClass;
+    }
+
+    if (ctxt->bits.nb) {
+        PyNumberMethods *m = &ctxt->nb_meth;
+        type->tp_as_number = m;
+        if (ctxt->nb_add)          m->nb_add                  = (binaryfunc)  goClassNumAdd;
+        if (ctxt->nb_subtract)     m->nb_subtract             = (binaryfunc)  goClassNumSubtract;
+        if (ctxt->nb_multiply)     m->nb_multiply             = (binaryfunc)  goClassNumMultiply;
+        if (ctxt->nb_divide)       m->nb_divide               = (binaryfunc)  goClassNumDivide;
+        if (ctxt->nb_remainder)    m->nb_remainder            = (binaryfunc)  goClassNumRemainder;
+        if (ctxt->nb_divmod)       m->nb_divmod               = (binaryfunc)  goClassNumDivmod;
+        if (ctxt->nb_power)        m->nb_power                = (ternaryfunc) goClassNumPower;
+        if (ctxt->nb_negative)     m->nb_negative             = (unaryfunc)   goClassNumNegative;
+        if (ctxt->nb_positive)     m->nb_positive             = (unaryfunc)   goClassNumPositive;
+        if (ctxt->nb_absolute)     m->nb_absolute             = (unaryfunc)   goClassNumAbsolute;
+        if (ctxt->nb_nonzero)      m->nb_nonzero              = (inquiry)     goClassNumNonzero;
+        if (ctxt->nb_invert)       m->nb_invert               = (unaryfunc)   goClassNumInvert;
+        if (ctxt->nb_lshift)       m->nb_lshift               = (binaryfunc)  goClassNumLshift;
+        if (ctxt->nb_rshift)       m->nb_rshift               = (binaryfunc)  goClassNumRshift;
+        if (ctxt->nb_and)          m->nb_and                  = (binaryfunc)  goClassNumAnd;
+        if (ctxt->nb_xor)          m->nb_xor                  = (binaryfunc)  goClassNumXor;
+        if (ctxt->nb_or)           m->nb_or                   = (binaryfunc)  goClassNumOr;
+        if (ctxt->nb_int)          m->nb_int                  = (unaryfunc)   goClassNumInt;
+        if (ctxt->nb_long)         m->nb_long                 = (unaryfunc)   goClassNumLong;
+        if (ctxt->nb_float)        m->nb_float                = (unaryfunc)   goClassNumFloat;
+        if (ctxt->nb_oct)          m->nb_oct                  = (unaryfunc)   goClassNumOct;
+        if (ctxt->nb_hex)          m->nb_hex                  = (unaryfunc)   goClassNumHex;
+        if (ctxt->nb_ip_add)       m->nb_inplace_add          = (binaryfunc)  goClassNumInplaceAdd;
+        if (ctxt->nb_ip_subtract)  m->nb_inplace_remainder    = (binaryfunc)  goClassNumInplaceSubtract;
+        if (ctxt->nb_ip_multiply)  m->nb_inplace_multiply     = (binaryfunc)  goClassNumInplaceMultiply;
+        if (ctxt->nb_ip_divide)    m->nb_inplace_divide       = (binaryfunc)  goClassNumInplaceDivide;
+        if (ctxt->nb_ip_remainder) m->nb_inplace_remainder    = (binaryfunc)  goClassNumInplaceRemainder;
+        if (ctxt->nb_ip_power)     m->nb_inplace_power        = (ternaryfunc) goClassNumInplacePower;
+        if (ctxt->nb_ip_lshift)    m->nb_inplace_lshift       = (binaryfunc)  goClassNumInplaceLshift;
+        if (ctxt->nb_ip_rshift)    m->nb_inplace_rshift       = (binaryfunc)  goClassNumInplaceRshift;
+        if (ctxt->nb_ip_and)       m->nb_inplace_and          = (binaryfunc)  goClassNumInplaceAnd;
+        if (ctxt->nb_ip_xor)       m->nb_inplace_xor          = (binaryfunc)  goClassNumInplaceXor;
+        if (ctxt->nb_ip_or)        m->nb_inplace_or           = (binaryfunc)  goClassNumInplaceOr;
+        if (ctxt->nb_floordiv)     m->nb_floor_divide         = (binaryfunc)  goClassNumFloorDivide;
+        if (ctxt->nb_truediv)      m->nb_true_divide          = (binaryfunc)  goClassNumTrueDivide;
+        if (ctxt->nb_ip_floordiv)  m->nb_inplace_floor_divide = (binaryfunc)  goClassNumInplaceFloorDivide;
+        if (ctxt->nb_ip_truediv)   m->nb_inplace_true_divide  = (binaryfunc)  goClassNumInplaceTrueDivide;
+        if (ctxt->nb_index)        m->nb_index                = (unaryfunc)   goClassNumIndex;
     }
 }
 

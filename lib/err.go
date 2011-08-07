@@ -89,6 +89,12 @@ func AttributeError(format string, args ...interface{}) os.Error {
 	return &Error{C.PyExc_AttributeError, nil, msg}
 }
 
+func NotImplemented(format string, args ...interface{}) os.Error {
+	msg := fmt.Sprintf(format, args...)
+	C.incref(C.PyExc_NotImplementedError)
+	return &Error{C.PyExc_NotImplementedError, nil, msg}
+}
+
 func int2Err(i C.int) os.Error {
 	if i < 0 {
 		return exception()

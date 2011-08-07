@@ -12,6 +12,7 @@ CGOFILES=\
 	arg.go \
 	err.go \
 	class.go \
+	class_number.go \
 	tuple.go \
 	int.go \
 	dict.go \
