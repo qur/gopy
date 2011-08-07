@@ -54,7 +54,10 @@ const (
 // Name should be the name of the type in Python, including the package name,
 // e.g. "test.MyClass"
 //
-// Flags and Doc are currently unused.
+// Flags is or'ed with Py_TPFLAGS_DEFAULT and passed through to the tp_flags
+// member
+//
+// Doc is currently unused.
 //
 // Type holds a Pointer to the Type instance for this class, this is filled in
 // by calling Create().
