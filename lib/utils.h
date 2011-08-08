@@ -14,19 +14,33 @@ typedef struct {
 } ArgValue;
 
 typedef struct {
+    // Protective NULL pointer
     void *zero;
-    void *dealloc;
-    void *init;
-    void *repr;
-    void *str;
+
+    // Standard Methods
     void *call;
     void *compare;
+    void *dealloc;
+    void *getattr;
+    void *getattro;
+    void *hash;
+    void *init;
+    void *iter;
+    void *iternext;
+    void *print;
+    void *repr;
+    void *richcmp;
+    void *setattr;
+    void *setattro;
+    void *str;
 
+    // Mapping Protocol
     int has_mp;
     void *mp_len;
     void *mp_get;
     void *mp_set;
 
+    // Number Protocol
     int has_nb;
     void *nb_add;
     void *nb_subtract;
@@ -67,6 +81,7 @@ typedef struct {
     void *nb_ip_truediv;
     void *nb_index;
 
+    // Sequence Protocol
     int has_sq;
     void *sq_length;
     void *sq_concat;
@@ -77,6 +92,8 @@ typedef struct {
     void *sq_ip_concat;
     void *sq_ip_repeat;
 
+    // The concrete Methods structs for the protocols (PyTypeObjects only store
+    // a pointer).
     PyMappingMethods  mp_meth;
     PyNumberMethods   nb_meth;
     PySequenceMethods sq_meth;

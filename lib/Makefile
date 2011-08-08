@@ -12,6 +12,8 @@ CGOFILES=\
 	arg.go \
 	err.go \
 	class.go \
+	class_standard.go \
+	class_mapping.go \
 	class_number.go \
 	class_sequence.go \
 	tuple.go \

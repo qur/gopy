@@ -204,7 +204,7 @@ PyObject *newMethod(char *name, void *func) {
     if (self != NULL) {
         self->func = func;
         self->meth.ml_name = name;
-        self->meth.ml_meth = (PyCFunction)callClassMethod;
+        self->meth.ml_meth = (PyCFunction)goClassCallMethod;
         self->meth.ml_flags = METH_VARARGS | METH_KEYWORDS;
         self->meth.ml_doc = "";
     }
@@ -386,11 +386,11 @@ PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
     gsp->closure = PyTuple_New(2);
 
     if (get != NULL) {
-        gsp->get = (getter)getClassProperty;
+        gsp->get = (getter)goClassGetProp;
     }
 
     if (set != NULL) {
-        gsp->set = (setter)setClassProperty;
+        gsp->set = (setter)goClassSetProp;
     }
 
     PyTuple_SetItem(gsp->closure, 0, PyCapsule_New(get, NULL, NULL));
@@ -407,21 +407,30 @@ void enableClassGc(PyTypeObject *type) {
 void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     ctxt->zero = NULL;
 
-    type->tp_new     = (newfunc)    newGoClass;
-    type->tp_dealloc = (destructor) deallocGoClass;
+    type->tp_new     = (newfunc)    goClassNew;
+    type->tp_dealloc = (destructor) goClassDealloc;
 
-    if (ctxt->init)    type->tp_init    = (initproc)    initGoClass;
-    if (ctxt->repr)    type->tp_repr    = (reprfunc)    reprGoClass;
-    if (ctxt->str)     type->tp_str     = (reprfunc)    strGoClass;
-    if (ctxt->call)    type->tp_call    = (ternaryfunc) callGoClass;
-    if (ctxt->compare) type->tp_compare = (cmpfunc)     compareGoClass;
+    if (ctxt->call)     type->tp_call     = (ternaryfunc)  goClassCall;
+    if (ctxt->compare)  type->tp_compare  = (cmpfunc)      goClassCompare;
+    //if (ctxt->getattr)  type->tp_getattr  = (getattrfunc)  goClassGetAttr;
+    //if (ctxt->getattro) type->tp_getattro = (getattrofunc) goClassGetAttrObj;
+    //if (ctxt->hash)     type->tp_hash     = (hashfunc)     goClassHash;
+    if (ctxt->init)     type->tp_init     = (initproc)     goClassInit;
+    //if (ctxt->iter)     type->tp_iter     = (getiterfunc)  goClassIter;
+    //if (ctxt->iternext) type->tp_iternext = (iternextfunc) goClassIterNext;
+    //if (ctxt->print)    type->tp_print    = (printfunc)    goClassPrint;
+    if (ctxt->repr)     type->tp_repr     = (reprfunc)     goClassRepr;
+    //if (ctxt->richcmp)  type->tp_richcmp  = (richcmpfunc)  goClassRichCmp;
+    //if (ctxt->setattr)  type->tp_setattr  = (setattrfunc)  goClassSetAttr;
+    //if (ctxt->setattro) type->tp_setattro = (setattrofunc) goClassSetAttrObj;
+    if (ctxt->str)      type->tp_str      = (reprfunc)     goClassStr;
 
     if (ctxt->has_mp) {
         PyMappingMethods *m = &ctxt->mp_meth;
         type->tp_as_mapping = m;
-        if (ctxt->mp_len) m->mp_length        = (lenfunc)       mapLenGoClass;
-        if (ctxt->mp_get) m->mp_subscript     = (binaryfunc)    mapGetGoClass;
-        if (ctxt->mp_set) m->mp_ass_subscript = (objobjargproc) mapSetGoClass;
+        if (ctxt->mp_len) m->mp_length        = (lenfunc)       goClassMapLen;
+        if (ctxt->mp_get) m->mp_subscript     = (binaryfunc)    goClassMapGet;
+        if (ctxt->mp_set) m->mp_ass_subscript = (objobjargproc) goClassMapSet;
     }
 
     if (ctxt->has_nb) {

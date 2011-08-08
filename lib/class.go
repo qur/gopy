@@ -98,8 +98,8 @@ type Class struct {
 
 var otyp = reflect.TypeOf(new(Object)).Elem()
 
-//export callClassMethod
-func callClassMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+//export goClassCallMethod
+func goClassCallMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -123,8 +123,8 @@ func callClassMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export setClassProperty
-func setClassProperty(obj, arg, closure unsafe.Pointer) int {
+//export goClassSetProp
+func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
@@ -144,8 +144,8 @@ func setClassProperty(obj, arg, closure unsafe.Pointer) int {
 	return 0
 }
 
-//export getClassProperty
-func getClassProperty(obj, closure unsafe.Pointer) unsafe.Pointer {
+//export goClassGetProp
+func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
@@ -333,8 +333,8 @@ func getClassContext(obj unsafe.Pointer) *C.ClassContext {
 	return (*C.ClassContext)(unsafe.Pointer(o.ob_type.tp_methods))
 }
 
-//export newGoClass
-func newGoClass(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
+//export goClassNew
+func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)(typ)
 
@@ -365,162 +365,6 @@ func newGoClass(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 
 	return unsafe.Pointer(c(obj))
-}
-
-//export deallocGoClass
-func deallocGoClass(obj unsafe.Pointer) {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	if ctxt.dealloc != nil {
-		// Turn the function into something we can call
-		f := (*func(unsafe.Pointer))(unsafe.Pointer(&ctxt.dealloc))
-
-		(*f)(obj)
-	} else {
-		(*BaseObject)(obj).Free()
-	}
-}
-
-//export initGoClass
-func initGoClass(obj, args, kwds unsafe.Pointer) int {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, *Tuple, *Dict) os.Error)(unsafe.Pointer(&ctxt.init))
-
-	// Get args and kwds ready to use, by turning them into pointers of the
-	// appropriate type
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kwds))
-
-	err := (*f)(obj, a, k)
-	if err != nil {
-		// Turn err into exception
-		return -1
-	}
-
-	return 0
-}
-
-//export reprGoClass
-func reprGoClass(obj unsafe.Pointer) unsafe.Pointer {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) string)(unsafe.Pointer(&ctxt.repr))
-
-	s := C.CString((*f)(obj))
-	defer C.free(unsafe.Pointer(s))
-
-	return unsafe.Pointer(C.PyString_FromString(s))
-}
-
-//export strGoClass
-func strGoClass(obj unsafe.Pointer) unsafe.Pointer {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) string)(unsafe.Pointer(&ctxt.str))
-
-	s := C.CString((*f)(obj))
-	defer C.free(unsafe.Pointer(s))
-
-	return unsafe.Pointer(C.PyString_FromString(s))
-}
-
-//export callGoClass
-func callGoClass(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, *Tuple, *Dict) (Object, os.Error))(unsafe.Pointer(&ctxt.call))
-
-	// Get args and kwds ready to use, by turning them into pointers of the
-	// appropriate type
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kwds))
-
-	ret, err := (*f)(obj, a, k)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
-}
-
-//export compareGoClass
-func compareGoClass(obj1, obj2 unsafe.Pointer) int {
-	// Get the class context
-	ctxt := getClassContext(obj1)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object) (int, os.Error))(unsafe.Pointer(&ctxt.compare))
-
-	o := newBaseObject((*C.PyObject)(obj2)).actual()
-
-	ret, err := (*f)(obj1, o)
-	if err != nil {
-		raise(err)
-		return -1
-	}
-
-	return ret
-}
-
-//export mapLenGoClass
-func mapLenGoClass(obj unsafe.Pointer) C.Py_ssize_t {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) int64)(unsafe.Pointer(&ctxt.mp_len))
-
-	return C.Py_ssize_t((*f)(obj))
-}
-
-//export mapGetGoClass
-func mapGetGoClass(obj, arg unsafe.Pointer) unsafe.Pointer {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object) (Object, os.Error))(unsafe.Pointer(&ctxt.mp_get))
-
-	key := newBaseObject((*C.PyObject)(arg)).actual()
-
-	ret, err := (*f)(obj, key)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
-}
-
-//export mapSetGoClass
-func mapSetGoClass(obj, arg1, arg2 unsafe.Pointer) int {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object, Object) os.Error)(unsafe.Pointer(&ctxt.mp_set))
-
-	key := newBaseObject((*C.PyObject)(arg1)).actual()
-	value := newBaseObject((*C.PyObject)(arg2)).actual()
-
-	err := (*f)(obj, key, value)
-	if err != nil {
-		raise(err)
-		return -1
-	}
-
-	return 0
 }
 
 type prop struct {
@@ -633,12 +477,22 @@ var (
 )
 
 var methodMap = map[string]goMethod{
-	"PyDealloc": {"dealloc", pyVoidFunc},
-	"PyInit":    {"init", pyInitFunc},
-	"PyRepr":    {"repr", pyReprFunc},
-	"PyStr":     {"str", pyReprFunc},
+	// Standard Methods
 	"PyCall":    {"call", pyTernaryCallFunc},
 	"PyCompare": {"compare", pyCompareFunc},
+	"PyDealloc": {"dealloc", pyVoidFunc},
+	//"PyGetAttr":    {"getattr", },
+	//"PyGetAttrObj": {"getattro", },
+	//"PyHash":       {"hash", },
+	"PyInit": {"init", pyInitFunc},
+	//"PyIter":       {"iter", },
+	//"PyIterNext":   {"iternext", },
+	//"PyPrint":      {"print", },
+	"PyRepr": {"repr", pyReprFunc},
+	//"PyRichCmp":    {"richcmp", },
+	//"PySetAttr":    {"setattr", },
+	//"PySetAttrObj": {"setattro", },
+	"PyStr": {"str", pyReprFunc},
 
 	// Mapping Protocol
 	"PyMapLen": {"mp_len", pyLenFunc},
