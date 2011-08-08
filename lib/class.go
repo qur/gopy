@@ -627,18 +627,25 @@ var (
 	pyTernaryCallFunc = func(*Tuple, *Dict) (Object, os.Error)(nil)
 	pyCompareFunc     = func(Object) (int, os.Error)(nil)
 	pyObjObjArgFunc   = func(a, b Object) os.Error(nil)
+	pySsizeArgFunc    = func(int64) (Object, os.Error)(nil)
+	pySsizeObjArgFunc = func(int64, Object) os.Error(nil)
+	pyObjObjFunc      = func(Object) (bool, os.Error)(nil)
 )
 
 var methodMap = map[string]goMethod{
-	"PyDealloc":        {"dealloc", pyVoidFunc},
-	"PyInit":           {"init", pyInitFunc},
-	"PyRepr":           {"repr", pyReprFunc},
-	"PyStr":            {"str", pyReprFunc},
-	"PyCall":           {"call", pyTernaryCallFunc},
-	"PyCompare":        {"compare", pyCompareFunc},
-	"PyMapLen":         {"mp_len", pyLenFunc},
-	"PyMapGet":         {"mp_get", pyBinaryFunc},
-	"PyMapSet":         {"mp_set", pyObjObjArgFunc},
+	"PyDealloc": {"dealloc", pyVoidFunc},
+	"PyInit":    {"init", pyInitFunc},
+	"PyRepr":    {"repr", pyReprFunc},
+	"PyStr":     {"str", pyReprFunc},
+	"PyCall":    {"call", pyTernaryCallFunc},
+	"PyCompare": {"compare", pyCompareFunc},
+
+	// Mapping Protocol
+	"PyMapLen": {"mp_len", pyLenFunc},
+	"PyMapGet": {"mp_get", pyBinaryFunc},
+	"PyMapSet": {"mp_set", pyObjObjArgFunc},
+
+	// Number Protocol
 	"PyNumAdd":         {"nb_add", pyBinaryFunc},
 	"PyNumSubtract":    {"nb_subtract", pyBinaryFunc},
 	"PyNumMultiply":    {"nb_multiply", pyBinaryFunc},
@@ -677,6 +684,16 @@ var methodMap = map[string]goMethod{
 	"PyNumIpFloorDiv":  {"nb_ip_floordiv", pyBinaryFunc},
 	"PyNumIpTrueDiv":   {"nb_ip_truediv", pyBinaryFunc},
 	"PyNumIndex":       {"nb_index", pyUnaryFunc},
+
+	// Sequence Protocol
+	"PySeqLen":      {"sq_length", pyLenFunc},
+	"PySeqConcat":   {"sq_concat", pyBinaryFunc},
+	"PySeqRepeat":   {"sq_repeat", pySsizeArgFunc},
+	"PySeqGet":      {"sq_get", pySsizeArgFunc},
+	"PySeqSet":      {"sq_set", pySsizeObjArgFunc},
+	"PySeqContains": {"sq_contains", pyObjObjFunc},
+	"PySeqIpConcat": {"sq_ip_concat", pyBinaryFunc},
+	"PySeqIpRepeat": {"sq_ip_repeat", pySsizeArgFunc},
 }
 
 func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {

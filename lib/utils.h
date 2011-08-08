@@ -67,8 +67,19 @@ typedef struct {
     void *nb_ip_truediv;
     void *nb_index;
 
-    PyMappingMethods mp_meth;
-    PyNumberMethods nb_meth;
+    int has_sq;
+    void *sq_length;
+    void *sq_concat;
+    void *sq_repeat;
+    void *sq_get;
+    void *sq_set;
+    void *sq_contains;
+    void *sq_ip_concat;
+    void *sq_ip_repeat;
+
+    PyMappingMethods  mp_meth;
+    PyNumberMethods   nb_meth;
+    PySequenceMethods sq_meth;
 } ClassContext;
 
 extern PyMethodDef *newMethodDef();

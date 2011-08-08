@@ -466,6 +466,19 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
         if (ctxt->nb_ip_truediv)   m->nb_inplace_true_divide  = (binaryfunc)  goClassNumInplaceTrueDivide;
         if (ctxt->nb_index)        m->nb_index                = (unaryfunc)   goClassNumIndex;
     }
+
+    if (ctxt->has_sq) {
+        PySequenceMethods *m = &ctxt->sq_meth;
+        type->tp_as_sequence = m;
+        if (ctxt->sq_length)    m->sq_length         = (lenfunc)         goClassSeqLength;
+        if (ctxt->sq_concat)    m->sq_concat         = (binaryfunc)      goClassSeqConcat;
+        if (ctxt->sq_repeat)    m->sq_repeat         = (ssizeargfunc)    goClassSeqRepeat;
+        if (ctxt->sq_get)       m->sq_item           = (ssizeargfunc)    goClassSeqGetItem;
+        if (ctxt->sq_set)       m->sq_ass_item       = (ssizeobjargproc) goClassSeqSetItem;
+        if (ctxt->sq_contains)  m->sq_contains       = (objobjproc)      goClassSeqContains;
+        if (ctxt->sq_ip_concat) m->sq_inplace_concat = (binaryfunc)      goClassSeqIpConcat;
+        if (ctxt->sq_ip_repeat) m->sq_inplace_repeat = (ssizeargfunc)    goClassSeqIpRepeat;
+    }
 }
 
 PyTypeObject *getBasePyType(PyObject *o) {
