@@ -21,9 +21,13 @@ typedef struct {
     void *str;
     void *call;
     void *compare;
+
+    int has_mp;
     void *mp_len;
     void *mp_get;
     void *mp_set;
+
+    int has_nb;
     void *nb_add;
     void *nb_subtract;
     void *nb_multiply;
@@ -62,10 +66,7 @@ typedef struct {
     void *nb_ip_floordiv;
     void *nb_ip_truediv;
     void *nb_index;
-    struct {
-        int mp;
-        int nb;
-    } bits;
+
     PyMappingMethods mp_meth;
     PyNumberMethods nb_meth;
 } ClassContext;

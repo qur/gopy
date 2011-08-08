@@ -416,7 +416,7 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     if (ctxt->call)    type->tp_call    = (ternaryfunc) callGoClass;
     if (ctxt->compare) type->tp_compare = (cmpfunc)     compareGoClass;
 
-    if (ctxt->bits.mp) {
+    if (ctxt->has_mp) {
         PyMappingMethods *m = &ctxt->mp_meth;
         type->tp_as_mapping = m;
         if (ctxt->mp_len) m->mp_length        = (lenfunc)       mapLenGoClass;
@@ -424,7 +424,7 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
         if (ctxt->mp_set) m->mp_ass_subscript = (objobjargproc) mapSetGoClass;
     }
 
-    if (ctxt->bits.nb) {
+    if (ctxt->has_nb) {
         PyNumberMethods *m = &ctxt->nb_meth;
         type->tp_as_number = m;
         if (ctxt->nb_add)          m->nb_add                  = (binaryfunc)  goClassNumAdd;

@@ -686,18 +686,13 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 		panic("Tried to set a non-existant context field")
 	}
 	base := uintptr(unsafe.Pointer(ctxt))
-	fptr := (*unsafe.Pointer)(unsafe.Pointer(base + f.Offset))
-	*fptr = fn
+	*(*unsafe.Pointer)(unsafe.Pointer(base + f.Offset)) = fn
 	parts := strings.Split(name, "_")
 	if len(parts) > 1 {
-		bt := reflect.TypeOf(ctxt.bits)
-		bf, ok := bt.FieldByName(parts[0])
-		if !ok {
-			return
+		hf, ok := t.FieldByName("has_" + parts[0])
+		if ok {
+			*(*int)(unsafe.Pointer(base + hf.Offset)) = 1
 		}
-		base := uintptr(unsafe.Pointer(&ctxt.bits))
-		bptr := (*int)(unsafe.Pointer(base + bf.Offset))
-		*bptr = 1
 	}
 }
 
