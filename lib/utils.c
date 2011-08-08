@@ -492,17 +492,19 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
 
 PyTypeObject *getBasePyType(PyObject *o) {
     if (o == NULL) return NULL;
-    if (PyTuple_Check(o)) return &PyTuple_Type;
-    if (PyDict_Check(o)) return &PyDict_Type;
-    if (PyList_Check(o)) return &PyList_Type;
-    if (PyString_Check(o)) return &PyString_Type;
-    if (PyBool_Check(o)) return &PyBool_Type;
-    if (PyLong_Check(o)) return &PyLong_Type;
-    if (PyInt_Check(o)) return &PyInt_Type;
-    if (PyFloat_Check(o)) return &PyFloat_Type;
-    if (PyModule_Check(o)) return &PyModule_Type;
-    if (PyType_Check(o)) return &PyType_Type;
-    if (PyCode_Check(o)) return &PyCode_Type;
+
+    if (PyTuple_Check(o))     return &PyTuple_Type;
+    if (PyDict_Check(o))      return &PyDict_Type;
+    if (PyList_Check(o))      return &PyList_Type;
+    if (PyString_Check(o))    return &PyString_Type;
+    if (PyBool_Check(o))      return &PyBool_Type;
+    if (PyLong_Check(o))      return &PyLong_Type;
+    if (PyInt_Check(o))       return &PyInt_Type;
+    if (PyFloat_Check(o))     return &PyFloat_Type;
+    if (PyModule_Check(o))    return &PyModule_Type;
+    if (PyType_Check(o))      return &PyType_Type;
+    if (PyCode_Check(o))      return &PyCode_Type;
     if (PyCFunction_Check(o)) return &PyCFunction_Type;
+
     return o->ob_type;
 }
