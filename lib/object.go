@@ -16,6 +16,17 @@ import (
 	"unsafe"
 )
 
+type Op int
+
+const (
+	LT = Op(C.Py_LT)
+	LE = Op(C.Py_LE)
+	EQ = Op(C.Py_EQ)
+	NE = Op(C.Py_NE)
+	GT = Op(C.Py_GT)
+	GE = Op(C.Py_GE)
+)
+
 type Object interface {
 	Base() *BaseObject
 	Type() *Type

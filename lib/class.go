@@ -470,6 +470,7 @@ var (
 	pyBinaryCallFunc  = func(*Tuple) (Object, os.Error)(nil)
 	pyTernaryCallFunc = func(*Tuple, *Dict) (Object, os.Error)(nil)
 	pyCompareFunc     = func(Object) (int, os.Error)(nil)
+	pyRichCmpFunc     = func(Object, Op) (Object, os.Error)(nil)
 	pyObjObjArgFunc   = func(a, b Object) os.Error(nil)
 	pySsizeArgFunc    = func(int64) (Object, os.Error)(nil)
 	pySsizeObjArgFunc = func(int64, Object) os.Error(nil)
@@ -488,8 +489,8 @@ var methodMap = map[string]goMethod{
 	//"PyIter":       {"iter", },
 	//"PyIterNext":   {"iternext", },
 	//"PyPrint":      {"print", },
-	"PyRepr": {"repr", pyReprFunc},
-	//"PyRichCmp":    {"richcmp", },
+	"PyRepr":        {"repr", pyReprFunc},
+	"PyRichCompare": {"richcmp", pyRichCmpFunc},
 	//"PySetAttr":    {"setattr", },
 	//"PySetAttrObj": {"setattro", },
 	"PyStr": {"str", pyReprFunc},

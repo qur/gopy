@@ -104,6 +104,26 @@ func goClassRepr(obj unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(C.PyString_FromString(s))
 }
 
+//export goClassRichCmp
+func goClassRichCmp(obj1, obj2 unsafe.Pointer, op int) unsafe.Pointer {
+	// Get the class context
+	ctxt := getClassContext(obj1)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer, Object, Op) (Object, os.Error))(unsafe.Pointer(&ctxt.richcmp))
+
+	// Get obj2 ready for use
+	arg := newBaseObject((*C.PyObject)(obj2)).actual()
+
+	ret, err := (*f)(obj1, arg, Op(op))
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
 //export goClassStr
 func goClassStr(obj unsafe.Pointer) unsafe.Pointer {
 	// Get the class context

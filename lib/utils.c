@@ -410,20 +410,20 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     type->tp_new     = (newfunc)    goClassNew;
     type->tp_dealloc = (destructor) goClassDealloc;
 
-    if (ctxt->call)     type->tp_call     = (ternaryfunc)  goClassCall;
-    if (ctxt->compare)  type->tp_compare  = (cmpfunc)      goClassCompare;
-    //if (ctxt->getattr)  type->tp_getattr  = (getattrfunc)  goClassGetAttr;
-    //if (ctxt->getattro) type->tp_getattro = (getattrofunc) goClassGetAttrObj;
-    //if (ctxt->hash)     type->tp_hash     = (hashfunc)     goClassHash;
-    if (ctxt->init)     type->tp_init     = (initproc)     goClassInit;
-    //if (ctxt->iter)     type->tp_iter     = (getiterfunc)  goClassIter;
-    //if (ctxt->iternext) type->tp_iternext = (iternextfunc) goClassIterNext;
-    //if (ctxt->print)    type->tp_print    = (printfunc)    goClassPrint;
-    if (ctxt->repr)     type->tp_repr     = (reprfunc)     goClassRepr;
-    //if (ctxt->richcmp)  type->tp_richcmp  = (richcmpfunc)  goClassRichCmp;
-    //if (ctxt->setattr)  type->tp_setattr  = (setattrfunc)  goClassSetAttr;
-    //if (ctxt->setattro) type->tp_setattro = (setattrofunc) goClassSetAttrObj;
-    if (ctxt->str)      type->tp_str      = (reprfunc)     goClassStr;
+    if (ctxt->call)     type->tp_call        = (ternaryfunc)  goClassCall;
+    if (ctxt->compare)  type->tp_compare     = (cmpfunc)      goClassCompare;
+//  if (ctxt->getattr)  type->tp_getattr     = (getattrfunc)  goClassGetAttr;
+//  if (ctxt->getattro) type->tp_getattro    = (getattrofunc) goClassGetAttrObj;
+//  if (ctxt->hash)     type->tp_hash        = (hashfunc)     goClassHash;
+    if (ctxt->init)     type->tp_init        = (initproc)     goClassInit;
+//  if (ctxt->iter)     type->tp_iter        = (getiterfunc)  goClassIter;
+//  if (ctxt->iternext) type->tp_iternext    = (iternextfunc) goClassIterNext;
+//  if (ctxt->print)    type->tp_print       = (printfunc)    goClassPrint;
+    if (ctxt->repr)     type->tp_repr        = (reprfunc)     goClassRepr;
+    if (ctxt->richcmp)  type->tp_richcompare = (richcmpfunc)  goClassRichCmp;
+//  if (ctxt->setattr)  type->tp_setattr     = (setattrfunc)  goClassSetAttr;
+//  if (ctxt->setattro) type->tp_setattro    = (setattrofunc) goClassSetAttrObj;
+    if (ctxt->str)      type->tp_str         = (reprfunc)     goClassStr;
 
     if (ctxt->has_mp) {
         PyMappingMethods *m = &ctxt->mp_meth;
