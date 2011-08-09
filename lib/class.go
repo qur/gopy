@@ -9,27 +9,27 @@ package py
 //     return calloc(1, sizeof(PyTypeObject));
 // }
 // static inline int typeReady(PyTypeObject *o) {
-//     int ret;
 //     if (o->tp_new == NULL) {
 //         o->tp_new = PyType_GenericNew;
 //     }
 //     if (o->tp_flags & Py_TPFLAGS_HAVE_GC) {
 //         enableClassGc(o);
 //     }
-//     ret = PyType_Ready(o);
-//     if (ret == 0) {
-//         // We don't use tp_methods, and it is read when calling PyType_Ready
-//         // - so we use it to hide a classContext struct.  The classContext
-//         // starts with a NULL pointer just in case, so it looks like an
-//         // empty methods list if Python does try to process it.
-//         o->tp_methods = calloc(1, sizeof(ClassContext));
-//     }
-//     return ret;
+//     return PyType_Ready(o);
+// }
+// static inline ClassContext *newContext(void) {
+//     // We don't use tp_methods, and it is read when calling PyType_Ready
+//     // - so we use it to hide a classContext struct.  The classContext
+//     // starts with a NULL pointer just in case, so it looks like an
+//     // empty methods list if Python does try to process it.
+//     return calloc(1, sizeof(ClassContext));
+// }
+// static inline void storeContext(PyTypeObject *t, ClassContext *c) {
+//     t->tp_methods = (void *)c;
 // }
 // static inline int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {
 //     return PyDict_SetItemString(tp->tp_dict, name, o);
 // }
-// static inline PyObject *typeAlloc(PyTypeObject *type, Py_ssize_t n) { return type->tp_alloc(type, n); }
 // static inline int doVisit(PyObject *o, void *v, void *a) {
 //     visitproc visit = v;
 //     return visit(o, a);
@@ -45,7 +45,8 @@ import (
 )
 
 const (
-	TPFLAGS_HAVE_GC = uint32(C.Py_TPFLAGS_HAVE_GC)
+	TPFLAGS_HAVE_GC  = uint32(C.Py_TPFLAGS_HAVE_GC)
+	TPFLAGS_BASETYPE = uint32(C.Py_TPFLAGS_BASETYPE)
 )
 
 // A Class struct instance is used to define a Python class that has been
@@ -93,7 +94,7 @@ type Class struct {
 	Doc     string
 	Type    *Type
 	Pointer interface{}
-	New     func(*Class, *Tuple, *Dict) (Object, os.Error)
+	New     func(*Type, *Tuple, *Dict) (Object, os.Error)
 }
 
 var otyp = reflect.TypeOf(new(Object)).Elem()
@@ -328,9 +329,14 @@ func goClassClear(obj unsafe.Pointer) int {
 	return 0
 }
 
+var contexts = map[uintptr]*C.ClassContext{}
+
 func getClassContext(obj unsafe.Pointer) *C.ClassContext {
-	o := (*C.PyObject)(obj)
-	return (*C.ClassContext)(unsafe.Pointer(o.ob_type.tp_methods))
+	ctxt := contexts[uintptr(obj)]
+	if ctxt == nil {
+		panic("Asked for context of unregistered object!")
+	}
+	return ctxt
 }
 
 //export goClassNew
@@ -338,8 +344,14 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)(typ)
 
-	class, ok := types[pyType]
-	if !ok {
+	class := types[pyType]
+
+	for class == nil && pyType.tp_base != nil {
+		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
+		class = types[pyType]
+	}
+
+	if class == nil {
 		raise(fmt.Errorf("TypeError: Not a recognised type"))
 		return nil
 	}
@@ -347,16 +359,19 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	var obj Object
 	var err os.Error
 
+	// Get typ ready to use by turning into *Type
+	t := newType((*C.PyObject)(typ))
+
 	if class.New != nil {
 		// Get args and kwds ready to use, by turning them into pointers of the
 		// appropriate type
 		a := newTuple((*C.PyObject)(args))
 		k := newDict((*C.PyObject)(kwds))
 
-		obj, err = class.New(class, a, k)
+		obj, err = class.New(t, a, k)
 	} else {
 		// Create a new Python instance
-		obj, err = class.Alloc(0)
+		obj, err = t.Alloc(0)
 	}
 
 	if err != nil {
@@ -364,12 +379,24 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 		return nil
 	}
 
-	return unsafe.Pointer(c(obj))
+	// Pointer to new object, ready to return
+	ret := unsafe.Pointer(c(obj))
+
+	// register class context against new object
+	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
+	contexts[uintptr(ret)] = ctxt
+
+	return ret
 }
 
 type prop struct {
 	get unsafe.Pointer
 	set unsafe.Pointer
+}
+
+type method struct {
+	f     unsafe.Pointer
+	flags uint32
 }
 
 func methSigMatches(got reflect.Type, _want interface{}) os.Error {
@@ -404,17 +431,6 @@ func methSigMatches(got reflect.Type, _want interface{}) os.Error {
 	}
 
 	return nil
-}
-
-func (class *Class) Alloc(n int64) (Object, os.Error) {
-	pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.Type)))
-
-	obj := C.typeAlloc(pyType, 0)
-	if obj == nil {
-		return nil, exception()
-	}
-
-	return newBaseObject(obj).actual(), nil
 }
 
 func Clear(obj Object) os.Error {
@@ -577,16 +593,76 @@ func (c *Class) Create() (*Type, os.Error) {
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
 	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.Py_TPFLAGS_CHECKTYPES | C.long(c.Flags)
 
+	// Get a new context structure
+	ctxt := C.newContext()
+
+	methods := make(map[string]method)
+	props := make(map[string]prop)
+
+	for i := 0; i < typ.NumMethod(); i++ {
+		m := typ.Method(i)
+		if !strings.HasPrefix(m.Name, "Py") {
+			continue
+		}
+		t := m.Func.Type()
+		f := unsafe.Pointer(m.Func.Pointer())
+		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
+		meth, ok := methodMap[m.Name]
+		if ok {
+			err := methSigMatches(t, meth.sig)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
+			ctxtSet(ctxt, meth.field, f)
+			continue
+		}
+		parts := strings.SplitN(m.Name, "_", 2)
+		switch parts[0] {
+		case "Py":
+			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, os.Error)(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
+			methods[parts[1]] = method{f, 0}
+		case "PySet":
+			err := methSigMatches(t, func(Object) os.Error(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
+			p := props[parts[1]]
+			p.set = f
+			props[parts[1]] = p
+		case "PyGet":
+			err := methSigMatches(t, func() (Object, os.Error)(nil))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
+			p := props[parts[1]]
+			p.get = f
+			props[parts[1]] = p
+		}
+	}
+
+	C.setClassContext(pyType, ctxt)
+
 	if C.typeReady(pyType) < 0 {
+		C.free(unsafe.Pointer(ctxt))
 		C.free(unsafe.Pointer(pyType.tp_name))
 		C.free(unsafe.Pointer(pyType))
 		return nil, exception()
 	}
 
-	registerType(pyType, c)
+	C.storeContext(pyType, ctxt)
 
-	// Get the context
-	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
+	for name, method := range methods {
+		s := C.CString(name)
+		C.setTypeAttr(pyType, s, C.newMethod(s, method.f))
+	}
+
+	for name, prop := range props {
+		s := C.CString(name)
+		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, prop.get, prop.set))
+	}
 
 	btyp := typ.Elem()
 	for i := 0; i < btyp.NumField(); i++ {
@@ -617,61 +693,9 @@ func (c *Class) Create() (*Type, os.Error) {
 		C.setTypeAttr(pyType, s, C.newNatMember(registerField(field), d))
 	}
 
-	props := make(map[string]prop)
-
-	for i := 0; i < typ.NumMethod(); i++ {
-		m := typ.Method(i)
-		if !strings.HasPrefix(m.Name, "Py") {
-			continue
-		}
-		t := m.Func.Type()
-		f := unsafe.Pointer(m.Func.Pointer())
-		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
-		meth, ok := methodMap[m.Name]
-		if ok {
-			err := methSigMatches(t, meth.sig)
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxtSet(ctxt, meth.field, f)
-			continue
-		}
-		parts := strings.SplitN(m.Name, "_", 2)
-		switch parts[0] {
-		case "Py":
-			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, os.Error)(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			s := C.CString(parts[1])
-			C.setTypeAttr(pyType, s, C.newMethod(s, f))
-		case "PySet":
-			err := methSigMatches(t, func(Object) os.Error(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			p := props[parts[1]]
-			p.set = f
-			props[parts[1]] = p
-		case "PyGet":
-			err := methSigMatches(t, func() (Object, os.Error)(nil))
-			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
-			}
-			p := props[parts[1]]
-			p.get = f
-			props[parts[1]] = p
-		}
-	}
-
-	C.setClassContext(pyType, ctxt)
-
-	for name, prop := range props {
-		s := C.CString(name)
-		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, prop.get, prop.set))
-	}
-
 	c.Type = newType((*C.PyObject)(unsafe.Pointer(pyType)))
+
+	registerType(pyType, c)
 
 	return c.Type, nil
 }

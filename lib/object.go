@@ -95,6 +95,9 @@ func (obj *BaseObject) Free() {
 	o := c(obj)
 	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
 	C.typeFree(pyType, o)
+
+	// Make sure this instance isn't registered anymore
+	contexts[uintptr(unsafe.Pointer(o))] = nil, false
 }
 
 func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, os.Error) {
@@ -208,7 +211,8 @@ func (obj *BaseObject) actual() Object {
 	if o == unsafe.Pointer(None) {
 		return None
 	}
-	class, ok := types[(*C.PyTypeObject)(c(obj).ob_type)]
+	pyType := (*C.PyTypeObject)(c(obj).ob_type)
+	class, ok := types[pyType]
 	if ok {
 		t := unsafe.Typeof(class.Pointer)
 		ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&obj)).(Object)
@@ -241,6 +245,17 @@ func (obj *BaseObject) actual() Object {
 		return (*Code)(o)
 	case &C.PyCFunction_Type:
 		return (*CFunction)(o)
+	}
+	for pyType.tp_base != nil {
+		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
+		class, ok := types[pyType]
+		if ok {
+			t := unsafe.Typeof(class.Pointer)
+			ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&obj)).(Object)
+			if ok {
+				return ret
+			}
+		}
 	}
 	return obj
 }
