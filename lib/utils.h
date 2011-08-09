@@ -27,7 +27,6 @@ typedef struct {
     void *init;
     void *iter;
     void *iternext;
-    void *print;
     void *repr;
     void *richcmp;
     void *setattr;

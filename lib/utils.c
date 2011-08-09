@@ -418,7 +418,6 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     if (ctxt->init)     type->tp_init        = (initproc)     goClassInit;
 //  if (ctxt->iter)     type->tp_iter        = (getiterfunc)  goClassIter;
 //  if (ctxt->iternext) type->tp_iternext    = (iternextfunc) goClassIterNext;
-//  if (ctxt->print)    type->tp_print       = (printfunc)    goClassPrint;
     if (ctxt->repr)     type->tp_repr        = (reprfunc)     goClassRepr;
     if (ctxt->richcmp)  type->tp_richcompare = (richcmpfunc)  goClassRichCmp;
 //  if (ctxt->setattr)  type->tp_setattr     = (setattrfunc)  goClassSetAttr;

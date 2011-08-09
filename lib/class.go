@@ -488,7 +488,6 @@ var methodMap = map[string]goMethod{
 	"PyInit": {"init", pyInitFunc},
 	//"PyIter":       {"iter", },
 	//"PyIterNext":   {"iternext", },
-	//"PyPrint":      {"print", },
 	"PyRepr":        {"repr", pyReprFunc},
 	"PyRichCompare": {"richcmp", pyRichCmpFunc},
 	//"PySetAttr":    {"setattr", },
