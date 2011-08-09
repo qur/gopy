@@ -83,7 +83,7 @@ func goClassInit(obj, args, kwds unsafe.Pointer) int {
 
 	err := (*f)(obj, a, k)
 	if err != nil {
-		// Turn err into exception
+		raise(err)
 		return -1
 	}
 
