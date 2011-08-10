@@ -52,6 +52,8 @@ func DictProxy_New(obj Object) (*Dict, os.Error) {
 	return newDict(ret), nil
 }
 
+// CheckExact returns true if d is an actual dictionary object, and not an
+// instance of a sub type.
 func (d *Dict) CheckExact() bool {
 	ret := C.dictCheckE(c(d))
 	if int(ret) != 0 {
@@ -104,9 +106,8 @@ func (d *Dict) DelItem(key Object) os.Error {
 	return int2Err(ret)
 }
 
-// DelItem removes the entry with the key of "key" (or rathery, with a *String
-// with the value of "key" will be used as the key) from the dictionary d.  If
-// "key" is not hashable, a TypeError is returned.
+// DelItem removes the entry with the key of "key" (or rather, with a *String
+// with the value of "key" as the key) from the dictionary d.
 func (d *Dict) DelItemString(key string) os.Error {
 	s := C.CString(key)
 	defer C.free(unsafe.Pointer(s))
@@ -123,6 +124,11 @@ func (d *Dict) GetItem(key Object) (Object, os.Error) {
 	return obj2ObjErr(ret)
 }
 
+// GetItemString returns the Object from dictionary d which has the key "key"
+// (or rather, which has a *String with the value of "key" as the key).  If
+// there is no such Object, then nil is returned (without an error).
+//
+// Return value: Borrowed Reference.
 func (d *Dict) GetItemString(key string) (Object, os.Error) {
 	s := C.CString(key)
 	defer C.free(unsafe.Pointer(s))
@@ -169,6 +175,10 @@ func (d *Dict) Size() int64 {
 
 // PyDict_Next
 
+// Merge merges key values pairs from Object o (which may be a dictionary, or an
+// object that supports "o.keys()" and "o[key]") into the dictionary d.  If
+// override is true then a matching key in d will have it's value replaced by
+// the one in o, else the value in d will be left.
 func (d *Dict) Merge(o Object, override bool) os.Error {
 	over := 0
 	if override {
@@ -178,11 +188,18 @@ func (d *Dict) Merge(o Object, override bool) os.Error {
 	return int2Err(ret)
 }
 
+// Update replaces key values pairs in d with those from o.  It is equivalent to
+// d.Merge(o, true) in Go, or "d.update(o)" in Python.
 func (d *Dict) Update(o Object) os.Error {
 	ret := C.PyDict_Update(c(d), c(o))
 	return int2Err(ret)
 }
 
+// MergeFromSeq2 merges key values pairs from the Object o (which must be an
+// iterable object, where each item is an iterable of length 2 - the key value
+// pairs).  If override is true then the last key value pair with the same key
+// wins, otherwise the first instance does (where an instance already in d
+// counts before any in o).
 func (d *Dict) MergeFromSeq2(o Object, override bool) os.Error {
 	over := 0
 	if override {
@@ -193,7 +210,9 @@ func (d *Dict) MergeFromSeq2(o Object, override bool) os.Error {
 }
 
 // Map returns a Go map that contains the values from the Python dictionary,
-// indexed by the keys.
+// indexed by the keys.  The keys and values are the same as in the Python
+// dictionary, but changes to the Go map are not propogated back to the Python
+// dictionary.
 //
 // Note: the map holds borrowed references
 func (d *Dict) Map() map[Object]Object {
