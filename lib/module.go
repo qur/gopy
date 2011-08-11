@@ -107,7 +107,7 @@ func InitModule(name string, methods []Method) (*Module, os.Error) {
 	return newModule(m), nil
 }
 
-func Module_New(name string) (*Module, os.Error) {
+func NewModule(name string) (*Module, os.Error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 

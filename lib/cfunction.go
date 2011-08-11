@@ -29,7 +29,7 @@ func newCFunction(obj *C.PyObject) *CFunction {
 	return (*CFunction)(unsafe.Pointer(obj))
 }
 
-func CFunction_New(name string, fn interface{}, doc string) (*CFunction, os.Error) {
+func NewCFunction(name string, fn interface{}, doc string) (*CFunction, os.Error) {
 	ml := C.newMethodDef()
 
 	switch f := fn.(type) {

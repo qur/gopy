@@ -33,10 +33,10 @@ func newDict(obj *C.PyObject) *Dict {
 	return (*Dict)(unsafe.Pointer(obj))
 }
 
-// Create a new empty dictionary.
+// NewDict creates a new empty dictionary.
 //
 // Return value: New Reference.
-func Dict_New() (*Dict, os.Error) {
+func NewDict() (*Dict, os.Error) {
 	ret := C.PyDict_New()
 	if ret == nil {
 		return nil, exception()
@@ -44,7 +44,7 @@ func Dict_New() (*Dict, os.Error) {
 	return newDict(ret), nil
 }
 
-func DictProxy_New(obj Object) (*Dict, os.Error) {
+func NewDictProxy(obj Object) (*Dict, os.Error) {
 	ret := C.PyDictProxy_New(c(obj))
 	if ret == nil {
 		return nil, exception()

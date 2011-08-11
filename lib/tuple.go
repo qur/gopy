@@ -32,7 +32,7 @@ func newTuple(obj *C.PyObject) *Tuple {
 
 func buildTuple(format string, args ...interface{}) (*Tuple, os.Error) {
 	if format == "" {
-		return Tuple_New(0)
+		return NewTuple(0)
 	}
 	bv, err := BuildValue(format, args...)
 	if err != nil {
@@ -45,7 +45,7 @@ func buildTuple(format string, args ...interface{}) (*Tuple, os.Error) {
 	return Tuple_Pack(bv)
 }
 
-func Tuple_New(size int64) (*Tuple, os.Error) {
+func NewTuple(size int64) (*Tuple, os.Error) {
 	ret := C.PyTuple_New(C.Py_ssize_t(size))
 	if ret == nil {
 		return nil, exception()

@@ -30,7 +30,7 @@ func newList(obj *C.PyObject) *List {
 	return (*List)(unsafe.Pointer(obj))
 }
 
-// List_New creates a new Python List instance.  The created list has initial
+// NewList creates a new Python List instance.  The created list has initial
 // length "size".
 //
 // Note: If size > 0, then the objects in the returned list are initialised to
@@ -39,7 +39,7 @@ func newList(obj *C.PyObject) *List {
 // list.SetItem().
 //
 // Return value: New Reference.
-func List_New(size int64) (*List, os.Error) {
+func NewList(size int64) (*List, os.Error) {
 	ret := C.PyList_New(C.Py_ssize_t(size))
 	if ret == nil {
 		return nil, exception()
