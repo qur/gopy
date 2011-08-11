@@ -29,6 +29,7 @@ CGOFILES=\
 	type.go \
 	code.go \
 	cfunction.go \
+	lock.go \
 	python.go
 
 CGO_OFILES=\
