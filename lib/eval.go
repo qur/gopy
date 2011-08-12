@@ -8,22 +8,21 @@ package py
 import "C"
 
 import (
-//	"os"
-//	"unsafe"
+	"os"
 )
 
-func Eval_GetBuiltins() Object {
+func GetBuiltins() (Object, os.Error) {
 	ret := C.PyEval_GetBuiltins()
 	if ret == nil {
-		return nil
+		return nil, exception()
 	}
-	return newBaseObject(ret).actual()
+	return newBaseObject(ret).actual(), nil
 }
 
-func Eval_GetGlobals() Object {
+func GetGlobals() (Object, os.Error) {
 	ret := C.PyEval_GetGlobals()
 	if ret == nil {
-		return nil
+		return nil, exception()
 	}
-	return newBaseObject(ret).actual()
+	return newBaseObject(ret).actual(), nil
 }
