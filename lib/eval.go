@@ -26,3 +26,7 @@ func GetGlobals() (Object, os.Error) {
 	}
 	return newBaseObject(ret).actual(), nil
 }
+
+func InitThreads() {
+	C.PyEval_InitThreads()
+}
