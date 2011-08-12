@@ -146,7 +146,7 @@ func (obj *BaseObject) CallMethod(name string, format string, args ...interface{
 }
 
 func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, os.Error) {
-	t, err := Tuple_Pack(args...)
+	t, err := PackTuple(args...)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, o
 		return nil, fmt.Errorf("TypeError: attribute of type '%s' is not callable", name)
 	}
 
-	t, err := Tuple_Pack(args...)
+	t, err := PackTuple(args...)
 	if err != nil {
 		return nil, err
 	}

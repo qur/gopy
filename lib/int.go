@@ -28,8 +28,12 @@ func newInt(obj *C.PyObject) *Int {
 	return (*Int)(unsafe.Pointer(obj))
 }
 
-func Int_FromInt(i int) *Int {
+func NewInt(i int) *Int {
 	return newInt(C.PyInt_FromLong(C.long(i)))
+}
+
+func NewInt64(i int64) *Int {
+	return newInt(C.PyInt_FromSsize_t(C.Py_ssize_t(i)))
 }
 
 func (i *Int) Int() int {

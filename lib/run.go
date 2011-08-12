@@ -20,7 +20,7 @@ const (
 	SingleInput
 )
 
-func Run_File(filename string, start StartToken, globals, locals Object) (Object, os.Error) {
+func RunFile(filename string, start StartToken, globals, locals Object) (Object, os.Error) {
 	name := C.CString(filename)
 	defer C.free(unsafe.Pointer(name))
 

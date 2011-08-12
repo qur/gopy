@@ -25,7 +25,7 @@ func newString(obj *C.PyObject) *String {
 	return (*String)(unsafe.Pointer(obj))
 }
 
-func String_FromString(s string) (*String, os.Error) {
+func NewString(s string) (*String, os.Error) {
 	cs := C.CString(s)
 	defer C.free(unsafe.Pointer(cs))
 	ret := C.PyString_FromString(cs)

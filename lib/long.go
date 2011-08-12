@@ -28,7 +28,7 @@ func newLong(obj *C.PyObject) *Long {
 	return (*Long)(unsafe.Pointer(obj))
 }
 
-func Long_FromInt64(i int64) *Long {
+func NewLong(i int64) *Long {
 	return newLong(C.PyLong_FromLongLong(C.longlong(i)))
 }
 

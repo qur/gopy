@@ -42,7 +42,7 @@ func buildTuple(format string, args ...interface{}) (*Tuple, os.Error) {
 	if ok {
 		return t, nil
 	}
-	return Tuple_Pack(bv)
+	return PackTuple(bv)
 }
 
 func NewTuple(size int64) (*Tuple, os.Error) {
@@ -53,7 +53,7 @@ func NewTuple(size int64) (*Tuple, os.Error) {
 	return newTuple(ret), nil
 }
 
-func Tuple_Pack(items ...Object) (*Tuple, os.Error) {
+func PackTuple(items ...Object) (*Tuple, os.Error) {
 	// TODO: ...
 	return nil, fmt.Errorf("Not Implemented")
 }

@@ -26,7 +26,7 @@ func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
 }
 
-func Float_FromFloat64(v float64) (*Float, os.Error) {
+func NewFloat(v float64) (*Float, os.Error) {
 	ret := C.PyFloat_FromDouble(C.double(v))
 	if ret == nil {
 		return nil, exception()
@@ -34,8 +34,8 @@ func Float_FromFloat64(v float64) (*Float, os.Error) {
 	return newFloat(ret), nil
 }
 
-func Float_FromString(v string) (*Float, os.Error) {
-	s, err := String_FromString(v)
+func NewFloatString(v string) (*Float, os.Error) {
+	s, err := NewString(v)
 	if err != nil {
 		return nil, err
 	}
