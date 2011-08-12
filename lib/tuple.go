@@ -46,6 +46,11 @@ func buildTuple(format string, args ...interface{}) (*Tuple, os.Error) {
 	return PackTuple(bv)
 }
 
+// NewTuple returns a new *Tuple of the specified size.  However the entries are
+// all set to NULL, so the tuple should not be shared, especially with Python
+// code, until the entries have all been set.
+//
+// Return value: New Reference.
 func NewTuple(size int64) (*Tuple, os.Error) {
 	ret := C.PyTuple_New(C.Py_ssize_t(size))
 	if ret == nil {
@@ -54,6 +59,10 @@ func NewTuple(size int64) (*Tuple, os.Error) {
 	return newTuple(ret), nil
 }
 
+// PackTuple returns a new *Tuple which contains the arguments.  This tuple is
+// ready to use.
+//
+// Return value: New Reference.
 func PackTuple(items ...Object) (*Tuple, os.Error) {
 	ret := C.PyTuple_New(C.Py_ssize_t(len(items)))
 	if ret == nil {
