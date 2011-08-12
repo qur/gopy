@@ -433,6 +433,20 @@ func methSigMatches(got reflect.Type, _want interface{}) os.Error {
 	return nil
 }
 
+// Alloc is a convenience function, so that Go code can create a new Object
+// instance.
+func (class *Class) Alloc(n int64) (obj Object, err os.Error) {
+	obj, err = class.Type.Alloc(n)
+
+	// Since we are creating this object for Go code, this is probably the only
+	// opportunity we will get to register this object instance.
+	pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.Type)))
+	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
+	contexts[uintptr(unsafe.Pointer(c(obj)))] = ctxt
+
+	return
+}
+
 func Clear(obj Object) os.Error {
 	ret := goClassClear(unsafe.Pointer(c(obj)))
 	if ret < 0 {
