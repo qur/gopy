@@ -15,7 +15,7 @@ func example(args *py.Tuple) (py.Object, os.Error) {
 	var s string
 	var i int
 	var o py.Object
-	err := py.Arg_ParseTuple(args, "siO", &s, &i, &o)
+	err := py.ParseTuple(args, "siO", &s, &i, &o)
 	if err != nil {
 		fmt.Printf("err: %s\n", err)
 		return nil, err

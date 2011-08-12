@@ -90,7 +90,7 @@ func unpackValues(cValues []unsafe.Pointer, values []interface{}) os.Error {
 	return nil
 }
 
-func Arg_ParseTuple(args *Tuple, format string, values ...interface{}) os.Error {
+func ParseTuple(args *Tuple, format string, values ...interface{}) os.Error {
 	if args == nil {
 		return fmt.Errorf("Arg_ParseTuple: args was nil")
 	}
@@ -111,7 +111,7 @@ func Arg_ParseTuple(args *Tuple, format string, values ...interface{}) os.Error 
 	return unpackValues(cValues, values)
 }
 
-func Arg_ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string, values ...interface{}) os.Error {
+func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string, values ...interface{}) os.Error {
 	if args == nil {
 		return fmt.Errorf("Arg_ParseTuple: args was nil")
 	}
