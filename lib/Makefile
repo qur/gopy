@@ -30,6 +30,8 @@ CGOFILES=\
 	code.go \
 	cfunction.go \
 	lock.go \
+	chan.go \
+	gomod.go \
 	python.go
 
 CGO_OFILES=\
