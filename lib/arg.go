@@ -92,18 +92,23 @@ func unpackValues(cValues []unsafe.Pointer, values []interface{}) os.Error {
 
 func ParseTuple(args *Tuple, format string, values ...interface{}) os.Error {
 	if args == nil {
-		return fmt.Errorf("Arg_ParseTuple: args was nil")
+		return fmt.Errorf("ParseTuple: args was nil")
 	}
 
+	cv := (*unsafe.Pointer)(nil)
 	cValues, err := packValues(values)
 	if err != nil {
 		return nil
 	}
 
+	if len(cValues) > 0 {
+		cv = &cValues[0]
+	}
+
 	f := C.CString(format)
 	defer C.free(unsafe.Pointer(f))
 
-	ret := C.doParseTuple(c(args), f, &cValues[0], C.int(len(cValues)))
+	ret := C.doParseTuple(c(args), f, cv, C.int(len(cValues)))
 	if ret == 0 {
 		return exception()
 	}
@@ -113,12 +118,17 @@ func ParseTuple(args *Tuple, format string, values ...interface{}) os.Error {
 
 func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string, values ...interface{}) os.Error {
 	if args == nil {
-		return fmt.Errorf("Arg_ParseTuple: args was nil")
+		return fmt.Errorf("ParseTupleAndKeywords: args was nil")
 	}
 
+	cv := (*unsafe.Pointer)(nil)
 	cValues, err := packValues(values)
 	if err != nil {
 		return nil
+	}
+
+	if len(cValues) > 0 {
+		cv = &cValues[0]
 	}
 
 	f := C.CString(format)
@@ -131,7 +141,7 @@ func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string
 		defer C.free(unsafe.Pointer(klist[i]))
 	}
 
-	ret := C.doParseTupleKwds(c(args), c(kw), f, &klist[0], &cValues[0], C.int(len(cValues)))
+	ret := C.doParseTupleKwds(c(args), c(kw), f, &klist[0], cv, C.int(len(cValues)))
 	if ret == 0 {
 		return exception()
 	}
