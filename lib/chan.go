@@ -8,6 +8,7 @@ package py
 import "C"
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -50,6 +51,10 @@ func newChan(t *Type, args *Tuple, kw *Dict) (Object, os.Error) {
 //
 // Return value: New Reference.
 func NewChan(buffer int) (*Chan, os.Error) {
+	if goModule == nil {
+		return nil, fmt.Errorf("go module has not been initialized!")
+	}
+
 	obj, err := chanClass.Alloc(0)
 	if err != nil {
 		return nil, err
