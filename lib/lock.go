@@ -83,7 +83,8 @@ type Lock struct {
 }
 
 // NewLock returns a new locked Lock
-func NewLock() (lock Lock) {
+func NewLock() (lock *Lock) {
+	lock = new(Lock)
 	lock.Lock()
 	return
 }
