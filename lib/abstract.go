@@ -15,8 +15,7 @@ import (
 	"unsafe"
 )
 
-type AbstractObject struct {
-}
+type AbstractObject struct{}
 
 func newAbstractObject(obj *C.PyObject) *AbstractObject {
 	return (*AbstractObject)(unsafe.Pointer(obj))
