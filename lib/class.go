@@ -9,7 +9,7 @@ package py
 //     return calloc(1, sizeof(PyTypeObject));
 // }
 // static inline int typeReady(PyTypeObject *o) {
-//     if (o->tp_new == NULL) {
+//     if (o->tp_new == NULL && o->tp_base == NULL) {
 //         o->tp_new = PyType_GenericNew;
 //     }
 //     if (o->tp_flags & Py_TPFLAGS_HAVE_GC) {
@@ -601,11 +601,26 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 // representation of the class that has been implemented in Go.
 func (c *Class) Create() (*Type, os.Error) {
 	typ := reflect.TypeOf(c.Pointer)
+	btyp := typ.Elem()
+
+	if btyp.NumField() == 0 {
+		return nil, fmt.Errorf("%s does not embed an Object", btyp.Name())
+	}
 
 	pyType := C.newType()
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
 	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.Py_TPFLAGS_CHECKTYPES | C.long(c.Flags)
+
+	switch btyp.Field(0).Name {
+	case "BaseObject":
+	case "List":
+		//pyType.tp_base = (*C.struct_typeobject)(unsafe.Pointer(&C.PyList_Type));
+		pyType.tp_base = (*_Ctype_struct__typeobject)(unsafe.Pointer(&C.PyList_Type));
+	default:
+		C.free(unsafe.Pointer(pyType))
+		return nil, fmt.Errorf("%s embeds %s as first member, which is not a supported \"base class\"", btyp.Name(), btyp.Field(0).Name)
+	}
 
 	// Get a new context structure
 	ctxt := C.newContext()
@@ -678,7 +693,6 @@ func (c *Class) Create() (*Type, os.Error) {
 		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, prop.get, prop.set))
 	}
 
-	btyp := typ.Elem()
 	for i := 0; i < btyp.NumField(); i++ {
 		field := btyp.Field(i)
 		pyname := field.Tag.Get("Py")
