@@ -597,11 +597,6 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 	}
 }
 
-func setBase(t *C.PyTypeObject, base *Type) {
-	tp_base := (**C.PyTypeObject)(unsafe.Pointer(&t.tp_base))
-	*tp_base = (*C.PyTypeObject)(unsafe.Pointer(base))
-}
-
 var typeMap = map[string]*Type{
 	"Bool":   BoolType,
 	"Code":   CodeType,
@@ -635,7 +630,7 @@ func (c *Class) Create() (*Type, os.Error) {
 			C.free(unsafe.Pointer(pyType))
 			return nil, fmt.Errorf("%s embeds %s as first member, which is not a supported \"base class\"", btyp.Name(), firstName)
 		}
-		setBase(pyType, baseType)
+		pyType.tp_base = (*C.struct__typeobject)(unsafe.Pointer(baseType))
 	}
 
 	// Get a new context structure
