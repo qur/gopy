@@ -597,6 +597,25 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 	}
 }
 
+func setBase(t *C.PyTypeObject, base *Type) {
+	tp_base := (**C.PyTypeObject)(unsafe.Pointer(&t.tp_base))
+	*tp_base = (*C.PyTypeObject)(unsafe.Pointer(base))
+}
+
+var typeMap = map[string]*Type{
+	"Bool":   BoolType,
+	"Code":   CodeType,
+	"Dict":   DictType,
+	"Float":  FloatType,
+	"Int":    IntType,
+	"List":   ListType,
+	"Long":   LongType,
+	"Module": ModuleType,
+	"String": StringType,
+	"Tuple":  TupleType,
+	"Type":   TypeType,
+}
+
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
 func (c *Class) Create() (*Type, os.Error) {
@@ -609,14 +628,14 @@ func (c *Class) Create() (*Type, os.Error) {
 
 	pyType := C.newType()
 
-	switch btyp.Field(0).Name {
-	case "BaseObject":
-	case "List":
-		//pyType.tp_base = (*C.struct_typeobject)(unsafe.Pointer(&C.PyList_Type));
-		pyType.tp_base = (*_Ctype_struct__typeobject)(unsafe.Pointer(&C.PyList_Type));
-	default:
-		C.free(unsafe.Pointer(pyType))
-		return nil, fmt.Errorf("%s embeds %s as first member, which is not a supported \"base class\"", btyp.Name(), btyp.Field(0).Name)
+	firstName := btyp.Field(0).Name
+	if firstName != "BaseObject" {
+		baseType := typeMap[firstName]
+		if baseType == nil {
+			C.free(unsafe.Pointer(pyType))
+			return nil, fmt.Errorf("%s embeds %s as first member, which is not a supported \"base class\"", btyp.Name(), firstName)
+		}
+		setBase(pyType, baseType)
 	}
 
 	// Get a new context structure
