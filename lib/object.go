@@ -73,6 +73,17 @@ func newObject(obj *C.PyObject) Object {
 			return ret
 		}
 	}
+	for pyType.tp_base != nil {
+		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
+		class, ok := types[pyType]
+		if ok {
+			t := unsafe.Typeof(class.Pointer)
+			ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&obj)).(Object)
+			if ok {
+				return ret
+			}
+		}
+	}
 	switch C.getBasePyType(obj) {
 	case &C.PyList_Type:
 		return (*List)(o)
@@ -98,17 +109,6 @@ func newObject(obj *C.PyObject) Object {
 		return (*Code)(o)
 	case &C.PyCFunction_Type:
 		return (*CFunction)(o)
-	}
-	for pyType.tp_base != nil {
-		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
-		class, ok := types[pyType]
-		if ok {
-			t := unsafe.Typeof(class.Pointer)
-			ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&obj)).(Object)
-			if ok {
-				return ret
-			}
-		}
 	}
 	return newBaseObject(obj)
 }
