@@ -15,8 +15,8 @@ import (
 	"unsafe"
 )
 
-// *List represents a Python lsit.  In addition to satisfying the Object
-// interface, Dict pointers also have a number of methods defined - representing
+// *List represents a Python list.  In addition to satisfying the Object
+// interface, List pointers also have a number of methods defined - representing
 // the PyList_XXX functions from the Python C API.
 type List struct {
 	BaseObject
