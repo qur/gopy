@@ -16,7 +16,7 @@ import (
 
 type BaseObject struct {
 	AbstractObject
-	C.PyObject
+	o C.PyObject
 }
 
 var BaseType = (*Type)(unsafe.Pointer(&C.PyBaseObject_Type))
