@@ -48,5 +48,5 @@ func RunFile(filename string, start StartToken, globals, locals Object) (Object,
 		return nil, exception()
 	}
 
-	return newBaseObject(obj).actual(), nil
+	return newObject(obj), nil
 }

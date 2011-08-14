@@ -19,7 +19,8 @@ import (
 // interface, List pointers also have a number of methods defined - representing
 // the PyList_XXX functions from the Python C API.
 type List struct {
-	BaseObject
+	AbstractObject
+	o C.PyListObject
 }
 
 func listCheck(obj Object) bool {

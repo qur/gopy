@@ -30,7 +30,7 @@ func cnCallBinary(fn, obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	f := (*func(unsafe.Pointer, Object) (Object, os.Error))(unsafe.Pointer(&fn))
 
 	// Get obj2 ready to use
-	arg := newBaseObject((*C.PyObject)(obj2)).actual()
+	arg := newObject((*C.PyObject)(obj2))
 
 	ret, err := (*f)(obj1, arg)
 	if err != nil {
@@ -46,8 +46,8 @@ func cnCallTernary(fn, obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
 	f := (*func(unsafe.Pointer, Object, Object) (Object, os.Error))(unsafe.Pointer(&fn))
 
 	// Get obj2 and obj3 ready to use
-	arg1 := newBaseObject((*C.PyObject)(obj2)).actual()
-	arg2 := newBaseObject((*C.PyObject)(obj3)).actual()
+	arg1 := newObject((*C.PyObject)(obj2))
+	arg2 := newObject((*C.PyObject)(obj3))
 
 	ret, err := (*f)(obj1, arg1, arg2)
 	if err != nil {

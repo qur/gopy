@@ -14,7 +14,8 @@ import (
 )
 
 type String struct {
-	BaseObject
+	AbstractObject
+	o C.PyStringObject
 }
 
 func stringCheck(obj Object) bool {

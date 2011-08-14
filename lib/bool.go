@@ -15,7 +15,8 @@ import (
 )
 
 type Bool struct {
-	BaseObject
+	AbstractObject
+	o C.PyBoolObject
 }
 
 var True = (*Bool)(C.pyTrue())

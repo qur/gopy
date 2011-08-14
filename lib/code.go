@@ -9,7 +9,8 @@ package py
 import "C"
 
 type Code struct {
-	BaseObject
+	AbstractObject
+	C.PyCodeObject
 }
 
 func codeCheck(obj Object) bool {

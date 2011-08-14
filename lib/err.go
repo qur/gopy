@@ -120,5 +120,5 @@ func obj2ObjErr(obj *C.PyObject) (Object, os.Error) {
 	if obj == nil {
 		return nil, exception()
 	}
-	return newBaseObject(obj).actual(), nil
+	return newObject(obj), nil
 }

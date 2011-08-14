@@ -15,7 +15,8 @@ import (
 )
 
 type Type struct {
-	BaseObject
+	AbstractObject
+	o C.PyTypeObject
 }
 
 func typeCheck(obj Object) bool {

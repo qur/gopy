@@ -17,7 +17,8 @@ import (
 )
 
 type Module struct {
-	BaseObject
+	AbstractObject
+	o C.PyObject
 }
 
 func moduleCheck(obj Object) bool {

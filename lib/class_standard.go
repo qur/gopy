@@ -42,7 +42,7 @@ func goClassCompare(obj1, obj2 unsafe.Pointer) int {
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer, Object) (int, os.Error))(unsafe.Pointer(&ctxt.compare))
 
-	o := newBaseObject((*C.PyObject)(obj2)).actual()
+	o := newObject((*C.PyObject)(obj2))
 
 	ret, err := (*f)(obj1, o)
 	if err != nil {
@@ -64,7 +64,7 @@ func goClassDealloc(obj unsafe.Pointer) {
 
 		(*f)(obj)
 	} else {
-		(*BaseObject)(obj).Free()
+		(*AbstractObject)(obj).Free()
 	}
 }
 
@@ -113,7 +113,7 @@ func goClassRichCmp(obj1, obj2 unsafe.Pointer, op int) unsafe.Pointer {
 	f := (*func(unsafe.Pointer, Object, Op) (Object, os.Error))(unsafe.Pointer(&ctxt.richcmp))
 
 	// Get obj2 ready for use
-	arg := newBaseObject((*C.PyObject)(obj2)).actual()
+	arg := newObject((*C.PyObject)(obj2))
 
 	ret, err := (*f)(obj1, arg, Op(op))
 	if err != nil {

@@ -16,7 +16,7 @@ func GetBuiltins() (Object, os.Error) {
 	if ret == nil {
 		return nil, exception()
 	}
-	return newBaseObject(ret).actual(), nil
+	return newObject(ret), nil
 }
 
 func GetGlobals() (Object, os.Error) {
@@ -24,7 +24,7 @@ func GetGlobals() (Object, os.Error) {
 	if ret == nil {
 		return nil, exception()
 	}
-	return newBaseObject(ret).actual(), nil
+	return newObject(ret), nil
 }
 
 func InitThreads() {

@@ -19,7 +19,8 @@ import (
 // interface, Dict pointers also have a number of methods defined - representing
 // the PyDict_XXX functions from the Python C API.
 type Dict struct {
-	BaseObject
+	AbstractObject
+	o C.PyDictObject
 }
 
 func dictCheck(obj Object) bool {
@@ -221,8 +222,8 @@ func (d *Dict) Map() map[Object]Object {
 	var k *C.PyObject
 	var v *C.PyObject
 	for int(C.PyDict_Next(c(d), &p, &k, &v)) != 0 {
-		key := newBaseObject(k).actual()
-		value := newBaseObject(v).actual()
+		key := newObject(k)
+		value := newObject(v)
 		m[key] = value
 	}
 	return m
@@ -238,8 +239,8 @@ func (d *Dict) MapString() (map[string]Object, os.Error) {
 	var k *C.PyObject
 	var v *C.PyObject
 	for int(C.PyDict_Next(c(d), &p, &k, &v)) != 0 {
-		key := newBaseObject(k).actual()
-		value := newBaseObject(v).actual()
+		key := newObject(k)
+		value := newObject(v)
 		s, ok := key.(*String)
 		if !ok {
 			return nil, fmt.Errorf("TypeError: %v is not a string", key)

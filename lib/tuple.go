@@ -17,7 +17,8 @@ import (
 )
 
 type Tuple struct {
-	BaseObject
+	AbstractObject
+	o C.PyTupleObject
 }
 
 func tupleCheck(obj Object) bool {

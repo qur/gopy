@@ -14,7 +14,8 @@ import (
 )
 
 type Int struct {
-	BaseObject
+	AbstractObject
+	o C.PyIntObject
 }
 
 func intCheck(obj Object) bool {

@@ -31,7 +31,7 @@ func goClassMapGet(obj, arg unsafe.Pointer) unsafe.Pointer {
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer, Object) (Object, os.Error))(unsafe.Pointer(&ctxt.mp_get))
 
-	key := newBaseObject((*C.PyObject)(arg)).actual()
+	key := newObject((*C.PyObject)(arg))
 
 	ret, err := (*f)(obj, key)
 	if err != nil {
@@ -50,8 +50,8 @@ func goClassMapSet(obj, arg1, arg2 unsafe.Pointer) int {
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer, Object, Object) os.Error)(unsafe.Pointer(&ctxt.mp_set))
 
-	key := newBaseObject((*C.PyObject)(arg1)).actual()
-	value := newBaseObject((*C.PyObject)(arg2)).actual()
+	key := newObject((*C.PyObject)(arg1))
+	value := newObject((*C.PyObject)(arg2))
 
 	err := (*f)(obj, key, value)
 	if err != nil {

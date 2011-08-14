@@ -14,7 +14,8 @@ import (
 )
 
 type Long struct {
-	BaseObject
+	AbstractObject
+	o C.PyLongObject
 }
 
 func longCheck(obj Object) bool {

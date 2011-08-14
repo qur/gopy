@@ -15,7 +15,8 @@ import (
 )
 
 type CFunction struct {
-	BaseObject
+	AbstractObject
+	o C.PyCFunctionObject
 }
 
 func cfunctionCheck(obj Object) bool {
@@ -71,7 +72,7 @@ func (f *CFunction) Self() (Object, os.Error) {
 	if ret == nil {
 		return nil, exception()
 	}
-	return newBaseObject(ret).actual(), nil
+	return newObject(ret), nil
 }
 
 func (f *CFunction) Flags() (int, os.Error) {
@@ -84,7 +85,7 @@ func (f *CFunction) Call(args *Tuple, kw *Dict) (Object, os.Error) {
 	if ret == nil {
 		return nil, exception()
 	}
-	return newBaseObject(ret).actual(), nil
+	return newObject(ret), nil
 }
 
 type Method struct {

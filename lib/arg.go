@@ -58,7 +58,7 @@ func unpackValues(cValues []unsafe.Pointer, values []interface{}) os.Error {
 		case *string:
 			*v = C.GoString(*(**C.char)(cValues[i]))
 		case *Object:
-			*v = newBaseObject(*(**C.PyObject)(cValues[i])).actual()
+			*v = newObject(*(**C.PyObject)(cValues[i]))
 		case *int:
 			*v = int(*(*C.int)(cValues[i]))
 		case *int8:
@@ -220,5 +220,5 @@ func BuildValue(format string, values ...interface{}) (Object, os.Error) {
 	if ret == nil {
 		return nil, exception()
 	}
-	return newBaseObject(ret).actual(), nil
+	return newObject(ret), nil
 }

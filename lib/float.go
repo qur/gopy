@@ -15,7 +15,8 @@ import (
 )
 
 type Float struct {
-	BaseObject
+	AbstractObject
+	o C.PyFloatObject
 }
 
 func floatCheck(obj Object) bool {

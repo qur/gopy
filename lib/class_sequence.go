@@ -62,7 +62,7 @@ func goClassSeqSetItem(obj unsafe.Pointer, i C.Py_ssize_t, v unsafe.Pointer) int
 	f := (*func(unsafe.Pointer, int64, Object) os.Error)(unsafe.Pointer(&ctxt.sq_set))
 
 	// Get v ready to use
-	a := newBaseObject((*C.PyObject)(v)).actual()
+	a := newObject((*C.PyObject)(v))
 
 	err := (*f)(obj, int64(i), a)
 	if err != nil {
@@ -83,7 +83,7 @@ func goClassSeqContains(obj1, obj2 unsafe.Pointer) int {
 	f := (*func(unsafe.Pointer, Object) (bool, os.Error))(unsafe.Pointer(&ctxt.sq_contains))
 
 	// Get obj2 ready to use
-	a := newBaseObject((*C.PyObject)(obj2)).actual()
+	a := newObject((*C.PyObject)(obj2))
 
 	ret, err := (*f)(obj1, a)
 	if err != nil {

@@ -39,20 +39,24 @@ type Object interface {
 
 var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
 
+type AbstractObject struct {
+}
+
 type BaseObject struct {
+	AbstractObject
 	C.PyObject
 }
 
 type NoneObject struct {
-	BaseObject
+	AbstractObject
 }
 
 func (n *NoneObject) String() string {
 	return "None"
 }
 
-func newBaseObject(obj *C.PyObject) *BaseObject {
-	return (*BaseObject)(unsafe.Pointer(obj))
+func newAbstractObject(obj *C.PyObject) *AbstractObject {
+	return (*AbstractObject)(unsafe.Pointer(obj))
 }
 
 func c(obj Object) *C.PyObject {
@@ -62,11 +66,11 @@ func c(obj Object) *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
 }
 
-func (obj *BaseObject) Base() *BaseObject {
-	return obj
+func (obj *AbstractObject) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(obj))
 }
 
-func (obj *BaseObject) Type() *Type {
+func (obj *AbstractObject) Type() *Type {
 	o := c(obj).ob_type
 	return newType((*C.PyObject)(unsafe.Pointer(o)))
 }
@@ -77,7 +81,7 @@ func Decref(obj Object) {
 	}
 }
 
-func (obj *BaseObject) Decref() {
+func (obj *AbstractObject) Decref() {
 	C.decref(c(obj))
 }
 
@@ -87,11 +91,11 @@ func Incref(obj Object) {
 	}
 }
 
-func (obj *BaseObject) Incref() {
+func (obj *AbstractObject) Incref() {
 	C.incref(c(obj))
 }
 
-func (obj *BaseObject) Free() {
+func (obj *AbstractObject) Free() {
 	o := c(obj)
 	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
 	C.typeFree(pyType, o)
@@ -100,12 +104,12 @@ func (obj *BaseObject) Free() {
 	contexts[uintptr(unsafe.Pointer(o))] = nil, false
 }
 
-func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, os.Error) {
+func (obj *AbstractObject) Call(args *Tuple, kwds *Dict) (Object, os.Error) {
 	ret := C.PyObject_Call(c(obj), c(args), c(kwds))
 	return obj2ObjErr(ret)
 }
 
-func (obj *BaseObject) CallObject(args *Tuple) (Object, os.Error) {
+func (obj *AbstractObject) CallObject(args *Tuple) (Object, os.Error) {
 	var a *C.PyObject = nil
 	if args != nil {
 		a = c(args)
@@ -114,7 +118,7 @@ func (obj *BaseObject) CallObject(args *Tuple) (Object, os.Error) {
 	return obj2ObjErr(ret)
 }
 
-func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object, os.Error) {
+func (obj *AbstractObject) CallFunction(format string, args ...interface{}) (Object, os.Error) {
 	t, err := buildTuple(format, args...)
 	if err != nil {
 		return nil, err
@@ -122,7 +126,7 @@ func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object,
 	return obj.CallObject(t)
 }
 
-func (obj *BaseObject) CallMethod(name string, format string, args ...interface{}) (Object, os.Error) {
+func (obj *AbstractObject) CallMethod(name string, format string, args ...interface{}) (Object, os.Error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
@@ -145,7 +149,7 @@ func (obj *BaseObject) CallMethod(name string, format string, args ...interface{
 	return obj2ObjErr(ret)
 }
 
-func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, os.Error) {
+func (obj *AbstractObject) CallFunctionObjArgs(args ...Object) (Object, os.Error) {
 	t, err := PackTuple(args...)
 	if err != nil {
 		return nil, err
@@ -153,7 +157,7 @@ func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, os.Error) {
 	return obj.CallObject(t)
 }
 
-func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, os.Error) {
+func (obj *AbstractObject) CallMethodObjArgs(name string, args ...Object) (Object, os.Error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
@@ -176,7 +180,7 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, o
 	return obj2ObjErr(ret)
 }
 
-func (obj *BaseObject) IsTrue() bool {
+func (obj *AbstractObject) IsTrue() bool {
 	ret := C.PyObject_IsTrue(c(obj))
 	if ret < 0 {
 		panic(exception())
@@ -184,7 +188,7 @@ func (obj *BaseObject) IsTrue() bool {
 	return ret != 0
 }
 
-func (obj *BaseObject) Not() bool {
+func (obj *AbstractObject) Not() bool {
 	ret := C.PyObject_Not(c(obj))
 	if ret < 0 {
 		panic(exception())
@@ -192,7 +196,7 @@ func (obj *BaseObject) Not() bool {
 	return ret != 0
 }
 
-func (obj *BaseObject) Dir() (Object, os.Error) {
+func (obj *AbstractObject) Dir() (Object, os.Error) {
 	ret := C.PyObject_Dir(c(obj))
 	return obj2ObjErr(ret)
 }
@@ -203,7 +207,7 @@ func registerType(pyType *C.PyTypeObject, class *Class) {
 	types[pyType] = class
 }
 
-func (obj *BaseObject) actual() Object {
+func newObject(obj *C.PyObject) Object {
 	if obj == nil {
 		return nil
 	}
@@ -211,7 +215,7 @@ func (obj *BaseObject) actual() Object {
 	if o == unsafe.Pointer(None) {
 		return None
 	}
-	pyType := (*C.PyTypeObject)(c(obj).ob_type)
+	pyType := (*C.PyTypeObject)(obj.ob_type)
 	class, ok := types[pyType]
 	if ok {
 		t := unsafe.Typeof(class.Pointer)
@@ -220,7 +224,7 @@ func (obj *BaseObject) actual() Object {
 			return ret
 		}
 	}
-	switch C.getBasePyType(c(obj)) {
+	switch C.getBasePyType(obj) {
 	case &C.PyList_Type:
 		return (*List)(o)
 	case &C.PyTuple_Type:
@@ -230,7 +234,7 @@ func (obj *BaseObject) actual() Object {
 	case &C.PyString_Type:
 		return (*String)(o)
 	case &C.PyBool_Type:
-		return newBool(c(obj))
+		return newBool(obj)
 	case &C.PyInt_Type:
 		return (*Int)(o)
 	case &C.PyLong_Type:
@@ -257,5 +261,5 @@ func (obj *BaseObject) actual() Object {
 			}
 		}
 	}
-	return obj
+	return newAbstractObject(obj)
 }

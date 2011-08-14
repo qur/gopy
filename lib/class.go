@@ -131,7 +131,7 @@ func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
 
 	// Turn arg into something usable
-	a := newBaseObject((*C.PyObject)(arg)).actual()
+	a := newObject((*C.PyObject)(arg))
 
 	// Turn the function into something we can call
 	f := (*func(p unsafe.Pointer, a Object) os.Error)(unsafe.Pointer(&m))
@@ -186,7 +186,7 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
 	// This is the new value we are being asked to set
-	value := newBaseObject((*C.PyObject)(obj2)).actual()
+	value := newObject((*C.PyObject)(obj2))
 
 	// Special case for Object fields, we don't need reflect for these.  We have
 	// to be careful with refcounts, as decref could invoke desctructor code
@@ -241,7 +241,7 @@ func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
 	// This is the new value we are being asked to set
-	value := newBaseObject((*C.PyObject)(obj2)).actual()
+	value := newObject((*C.PyObject)(obj2))
 
 	switch field.Type.Kind() {
 	case reflect.Int:
@@ -282,7 +282,7 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 		if field.Type == otyp {
 			o = *(*Object)(v)
 		} else {
-			o = *(**BaseObject)(v)
+			o = *(**AbstractObject)(v)
 		}
 		ret := C.doVisit(c(o), visit, arg)
 		if ret != 0 {
@@ -319,7 +319,7 @@ func goClassClear(obj unsafe.Pointer) int {
 			*o = nil
 			Decref(tmp)
 		} else {
-			o := (**BaseObject)(v)
+			o := (**AbstractObject)(v)
 			tmp := *o
 			*o = nil
 			Decref(tmp)
