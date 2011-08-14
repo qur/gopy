@@ -12,12 +12,15 @@ import "C"
 
 import (
 	"fmt"
+	"unsafe"
 )
 
 type Bool struct {
 	AbstractObject
 	o C.PyBoolObject
 }
+
+var BoolType = (*Type)(unsafe.Pointer(&C.PyBool_Type))
 
 var True = (*Bool)(C.pyTrue())
 var False = (*Bool)(C.pyFalse())

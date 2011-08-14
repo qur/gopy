@@ -19,6 +19,8 @@ type Float struct {
 	o C.PyFloatObject
 }
 
+var FloatType = (*Type)(unsafe.Pointer(&C.PyFloat_Type))
+
 func floatCheck(obj Object) bool {
 	return C.floatCheck(c(obj)) != 0
 }

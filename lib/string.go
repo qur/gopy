@@ -18,6 +18,8 @@ type String struct {
 	o C.PyStringObject
 }
 
+var StringType = (*Type)(unsafe.Pointer(&C.PyString_Type))
+
 func stringCheck(obj Object) bool {
 	return C.stringCheck(c(obj)) != 0
 }

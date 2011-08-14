@@ -18,6 +18,8 @@ type Long struct {
 	o C.PyLongObject
 }
 
+var LongType = (*Type)(unsafe.Pointer(&C.PyLong_Type))
+
 func longCheck(obj Object) bool {
 	if obj == nil {
 		return false

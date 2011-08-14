@@ -21,6 +21,8 @@ type Module struct {
 	o C.PyObject
 }
 
+var ModuleType = (*Type)(unsafe.Pointer(&C.PyModule_Type))
+
 func moduleCheck(obj Object) bool {
 	if obj == nil {
 		return false

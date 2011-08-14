@@ -18,6 +18,8 @@ type Int struct {
 	o C.PyIntObject
 }
 
+var IntType = (*Type)(unsafe.Pointer(&C.PyInt_Type))
+
 func intCheck(obj Object) bool {
 	if obj == nil {
 		return false

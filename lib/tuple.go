@@ -21,6 +21,8 @@ type Tuple struct {
 	o C.PyTupleObject
 }
 
+var TupleType = (*Type)(unsafe.Pointer(&C.PyTuple_Type))
+
 func tupleCheck(obj Object) bool {
 	if obj == nil {
 		return false

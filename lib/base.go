@@ -19,6 +19,8 @@ type BaseObject struct {
 	C.PyObject
 }
 
+var BaseType = (*Type)(unsafe.Pointer(&C.PyBaseObject_Type))
+
 func newBaseObject(obj *C.PyObject) *BaseObject {
 	return (*BaseObject)(unsafe.Pointer(obj))
 }

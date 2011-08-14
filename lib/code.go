@@ -8,10 +8,16 @@ package py
 // static inline int codeCheck(PyObject *o) { return PyCode_Check(o); }
 import "C"
 
+import (
+	"unsafe"
+)
+
 type Code struct {
 	AbstractObject
 	C.PyCodeObject
 }
+
+var CodeType = (*Type)(unsafe.Pointer(&C.PyCode_Type))
 
 func codeCheck(obj Object) bool {
 	if obj == nil {

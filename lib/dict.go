@@ -23,6 +23,8 @@ type Dict struct {
 	o C.PyDictObject
 }
 
+var DictType = (*Type)(unsafe.Pointer(&C.PyDict_Type))
+
 func dictCheck(obj Object) bool {
 	if obj == nil {
 		return false

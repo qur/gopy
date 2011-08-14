@@ -22,6 +22,8 @@ type Type struct {
 	o C.PyTypeObject
 }
 
+var TypeType = (*Type)(unsafe.Pointer(&C.PyType_Type))
+
 func typeCheck(obj Object) bool {
 	if obj == nil {
 		return false
