@@ -7,31 +7,33 @@ include $(GOROOT)/src/Make.inc
 TARG=github.com/qur/gopy/lib
 
 CGOFILES=\
-	object.go \
-	module.go \
+	abstract.go \
 	arg.go \
-	err.go \
+	base.go \
+	bool.go \
+	cfunction.go \
+	chan.go \
 	class.go \
-	class_standard.go \
 	class_mapping.go \
 	class_number.go \
 	class_sequence.go \
-	tuple.go \
-	int.go \
-	dict.go \
-	string.go \
-	bool.go \
-	list.go \
-	long.go \
-	float.go \
-	run.go \
-	eval.go \
-	type.go \
+	class_standard.go \
 	code.go \
-	cfunction.go \
-	lock.go \
-	chan.go \
+	dict.go \
+	err.go \
+	eval.go \
+	float.go \
 	gomod.go \
+	int.go \
+	list.go \
+	lock.go \
+	long.go \
+	module.go \
+	object.go \
+	run.go \
+	string.go \
+	tuple.go \
+	type.go \
 	python.go
 
 CGO_OFILES=\

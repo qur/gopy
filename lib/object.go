@@ -5,9 +5,7 @@
 package py
 
 // #include "utils.h"
-// static inline void incref(PyObject *obj) { Py_INCREF(obj); }
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
-// static inline void typeFree(PyTypeObject *type, PyObject *o) { type->tp_free(o); }
 import "C"
 
 import (
@@ -39,14 +37,6 @@ type Object interface {
 
 var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
 
-type AbstractObject struct {
-}
-
-type BaseObject struct {
-	AbstractObject
-	C.PyObject
-}
-
 type NoneObject struct {
 	AbstractObject
 }
@@ -55,150 +45,11 @@ func (n *NoneObject) String() string {
 	return "None"
 }
 
-func newAbstractObject(obj *C.PyObject) *AbstractObject {
-	return (*AbstractObject)(unsafe.Pointer(obj))
-}
-
 func c(obj Object) *C.PyObject {
 	if obj == nil {
 		return nil
 	}
 	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
-}
-
-func (obj *AbstractObject) Base() *BaseObject {
-	return (*BaseObject)(unsafe.Pointer(obj))
-}
-
-func (obj *AbstractObject) Type() *Type {
-	o := c(obj).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(o)))
-}
-
-func Decref(obj Object) {
-	if obj != nil {
-		C.decref(c(obj))
-	}
-}
-
-func (obj *AbstractObject) Decref() {
-	C.decref(c(obj))
-}
-
-func Incref(obj Object) {
-	if obj != nil {
-		C.incref(c(obj))
-	}
-}
-
-func (obj *AbstractObject) Incref() {
-	C.incref(c(obj))
-}
-
-func (obj *AbstractObject) Free() {
-	o := c(obj)
-	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
-	C.typeFree(pyType, o)
-
-	// Make sure this instance isn't registered anymore
-	contexts[uintptr(unsafe.Pointer(o))] = nil, false
-}
-
-func (obj *AbstractObject) Call(args *Tuple, kwds *Dict) (Object, os.Error) {
-	ret := C.PyObject_Call(c(obj), c(args), c(kwds))
-	return obj2ObjErr(ret)
-}
-
-func (obj *AbstractObject) CallObject(args *Tuple) (Object, os.Error) {
-	var a *C.PyObject = nil
-	if args != nil {
-		a = c(args)
-	}
-	ret := C.PyObject_CallObject(c(obj), a)
-	return obj2ObjErr(ret)
-}
-
-func (obj *AbstractObject) CallFunction(format string, args ...interface{}) (Object, os.Error) {
-	t, err := buildTuple(format, args...)
-	if err != nil {
-		return nil, err
-	}
-	return obj.CallObject(t)
-}
-
-func (obj *AbstractObject) CallMethod(name string, format string, args ...interface{}) (Object, os.Error) {
-	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
-
-	f := C.PyObject_GetAttrString(c(obj), cname)
-	if f == nil {
-		return nil, fmt.Errorf("AttributeError: %s", name)
-	}
-	defer C.decref(f)
-
-	if C.PyCallable_Check(f) == 0 {
-		return nil, fmt.Errorf("TypeError: attribute of type '%s' is not callable", name)
-	}
-
-	t, err := buildTuple(format, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	ret := C.PyObject_CallObject(f, c(t))
-	return obj2ObjErr(ret)
-}
-
-func (obj *AbstractObject) CallFunctionObjArgs(args ...Object) (Object, os.Error) {
-	t, err := PackTuple(args...)
-	if err != nil {
-		return nil, err
-	}
-	return obj.CallObject(t)
-}
-
-func (obj *AbstractObject) CallMethodObjArgs(name string, args ...Object) (Object, os.Error) {
-	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
-
-	f := C.PyObject_GetAttrString(c(obj), cname)
-	if f == nil {
-		return nil, fmt.Errorf("AttributeError: %s", name)
-	}
-	defer C.decref(f)
-
-	if C.PyCallable_Check(f) == 0 {
-		return nil, fmt.Errorf("TypeError: attribute of type '%s' is not callable", name)
-	}
-
-	t, err := PackTuple(args...)
-	if err != nil {
-		return nil, err
-	}
-
-	ret := C.PyObject_CallObject(f, c(t))
-	return obj2ObjErr(ret)
-}
-
-func (obj *AbstractObject) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(obj))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-func (obj *AbstractObject) Not() bool {
-	ret := C.PyObject_Not(c(obj))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-func (obj *AbstractObject) Dir() (Object, os.Error) {
-	ret := C.PyObject_Dir(c(obj))
-	return obj2ObjErr(ret)
 }
 
 var types = make(map[*C.PyTypeObject]*Class)
@@ -261,5 +112,5 @@ func newObject(obj *C.PyObject) Object {
 			}
 		}
 	}
-	return newAbstractObject(obj)
+	return newBaseObject(obj)
 }
