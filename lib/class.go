@@ -608,9 +608,6 @@ func (c *Class) Create() (*Type, os.Error) {
 	}
 
 	pyType := C.newType()
-	pyType.tp_name = C.CString(c.Name)
-	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.Py_TPFLAGS_CHECKTYPES | C.long(c.Flags)
 
 	switch btyp.Field(0).Name {
 	case "BaseObject":
@@ -640,6 +637,7 @@ func (c *Class) Create() (*Type, os.Error) {
 		if ok {
 			err := methSigMatches(t, meth.sig)
 			if err != nil {
+				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
 			}
 			ctxtSet(ctxt, meth.field, f)
@@ -650,12 +648,14 @@ func (c *Class) Create() (*Type, os.Error) {
 		case "Py":
 			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, os.Error)(nil))
 			if err != nil {
+				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
 			}
 			methods[parts[1]] = method{f, 0}
 		case "PySet":
 			err := methSigMatches(t, func(Object) os.Error(nil))
 			if err != nil {
+				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
 			}
 			p := props[parts[1]]
@@ -664,6 +664,7 @@ func (c *Class) Create() (*Type, os.Error) {
 		case "PyGet":
 			err := methSigMatches(t, func() (Object, os.Error)(nil))
 			if err != nil {
+				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
 			}
 			p := props[parts[1]]
@@ -671,6 +672,10 @@ func (c *Class) Create() (*Type, os.Error) {
 			props[parts[1]] = p
 		}
 	}
+
+	pyType.tp_name = C.CString(c.Name)
+	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.Py_TPFLAGS_CHECKTYPES | C.long(c.Flags)
 
 	C.setClassContext(pyType, ctxt)
 
@@ -713,6 +718,9 @@ func (c *Class) Create() (*Type, os.Error) {
 			continue
 		}
 		if !exportable[field.Type.Kind()] {
+			C.free(unsafe.Pointer(ctxt))
+			C.free(unsafe.Pointer(pyType.tp_name))
+			C.free(unsafe.Pointer(pyType))
 			return nil, fmt.Errorf("Cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 		}
 		s := C.CString(pyname)
