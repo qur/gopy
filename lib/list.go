@@ -23,6 +23,8 @@ type List struct {
 	o C.PyListObject
 }
 
+var ListType = (*Type)(unsafe.Pointer(&C.PyList_Type))
+
 func listCheck(obj Object) bool {
 	return C.listCheck(c(obj)) != 0
 }

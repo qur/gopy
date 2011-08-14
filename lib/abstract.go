@@ -11,6 +11,7 @@ package py
 import "C"
 
 import (
+	"os"
 	"unsafe"
 )
 
@@ -19,6 +20,10 @@ type AbstractObject struct {
 
 func newAbstractObject(obj *C.PyObject) *AbstractObject {
 	return (*AbstractObject)(unsafe.Pointer(obj))
+}
+
+func (obj *AbstractObject) Init(args *Tuple, kw *Dict) os.Error {
+	return obj.Type().Init(obj, args, kw)
 }
 
 func (obj *AbstractObject) Base() *BaseObject {
