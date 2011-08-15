@@ -28,6 +28,14 @@ func (g *GilState) Release() {
 	}
 }
 
+func AcquireGil() {
+	C.PyEval_AcquireLock()
+}
+
+func ReleaseGil() {
+	C.PyEval_ReleaseLock()
+}
+
 // Lock is a high-level representation of the Python Global Interpreter Lock
 // (GIL) and thread state.  When calling from Go into Python the GIL needs to be
 // held and the appropriate thread state loaded.  Lock also calls
