@@ -110,6 +110,16 @@ func InitModule(name string, methods []Method) (*Module, os.Error) {
 	return newModule(m), nil
 }
 
+func ExecCodeModule(name string, code Object) (*Module, os.Error) {
+	s := C.CString(name)
+	defer C.free(unsafe.Pointer(s))
+	ret := C.PyImport_ExecCodeModule(s, c(code))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newModule(ret), nil
+}
+
 func NewModule(name string) (*Module, os.Error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))

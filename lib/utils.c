@@ -507,3 +507,13 @@ PyTypeObject *getBasePyType(PyObject *o) {
 
     return o->ob_type;
 }
+
+PyObject *compileFile(char *name) {
+    PyObject *f = PyFile_FromString(name, "rU");
+    if (!f) return NULL;
+    struct _node *n = PyParser_SimpleParseFile(PyFile_AsFile(f), name,
+                                               Py_file_input);
+    Py_DECREF(f);
+    if (!n) return NULL;
+    return (PyObject *)PyNode_Compile(n, name);
+}
