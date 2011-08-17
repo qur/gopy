@@ -36,6 +36,15 @@ func ReleaseGil() {
 	C.PyEval_ReleaseLock()
 }
 
+// InitAndLock is a convience function.  It initializes Python, enables thread
+// support, and returns a locked Lock instance.
+func InitAndLock() *Lock {
+	C.Py_Initialize()
+	C.PyEval_InitThreads()
+	C.PyEval_SaveThread()
+	return NewLock()
+}
+
 // Lock is a high-level representation of the Python Global Interpreter Lock
 // (GIL) and thread state.  When calling from Go into Python the GIL needs to be
 // held and the appropriate thread state loaded.  Lock also calls
