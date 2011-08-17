@@ -20,3 +20,8 @@ performance point of view, but nicer for playing around).
 The shell also makes a sh module available to Python code which exposes the
 programs tokeniser, and command executer, to Python code.  These can be seen in
 the token and run Python command examples.
+
+You can also run a command in the background by ending the command with a '&'
+character.  This is primarily so that the Python interaction code has to deal
+with the fact that it may be called from a goroutine - and thus gives
+justification to including locking in the example.
