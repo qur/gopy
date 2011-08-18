@@ -20,3 +20,5 @@ What versions of Python are supported?
 
 Currently, only Python 2.7 is supported.  Though I do hope to add support for
 other versions in the future.
+
+Note: Python 2.6 support is currently available on the python2.6 branch.
