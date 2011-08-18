@@ -5,7 +5,7 @@
 #ifndef _GO_PYTHON_UTILS_H_
 #define _GO_PYTHON_UTILS_H_
 
-#include <ffi/ffi.h>
+#include <ffi.h>
 #include <python2.7/Python.h>
 
 typedef struct {
