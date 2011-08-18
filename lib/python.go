@@ -5,7 +5,8 @@
 package py
 
 // #cgo CFLAGS: -Werror
-// #cgo LDFLAGS: -lpython2.6 -lffi
+// #cgo LDFLAGS: -lpython2.6
+// #cgo pkg-config: libffi
 // #include "utils.h"
 import "C"
 
