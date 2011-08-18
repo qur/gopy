@@ -6,7 +6,7 @@
 #define _GO_PYTHON_UTILS_H_
 
 #include <ffi/ffi.h>
-#include <python2.7/Python.h>
+#include <python2.6/Python.h>
 
 typedef struct {
     ffi_type *type;

@@ -104,7 +104,7 @@ func goClassCallMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+	m := C.PyCObject_AsVoidPtr(C.PyTuple_GetItem(t, 1))
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
@@ -128,7 +128,7 @@ func goClassCallMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+	m := C.PyCObject_AsVoidPtr(C.PyTuple_GetItem(t, 1))
 
 	// Turn arg into something usable
 	a := newObject((*C.PyObject)(arg))
@@ -149,7 +149,7 @@ func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
+	m := C.PyCObject_AsVoidPtr(C.PyTuple_GetItem(t, 0))
 
 	// Turn the function into something we can call
 	f := (*func(p unsafe.Pointer) (Object, os.Error))(unsafe.Pointer(&m))

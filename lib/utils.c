@@ -143,11 +143,11 @@ typedef struct {
 } PyGoMethod;
 
 static PyObject *method_get(PyGoMethod *self, PyObject *obj, PyObject *type) {
-    PyObject *cap = PyCapsule_New(self->func, NULL, NULL);
-    PyObject *o = PyTuple_Pack(2, obj, cap);
+    PyObject *cobj = PyCObject_FromVoidPtr(self->func, NULL);
+    PyObject *o = PyTuple_Pack(2, obj, cobj);
     PyObject *ret = PyCFunction_New(&self->meth, o);
     Py_DECREF(o);
-    Py_DECREF(cap);
+    Py_DECREF(cobj);
     return ret;
 }
 
@@ -393,8 +393,8 @@ PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
         gsp->set = (setter)goClassSetProp;
     }
 
-    PyTuple_SetItem(gsp->closure, 0, PyCapsule_New(get, NULL, NULL));
-    PyTuple_SetItem(gsp->closure, 1, PyCapsule_New(set, NULL, NULL));
+    PyTuple_SetItem(gsp->closure, 0, PyCObject_FromVoidPtr(get, NULL));
+    PyTuple_SetItem(gsp->closure, 1, PyCObject_FromVoidPtr(set, NULL));
 
     return PyDescr_NewGetSet(type, gsp);
 }
