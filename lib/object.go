@@ -109,6 +109,8 @@ func newObject(obj *C.PyObject) Object {
 		return (*Code)(o)
 	case &C.PyCFunction_Type:
 		return (*CFunction)(o)
+	case &C.PyComplex_Type:
+		return (*Complex)(o)
 	}
 	return newBaseObject(obj)
 }

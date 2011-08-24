@@ -19,6 +19,7 @@ CGOFILES=\
 	class_sequence.go \
 	class_standard.go \
 	code.go \
+	complex.go \
 	dict.go \
 	err.go \
 	eval.go \

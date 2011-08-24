@@ -504,6 +504,7 @@ PyTypeObject *getBasePyType(PyObject *o) {
     if (PyType_Check(o))      return &PyType_Type;
     if (PyCode_Check(o))      return &PyCode_Type;
     if (PyCFunction_Check(o)) return &PyCFunction_Type;
+    if (PyComplex_Check(o))   return &PyComplex_Type;
 
     return o->ob_type;
 }
