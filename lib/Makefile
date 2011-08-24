@@ -32,6 +32,7 @@ CGOFILES=\
 	module.go \
 	object.go \
 	run.go \
+	set.go \
 	string.go \
 	tuple.go \
 	type.go \

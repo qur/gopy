@@ -111,6 +111,10 @@ func newObject(obj *C.PyObject) Object {
 		return (*CFunction)(o)
 	case &C.PyComplex_Type:
 		return (*Complex)(o)
+	case &C.PyFrozenSet_Type:
+		return (*FrozenSet)(o)
+	case &C.PySet_Type:
+		return (*Set)(o)
 	}
 	return newBaseObject(obj)
 }
