@@ -24,6 +24,7 @@ CGOFILES=\
 	err.go \
 	eval.go \
 	float.go \
+	function.go \
 	gomod.go \
 	int.go \
 	list.go \

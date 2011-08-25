@@ -115,6 +115,8 @@ func newObject(obj *C.PyObject) Object {
 		return (*FrozenSet)(o)
 	case &C.PySet_Type:
 		return (*Set)(o)
+	case &C.PyFunction_Type:
+		return (*Function)(o)
 	}
 	return newBaseObject(obj)
 }
