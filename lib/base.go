@@ -14,11 +14,18 @@ import (
 	"unsafe"
 )
 
+// *BaseObject is the concrete representation of the Python "Object *".  It is
+// used less than in the C API, as the Object interface is mostly used when the
+// type is not fixed.  Any Object "o" can be turned into a *BaseObject using the
+// Base() method (i.e. o.Base() returns a *BaseObject that refers to the same
+// underlying Python object as "o").  This allows the Python functions that
+// accept any type of object to be defined as methods on *BaseObject.
 type BaseObject struct {
 	AbstractObject
 	o C.PyObject
 }
 
+// BaseType is the Type object that represents the BaseObject type.
 var BaseType = (*Type)(unsafe.Pointer(&C.PyBaseObject_Type))
 
 func newBaseObject(obj *C.PyObject) *BaseObject {

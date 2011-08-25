@@ -21,6 +21,7 @@ type Tuple struct {
 	o C.PyTupleObject
 }
 
+// TupleType is the Type object that represents the Tuple type.
 var TupleType = (*Type)(unsafe.Pointer(&C.PyTuple_Type))
 
 func tupleCheck(obj Object) bool {

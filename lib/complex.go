@@ -19,6 +19,7 @@ type Complex struct {
 	o C.PyComplexObject
 }
 
+// ComplexType is the Type object that represents the Complex type.
 var ComplexType = (*Type)(unsafe.Pointer(&C.PyComplex_Type))
 
 func complexCheck(obj Object) bool {

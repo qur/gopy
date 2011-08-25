@@ -21,6 +21,7 @@ type Module struct {
 	o C.PyObject
 }
 
+// ModuleType is the Type object that represents the Module type.
 var ModuleType = (*Type)(unsafe.Pointer(&C.PyModule_Type))
 
 func moduleCheck(obj Object) bool {

@@ -23,6 +23,7 @@ type List struct {
 	o C.PyListObject
 }
 
+// ListType is the Type object that represents the List type.
 var ListType = (*Type)(unsafe.Pointer(&C.PyList_Type))
 
 func listCheck(obj Object) bool {

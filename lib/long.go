@@ -18,6 +18,7 @@ type Long struct {
 	o C.PyLongObject
 }
 
+// LongType is the Type object that represents the Long type.
 var LongType = (*Type)(unsafe.Pointer(&C.PyLong_Type))
 
 func longCheck(obj Object) bool {

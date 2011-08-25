@@ -18,6 +18,7 @@ type String struct {
 	o C.PyStringObject
 }
 
+// StringType is the Type object that represents the String type.
 var StringType = (*Type)(unsafe.Pointer(&C.PyString_Type))
 
 func stringCheck(obj Object) bool {

@@ -23,6 +23,8 @@ const (
 	GE = Op(C.Py_GE)
 )
 
+// Object is the generic interface that represents a Python object.  All of the
+// concrete types satisfy the Object interface.
 type Object interface {
 	Base() *BaseObject
 	Type() *Type
@@ -33,8 +35,11 @@ type Object interface {
 	Free()
 }
 
+// None is the Python equivalent to nil.
 var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
 
+// NoneObject is the type of the None value.  The only value of this type is
+// None.
 type NoneObject struct {
 	AbstractObject
 }

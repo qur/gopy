@@ -20,6 +20,7 @@ type Function struct {
 	o C.PyFunctionObject
 }
 
+// FunctionType is the Type object that represents the Function type.
 var FunctionType = (*Type)(unsafe.Pointer(&C.PyFunction_Type))
 
 func newFunction(obj *C.PyObject) *Function {
