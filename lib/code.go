@@ -15,7 +15,7 @@ import (
 
 type Code struct {
 	AbstractObject
-	C.PyCodeObject
+	o C.PyCodeObject
 }
 
 var CodeType = (*Type)(unsafe.Pointer(&C.PyCode_Type))
