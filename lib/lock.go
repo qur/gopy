@@ -39,9 +39,24 @@ func ReleaseGil() {
 // InitAndLock is a convience function.  It initializes Python, enables thread
 // support, and returns a locked Lock instance.
 func InitAndLock() *Lock {
+	// Lock the current goroutine to the current OS thread, until we have
+	// released the GIL (as CPython uses per-thread state)
+	runtime.LockOSThread()
+
+	// Initialize the default Python interpreter
 	C.Py_Initialize()
+
+	// Enable Python thread support, and then immediately release the GIL (and
+	// thus "deativate" and per-thread state associated with the current thread
 	C.PyEval_InitThreads()
 	C.PyEval_SaveThread()
+
+	// We can now unlock the current goroutine from the current OS thread, as
+	// there is no active per-thread state
+	runtime.UnlockOSThread()
+
+	// Now that Python is setup, we can return a locked Lock, ready for the
+	// calling code to use
 	return NewLock()
 }
 
