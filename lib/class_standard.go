@@ -53,6 +53,44 @@ func goClassCompare(obj1, obj2 unsafe.Pointer) int {
 	return ret
 }
 
+//export goClassGetAttr
+func goClassGetAttr(obj unsafe.Pointer, name *C.char) unsafe.Pointer {
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer, string) (Object, os.Error))(unsafe.Pointer(&ctxt.getattr))
+
+	s := C.GoString(name)
+
+	ret, err := (*f)(obj, s)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassGetAttrObj
+func goClassGetAttrObj(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+	// Get the class context
+	ctxt := getClassContext(obj1)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer, Object) (Object, os.Error))(unsafe.Pointer(&ctxt.getattro))
+
+	o := newObject((*C.PyObject)(obj2))
+
+	ret, err := (*f)(obj1, o)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
 //export goClassDealloc
 func goClassDealloc(obj unsafe.Pointer) {
 	// Get the class context
@@ -66,6 +104,25 @@ func goClassDealloc(obj unsafe.Pointer) {
 	} else {
 		(*AbstractObject)(obj).Free()
 	}
+}
+
+//export goClassHash
+func goClassHash(obj unsafe.Pointer) C.long {
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer) (uint32, os.Error))(unsafe.Pointer(&ctxt.hash))
+
+	ret, err := (*f)(obj)
+	if err != nil {
+		raise(err)
+		return -1
+	} else if C.long(ret) == -1 {
+		return -2
+	}
+
+	return C.long(ret)
 }
 
 //export goClassInit
@@ -88,6 +145,42 @@ func goClassInit(obj, args, kwds unsafe.Pointer) int {
 	}
 
 	return 0
+}
+
+//export goClassIter
+func goClassIter(obj unsafe.Pointer) unsafe.Pointer {
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer) (Object, os.Error))(unsafe.Pointer(&ctxt.iter))
+
+	ret, err := (*f)(obj)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassIterNext
+func goClassIterNext(obj unsafe.Pointer) unsafe.Pointer {
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer) (Object, os.Error))(unsafe.Pointer(&ctxt.iternext))
+
+	ret, err := (*f)(obj)
+	if err != nil {
+		raise(err)
+		return nil
+	} else if ret == nil {
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
 }
 
 //export goClassRepr
@@ -122,6 +215,46 @@ func goClassRichCmp(obj1, obj2 unsafe.Pointer, op int) unsafe.Pointer {
 	}
 
 	return unsafe.Pointer(c(ret))
+}
+
+//export goClassSetAttr
+func goClassSetAttr(obj unsafe.Pointer, name *C.char, obj2 unsafe.Pointer) int {
+	// Get the class context
+	ctxt := getClassContext(obj)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer, string, Object) os.Error)(unsafe.Pointer(&ctxt.setattr))
+
+	s := C.GoString(name)
+	o := newObject((*C.PyObject)(obj2))
+
+	err := (*f)(obj, s, o)
+	if err != nil {
+		raise(err)
+		return -1
+	}
+
+	return 0
+}
+
+//export goClassSetAttrObj
+func goClassSetAttrObj(obj1, obj2, obj3 unsafe.Pointer) int {
+	// Get the class context
+	ctxt := getClassContext(obj1)
+
+	// Turn the function into something we can call
+	f := (*func(unsafe.Pointer, Object, Object) os.Error)(unsafe.Pointer(&ctxt.setattro))
+
+	o := newObject((*C.PyObject)(obj2))
+	o2 := newObject((*C.PyObject)(obj3))
+
+	err := (*f)(obj1, o, o2)
+	if err != nil {
+		raise(err)
+		return -1
+	}
+
+	return 0
 }
 
 //export goClassStr

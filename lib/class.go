@@ -493,6 +493,7 @@ var (
 	pyVoidFunc        = (func())(nil)
 	pyReprFunc        = func() string(nil)
 	pyLenFunc         = func() int64(nil)
+	pyHashFunc        = func() (uint32, os.Error)(nil)
 	pyInquiryFunc     = func() (bool, os.Error)(nil)
 	pyUnaryFunc       = func() (Object, os.Error)(nil)
 	pyBinaryFunc      = func(Object) (Object, os.Error)(nil)
@@ -505,24 +506,28 @@ var (
 	pySsizeArgFunc    = func(int64) (Object, os.Error)(nil)
 	pySsizeObjArgFunc = func(int64, Object) os.Error(nil)
 	pyObjObjFunc      = func(Object) (bool, os.Error)(nil)
+	pyGetAttrFunc     = func(string) (Object, os.Error)(nil)
+	pyGetAttrObjFunc  = func(Object) (Object, os.Error)(nil)
+	pySetAttrFunc     = func(string, Object) os.Error(nil)
+	pySetAttrObjFunc  = func(Object, Object) os.Error(nil)
 )
 
 var methodMap = map[string]goMethod{
 	// Standard Methods
-	"PyCall":    {"call", pyTernaryCallFunc},
-	"PyCompare": {"compare", pyCompareFunc},
-	"PyDealloc": {"dealloc", pyVoidFunc},
-	//"PyGetAttr":    {"getattr", },
-	//"PyGetAttrObj": {"getattro", },
-	//"PyHash":       {"hash", },
-	"PyInit": {"init", pyInitFunc},
-	//"PyIter":       {"iter", },
-	//"PyIterNext":   {"iternext", },
+	"PyCall":        {"call", pyTernaryCallFunc},
+	"PyCompare":     {"compare", pyCompareFunc},
+	"PyDealloc":     {"dealloc", pyVoidFunc},
+	"PyGetAttr":     {"getattr", pyGetAttrFunc},
+	"PyGetAttrObj":  {"getattro", pyGetAttrObjFunc},
+	"PyHash":        {"hash", pyHashFunc},
+	"PyInit":        {"init", pyInitFunc},
+	"PyIter":        {"iter", pyUnaryFunc},
+	"PyIterNext":    {"iternext", pyUnaryFunc},
 	"PyRepr":        {"repr", pyReprFunc},
 	"PyRichCompare": {"richcmp", pyRichCmpFunc},
-	//"PySetAttr":    {"setattr", },
-	//"PySetAttrObj": {"setattro", },
-	"PyStr": {"str", pyReprFunc},
+	"PySetAttr":     {"setattr", pySetAttrFunc},
+	"PySetAttrObj":  {"setattro", pySetAttrObjFunc},
+	"PyStr":         {"str", pyReprFunc},
 
 	// Mapping Protocol
 	"PyMapLen": {"mp_len", pyLenFunc},
