@@ -74,7 +74,7 @@ func (t *Type) Modified() {
 
 // HasFeature returns true when "t" has the feature in question.
 func (t *Type) HasFeature(feature uint32) bool {
-	return t.o.tp_flags & C.long(feature) != 0
+	return (t.o.tp_flags & C.long(feature)) != 0
 }
 
 // IsGc returns true if the type "t" supports Cyclic Garbage Collection.

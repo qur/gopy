@@ -28,7 +28,7 @@ type FrozenSet struct {
 }
 
 // SetType is the Type object that represents the Set type.
-var SetType       = (*Type)(unsafe.Pointer(&C.PySet_Type))
+var SetType = (*Type)(unsafe.Pointer(&C.PySet_Type))
 
 // FrozenSetType is the Type object that represents the FrozenSet type.
 var FrozenSetType = (*Type)(unsafe.Pointer(&C.PyFrozenSet_Type))
