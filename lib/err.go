@@ -19,11 +19,28 @@ import (
 type Error struct {
 	kind *C.PyObject
 	tb   *C.PyObject
-	msg  string
+	val  *C.PyObject
 }
 
 func (e *Error) String() string {
-	return fmt.Sprintf("<TYPE>: %s", e.msg)
+	ts := ""
+	en := C.excName(e.kind)
+	if en.c == nil {
+		tpyS := C.PyObject_Str(e.kind)
+		defer C.decref(tpyS)
+		ts = C.GoString(C.PyString_AsString(tpyS))
+	} else {
+		if en.m != nil {
+			ts = C.GoString(en.m) + "."
+		}
+		ts += C.GoString(en.c)
+	}
+
+	pyS := C.PyObject_Str(e.val)
+	defer C.decref(pyS)
+	s := C.GoString(C.PyString_AsString(pyS))
+
+	return fmt.Sprintf("%s: %s", ts, s)
 }
 
 func exceptionRaised() bool {
@@ -41,28 +58,23 @@ func exception() os.Error {
 
 	C.PyErr_Fetch(&t, &v, &tb)
 
-	s := C.PyObject_Str(v)
-	defer C.decref(s)
-
-	return &Error{t, tb, C.GoString(C.PyString_AsString(s))}
+	return &Error{t, tb, v}
 }
 
 func raise(err os.Error) {
-	var msg string
+	var val *C.PyObject
 	var exc = C.PyExc_Exception
 
 	e, ok := err.(*Error)
 	if ok {
 		exc = e.kind
-		msg = e.msg
+		val = e.val
 	} else {
-		msg = err.String()
+		v, _ := NewString(err.String())
+		val = c(v)
 	}
 
-	s := C.CString(msg)
-	defer C.free(unsafe.Pointer(s))
-
-	C.PyErr_SetString(exc, s)
+	C.PyErr_SetObject(exc, val)
 }
 
 func Err_Format(f string, args ...interface{}) {
@@ -73,26 +85,30 @@ func Err_Format(f string, args ...interface{}) {
 
 func TypeError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
+	val, _ := NewString(msg)
 	C.incref(C.PyExc_TypeError)
-	return &Error{C.PyExc_TypeError, nil, msg}
+	return &Error{C.PyExc_TypeError, nil, c(val)}
 }
 
 func KeyError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
+	val, _ := NewString(msg)
 	C.incref(C.PyExc_KeyError)
-	return &Error{C.PyExc_KeyError, nil, msg}
+	return &Error{C.PyExc_TypeError, nil, c(val)}
 }
 
 func AttributeError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
+	val, _ := NewString(msg)
 	C.incref(C.PyExc_AttributeError)
-	return &Error{C.PyExc_AttributeError, nil, msg}
+	return &Error{C.PyExc_TypeError, nil, c(val)}
 }
 
 func NotImplemented(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
+	val, _ := NewString(msg)
 	C.incref(C.PyExc_NotImplementedError)
-	return &Error{C.PyExc_NotImplementedError, nil, msg}
+	return &Error{C.PyExc_TypeError, nil, c(val)}
 }
 
 func int2Err(i C.int) os.Error {

@@ -521,3 +521,36 @@ PyObject *compileFile(char *name) {
     if (!n) return NULL;
     return (PyObject *)PyNode_Compile(n, name);
 }
+
+struct _en excName(PyObject *o) {
+    struct _en en = { NULL, NULL };
+
+    PyObject *m;
+
+    if (!PyExceptionClass_Check(o)) {
+        return en;
+    }
+
+    en.c = PyExceptionClass_Name(o);
+    if (en.c != NULL) {
+        char *d = strrchr(en.c, '.');
+        if (d != NULL) en.c = d + 1;
+    } else {
+        en.c = "<unknown>";
+    }
+
+    m = PyObject_GetAttrString(o, "__module__");
+    if (m == NULL) {
+        en.m = "<unknown>";
+        return en;
+    }
+
+    en.m = PyString_AsString(m);
+    if (en.m != NULL && !strcmp(en.m, "exceptions")) {
+        en.m = NULL;
+    }
+
+    Py_DECREF(m);
+
+    return en;
+}

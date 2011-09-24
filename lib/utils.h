@@ -120,4 +120,11 @@ extern PyTypeObject *getBasePyType(PyObject *o);
 
 extern PyObject *compileFile(char *name);
 
+struct _en {
+    char *m;
+    char *c;
+};
+
+extern struct _en excName(PyObject *o);
+
 #endif /* _GO_PYTHON_UTILS_H */
