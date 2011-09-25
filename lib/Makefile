@@ -23,6 +23,8 @@ CGOFILES=\
 	dict.go \
 	err.go \
 	eval.go \
+	exc.go \
+	exceptions.go \
 	float.go \
 	function.go \
 	gomod.go \

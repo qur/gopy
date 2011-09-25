@@ -13,15 +13,20 @@ import "C"
 import (
 	"fmt"
 	"os"
-	"unsafe"
 )
 
+// Error represents a Python exception as a Go struct that implements the
+// os.Error interface.  It allows Go code to handle Python exceptions in an
+// idiomatic Go fashion.
 type Error struct {
 	kind *C.PyObject
 	tb   *C.PyObject
 	val  *C.PyObject
 }
 
+// String() returns a string representation of the Python exception represented
+// by the Error e.  This is the same as the final line of the Python output from
+// an uncaught exception.
 func (e *Error) String() string {
 	ts := ""
 	en := C.excName(e.kind)
@@ -41,6 +46,30 @@ func (e *Error) String() string {
 	s := C.GoString(C.PyString_AsString(pyS))
 
 	return fmt.Sprintf("%s: %s", ts, s)
+}
+
+// NewError returns a new Error of the specified kind, and with the given value.
+func NewError(kind Object, value Object) *Error {
+	Incref(kind)
+	Incref(value)
+	return &Error{c(kind), nil, c(value)}
+}
+
+// NewErrorString returns a new Error of the specified kind, and with the value
+// being a new String containing msg.
+func NewErrorString(kind Object, msg string) *Error {
+	Incref(kind)
+	val, _ := NewString(msg)
+	return &Error{c(kind), nil, c(val)}
+}
+
+// NewErrorFormat returns a new Error of the specified kind, and with the value
+// being a new String containing the string created the given format and args.
+func NewErrorFormat(kind Object, format string, args ...interface{}) *Error {
+	msg := fmt.Sprintf(format, args...)
+	Incref(kind)
+	val, _ := NewString(msg)
+	return &Error{c(kind), nil, c(val)}
 }
 
 func exceptionRaised() bool {
@@ -75,12 +104,6 @@ func raise(err os.Error) {
 	}
 
 	C.PyErr_SetObject(exc, val)
-}
-
-func Err_Format(f string, args ...interface{}) {
-	s := C.CString(fmt.Sprintf(f, args))
-	defer C.free(unsafe.Pointer(s))
-	C.PyErr_SetString(C.PyExc_Exception, s)
 }
 
 func TypeError(format string, args ...interface{}) os.Error {
