@@ -94,21 +94,21 @@ func KeyError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
 	C.incref(C.PyExc_KeyError)
-	return &Error{C.PyExc_TypeError, nil, c(val)}
+	return &Error{C.PyExc_KeyError, nil, c(val)}
 }
 
 func AttributeError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
 	C.incref(C.PyExc_AttributeError)
-	return &Error{C.PyExc_TypeError, nil, c(val)}
+	return &Error{C.PyExc_AttributeError, nil, c(val)}
 }
 
 func NotImplemented(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
 	C.incref(C.PyExc_NotImplementedError)
-	return &Error{C.PyExc_TypeError, nil, c(val)}
+	return &Error{C.PyExc_NotImplementedError, nil, c(val)}
 }
 
 func int2Err(i C.int) os.Error {
