@@ -19,9 +19,9 @@ import (
 // os.Error interface.  It allows Go code to handle Python exceptions in an
 // idiomatic Go fashion.
 type Error struct {
-	kind *C.PyObject
-	tb   *C.PyObject
-	val  *C.PyObject
+	Kind  Object
+	Value Object
+	tb    *C.PyObject
 }
 
 // String() returns a string representation of the Python exception represented
@@ -29,9 +29,9 @@ type Error struct {
 // an uncaught exception.
 func (e *Error) String() string {
 	ts := ""
-	en := C.excName(e.kind)
+	en := C.excName(c(e.Kind))
 	if en.c == nil {
-		tpyS := C.PyObject_Str(e.kind)
+		tpyS := C.PyObject_Str(c(e.Kind))
 		defer C.decref(tpyS)
 		ts = C.GoString(C.PyString_AsString(tpyS))
 	} else {
@@ -41,7 +41,7 @@ func (e *Error) String() string {
 		ts += C.GoString(en.c)
 	}
 
-	pyS := C.PyObject_Str(e.val)
+	pyS := C.PyObject_Str(c(e.Value))
 	defer C.decref(pyS)
 	s := C.GoString(C.PyString_AsString(pyS))
 
@@ -52,7 +52,7 @@ func (e *Error) String() string {
 func NewError(kind Object, value Object) *Error {
 	Incref(kind)
 	Incref(value)
-	return &Error{c(kind), nil, c(value)}
+	return &Error{kind, value, nil}
 }
 
 // NewErrorString returns a new Error of the specified kind, and with the value
@@ -60,7 +60,7 @@ func NewError(kind Object, value Object) *Error {
 func NewErrorString(kind Object, msg string) *Error {
 	Incref(kind)
 	val, _ := NewString(msg)
-	return &Error{c(kind), nil, c(val)}
+	return &Error{kind, val, nil}
 }
 
 // NewErrorFormat returns a new Error of the specified kind, and with the value
@@ -69,7 +69,7 @@ func NewErrorFormat(kind Object, format string, args ...interface{}) *Error {
 	msg := fmt.Sprintf(format, args...)
 	Incref(kind)
 	val, _ := NewString(msg)
-	return &Error{c(kind), nil, c(val)}
+	return &Error{kind, val, nil}
 }
 
 func exceptionRaised() bool {
@@ -87,7 +87,7 @@ func exception() os.Error {
 
 	C.PyErr_Fetch(&t, &v, &tb)
 
-	return &Error{t, tb, v}
+	return &Error{newObject(t), newObject(v), tb}
 }
 
 func raise(err os.Error) {
@@ -96,8 +96,8 @@ func raise(err os.Error) {
 
 	e, ok := err.(*Error)
 	if ok {
-		exc = e.kind
-		val = e.val
+		exc = c(e.Kind)
+		val = c(e.Value)
 	} else {
 		v, _ := NewString(err.String())
 		val = c(v)
@@ -109,29 +109,29 @@ func raise(err os.Error) {
 func TypeError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
-	C.incref(C.PyExc_TypeError)
-	return &Error{C.PyExc_TypeError, nil, c(val)}
+	Exc.TypeError.Incref()
+	return &Error{Exc.TypeError, val, nil}
 }
 
 func KeyError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
-	C.incref(C.PyExc_KeyError)
-	return &Error{C.PyExc_KeyError, nil, c(val)}
+	Exc.KeyError.Incref()
+	return &Error{Exc.KeyError, val, nil}
 }
 
 func AttributeError(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
-	C.incref(C.PyExc_AttributeError)
-	return &Error{C.PyExc_AttributeError, nil, c(val)}
+	Exc.AttributeError.Incref()
+	return &Error{Exc.AttributeError, val, nil}
 }
 
 func NotImplemented(format string, args ...interface{}) os.Error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
-	C.incref(C.PyExc_NotImplementedError)
-	return &Error{C.PyExc_NotImplementedError, nil, c(val)}
+	Exc.NotImplementedError.Incref()
+	return &Error{Exc.NotImplementedError, val, nil}
 }
 
 func int2Err(i C.int) os.Error {

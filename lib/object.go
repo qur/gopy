@@ -6,6 +6,9 @@ package py
 
 // #include "utils.h"
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
+// static inline int exceptionCheck(PyObject *obj) {
+//     return PyExceptionClass_Check(obj);
+// }
 import "C"
 
 import (
@@ -65,10 +68,12 @@ func newObject(obj *C.PyObject) Object {
 	if obj == nil {
 		return nil
 	}
+
 	o := unsafe.Pointer(obj)
 	if o == unsafe.Pointer(None) {
 		return None
 	}
+
 	pyType := (*C.PyTypeObject)(obj.ob_type)
 	class, ok := types[pyType]
 	if ok {
@@ -89,6 +94,7 @@ func newObject(obj *C.PyObject) Object {
 			}
 		}
 	}
+
 	switch C.getBasePyType(obj) {
 	case &C.PyList_Type:
 		return (*List)(o)
@@ -123,5 +129,10 @@ func newObject(obj *C.PyObject) Object {
 	case &C.PyFunction_Type:
 		return (*Function)(o)
 	}
+
+	if C.exceptionCheck(obj) != 0 {
+		return newException(obj)
+	}
+
 	return newBaseObject(obj)
 }
