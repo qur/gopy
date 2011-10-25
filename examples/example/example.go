@@ -101,7 +101,7 @@ func (e *ExampleClass) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, os.Erro
 }
 
 func (e *ExampleClass) PyGet_wibble() (py.Object, os.Error) {
-	i := py.Int_FromInt(e.wibble)
+	i := py.NewInt(e.wibble)
 	if i == nil {
 		return nil, fmt.Errorf("TypeError: failed to convert wibble to Int")
 	}
