@@ -38,7 +38,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 	"unsafe"
@@ -94,7 +93,7 @@ type Class struct {
 	Doc     string
 	Type    *Type
 	Pointer interface{}
-	New     func(*Type, *Tuple, *Dict) (Object, os.Error)
+	New     func(*Type, *Tuple, *Dict) (Object, error)
 }
 
 var otyp = reflect.TypeOf(new(Object)).Elem()
@@ -113,7 +112,7 @@ func goClassCallMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(p unsafe.Pointer, a *Tuple, k *Dict) (Object, os.Error))(unsafe.Pointer(&m))
+	f := (*func(p unsafe.Pointer, a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
 
 	ret, err := (*f)(pyobj, a, k)
 	if err != nil {
@@ -134,7 +133,7 @@ func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	a := newObject((*C.PyObject)(arg))
 
 	// Turn the function into something we can call
-	f := (*func(p unsafe.Pointer, a Object) os.Error)(unsafe.Pointer(&m))
+	f := (*func(p unsafe.Pointer, a Object) error)(unsafe.Pointer(&m))
 
 	err := (*f)(obj, a)
 	if err != nil {
@@ -152,7 +151,7 @@ func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
 
 	// Turn the function into something we can call
-	f := (*func(p unsafe.Pointer) (Object, os.Error))(unsafe.Pointer(&m))
+	f := (*func(p unsafe.Pointer) (Object, error))(unsafe.Pointer(&m))
 
 	ret, err := (*f)(obj)
 	if err != nil {
@@ -357,7 +356,7 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 
 	var obj Object
-	var err os.Error
+	var err error
 
 	// Get typ ready to use by turning into *Type
 	t := newType((*C.PyObject)(typ))
@@ -399,7 +398,7 @@ type method struct {
 	flags uint32
 }
 
-func methSigMatches(got reflect.Type, _want interface{}) os.Error {
+func methSigMatches(got reflect.Type, _want interface{}) error {
 	// Note: Methods take the receiver as the first argument, which the want
 	// signature doesn't include.
 
@@ -435,7 +434,7 @@ func methSigMatches(got reflect.Type, _want interface{}) os.Error {
 
 // Alloc is a convenience function, so that Go code can create a new Object
 // instance.
-func (class *Class) Alloc(n int64) (obj Object, err os.Error) {
+func (class *Class) Alloc(n int64) (obj Object, err error) {
 	obj, err = class.Type.Alloc(n)
 
 	// Since we are creating this object for Go code, this is probably the only
@@ -447,7 +446,7 @@ func (class *Class) Alloc(n int64) (obj Object, err os.Error) {
 	return
 }
 
-func Clear(obj Object) os.Error {
+func Clear(obj Object) error {
 	ret := goClassClear(unsafe.Pointer(c(obj)))
 	if ret < 0 {
 		return exception()
@@ -489,27 +488,27 @@ type goMethod struct {
 // signatures (hence the names are one greater than the number of arguments
 // taken).
 var (
-	pyInitFunc        = func(*Tuple, *Dict) os.Error(nil)
+	pyInitFunc        = func(*Tuple, *Dict) error(nil)
 	pyVoidFunc        = (func())(nil)
 	pyReprFunc        = func() string(nil)
 	pyLenFunc         = func() int64(nil)
-	pyHashFunc        = func() (uint32, os.Error)(nil)
-	pyInquiryFunc     = func() (bool, os.Error)(nil)
-	pyUnaryFunc       = func() (Object, os.Error)(nil)
-	pyBinaryFunc      = func(Object) (Object, os.Error)(nil)
-	pyTernaryFunc     = func(a, b Object) (Object, os.Error)(nil)
-	pyBinaryCallFunc  = func(*Tuple) (Object, os.Error)(nil)
-	pyTernaryCallFunc = func(*Tuple, *Dict) (Object, os.Error)(nil)
-	pyCompareFunc     = func(Object) (int, os.Error)(nil)
-	pyRichCmpFunc     = func(Object, Op) (Object, os.Error)(nil)
-	pyObjObjArgFunc   = func(a, b Object) os.Error(nil)
-	pySsizeArgFunc    = func(int64) (Object, os.Error)(nil)
-	pySsizeObjArgFunc = func(int64, Object) os.Error(nil)
-	pyObjObjFunc      = func(Object) (bool, os.Error)(nil)
-	pyGetAttrFunc     = func(string) (Object, os.Error)(nil)
-	pyGetAttrObjFunc  = func(Object) (Object, os.Error)(nil)
-	pySetAttrFunc     = func(string, Object) os.Error(nil)
-	pySetAttrObjFunc  = func(Object, Object) os.Error(nil)
+	pyHashFunc        = func() (uint32, error)(nil)
+	pyInquiryFunc     = func() (bool, error)(nil)
+	pyUnaryFunc       = func() (Object, error)(nil)
+	pyBinaryFunc      = func(Object) (Object, error)(nil)
+	pyTernaryFunc     = func(a, b Object) (Object, error)(nil)
+	pyBinaryCallFunc  = func(*Tuple) (Object, error)(nil)
+	pyTernaryCallFunc = func(*Tuple, *Dict) (Object, error)(nil)
+	pyCompareFunc     = func(Object) (int, error)(nil)
+	pyRichCmpFunc     = func(Object, Op) (Object, error)(nil)
+	pyObjObjArgFunc   = func(a, b Object) error(nil)
+	pySsizeArgFunc    = func(int64) (Object, error)(nil)
+	pySsizeObjArgFunc = func(int64, Object) error(nil)
+	pyObjObjFunc      = func(Object) (bool, error)(nil)
+	pyGetAttrFunc     = func(string) (Object, error)(nil)
+	pyGetAttrObjFunc  = func(Object) (Object, error)(nil)
+	pySetAttrFunc     = func(string, Object) error(nil)
+	pySetAttrObjFunc  = func(Object, Object) error(nil)
 )
 
 var methodMap = map[string]goMethod{
@@ -618,7 +617,7 @@ var typeMap = map[string]*Type{
 
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
-func (c *Class) Create() (*Type, os.Error) {
+func (c *Class) Create() (*Type, error) {
 	typ := reflect.TypeOf(c.Pointer)
 	btyp := typ.Elem()
 
@@ -665,14 +664,14 @@ func (c *Class) Create() (*Type, os.Error) {
 		parts := strings.SplitN(m.Name, "_", 2)
 		switch parts[0] {
 		case "Py":
-			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, os.Error)(nil))
+			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, error)(nil))
 			if err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
 			}
 			methods[parts[1]] = method{f, 0}
 		case "PySet":
-			err := methSigMatches(t, func(Object) os.Error(nil))
+			err := methSigMatches(t, func(Object) error(nil))
 			if err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
@@ -681,7 +680,7 @@ func (c *Class) Create() (*Type, os.Error) {
 			p.set = f
 			props[parts[1]] = p
 		case "PyGet":
-			err := methSigMatches(t, func() (Object, os.Error)(nil))
+			err := methSigMatches(t, func() (Object, error)(nil))
 			if err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)

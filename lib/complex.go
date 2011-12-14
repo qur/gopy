@@ -10,7 +10,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
@@ -30,7 +29,7 @@ func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
 }
 
-func NewComplex(v complex128) (*Complex, os.Error) {
+func NewComplex(v complex128) (*Complex, error) {
 	ret := C.PyComplex_FromDoubles(C.double(real(v)), C.double(imag(v)))
 	if ret == nil {
 		return nil, exception()

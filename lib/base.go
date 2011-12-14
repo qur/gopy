@@ -10,7 +10,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
@@ -58,7 +57,7 @@ func (obj *BaseObject) HasAttrString(name string) bool {
 // equivalent to the Python "obj.name".
 //
 // Return value: New Reference.
-func (obj *BaseObject) GetAttr(name Object) (Object, os.Error) {
+func (obj *BaseObject) GetAttr(name Object) (Object, error) {
 	ret := C.PyObject_GetAttr(c(obj), c(name))
 	return obj2ObjErr(ret)
 }
@@ -67,7 +66,7 @@ func (obj *BaseObject) GetAttr(name Object) (Object, os.Error) {
 // equivalent to the Python "obj.name".
 //
 // Return value: New Reference.
-func (obj *BaseObject) GetAttrString(name string) (Object, os.Error) {
+func (obj *BaseObject) GetAttrString(name string) (Object, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyObject_GetAttrString(c(obj), s)
@@ -79,14 +78,14 @@ func (obj *BaseObject) GetAttrString(name string) (Object, os.Error) {
 
 // SetAttr sets the attribute of "obj" with the name "name" to "value".  This is
 // equivalent to the Python "obj.name = value".
-func (obj *BaseObject) SetAttr(name, value Object) os.Error {
+func (obj *BaseObject) SetAttr(name, value Object) error {
 	ret := C.PyObject_SetAttr(c(obj), c(name), c(value))
 	return int2Err(ret)
 }
 
 // SetAttrString sets the attribute of "obj" with the name "name" to "value".
 // This is equivalent to the Python "obj.name = value".
-func (obj *BaseObject) SetAttrString(name string, value Object) os.Error {
+func (obj *BaseObject) SetAttrString(name string, value Object) error {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyObject_SetAttrString(c(obj), s, c(value))
@@ -98,14 +97,14 @@ func (obj *BaseObject) SetAttrString(name string, value Object) os.Error {
 
 // DelAttr deletes the attribute with the name "name" from "obj".  This is
 // equivalent to the Python "del obj.name".
-func (obj *BaseObject) DelAttr(name Object) os.Error {
+func (obj *BaseObject) DelAttr(name Object) error {
 	ret := C.PyObject_SetAttr(c(obj), c(name), nil)
 	return int2Err(ret)
 }
 
 // DelAttrString deletes the attribute with the name "name" from "obj".  This is
 // equivalent to the Python "del obj.name".
-func (obj *BaseObject) DelAttrString(name string) os.Error {
+func (obj *BaseObject) DelAttrString(name string) error {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyObject_SetAttrString(c(obj), s, nil)
@@ -117,7 +116,7 @@ func (obj *BaseObject) DelAttrString(name string) os.Error {
 // op is the corresponding Python operator for op.
 //
 // Return value: New Reference.
-func (obj *BaseObject) RichCompare(obj2 Object, op Op) (Object, os.Error) {
+func (obj *BaseObject) RichCompare(obj2 Object, op Op) (Object, error) {
 	ret := C.PyObject_RichCompare(c(obj), c(obj2), C.int(op))
 	return obj2ObjErr(ret)
 }
@@ -125,7 +124,7 @@ func (obj *BaseObject) RichCompare(obj2 Object, op Op) (Object, os.Error) {
 // RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
 // etc.), and returns true or false.  The equivalent Python is "obj op obj2",
 // where op is the corresponding Python operator for op.
-func (obj *BaseObject) RichCompareBool(obj2 Object, op Op) (bool, os.Error) {
+func (obj *BaseObject) RichCompareBool(obj2 Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c(obj), c(obj2), C.int(op))
 	return int2BoolErr(ret)
 }
@@ -135,7 +134,7 @@ func (obj *BaseObject) RichCompareBool(obj2 Object, op Op) (bool, os.Error) {
 
 // Compare returns the result of comparing "obj" and "obj2".  This is equivalent
 // to the Python "cmp(obj, obj2)".
-func (obj *BaseObject) Compare(obj2 Object) (int, os.Error) {
+func (obj *BaseObject) Compare(obj2 Object) (int, error) {
 	ret := C.PyObject_Compare(c(obj), c(obj2))
 	return int(ret), exception()
 }
@@ -144,7 +143,7 @@ func (obj *BaseObject) Compare(obj2 Object) (int, os.Error) {
 // Python "repr(obj)".
 //
 // Return value: New Reference.
-func (obj *BaseObject) Repr() (Object, os.Error) {
+func (obj *BaseObject) Repr() (Object, error) {
 	ret := C.PyObject_Repr(c(obj))
 	return obj2ObjErr(ret)
 }
@@ -153,7 +152,7 @@ func (obj *BaseObject) Repr() (Object, os.Error) {
 // Python "str(obj)".
 //
 // Return value: New Reference.
-func (obj *BaseObject) Str() (Object, os.Error) {
+func (obj *BaseObject) Str() (Object, error) {
 	ret := C.PyObject_Str(c(obj))
 	return obj2ObjErr(ret)
 }
@@ -162,7 +161,7 @@ func (obj *BaseObject) Str() (Object, os.Error) {
 // Python "bytes(obj)".  In Python 2.x this method is identical to Str().
 //
 // Return value: New Reference.
-func (obj *BaseObject) Bytes() (Object, os.Error) {
+func (obj *BaseObject) Bytes() (Object, error) {
 	ret := C.PyObject_Bytes(c(obj))
 	return obj2ObjErr(ret)
 }
@@ -174,7 +173,7 @@ func (obj *BaseObject) Bytes() (Object, os.Error) {
 // of that type.  If "cls" is a Tuple then true will be returned if "obj" is an
 // instance of any of the Objects in the tuple.  This is equivalent to the
 // Python "isinstance(obj, cls)".
-func (obj *BaseObject) IsInstance(cls Object) (bool, os.Error) {
+func (obj *BaseObject) IsInstance(cls Object) (bool, error) {
 	ret := C.PyObject_IsInstance(c(obj), c(cls))
 	return int2BoolErr(ret)
 }
@@ -182,17 +181,17 @@ func (obj *BaseObject) IsInstance(cls Object) (bool, os.Error) {
 // IsSubclass retuns true if "obj" is a Subclass of "cls", false otherwise.  If
 // "cls" is a Tuple, then true is returned if "obj" is a Subclass of any member
 // of "cls".  This is equivalent to the Python "issubclass(obj, cls)".
-func (obj *BaseObject) IsSubclass(cls Object) (bool, os.Error) {
+func (obj *BaseObject) IsSubclass(cls Object) (bool, error) {
 	ret := C.PyObject_IsSubclass(c(obj), c(cls))
 	return int2BoolErr(ret)
 }
 
-func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, os.Error) {
+func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, error) {
 	ret := C.PyObject_Call(c(obj), c(args), c(kwds))
 	return obj2ObjErr(ret)
 }
 
-func (obj *BaseObject) CallObject(args *Tuple) (Object, os.Error) {
+func (obj *BaseObject) CallObject(args *Tuple) (Object, error) {
 	var a *C.PyObject = nil
 	if args != nil {
 		a = c(args)
@@ -201,7 +200,7 @@ func (obj *BaseObject) CallObject(args *Tuple) (Object, os.Error) {
 	return obj2ObjErr(ret)
 }
 
-func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object, os.Error) {
+func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object, error) {
 	t, err := buildTuple(format, args...)
 	if err != nil {
 		return nil, err
@@ -209,7 +208,7 @@ func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object,
 	return obj.CallObject(t)
 }
 
-func (obj *BaseObject) CallMethod(name string, format string, args ...interface{}) (Object, os.Error) {
+func (obj *BaseObject) CallMethod(name string, format string, args ...interface{}) (Object, error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
@@ -232,7 +231,7 @@ func (obj *BaseObject) CallMethod(name string, format string, args ...interface{
 	return obj2ObjErr(ret)
 }
 
-func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, os.Error) {
+func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, error) {
 	t, err := PackTuple(args...)
 	if err != nil {
 		return nil, err
@@ -240,7 +239,7 @@ func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, os.Error) {
 	return obj.CallObject(t)
 }
 
-func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, os.Error) {
+func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
@@ -278,14 +277,14 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, o
 
 // Length returns the length of the Object.  This is equivalent to the Python
 // "len(obj)".
-func (obj *BaseObject) Length() (int64, os.Error) {
+func (obj *BaseObject) Length() (int64, error) {
 	ret := C.PyObject_Length(c(obj))
 	return int64(ret), exception()
 }
 
 // Size returns the length of the Object.  This is equivalent to the Python
 // "len(obj)".
-func (obj *BaseObject) Size() (int64, os.Error) {
+func (obj *BaseObject) Size() (int64, error) {
 	ret := C.PyObject_Size(c(obj))
 	return int64(ret), exception()
 }
@@ -294,28 +293,28 @@ func (obj *BaseObject) Size() (int64, os.Error) {
 // equivalent to the Python "obj[key]".
 //
 // Return value: New Reference.
-func (obj *BaseObject) GetItem(key Object) (Object, os.Error) {
+func (obj *BaseObject) GetItem(key Object) (Object, error) {
 	ret := C.PyObject_GetItem(c(obj), c(key))
 	return obj2ObjErr(ret)
 }
 
 // SetItem sets the element of "obj" corresponding to "key" to "value".  This is
 // equivalent to the Python "obj[key] = value".
-func (obj *BaseObject) SetItem(key, value Object) os.Error {
+func (obj *BaseObject) SetItem(key, value Object) error {
 	ret := C.PyObject_SetItem(c(obj), c(key), c(value))
 	return int2Err(ret)
 }
 
 // DelItem deletes the element from "obj" that corresponds to "key".  This is
 // equivalent to the Python "del obj[key]".
-func (obj *BaseObject) DelItem(key Object) os.Error {
+func (obj *BaseObject) DelItem(key Object) error {
 	ret := C.PyObject_DelItem(c(obj), c(key))
 	return int2Err(ret)
 }
 
 // PyObject_AsFileDescriptor : TODO
 
-func (obj *BaseObject) Dir() (Object, os.Error) {
+func (obj *BaseObject) Dir() (Object, error) {
 	ret := C.PyObject_Dir(c(obj))
 	return obj2ObjErr(ret)
 }

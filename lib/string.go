@@ -8,10 +8,7 @@ package py
 // static inline int stringCheck(PyObject *o) { return PyString_Check(o); }
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 type String struct {
 	AbstractObject
@@ -29,7 +26,7 @@ func newString(obj *C.PyObject) *String {
 	return (*String)(unsafe.Pointer(obj))
 }
 
-func NewString(s string) (*String, os.Error) {
+func NewString(s string) (*String, error) {
 	cs := C.CString(s)
 	defer C.free(unsafe.Pointer(cs))
 	ret := C.PyString_FromString(cs)
@@ -50,7 +47,7 @@ func (s *String) String() string {
 	return C.GoString(ret)
 }
 
-func (s *String) Format(args *Tuple) (*String, os.Error) {
+func (s *String) Format(args *Tuple) (*String, error) {
 	ret := C.PyString_Format(c(s), c(args))
 	if ret == nil {
 		return nil, exception()

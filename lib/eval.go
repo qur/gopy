@@ -7,11 +7,7 @@ package py
 // #include "utils.h"
 import "C"
 
-import (
-	"os"
-)
-
-func GetBuiltins() (Object, os.Error) {
+func GetBuiltins() (Object, error) {
 	ret := C.PyEval_GetBuiltins()
 	if ret == nil {
 		return nil, exception()
@@ -19,7 +15,7 @@ func GetBuiltins() (Object, os.Error) {
 	return newObject(ret), nil
 }
 
-func GetGlobals() (Object, os.Error) {
+func GetGlobals() (Object, error) {
 	ret := C.PyEval_GetGlobals()
 	if ret == nil {
 		return nil, exception()

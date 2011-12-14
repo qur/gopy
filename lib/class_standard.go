@@ -7,10 +7,7 @@ package py
 // #include "utils.h"
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 //export goClassCall
 func goClassCall(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
@@ -18,7 +15,7 @@ func goClassCall(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, *Tuple, *Dict) (Object, os.Error))(unsafe.Pointer(&ctxt.call))
+	f := (*func(unsafe.Pointer, *Tuple, *Dict) (Object, error))(unsafe.Pointer(&ctxt.call))
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
@@ -40,7 +37,7 @@ func goClassCompare(obj1, obj2 unsafe.Pointer) int {
 	ctxt := getClassContext(obj1)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object) (int, os.Error))(unsafe.Pointer(&ctxt.compare))
+	f := (*func(unsafe.Pointer, Object) (int, error))(unsafe.Pointer(&ctxt.compare))
 
 	o := newObject((*C.PyObject)(obj2))
 
@@ -59,7 +56,7 @@ func goClassGetAttr(obj unsafe.Pointer, name *C.char) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, string) (Object, os.Error))(unsafe.Pointer(&ctxt.getattr))
+	f := (*func(unsafe.Pointer, string) (Object, error))(unsafe.Pointer(&ctxt.getattr))
 
 	s := C.GoString(name)
 
@@ -78,7 +75,7 @@ func goClassGetAttrObj(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object) (Object, os.Error))(unsafe.Pointer(&ctxt.getattro))
+	f := (*func(unsafe.Pointer, Object) (Object, error))(unsafe.Pointer(&ctxt.getattro))
 
 	o := newObject((*C.PyObject)(obj2))
 
@@ -112,7 +109,7 @@ func goClassHash(obj unsafe.Pointer) C.long {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) (uint32, os.Error))(unsafe.Pointer(&ctxt.hash))
+	f := (*func(unsafe.Pointer) (uint32, error))(unsafe.Pointer(&ctxt.hash))
 
 	ret, err := (*f)(obj)
 	if err != nil {
@@ -131,7 +128,7 @@ func goClassInit(obj, args, kwds unsafe.Pointer) int {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, *Tuple, *Dict) os.Error)(unsafe.Pointer(&ctxt.init))
+	f := (*func(unsafe.Pointer, *Tuple, *Dict) error)(unsafe.Pointer(&ctxt.init))
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
@@ -153,7 +150,7 @@ func goClassIter(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) (Object, os.Error))(unsafe.Pointer(&ctxt.iter))
+	f := (*func(unsafe.Pointer) (Object, error))(unsafe.Pointer(&ctxt.iter))
 
 	ret, err := (*f)(obj)
 	if err != nil {
@@ -170,7 +167,7 @@ func goClassIterNext(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) (Object, os.Error))(unsafe.Pointer(&ctxt.iternext))
+	f := (*func(unsafe.Pointer) (Object, error))(unsafe.Pointer(&ctxt.iternext))
 
 	ret, err := (*f)(obj)
 	if err != nil {
@@ -203,7 +200,7 @@ func goClassRichCmp(obj1, obj2 unsafe.Pointer, op int) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object, Op) (Object, os.Error))(unsafe.Pointer(&ctxt.richcmp))
+	f := (*func(unsafe.Pointer, Object, Op) (Object, error))(unsafe.Pointer(&ctxt.richcmp))
 
 	// Get obj2 ready for use
 	arg := newObject((*C.PyObject)(obj2))
@@ -223,7 +220,7 @@ func goClassSetAttr(obj unsafe.Pointer, name *C.char, obj2 unsafe.Pointer) int {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, string, Object) os.Error)(unsafe.Pointer(&ctxt.setattr))
+	f := (*func(unsafe.Pointer, string, Object) error)(unsafe.Pointer(&ctxt.setattr))
 
 	s := C.GoString(name)
 	o := newObject((*C.PyObject)(obj2))
@@ -243,7 +240,7 @@ func goClassSetAttrObj(obj1, obj2, obj3 unsafe.Pointer) int {
 	ctxt := getClassContext(obj1)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object, Object) os.Error)(unsafe.Pointer(&ctxt.setattro))
+	f := (*func(unsafe.Pointer, Object, Object) error)(unsafe.Pointer(&ctxt.setattro))
 
 	o := newObject((*C.PyObject)(obj2))
 	o2 := newObject((*C.PyObject)(obj3))

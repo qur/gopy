@@ -6,11 +6,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"github.com/qur/gopy/lib"
+	"os"
 )
 
-func example(args *py.Tuple) (py.Object, os.Error) {
+func example(args *py.Tuple) (py.Object, error) {
 	fmt.Printf("example.example\n")
 	var s string
 	var i int
@@ -43,7 +43,7 @@ type ExampleClass struct {
 	wibble int
 }
 
-func (e *ExampleClass) PyInit(args *py.Tuple, kwds *py.Dict) os.Error {
+func (e *ExampleClass) PyInit(args *py.Tuple, kwds *py.Dict) error {
 	fmt.Printf("ExampleClass.PyInit: args=%v, kwds=%v\n", args, kwds)
 	return nil
 }
@@ -56,13 +56,13 @@ func (e *ExampleClass) PyStr() string {
 	return fmt.Sprintf("example.ExampleClass(wibble=%d)", e.wibble)
 }
 
-func (e *ExampleClass) PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error) {
+func (e *ExampleClass) PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	fmt.Printf("ExampleClass.PyCall(args=%v, kwds=%v)\n", args, kwds)
 	py.None.Incref()
 	return py.None, nil
 }
 
-func (e *ExampleClass) PyCompare(obj py.Object) (int, os.Error) {
+func (e *ExampleClass) PyCompare(obj py.Object) (int, error) {
 	o, ok := obj.(*ExampleClass)
 	if !ok {
 		return 0, fmt.Errorf("TypeError: not a example.ExampleClass instance")
@@ -75,7 +75,7 @@ func (e *ExampleClass) PyCompare(obj py.Object) (int, os.Error) {
 	return 0, nil
 }
 
-func (e *ExampleClass) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error) {
+func (e *ExampleClass) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	fmt.Printf("ExampleClass.Bar: %v %v %v\n", e, args, kwds)
 	if kwds != nil {
 		m, err := kwds.MapString()
@@ -100,7 +100,7 @@ func (e *ExampleClass) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, os.Erro
 	return py.None, nil
 }
 
-func (e *ExampleClass) PyGet_wibble() (py.Object, os.Error) {
+func (e *ExampleClass) PyGet_wibble() (py.Object, error) {
 	i := py.NewInt(e.wibble)
 	if i == nil {
 		return nil, fmt.Errorf("TypeError: failed to convert wibble to Int")
@@ -108,7 +108,7 @@ func (e *ExampleClass) PyGet_wibble() (py.Object, os.Error) {
 	return i, nil
 }
 
-func (e *ExampleClass) PySet_wibble(arg py.Object) os.Error {
+func (e *ExampleClass) PySet_wibble(arg py.Object) error {
 	i, ok := arg.(*py.Int)
 	if !ok {
 		return fmt.Errorf("TypeError: need a *py.Int, not %T", arg)

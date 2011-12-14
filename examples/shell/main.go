@@ -6,10 +6,11 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
 
-func runCmd(command string, args []string, bg bool) os.Error {
+func runCmd(command string, args []string, bg bool) error {
 	cmdFunc, err := findCmdFunc(command)
 	if err != nil {
 		return err
@@ -40,7 +41,7 @@ func main() {
 
 	for {
 		command, args, bg, err := getCommand()
-		if err == os.EOF {
+		if err == io.EOF {
 			fmt.Print("\n")
 			os.Exit(0)
 		} else if err != nil {

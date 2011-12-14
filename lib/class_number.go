@@ -7,14 +7,11 @@ package py
 // #include "utils.h"
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 func cnCallUnary(fn, obj unsafe.Pointer) unsafe.Pointer {
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) (Object, os.Error))(unsafe.Pointer(&fn))
+	f := (*func(unsafe.Pointer) (Object, error))(unsafe.Pointer(&fn))
 
 	ret, err := (*f)(obj)
 	if err != nil {
@@ -27,7 +24,7 @@ func cnCallUnary(fn, obj unsafe.Pointer) unsafe.Pointer {
 
 func cnCallBinary(fn, obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object) (Object, os.Error))(unsafe.Pointer(&fn))
+	f := (*func(unsafe.Pointer, Object) (Object, error))(unsafe.Pointer(&fn))
 
 	// Get obj2 ready to use
 	arg := newObject((*C.PyObject)(obj2))
@@ -43,7 +40,7 @@ func cnCallBinary(fn, obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 
 func cnCallTernary(fn, obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object, Object) (Object, os.Error))(unsafe.Pointer(&fn))
+	f := (*func(unsafe.Pointer, Object, Object) (Object, error))(unsafe.Pointer(&fn))
 
 	// Get obj2 and obj3 ready to use
 	arg1 := newObject((*C.PyObject)(obj2))
@@ -123,7 +120,7 @@ func goClassNumNonzero(obj unsafe.Pointer) int {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) (bool, os.Error))(unsafe.Pointer(&ctxt.nb_nonzero))
+	f := (*func(unsafe.Pointer) (bool, error))(unsafe.Pointer(&ctxt.nb_nonzero))
 
 	ret, err := (*f)(obj)
 	if err != nil {

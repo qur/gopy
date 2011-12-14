@@ -5,11 +5,11 @@
 package main
 
 import (
-	"exec"
 	"os"
+	"os/exec"
 )
 
-func execCmd(cmd, fname string, args []string) os.Error {
+func execCmd(cmd, fname string, args []string) error {
 	attr := &os.ProcAttr{
 		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
 	}
@@ -31,13 +31,13 @@ func execCmd(cmd, fname string, args []string) os.Error {
 	return p.Release()
 }
 
-func findExecCmd(cmd string) (CmdFunc, os.Error) {
+func findExecCmd(cmd string) (CmdFunc, error) {
 	p, err := exec.LookPath(cmd)
-	if e, ok := err.(*exec.Error); ok && e.Error == exec.ErrNotFound {
+	if e, ok := err.(*exec.Error); ok && e.Err == exec.ErrNotFound {
 		return nil, nil
 	} else if err != nil {
 		return nil, err
 	}
 
-	return func(args []string) os.Error { return execCmd(cmd, p, args) }, nil
+	return func(args []string) error { return execCmd(cmd, p, args) }, nil
 }

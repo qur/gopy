@@ -11,7 +11,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
@@ -40,7 +39,7 @@ func newDict(obj *C.PyObject) *Dict {
 // NewDict creates a new empty dictionary.
 //
 // Return value: New Reference.
-func NewDict() (*Dict, os.Error) {
+func NewDict() (*Dict, error) {
 	ret := C.PyDict_New()
 	if ret == nil {
 		return nil, exception()
@@ -48,7 +47,7 @@ func NewDict() (*Dict, os.Error) {
 	return newDict(ret), nil
 }
 
-func NewDictProxy(obj Object) (*Dict, os.Error) {
+func NewDictProxy(obj Object) (*Dict, error) {
 	ret := C.PyDictProxy_New(c(obj))
 	if ret == nil {
 		return nil, exception()
@@ -73,7 +72,7 @@ func (d *Dict) Clear() {
 
 // Contains Returns true if the dictionary contains the given key.  This is
 // equivalent to the Python expression "key in d".
-func (d *Dict) Contains(key Object) (bool, os.Error) {
+func (d *Dict) Contains(key Object) (bool, error) {
 	ret := C.PyDict_Contains(c(d), c(key))
 	return int2BoolErr(ret)
 }
@@ -81,14 +80,14 @@ func (d *Dict) Contains(key Object) (bool, os.Error) {
 // Copy returns a new dictionary that contains the same key-values pairs as d.
 //
 // Return value: New Reference.
-func (d *Dict) Copy() (Object, os.Error) {
+func (d *Dict) Copy() (Object, error) {
 	ret := C.PyDict_Copy(c(d))
 	return obj2ObjErr(ret)
 }
 
 // SetItem inserts "val" into dictionary d with the key "key".  If "key" is not
 // hashable, then a TypeError will be returned.
-func (d *Dict) SetItem(key, val Object) os.Error {
+func (d *Dict) SetItem(key, val Object) error {
 	ret := C.PyDict_SetItem(c(d), c(key), c(val))
 	return int2Err(ret)
 }
@@ -96,7 +95,7 @@ func (d *Dict) SetItem(key, val Object) os.Error {
 // SetItemString inserts "val" into dictionary d with the key "key" (or rather,
 // with a *String with the value of "key" will be used as the key).  If "key" is
 // not hashable, then a TypeError will be returned.
-func (d *Dict) SetItemString(key string, val Object) os.Error {
+func (d *Dict) SetItemString(key string, val Object) error {
 	s := C.CString(key)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyDict_SetItemString(c(d), s, c(val))
@@ -105,14 +104,14 @@ func (d *Dict) SetItemString(key string, val Object) os.Error {
 
 // DelItem removes the entry with the key of "key" from the dictionary d.  If
 // "key" is not hashable, a TypeError is returned.
-func (d *Dict) DelItem(key Object) os.Error {
+func (d *Dict) DelItem(key Object) error {
 	ret := C.PyDict_DelItem(c(d), c(key))
 	return int2Err(ret)
 }
 
 // DelItem removes the entry with the key of "key" (or rather, with a *String
 // with the value of "key" as the key) from the dictionary d.
-func (d *Dict) DelItemString(key string) os.Error {
+func (d *Dict) DelItemString(key string) error {
 	s := C.CString(key)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyDict_DelItemString(c(d), s)
@@ -123,7 +122,7 @@ func (d *Dict) DelItemString(key string) os.Error {
 // there is no such Object, then nil is returned (without an error).
 //
 // Return value: Borrowed Reference.
-func (d *Dict) GetItem(key Object) (Object, os.Error) {
+func (d *Dict) GetItem(key Object) (Object, error) {
 	ret := C.PyDict_GetItem(c(d), c(key))
 	return obj2ObjErr(ret)
 }
@@ -133,7 +132,7 @@ func (d *Dict) GetItem(key Object) (Object, os.Error) {
 // there is no such Object, then nil is returned (without an error).
 //
 // Return value: Borrowed Reference.
-func (d *Dict) GetItemString(key string) (Object, os.Error) {
+func (d *Dict) GetItemString(key string) (Object, error) {
 	s := C.CString(key)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyDict_GetItemString(c(d), s)
@@ -144,7 +143,7 @@ func (d *Dict) GetItemString(key string) (Object, os.Error) {
 // the Python "d.items()".
 //
 // Return value: New Reference.
-func (d *Dict) Items() (*List, os.Error) {
+func (d *Dict) Items() (*List, error) {
 	ret := C.PyDict_Items(c(d))
 	return newList(ret), exception()
 }
@@ -153,7 +152,7 @@ func (d *Dict) Items() (*List, os.Error) {
 // the Python "d.keys()".
 //
 // Return value: New Reference.
-func (d *Dict) Keys() (*List, os.Error) {
+func (d *Dict) Keys() (*List, error) {
 	ret := C.PyDict_Keys(c(d))
 	return newList(ret), exception()
 }
@@ -162,7 +161,7 @@ func (d *Dict) Keys() (*List, os.Error) {
 // with the Python "d.values()".
 //
 // Return value: New Reference.
-func (d *Dict) Values() (*List, os.Error) {
+func (d *Dict) Values() (*List, error) {
 	ret := C.PyDict_Values(c(d))
 	return newList(ret), exception()
 }
@@ -183,7 +182,7 @@ func (d *Dict) Size() int64 {
 // object that supports "o.keys()" and "o[key]") into the dictionary d.  If
 // override is true then a matching key in d will have it's value replaced by
 // the one in o, else the value in d will be left.
-func (d *Dict) Merge(o Object, override bool) os.Error {
+func (d *Dict) Merge(o Object, override bool) error {
 	over := 0
 	if override {
 		over = 1
@@ -194,7 +193,7 @@ func (d *Dict) Merge(o Object, override bool) os.Error {
 
 // Update replaces key values pairs in d with those from o.  It is equivalent to
 // d.Merge(o, true) in Go, or "d.update(o)" in Python.
-func (d *Dict) Update(o Object) os.Error {
+func (d *Dict) Update(o Object) error {
 	ret := C.PyDict_Update(c(d), c(o))
 	return int2Err(ret)
 }
@@ -204,7 +203,7 @@ func (d *Dict) Update(o Object) os.Error {
 // pairs).  If override is true then the last key value pair with the same key
 // wins, otherwise the first instance does (where an instance already in d
 // counts before any in o).
-func (d *Dict) MergeFromSeq2(o Object, override bool) os.Error {
+func (d *Dict) MergeFromSeq2(o Object, override bool) error {
 	over := 0
 	if override {
 		over = 1
@@ -236,7 +235,7 @@ func (d *Dict) Map() map[Object]Object {
 // strings.  If the keys are not all Python strings, then an error is returned.
 //
 // Note: the map holds borrowed references
-func (d *Dict) MapString() (map[string]Object, os.Error) {
+func (d *Dict) MapString() (map[string]Object, error) {
 	m := make(map[string]Object, d.Size())
 	var p C.Py_ssize_t
 	var k *C.PyObject

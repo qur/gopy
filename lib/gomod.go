@@ -7,10 +7,6 @@ package py
 // #include "utils.h"
 import "C"
 
-import (
-	"os"
-)
-
 var goModule *Module
 
 // InitGoModules initializes (and returns) the special built-in "go" module.
@@ -21,7 +17,7 @@ var goModule *Module
 //
 // This function may be called more than once to get at the *Module, the module
 // will only be created and initialized once.
-func InitGoModule() (*Module, os.Error) {
+func InitGoModule() (*Module, error) {
 	if goModule != nil {
 		return goModule, nil
 	}

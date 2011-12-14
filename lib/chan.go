@@ -7,10 +7,7 @@ package py
 // #include "utils.h"
 import "C"
 
-import (
-	"fmt"
-	"os"
-)
+import "fmt"
 
 // Chan is a Python object that wraps a Go channel (specifically a "chan
 // Object").
@@ -19,7 +16,7 @@ type Chan struct {
 	c chan Object
 }
 
-func newChan(t *Type, args *Tuple, kw *Dict) (Object, os.Error) {
+func newChan(t *Type, args *Tuple, kw *Dict) (Object, error) {
 	obj, err := t.Alloc(0)
 	if err != nil {
 		return nil, err
@@ -50,7 +47,7 @@ func newChan(t *Type, args *Tuple, kw *Dict) (Object, os.Error) {
 // as otherwise the Chan Python type has not been initialized.
 //
 // Return value: New Reference.
-func NewChan(buffer int) (*Chan, os.Error) {
+func NewChan(buffer int) (*Chan, error) {
 	if goModule == nil {
 		return nil, fmt.Errorf("go module has not been initialized!")
 	}
@@ -79,7 +76,7 @@ func (c *Chan) PyDealloc() {
 }
 
 // Py_put provides a c.put() method when this object is used in Python.
-func (c *Chan) Py_put(args *Tuple, kw *Dict) (Object, os.Error) {
+func (c *Chan) Py_put(args *Tuple, kw *Dict) (Object, error) {
 	var obj Object
 	kwlist := []string{"obj"}
 
@@ -96,7 +93,7 @@ func (c *Chan) Py_put(args *Tuple, kw *Dict) (Object, os.Error) {
 }
 
 // Py_get provides a c.get() method when this object is used in Python.
-func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, os.Error) {
+func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, error) {
 	err := ParseTupleAndKeywords(args, kw, "", []string{})
 	if err != nil {
 		return nil, err

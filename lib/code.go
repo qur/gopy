@@ -8,10 +8,7 @@ package py
 // static inline int codeCheck(PyObject *o) { return PyCode_Check(o); }
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 type Code struct {
 	AbstractObject
@@ -25,7 +22,7 @@ func newCode(obj *C.PyObject) *Code {
 	return (*Code)(unsafe.Pointer(obj))
 }
 
-func CompileFile(name string) (*Code, os.Error) {
+func CompileFile(name string) (*Code, error) {
 	fn := C.CString(name)
 	defer C.free(unsafe.Pointer(fn))
 	ret := C.compileFile(fn)
@@ -42,7 +39,7 @@ func codeCheck(obj Object) bool {
 	return C.codeCheck(c(obj)) != 0
 }
 
-func (code *Code) Eval(globals, locals Object) (Object, os.Error) {
+func (code *Code) Eval(globals, locals Object) (Object, error) {
 	pyCode := (*C.PyCodeObject)(unsafe.Pointer(code))
 	ret := C.PyEval_EvalCode(pyCode, c(globals), c(locals))
 	return obj2ObjErr(ret)

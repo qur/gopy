@@ -10,7 +10,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
@@ -30,20 +29,20 @@ func newCFunction(obj *C.PyObject) *CFunction {
 	return (*CFunction)(unsafe.Pointer(obj))
 }
 
-func NewCFunction(name string, fn interface{}, doc string) (*CFunction, os.Error) {
+func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {
 	ml := C.newMethodDef()
 
-	switch f := fn.(type) {
+	switch fn.(type) {
 
-	case func() (Object, os.Error):
+	case func() (Object, error):
 		C.set_call_noargs(&ml.ml_meth)
 		ml.ml_flags = C.METH_NOARGS
 
-	case func(a *Tuple) (Object, os.Error):
+	case func(a *Tuple) (Object, error):
 		C.set_call_args(&ml.ml_meth)
 		ml.ml_flags = C.METH_VARARGS
 
-	case func(a *Tuple, k *Dict) (Object, os.Error):
+	case func(a *Tuple, k *Dict) (Object, error):
 		C.set_call_keywords(&ml.ml_meth)
 		ml.ml_flags = C.METH_VARARGS | C.METH_KEYWORDS
 
@@ -67,7 +66,7 @@ func NewCFunction(name string, fn interface{}, doc string) (*CFunction, os.Error
 
 // PyCFunction_GetFunction
 
-func (f *CFunction) Self() (Object, os.Error) {
+func (f *CFunction) Self() (Object, error) {
 	ret := C.PyCFunction_GetSelf(c(f))
 	if ret == nil {
 		return nil, exception()
@@ -75,12 +74,12 @@ func (f *CFunction) Self() (Object, os.Error) {
 	return newObject(ret), nil
 }
 
-func (f *CFunction) Flags() (int, os.Error) {
+func (f *CFunction) Flags() (int, error) {
 	ret := C.PyCFunction_GetFlags(c(f))
 	return int(ret), exception()
 }
 
-func (f *CFunction) Call(args *Tuple, kw *Dict) (Object, os.Error) {
+func (f *CFunction) Call(args *Tuple, kw *Dict) (Object, error) {
 	ret := C.PyCFunction_Call(c(f), c(args), c(kw))
 	if ret == nil {
 		return nil, exception()
@@ -105,7 +104,7 @@ func saveFunc(f interface{}) *C.PyObject {
 func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	_idx := (*C.PyObject)(self)
 	idx := C.PyInt_AsLong(_idx)
-	f, ok := funcs[idx].(func() (Object, os.Error))
+	f, ok := funcs[idx].(func() (Object, error))
 	if !ok {
 		fmt.Printf("invalid index: %d\n", idx)
 		return nil
@@ -122,7 +121,7 @@ func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
 func callWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	_idx := (*C.PyObject)(self)
 	idx := C.PyInt_AsLong(_idx)
-	f, ok := funcs[idx].(func(a *Tuple) (Object, os.Error))
+	f, ok := funcs[idx].(func(a *Tuple) (Object, error))
 	if !ok {
 		fmt.Printf("invalid index: %d\n", idx)
 		return nil
@@ -140,7 +139,7 @@ func callWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
 func callWithKeywords(self, args, kw unsafe.Pointer) unsafe.Pointer {
 	_idx := (*C.PyObject)(self)
 	idx := C.PyInt_AsLong(_idx)
-	f, ok := funcs[idx].(func(a *Tuple, k *Dict) (Object, os.Error))
+	f, ok := funcs[idx].(func(a *Tuple, k *Dict) (Object, error))
 	if !ok {
 		fmt.Printf("invalid index: %d\n", idx)
 		return nil

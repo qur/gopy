@@ -9,13 +9,12 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
 func csCallSsizeArgFunc(fn, obj unsafe.Pointer, s C.Py_ssize_t) unsafe.Pointer {
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, int64) (Object, os.Error))(unsafe.Pointer(&fn))
+	f := (*func(unsafe.Pointer, int64) (Object, error))(unsafe.Pointer(&fn))
 
 	ret, err := (*f)(obj, int64(s))
 	if err != nil {
@@ -59,7 +58,7 @@ func goClassSeqSetItem(obj unsafe.Pointer, i C.Py_ssize_t, v unsafe.Pointer) int
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, int64, Object) os.Error)(unsafe.Pointer(&ctxt.sq_set))
+	f := (*func(unsafe.Pointer, int64, Object) error)(unsafe.Pointer(&ctxt.sq_set))
 
 	// Get v ready to use
 	a := newObject((*C.PyObject)(v))
@@ -80,7 +79,7 @@ func goClassSeqContains(obj1, obj2 unsafe.Pointer) int {
 	fmt.Printf("goClassSeqContains\n")
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object) (bool, os.Error))(unsafe.Pointer(&ctxt.sq_contains))
+	f := (*func(unsafe.Pointer, Object) (bool, error))(unsafe.Pointer(&ctxt.sq_contains))
 
 	// Get obj2 ready to use
 	a := newObject((*C.PyObject)(obj2))

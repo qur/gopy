@@ -14,7 +14,7 @@ import (
 
 var mydir string
 
-func setupPython() os.Error {
+func setupPython() error {
 	lock := py.InitAndLock()
 	defer lock.Unlock()
 
@@ -32,7 +32,7 @@ func setupPython() os.Error {
 	return nil
 }
 
-func callPyCmd(fn py.Object, args []string) os.Error {
+func callPyCmd(fn py.Object, args []string) error {
 	lock := py.NewLock()
 	defer lock.Unlock()
 
@@ -63,7 +63,7 @@ func callPyCmd(fn py.Object, args []string) os.Error {
 	return nil
 }
 
-func tryPyFile(cmd, filename string) (CmdFunc, os.Error) {
+func tryPyFile(cmd, filename string) (CmdFunc, error) {
 	lock := py.NewLock()
 	defer lock.Unlock()
 
@@ -82,10 +82,10 @@ func tryPyFile(cmd, filename string) (CmdFunc, os.Error) {
 		return nil, err
 	}
 
-	return func(args []string) os.Error { return callPyCmd(fn, args) }, nil
+	return func(args []string) error { return callPyCmd(fn, args) }, nil
 }
 
-func findPyCmd(cmd string) (CmdFunc, os.Error) {
+func findPyCmd(cmd string) (CmdFunc, error) {
 	// Python commands can't have a / in them ...
 	if strings.Contains(cmd, "/") {
 		return nil, nil
@@ -96,7 +96,7 @@ func findPyCmd(cmd string) (CmdFunc, os.Error) {
 	_, err := os.Stat(name)
 	if err != nil {
 		perr := err.(*os.PathError)
-		if perr.Error == os.ENOENT {
+		if perr.Err == os.ENOENT {
 			return nil, nil
 		}
 		return nil, err

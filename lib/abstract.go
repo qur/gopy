@@ -10,10 +10,7 @@ package py
 // static inline void typeFree(PyTypeObject *type, PyObject *o) { type->tp_free(o); }
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 type AbstractObject struct{}
 
@@ -21,7 +18,7 @@ func newAbstractObject(obj *C.PyObject) *AbstractObject {
 	return (*AbstractObject)(unsafe.Pointer(obj))
 }
 
-func (obj *AbstractObject) Init(args *Tuple, kw *Dict) os.Error {
+func (obj *AbstractObject) Init(args *Tuple, kw *Dict) error {
 	return obj.Type().Init(obj, args, kw)
 }
 
@@ -76,5 +73,5 @@ func (obj *AbstractObject) Free() {
 	C.typeFree(pyType, o)
 
 	// Make sure this instance isn't registered anymore
-	contexts[uintptr(unsafe.Pointer(o))] = nil, false
+	delete(contexts, uintptr(unsafe.Pointer(o)))
 }

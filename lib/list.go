@@ -11,7 +11,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
@@ -43,7 +42,7 @@ func newList(obj *C.PyObject) *List {
 // list.SetItem().
 //
 // Return value: New Reference.
-func NewList(size int64) (*List, os.Error) {
+func NewList(size int64) (*List, error) {
 	ret := C.PyList_New(C.Py_ssize_t(size))
 	if ret == nil {
 		return nil, exception()
@@ -74,7 +73,7 @@ func (l *List) Size() int64 {
 // of bounds for l, then an IndexError will be returned.
 //
 // Return value: Borrowed Reference.
-func (l *List) GetItem(idx int64) (Object, os.Error) {
+func (l *List) GetItem(idx int64) (Object, error) {
 	ret := C.PyList_GetItem(c(l), C.Py_ssize_t(idx))
 	return obj2ObjErr(ret)
 }
@@ -83,7 +82,7 @@ func (l *List) GetItem(idx int64) (Object, os.Error) {
 //
 // Note: This method "steals" a reference to obj, and discards a reference to
 // the current value of idx in l (if there is one).
-func (l *List) SetItem(idx int64, obj Object) os.Error {
+func (l *List) SetItem(idx int64, obj Object) error {
 	ret := C.PyList_SetItem(c(l), C.Py_ssize_t(idx), c(obj))
 	return int2Err(ret)
 }
@@ -91,19 +90,19 @@ func (l *List) SetItem(idx int64, obj Object) os.Error {
 // Insert adds the Object obj to list l, by inserting it before the value
 // currently stored at index idx (making obj the new value with index idx).
 // This is equivalent to the Python "l.insert(idx, obj)".
-func (l *List) Insert(idx int64, obj Object) os.Error {
+func (l *List) Insert(idx int64, obj Object) error {
 	ret := C.PyList_Insert(c(l), C.Py_ssize_t(idx), c(obj))
 	return int2Err(ret)
 }
 
 // Append adds the Object obj to list l, by appending it to the end of the list.
 // This is equivalent to the Python "l.append(obj)"
-func (l *List) Append(obj Object) os.Error {
+func (l *List) Append(obj Object) error {
 	ret := C.PyList_Append(c(l), c(obj))
 	return int2Err(ret)
 }
 
-func (l *List) GetSlice(low, high int64) (*List, os.Error) {
+func (l *List) GetSlice(low, high int64) (*List, error) {
 	ret := C.PyList_GetSlice(c(l), C.Py_ssize_t(low), C.Py_ssize_t(high))
 	if ret == nil {
 		return nil, exception()
@@ -111,17 +110,17 @@ func (l *List) GetSlice(low, high int64) (*List, os.Error) {
 	return newList(ret), nil
 }
 
-func (l *List) SetSlice(low, high int64, items *List) os.Error {
+func (l *List) SetSlice(low, high int64, items *List) error {
 	ret := C.PyList_SetSlice(c(l), C.Py_ssize_t(low), C.Py_ssize_t(high), c(items))
 	return int2Err(ret)
 }
 
-func (l *List) Sort() os.Error {
+func (l *List) Sort() error {
 	ret := C.PyList_Sort(c(l))
 	return int2Err(ret)
 }
 
-func (l *List) Reverse() os.Error {
+func (l *List) Reverse() error {
 	ret := C.PyList_Reverse(c(l))
 	return int2Err(ret)
 }

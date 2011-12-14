@@ -10,7 +10,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
@@ -30,7 +29,7 @@ func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
 }
 
-func NewFloat(v float64) (*Float, os.Error) {
+func NewFloat(v float64) (*Float, error) {
 	ret := C.PyFloat_FromDouble(C.double(v))
 	if ret == nil {
 		return nil, exception()
@@ -38,7 +37,7 @@ func NewFloat(v float64) (*Float, os.Error) {
 	return newFloat(ret), nil
 }
 
-func NewFloatString(v string) (*Float, os.Error) {
+func NewFloatString(v string) (*Float, error) {
 	s, err := NewString(v)
 	if err != nil {
 		return nil, err

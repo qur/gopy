@@ -4,14 +4,11 @@
 
 package main
 
-import (
-	"os"
-	"github.com/qur/gopy/lib"
-)
+import "github.com/qur/gopy/lib"
 
 var shMod *py.Module
 
-func pyTokenise(args *py.Tuple) (py.Object, os.Error) {
+func pyTokenise(args *py.Tuple) (py.Object, error) {
 	s := ""
 	err := py.ParseTuple(args, "s", &s)
 	if err != nil {
@@ -37,7 +34,7 @@ func pyTokenise(args *py.Tuple) (py.Object, os.Error) {
 	return t, nil
 }
 
-func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, os.Error) {
+func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 	command := ""
 	var bg py.Object
 	var argO py.Object
@@ -83,7 +80,7 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, os.Error) {
 	return py.None, nil
 }
 
-func setupShModule() os.Error {
+func setupShModule() error {
 	methods := []py.Method{
 		{"tokenise", pyTokenise, "tokenise the given string"},
 		{"run", pyRun, "run the given command"},

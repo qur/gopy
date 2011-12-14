@@ -9,11 +9,10 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
-func packValues(values []interface{}) ([]unsafe.Pointer, os.Error) {
+func packValues(values []interface{}) ([]unsafe.Pointer, error) {
 	cValues := make([]unsafe.Pointer, len(values))
 	for i, value := range values {
 		switch v := value.(type) {
@@ -52,7 +51,7 @@ func packValues(values []interface{}) ([]unsafe.Pointer, os.Error) {
 	return cValues, nil
 }
 
-func unpackValues(cValues []unsafe.Pointer, values []interface{}) os.Error {
+func unpackValues(cValues []unsafe.Pointer, values []interface{}) error {
 	for i, value := range values {
 		switch v := value.(type) {
 		case *string:
@@ -90,7 +89,7 @@ func unpackValues(cValues []unsafe.Pointer, values []interface{}) os.Error {
 	return nil
 }
 
-func ParseTuple(args *Tuple, format string, values ...interface{}) os.Error {
+func ParseTuple(args *Tuple, format string, values ...interface{}) error {
 	if args == nil {
 		return fmt.Errorf("ParseTuple: args was nil")
 	}
@@ -116,7 +115,7 @@ func ParseTuple(args *Tuple, format string, values ...interface{}) os.Error {
 	return unpackValues(cValues, values)
 }
 
-func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string, values ...interface{}) os.Error {
+func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string, values ...interface{}) error {
 	if args == nil {
 		return fmt.Errorf("ParseTupleAndKeywords: args was nil")
 	}
@@ -149,7 +148,7 @@ func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string
 	return unpackValues(cValues, values)
 }
 
-func BuildValue(format string, values ...interface{}) (Object, os.Error) {
+func BuildValue(format string, values ...interface{}) (Object, error) {
 	cValues := make([]C.ArgValue, len(values))
 	for i, value := range values {
 		switch v := value.(type) {

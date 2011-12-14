@@ -10,10 +10,7 @@ package py
 // static inline int frozenSetCheckE(PyObject *o) { return PyFrozenSet_CheckExact(o); }
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 // *Set represents a Python set.  In addition to satisfying the Object
 // interface, Set pointers also have a number of methods defined - representing
@@ -54,7 +51,7 @@ func newFrozenSet(obj *C.PyObject) *FrozenSet {
 // iterable).  An empty set is returned if o is nil.
 //
 // Return value: New Reference.
-func NewSet(o Object) (*Set, os.Error) {
+func NewSet(o Object) (*Set, error) {
 	ret := C.PySet_New(c(o))
 	if ret == nil {
 		return nil, exception()
@@ -67,7 +64,7 @@ func NewSet(o Object) (*Set, os.Error) {
 // "o" is not iterable).  An empty set is returned if o is nil.
 //
 // Return value: New Reference.
-func NewFrozenSet(o Object) (*FrozenSet, os.Error) {
+func NewFrozenSet(o Object) (*FrozenSet, error) {
 	ret := C.PyFrozenSet_New(c(o))
 	if ret == nil {
 		return nil, exception()
@@ -93,14 +90,14 @@ func (s *Set) Size() int64 {
 // Contains returns true if the set "s" contains the Object "key".  "key" must
 // be hashable, otherwise a TypeError is returned.  This is equivalent to the
 // Python "key in s".
-func (s *Set) Contains(key Object) (bool, os.Error) {
+func (s *Set) Contains(key Object) (bool, error) {
 	ret := C.PySet_Contains(c(s), c(key))
 	return int2BoolErr(ret)
 }
 
 // Add adds "key" to the set "s".  "key" must be hashable, otherwise a TypeError
 // is returned.
-func (s *Set) Add(key Object) os.Error {
+func (s *Set) Add(key Object) error {
 	ret := C.PySet_Add(c(s), c(key))
 	return int2Err(ret)
 }
@@ -108,7 +105,7 @@ func (s *Set) Add(key Object) os.Error {
 // Discard removes the specified "key" from the set "s".  It returns true if the
 // Object was found and removed, false if it was not found.  "key" must be
 // hashable, otherwise a TypeError is returned.
-func (s *Set) Discard(key Object) (bool, os.Error) {
+func (s *Set) Discard(key Object) (bool, error) {
 	ret := C.PySet_Discard(c(s), c(key))
 	return int2BoolErr(ret)
 }
@@ -117,13 +114,13 @@ func (s *Set) Discard(key Object) (bool, os.Error) {
 // it.  If the set is empty a KeyError is returned.
 //
 // Return value: New Reference.
-func (s *Set) Pop() (Object, os.Error) {
+func (s *Set) Pop() (Object, error) {
 	ret := C.PySet_Pop(c(s))
 	return obj2ObjErr(ret)
 }
 
 // Clear empties the set "s".
-func (s *Set) Clear() os.Error {
+func (s *Set) Clear() error {
 	ret := C.PySet_Clear(c(s))
 	return int2Err(ret)
 }

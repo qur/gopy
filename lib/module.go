@@ -12,7 +12,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
@@ -35,7 +34,7 @@ func newModule(obj *C.PyObject) *Module {
 	return (*Module)(unsafe.Pointer(obj))
 }
 
-func Import(name string) (*Module, os.Error) {
+func Import(name string) (*Module, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 
@@ -50,7 +49,7 @@ func Import(name string) (*Module, os.Error) {
 	return newModule(obj), nil
 }
 
-func InitModule(name string, methods []Method) (*Module, os.Error) {
+func InitModule(name string, methods []Method) (*Module, error) {
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
 
@@ -79,17 +78,17 @@ func InitModule(name string, methods []Method) (*Module, os.Error) {
 		ml.ml_name = C.CString(method.Name)
 		ml.ml_doc = C.CString(method.Doc)
 
-		switch f := method.Func.(type) {
+		switch method.Func.(type) {
 
-		case func() (Object, os.Error):
+		case func() (Object, error):
 			C.set_call_noargs(&ml.ml_meth)
 			ml.ml_flags = C.METH_NOARGS
 
-		case func(a *Tuple) (Object, os.Error):
+		case func(a *Tuple) (Object, error):
 			C.set_call_args(&ml.ml_meth)
 			ml.ml_flags = C.METH_VARARGS
 
-		case func(a *Tuple, k *Dict) (Object, os.Error):
+		case func(a *Tuple, k *Dict) (Object, error):
 			C.set_call_keywords(&ml.ml_meth)
 			ml.ml_flags = C.METH_VARARGS | C.METH_KEYWORDS
 
@@ -111,7 +110,7 @@ func InitModule(name string, methods []Method) (*Module, os.Error) {
 	return newModule(m), nil
 }
 
-func ExecCodeModule(name string, code Object) (*Module, os.Error) {
+func ExecCodeModule(name string, code Object) (*Module, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyImport_ExecCodeModule(s, c(code))
@@ -121,7 +120,7 @@ func ExecCodeModule(name string, code Object) (*Module, os.Error) {
 	return newModule(ret), nil
 }
 
-func NewModule(name string) (*Module, os.Error) {
+func NewModule(name string) (*Module, error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
@@ -142,7 +141,7 @@ func (mod *Module) Dict() *Dict {
 	return newDict(ret)
 }
 
-func (mod *Module) Name() (string, os.Error) {
+func (mod *Module) Name() (string, error) {
 	ret := C.PyModule_GetName(c(mod))
 	if ret == nil {
 		return "", exception()
@@ -150,7 +149,7 @@ func (mod *Module) Name() (string, os.Error) {
 	return C.GoString(ret), nil
 }
 
-func (mod *Module) Filename() (string, os.Error) {
+func (mod *Module) Filename() (string, error) {
 	ret := C.PyModule_GetFilename(c(mod))
 	if ret == nil {
 		return "", exception()
@@ -158,7 +157,7 @@ func (mod *Module) Filename() (string, os.Error) {
 	return C.GoString(ret), nil
 }
 
-func (mod *Module) AddObject(name string, obj Object) os.Error {
+func (mod *Module) AddObject(name string, obj Object) error {
 	if obj == nil {
 		return fmt.Errorf("ValueError: obj == nil!")
 	}
@@ -174,7 +173,7 @@ func (mod *Module) AddObject(name string, obj Object) os.Error {
 	return nil
 }
 
-func (mod *Module) AddIntConstant(name string, value int) os.Error {
+func (mod *Module) AddIntConstant(name string, value int) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
@@ -186,7 +185,7 @@ func (mod *Module) AddIntConstant(name string, value int) os.Error {
 	return nil
 }
 
-func (mod *Module) AddStringConstant(name, value string) os.Error {
+func (mod *Module) AddStringConstant(name, value string) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 

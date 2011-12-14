@@ -12,10 +12,7 @@ package py
 // }
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 type Type struct {
 	AbstractObject
@@ -36,13 +33,13 @@ func newType(obj *C.PyObject) *Type {
 	return (*Type)(unsafe.Pointer(obj))
 }
 
-func (t *Type) Alloc(n int64) (Object, os.Error) {
+func (t *Type) Alloc(n int64) (Object, error) {
 	ct := (*C.PyTypeObject)(unsafe.Pointer(c(t)))
 	ret := C.PyType_GenericAlloc(ct, C.Py_ssize_t(n))
 	return obj2ObjErr(ret)
 }
 
-func (t *Type) Init(obj Object, args *Tuple, kw *Dict) os.Error {
+func (t *Type) Init(obj Object, args *Tuple, kw *Dict) error {
 	ret := C.typeInit(c(t), c(obj), c(args), c(kw))
 	if ret < 0 {
 		return exception()

@@ -12,7 +12,6 @@ import "C"
 
 import (
 	"fmt"
-	"os"
 	"unsafe"
 )
 
@@ -35,7 +34,7 @@ func newTuple(obj *C.PyObject) *Tuple {
 	return (*Tuple)(unsafe.Pointer(obj))
 }
 
-func buildTuple(format string, args ...interface{}) (*Tuple, os.Error) {
+func buildTuple(format string, args ...interface{}) (*Tuple, error) {
 	if format == "" {
 		return NewTuple(0)
 	}
@@ -55,7 +54,7 @@ func buildTuple(format string, args ...interface{}) (*Tuple, os.Error) {
 // code, until the entries have all been set.
 //
 // Return value: New Reference.
-func NewTuple(size int64) (*Tuple, os.Error) {
+func NewTuple(size int64) (*Tuple, error) {
 	ret := C.PyTuple_New(C.Py_ssize_t(size))
 	if ret == nil {
 		return nil, exception()
@@ -67,7 +66,7 @@ func NewTuple(size int64) (*Tuple, os.Error) {
 // ready to use.
 //
 // Return value: New Reference.
-func PackTuple(items ...Object) (*Tuple, os.Error) {
+func PackTuple(items ...Object) (*Tuple, error) {
 	ret := C.PyTuple_New(C.Py_ssize_t(len(items)))
 	if ret == nil {
 		return nil, exception()
@@ -112,12 +111,12 @@ func (t *Tuple) Size() int64 {
 	return int64(ret)
 }
 
-func (t *Tuple) GetItem(pos int64) (Object, os.Error) {
+func (t *Tuple) GetItem(pos int64) (Object, error) {
 	ret := C.PyTuple_GetItem(c(t), C.Py_ssize_t(pos))
 	return obj2ObjErr(ret)
 }
 
-func (t *Tuple) GetSlice(low, high int64) (*Tuple, os.Error) {
+func (t *Tuple) GetSlice(low, high int64) (*Tuple, error) {
 	ret := C.PyTuple_GetSlice(c(t), C.Py_ssize_t(low), C.Py_ssize_t(high))
 	if ret == nil {
 		return nil, exception()
@@ -125,7 +124,7 @@ func (t *Tuple) GetSlice(low, high int64) (*Tuple, os.Error) {
 	return newTuple(ret), nil
 }
 
-func (t *Tuple) SetItem(pos int64, obj Object) os.Error {
+func (t *Tuple) SetItem(pos int64, obj Object) error {
 	ret := C.PyTuple_SetItem(c(t), C.Py_ssize_t(pos), c(obj))
 	return int2Err(ret)
 }

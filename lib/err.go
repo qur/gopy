@@ -10,13 +10,10 @@ package py
 // static inline void xdecref(PyObject *obj) { Py_XDECREF(obj); }
 import "C"
 
-import (
-	"fmt"
-	"os"
-)
+import "fmt"
 
 // Error represents a Python exception as a Go struct that implements the
-// os.Error interface.  It allows Go code to handle Python exceptions in an
+// error interface.  It allows Go code to handle Python exceptions in an
 // idiomatic Go fashion.
 type Error struct {
 	Kind  Object
@@ -24,10 +21,10 @@ type Error struct {
 	tb    *C.PyObject
 }
 
-// String() returns a string representation of the Python exception represented
+// Error() returns a string representation of the Python exception represented
 // by the Error e.  This is the same as the final line of the Python output from
 // an uncaught exception.
-func (e *Error) String() string {
+func (e *Error) Error() string {
 	ts := ""
 	en := C.excName(c(e.Kind))
 	if en.c == nil {
@@ -76,7 +73,7 @@ func exceptionRaised() bool {
 	return C.PyErr_Occurred() != nil
 }
 
-func exception() os.Error {
+func exception() error {
 	if C.PyErr_Occurred() == nil {
 		return nil
 	}
@@ -90,7 +87,7 @@ func exception() os.Error {
 	return &Error{newObject(t), newObject(v), tb}
 }
 
-func raise(err os.Error) {
+func raise(err error) {
 	var val *C.PyObject
 	var exc = C.PyExc_Exception
 
@@ -99,63 +96,63 @@ func raise(err os.Error) {
 		exc = c(e.Kind)
 		val = c(e.Value)
 	} else {
-		v, _ := NewString(err.String())
+		v, _ := NewString(err.Error())
 		val = c(v)
 	}
 
 	C.PyErr_SetObject(exc, val)
 }
 
-func TypeError(format string, args ...interface{}) os.Error {
+func TypeError(format string, args ...interface{}) error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
 	Exc.TypeError.Incref()
 	return &Error{Exc.TypeError, val, nil}
 }
 
-func KeyError(format string, args ...interface{}) os.Error {
+func KeyError(format string, args ...interface{}) error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
 	Exc.KeyError.Incref()
 	return &Error{Exc.KeyError, val, nil}
 }
 
-func AttributeError(format string, args ...interface{}) os.Error {
+func AttributeError(format string, args ...interface{}) error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
 	Exc.AttributeError.Incref()
 	return &Error{Exc.AttributeError, val, nil}
 }
 
-func NotImplemented(format string, args ...interface{}) os.Error {
+func NotImplemented(format string, args ...interface{}) error {
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewString(msg)
 	Exc.NotImplementedError.Incref()
 	return &Error{Exc.NotImplementedError, val, nil}
 }
 
-func int2Err(i C.int) os.Error {
+func int2Err(i C.int) error {
 	if i < 0 {
 		return exception()
 	}
 	return nil
 }
 
-func int2BoolErr(i C.int) (bool, os.Error) {
+func int2BoolErr(i C.int) (bool, error) {
 	if i < 0 {
 		return false, exception()
 	}
 	return i > 0, nil
 }
 
-func ssize_t2Int64Err(s C.Py_ssize_t) (int64, os.Error) {
+func ssize_t2Int64Err(s C.Py_ssize_t) (int64, error) {
 	if s < 0 {
 		return 0, exception()
 	}
 	return int64(s), nil
 }
 
-func obj2ObjErr(obj *C.PyObject) (Object, os.Error) {
+func obj2ObjErr(obj *C.PyObject) (Object, error) {
 	if obj == nil {
 		return nil, exception()
 	}

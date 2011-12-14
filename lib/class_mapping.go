@@ -7,10 +7,7 @@ package py
 // #include "utils.h"
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 //export goClassMapLen
 func goClassMapLen(obj unsafe.Pointer) C.Py_ssize_t {
@@ -29,7 +26,7 @@ func goClassMapGet(obj, arg unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object) (Object, os.Error))(unsafe.Pointer(&ctxt.mp_get))
+	f := (*func(unsafe.Pointer, Object) (Object, error))(unsafe.Pointer(&ctxt.mp_get))
 
 	key := newObject((*C.PyObject)(arg))
 
@@ -48,7 +45,7 @@ func goClassMapSet(obj, arg1, arg2 unsafe.Pointer) int {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, Object, Object) os.Error)(unsafe.Pointer(&ctxt.mp_set))
+	f := (*func(unsafe.Pointer, Object, Object) error)(unsafe.Pointer(&ctxt.mp_set))
 
 	key := newObject((*C.PyObject)(arg1))
 	value := newObject((*C.PyObject)(arg2))

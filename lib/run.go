@@ -7,10 +7,7 @@ package py
 // #include "utils.h"
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 type StartToken int
 
@@ -20,7 +17,7 @@ const (
 	SingleInput
 )
 
-func RunFile(filename string, start StartToken, globals, locals Object) (Object, os.Error) {
+func RunFile(filename string, start StartToken, globals, locals Object) (Object, error) {
 	name := C.CString(filename)
 	defer C.free(unsafe.Pointer(name))
 

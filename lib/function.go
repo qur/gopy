@@ -8,10 +8,7 @@ package py
 // static inline int functionCheck(PyObject *o) { return PyFunction_Check(o); }
 import "C"
 
-import (
-	"os"
-	"unsafe"
-)
+import "unsafe"
 
 // *Function represents a Python function.  In Python this is a function created
 // using the "def" statement.
@@ -42,7 +39,7 @@ func functionCheck(obj Object) bool {
 // object, the argument defaults and closure are initialised to nil.
 //
 // Return value: New Reference.
-func NewFunction(code Object, globals Object) (*Function, os.Error) {
+func NewFunction(code Object, globals Object) (*Function, error) {
 	ret := C.PyFunction_New(c(code), c(globals))
 	return newFunction(ret), nil
 }
@@ -50,7 +47,7 @@ func NewFunction(code Object, globals Object) (*Function, os.Error) {
 // Code returns the code object associated with the function "fn".
 //
 // Return value: Borrowed Reference.
-func (fn *Function) Code() (Object, os.Error) {
+func (fn *Function) Code() (Object, error) {
 	ret := C.PyFunction_GetCode(c(fn))
 	return obj2ObjErr(ret)
 }
@@ -58,7 +55,7 @@ func (fn *Function) Code() (Object, os.Error) {
 // Globals returns the globals dictionary associated with the function "fn".
 //
 // Return value: Borrowed Reference.
-func (fn *Function) Globals() (Object, os.Error) {
+func (fn *Function) Globals() (Object, error) {
 	ret := C.PyFunction_GetGlobals(c(fn))
 	return obj2ObjErr(ret)
 }
@@ -66,7 +63,7 @@ func (fn *Function) Globals() (Object, os.Error) {
 // Module returns the __module__ attribute of the function "fn".
 //
 // Return value: Borrowed Reference.
-func (fn *Function) Module() (Object, os.Error) {
+func (fn *Function) Module() (Object, error) {
 	ret := C.PyFunction_GetModule(c(fn))
 	return obj2ObjErr(ret)
 }
@@ -75,14 +72,14 @@ func (fn *Function) Module() (Object, os.Error) {
 // be nil or a Tuple of values.
 //
 // Return value: Borrowed Reference.
-func (fn *Function) Defaults() (Object, os.Error) {
+func (fn *Function) Defaults() (Object, error) {
 	ret := C.PyFunction_GetDefaults(c(fn))
 	return obj2ObjErr(ret)
 }
 
 // SetDefaults sets teh arguement default values for the function "fn".  "o"
 // must be either a Tuple, or None.
-func (fn *Function) SetDefaults(o Object) os.Error {
+func (fn *Function) SetDefaults(o Object) error {
 	ret := C.PyFunction_SetDefaults(c(fn), c(o))
 	return int2Err(ret)
 }
@@ -91,14 +88,14 @@ func (fn *Function) SetDefaults(o Object) os.Error {
 // or a Tuple of Cell objects.
 //
 // Return value: Borrowed Reference.
-func (fn *Function) Closure() (Object, os.Error) {
+func (fn *Function) Closure() (Object, error) {
 	ret := C.PyFunction_GetClosure(c(fn))
 	return obj2ObjErr(ret)
 }
 
 // SetClosure sets the closure associated with function "fn".  "o" must be
 // either a Tuple of Cell objects, or None.
-func (fn *Function) SetClosure(o Object) os.Error {
+func (fn *Function) SetClosure(o Object) error {
 	ret := C.PyFunction_SetClosure(c(fn), c(o))
 	return int2Err(ret)
 }

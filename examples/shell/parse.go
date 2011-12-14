@@ -14,7 +14,7 @@ import (
 
 var stdin = bufio.NewReader(os.Stdin)
 
-func readLine() (string, os.Error) {
+func readLine() (string, error) {
 	data, isPrefix, err := stdin.ReadLine()
 	if err != nil {
 		return "", err
@@ -98,7 +98,7 @@ func tokenise(line string) []string {
 	return parts
 }
 
-func getCommand() (cmd string, args []string, bg bool, err os.Error) {
+func getCommand() (cmd string, args []string, bg bool, err error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return

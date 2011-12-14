@@ -10,9 +10,9 @@ import (
 	"strings"
 )
 
-type CmdFunc func(args []string) os.Error
+type CmdFunc func(args []string) error
 
-func findCmdFunc(cmd string) (fn CmdFunc, err os.Error) {
+func findCmdFunc(cmd string) (fn CmdFunc, err error) {
 	fn = builtins[cmd]
 
 	if fn == nil && err == nil {
@@ -35,12 +35,12 @@ var builtins = map[string]CmdFunc{
 }
 //////////////////////////////////////////////////////////////////////////////
 
-func echo(args []string) os.Error {
+func echo(args []string) error {
 	fmt.Printf("%s\n", strings.Join(args, " "))
 	return nil
 }
 
-func chdir(args []string) os.Error {
+func chdir(args []string) error {
 	if len(args) > 0 {
 		return os.Chdir(args[0])
 	}
