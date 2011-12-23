@@ -10,10 +10,7 @@ package py
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
 import "C"
 
-import (
-	"fmt"
-	"unsafe"
-)
+import "unsafe"
 
 type Module struct {
 	AbstractObject
@@ -93,7 +90,7 @@ func InitModule(name string, methods []Method) (*Module, error) {
 			ml.ml_flags = C.METH_VARARGS | C.METH_KEYWORDS
 
 		default:
-			return nil, fmt.Errorf("InitModule: unknown func type for %s", method.Name)
+			return nil, NewTypeErrorFormat("InitModule: unknown func type for %s", method.Name)
 
 		}
 
@@ -159,7 +156,7 @@ func (mod *Module) Filename() (string, error) {
 
 func (mod *Module) AddObject(name string, obj Object) error {
 	if obj == nil {
-		return fmt.Errorf("ValueError: obj == nil!")
+		return NewAssertionErrorString("ValueError: obj == nil!")
 	}
 
 	cname := C.CString(name)

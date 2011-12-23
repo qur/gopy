@@ -45,7 +45,7 @@ func newBool(obj *C.PyObject) *Bool {
 	if obj == c(False) {
 		return False
 	}
-	panic(fmt.Errorf("TypeError: not a bool"))
+	panic(NewTypeErrorString("not a bool"))
 }
 
 // Bool returns the value of "b" as a bool.  true for True, false for False.  If
@@ -57,7 +57,7 @@ func (b *Bool) Bool() bool {
 	if b == False {
 		return false
 	}
-	panic(fmt.Errorf("TypeError: not a bool"))
+	panic(NewTypeErrorString("not a bool"))
 }
 
 // String returns a printable representation of the Bool "b".

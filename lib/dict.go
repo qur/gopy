@@ -245,7 +245,7 @@ func (d *Dict) MapString() (map[string]Object, error) {
 		value := newObject(v)
 		s, ok := key.(*String)
 		if !ok {
-			return nil, fmt.Errorf("TypeError: %v is not a string", key)
+			return nil, NewTypeErrorFormat("%v is not a string", key)
 		}
 		m[s.String()] = value
 	}

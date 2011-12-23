@@ -7,8 +7,6 @@ package py
 // #include "utils.h"
 import "C"
 
-import "fmt"
-
 // Chan is a Python object that wraps a Go channel (specifically a "chan
 // Object").
 type Chan struct {
@@ -49,7 +47,7 @@ func newChan(t *Type, args *Tuple, kw *Dict) (Object, error) {
 // Return value: New Reference.
 func NewChan(buffer int) (*Chan, error) {
 	if goModule == nil {
-		return nil, fmt.Errorf("go module has not been initialized!")
+		return nil, NewAssertionErrorString("go module has not been initialized!")
 	}
 
 	obj, err := chanClass.Alloc(0)

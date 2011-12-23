@@ -8,10 +8,7 @@ package py
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
 import "C"
 
-import (
-	"fmt"
-	"unsafe"
-)
+import "unsafe"
 
 // *BaseObject is the concrete representation of the Python "Object *".  It is
 // used less than in the C API, as the Object interface is mostly used when the
@@ -214,12 +211,12 @@ func (obj *BaseObject) CallMethod(name string, format string, args ...interface{
 
 	f := C.PyObject_GetAttrString(c(obj), cname)
 	if f == nil {
-		return nil, fmt.Errorf("AttributeError: %s", name)
+		return nil, NewAttributeErrorString(name)
 	}
 	defer C.decref(f)
 
 	if C.PyCallable_Check(f) == 0 {
-		return nil, fmt.Errorf("TypeError: attribute of type '%s' is not callable", name)
+		return nil, NewTypeErrorFormat("attribute of type '%s' is not callable", name)
 	}
 
 	t, err := buildTuple(format, args...)
@@ -245,12 +242,12 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, e
 
 	f := C.PyObject_GetAttrString(c(obj), cname)
 	if f == nil {
-		return nil, fmt.Errorf("AttributeError: %s", name)
+		return nil, NewAttributeErrorString(name)
 	}
 	defer C.decref(f)
 
 	if C.PyCallable_Check(f) == 0 {
-		return nil, fmt.Errorf("TypeError: attribute of type '%s' is not callable", name)
+		return nil, NewTypeErrorFormat("attribute of type '%s' is not callable", name)
 	}
 
 	t, err := PackTuple(args...)

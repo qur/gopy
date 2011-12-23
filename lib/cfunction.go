@@ -8,10 +8,7 @@ package py
 // static inline int cfunctionCheck(PyObject *o) { return PyCFunction_Check(o); }
 import "C"
 
-import (
-	"fmt"
-	"unsafe"
-)
+import "unsafe"
 
 type CFunction struct {
 	AbstractObject
@@ -48,7 +45,7 @@ func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {
 
 	default:
 		C.free(unsafe.Pointer(ml))
-		return nil, fmt.Errorf("CFunction_New: unknown func type for %s", name)
+		return nil, NewTypeErrorFormat("CFunction_New: unknown func type for %s", name)
 
 	}
 
@@ -106,7 +103,7 @@ func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	idx := C.PyInt_AsLong(_idx)
 	f, ok := funcs[idx].(func() (Object, error))
 	if !ok {
-		fmt.Printf("invalid index: %d\n", idx)
+		raise(NewAssertionErrorFormat("callWithoutArgs: invalid index: %d", idx))
 		return nil
 	}
 	ret, err := f()
@@ -123,7 +120,7 @@ func callWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	idx := C.PyInt_AsLong(_idx)
 	f, ok := funcs[idx].(func(a *Tuple) (Object, error))
 	if !ok {
-		fmt.Printf("invalid index: %d\n", idx)
+		raise(NewAssertionErrorFormat("callWithArgs: invalid index: %d", idx))
 		return nil
 	}
 	a := newTuple((*C.PyObject)(args))
@@ -141,7 +138,7 @@ func callWithKeywords(self, args, kw unsafe.Pointer) unsafe.Pointer {
 	idx := C.PyInt_AsLong(_idx)
 	f, ok := funcs[idx].(func(a *Tuple, k *Dict) (Object, error))
 	if !ok {
-		fmt.Printf("invalid index: %d\n", idx)
+		raise(NewAssertionErrorFormat("callWithKeywords: invalid index: %d", idx))
 		return nil
 	}
 	a := newTuple((*C.PyObject)(args))
