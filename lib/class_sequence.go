@@ -7,10 +7,7 @@ package py
 // #include "utils.h"
 import "C"
 
-import (
-	"fmt"
-	"unsafe"
-)
+import "unsafe"
 
 func csCallSsizeArgFunc(fn, obj unsafe.Pointer, s C.Py_ssize_t) unsafe.Pointer {
 	// Turn the function into something we can call
@@ -75,8 +72,6 @@ func goClassSeqSetItem(obj unsafe.Pointer, i C.Py_ssize_t, v unsafe.Pointer) int
 //export goClassSeqContains
 func goClassSeqContains(obj1, obj2 unsafe.Pointer) int {
 	ctxt := getClassContext(obj1)
-
-	fmt.Printf("goClassSeqContains\n")
 
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer, Object) (bool, error))(unsafe.Pointer(&ctxt.sq_contains))
