@@ -57,7 +57,18 @@ def process(inp):
     for exception in exceptions:
         print '\t\tnewException(C.PyExc_%s),' % exception
     print '\t}'
-    print '}'
+    print '}\n'
+
+    for exception in exceptions:
+        print 'func New%s(value Object) *Error {' % exception
+        print '\treturn NewError(Exc.%s, value)' % exception
+        print '}'
+        print 'func New%sString(msg string) *Error {' % exception
+        print '\treturn NewErrorString(Exc.%s, msg)' % exception
+        print '}'
+        print 'func New%sFormat(format string, args ...interface{}) *Error {' % exception
+        print '\treturn NewErrorFormat(Exc.%s, format, args...)' % exception
+        print '}\n'
 
 def main():
     cmd = ["gcc", "-E", "-o", "-", "utils.c"] + get_ffi_flags()

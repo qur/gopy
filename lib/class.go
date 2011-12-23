@@ -215,7 +215,7 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 
 	// The given value wasn't assignable to the field - raise an error
 	tn := ov.Type().Elem().Name()
-	raise(TypeError("Cannot assign '%T' to '*%v'", value, tn))
+	raise(NewTypeErrorFormat("Cannot assign '%T' to '*%v'", value, tn))
 	return -1
 }
 

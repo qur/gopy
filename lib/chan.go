@@ -25,7 +25,7 @@ func newChan(t *Type, args *Tuple, kw *Dict) (Object, error) {
 	self, ok := obj.(*Chan)
 	if !ok {
 		defer obj.Decref()
-		return nil, TypeError("Alloc returned wrong type: %T", obj)
+		return nil, NewTypeErrorFormat("Alloc returned wrong type: %T", obj)
 	}
 
 	var buffer int
@@ -60,7 +60,7 @@ func NewChan(buffer int) (*Chan, error) {
 	self, ok := obj.(*Chan)
 	if !ok {
 		defer obj.Decref()
-		return nil, TypeError("Alloc returned wrong type: %T", obj)
+		return nil, NewTypeErrorFormat("Alloc returned wrong type: %T", obj)
 	}
 
 	self.c = make(chan Object, buffer)

@@ -117,3 +117,504 @@ func _get_exceptions() _exc {
 		newException(C.PyExc_BytesWarning),
 	}
 }
+
+func NewBaseException(value Object) *Error {
+	return NewError(Exc.BaseException, value)
+}
+func NewBaseExceptionString(msg string) *Error {
+	return NewErrorString(Exc.BaseException, msg)
+}
+func NewBaseExceptionFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.BaseException, format, args...)
+}
+
+func NewException(value Object) *Error {
+	return NewError(Exc.Exception, value)
+}
+func NewExceptionString(msg string) *Error {
+	return NewErrorString(Exc.Exception, msg)
+}
+func NewExceptionFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.Exception, format, args...)
+}
+
+func NewStopIteration(value Object) *Error {
+	return NewError(Exc.StopIteration, value)
+}
+func NewStopIterationString(msg string) *Error {
+	return NewErrorString(Exc.StopIteration, msg)
+}
+func NewStopIterationFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.StopIteration, format, args...)
+}
+
+func NewGeneratorExit(value Object) *Error {
+	return NewError(Exc.GeneratorExit, value)
+}
+func NewGeneratorExitString(msg string) *Error {
+	return NewErrorString(Exc.GeneratorExit, msg)
+}
+func NewGeneratorExitFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.GeneratorExit, format, args...)
+}
+
+func NewStandardError(value Object) *Error {
+	return NewError(Exc.StandardError, value)
+}
+func NewStandardErrorString(msg string) *Error {
+	return NewErrorString(Exc.StandardError, msg)
+}
+func NewStandardErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.StandardError, format, args...)
+}
+
+func NewArithmeticError(value Object) *Error {
+	return NewError(Exc.ArithmeticError, value)
+}
+func NewArithmeticErrorString(msg string) *Error {
+	return NewErrorString(Exc.ArithmeticError, msg)
+}
+func NewArithmeticErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.ArithmeticError, format, args...)
+}
+
+func NewLookupError(value Object) *Error {
+	return NewError(Exc.LookupError, value)
+}
+func NewLookupErrorString(msg string) *Error {
+	return NewErrorString(Exc.LookupError, msg)
+}
+func NewLookupErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.LookupError, format, args...)
+}
+
+func NewAssertionError(value Object) *Error {
+	return NewError(Exc.AssertionError, value)
+}
+func NewAssertionErrorString(msg string) *Error {
+	return NewErrorString(Exc.AssertionError, msg)
+}
+func NewAssertionErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.AssertionError, format, args...)
+}
+
+func NewAttributeError(value Object) *Error {
+	return NewError(Exc.AttributeError, value)
+}
+func NewAttributeErrorString(msg string) *Error {
+	return NewErrorString(Exc.AttributeError, msg)
+}
+func NewAttributeErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.AttributeError, format, args...)
+}
+
+func NewEOFError(value Object) *Error {
+	return NewError(Exc.EOFError, value)
+}
+func NewEOFErrorString(msg string) *Error {
+	return NewErrorString(Exc.EOFError, msg)
+}
+func NewEOFErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.EOFError, format, args...)
+}
+
+func NewFloatingPointError(value Object) *Error {
+	return NewError(Exc.FloatingPointError, value)
+}
+func NewFloatingPointErrorString(msg string) *Error {
+	return NewErrorString(Exc.FloatingPointError, msg)
+}
+func NewFloatingPointErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.FloatingPointError, format, args...)
+}
+
+func NewEnvironmentError(value Object) *Error {
+	return NewError(Exc.EnvironmentError, value)
+}
+func NewEnvironmentErrorString(msg string) *Error {
+	return NewErrorString(Exc.EnvironmentError, msg)
+}
+func NewEnvironmentErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.EnvironmentError, format, args...)
+}
+
+func NewIOError(value Object) *Error {
+	return NewError(Exc.IOError, value)
+}
+func NewIOErrorString(msg string) *Error {
+	return NewErrorString(Exc.IOError, msg)
+}
+func NewIOErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.IOError, format, args...)
+}
+
+func NewOSError(value Object) *Error {
+	return NewError(Exc.OSError, value)
+}
+func NewOSErrorString(msg string) *Error {
+	return NewErrorString(Exc.OSError, msg)
+}
+func NewOSErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.OSError, format, args...)
+}
+
+func NewImportError(value Object) *Error {
+	return NewError(Exc.ImportError, value)
+}
+func NewImportErrorString(msg string) *Error {
+	return NewErrorString(Exc.ImportError, msg)
+}
+func NewImportErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.ImportError, format, args...)
+}
+
+func NewIndexError(value Object) *Error {
+	return NewError(Exc.IndexError, value)
+}
+func NewIndexErrorString(msg string) *Error {
+	return NewErrorString(Exc.IndexError, msg)
+}
+func NewIndexErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.IndexError, format, args...)
+}
+
+func NewKeyError(value Object) *Error {
+	return NewError(Exc.KeyError, value)
+}
+func NewKeyErrorString(msg string) *Error {
+	return NewErrorString(Exc.KeyError, msg)
+}
+func NewKeyErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.KeyError, format, args...)
+}
+
+func NewKeyboardInterrupt(value Object) *Error {
+	return NewError(Exc.KeyboardInterrupt, value)
+}
+func NewKeyboardInterruptString(msg string) *Error {
+	return NewErrorString(Exc.KeyboardInterrupt, msg)
+}
+func NewKeyboardInterruptFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.KeyboardInterrupt, format, args...)
+}
+
+func NewMemoryError(value Object) *Error {
+	return NewError(Exc.MemoryError, value)
+}
+func NewMemoryErrorString(msg string) *Error {
+	return NewErrorString(Exc.MemoryError, msg)
+}
+func NewMemoryErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.MemoryError, format, args...)
+}
+
+func NewNameError(value Object) *Error {
+	return NewError(Exc.NameError, value)
+}
+func NewNameErrorString(msg string) *Error {
+	return NewErrorString(Exc.NameError, msg)
+}
+func NewNameErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.NameError, format, args...)
+}
+
+func NewOverflowError(value Object) *Error {
+	return NewError(Exc.OverflowError, value)
+}
+func NewOverflowErrorString(msg string) *Error {
+	return NewErrorString(Exc.OverflowError, msg)
+}
+func NewOverflowErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.OverflowError, format, args...)
+}
+
+func NewRuntimeError(value Object) *Error {
+	return NewError(Exc.RuntimeError, value)
+}
+func NewRuntimeErrorString(msg string) *Error {
+	return NewErrorString(Exc.RuntimeError, msg)
+}
+func NewRuntimeErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.RuntimeError, format, args...)
+}
+
+func NewNotImplementedError(value Object) *Error {
+	return NewError(Exc.NotImplementedError, value)
+}
+func NewNotImplementedErrorString(msg string) *Error {
+	return NewErrorString(Exc.NotImplementedError, msg)
+}
+func NewNotImplementedErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.NotImplementedError, format, args...)
+}
+
+func NewSyntaxError(value Object) *Error {
+	return NewError(Exc.SyntaxError, value)
+}
+func NewSyntaxErrorString(msg string) *Error {
+	return NewErrorString(Exc.SyntaxError, msg)
+}
+func NewSyntaxErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.SyntaxError, format, args...)
+}
+
+func NewIndentationError(value Object) *Error {
+	return NewError(Exc.IndentationError, value)
+}
+func NewIndentationErrorString(msg string) *Error {
+	return NewErrorString(Exc.IndentationError, msg)
+}
+func NewIndentationErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.IndentationError, format, args...)
+}
+
+func NewTabError(value Object) *Error {
+	return NewError(Exc.TabError, value)
+}
+func NewTabErrorString(msg string) *Error {
+	return NewErrorString(Exc.TabError, msg)
+}
+func NewTabErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.TabError, format, args...)
+}
+
+func NewReferenceError(value Object) *Error {
+	return NewError(Exc.ReferenceError, value)
+}
+func NewReferenceErrorString(msg string) *Error {
+	return NewErrorString(Exc.ReferenceError, msg)
+}
+func NewReferenceErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.ReferenceError, format, args...)
+}
+
+func NewSystemError(value Object) *Error {
+	return NewError(Exc.SystemError, value)
+}
+func NewSystemErrorString(msg string) *Error {
+	return NewErrorString(Exc.SystemError, msg)
+}
+func NewSystemErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.SystemError, format, args...)
+}
+
+func NewSystemExit(value Object) *Error {
+	return NewError(Exc.SystemExit, value)
+}
+func NewSystemExitString(msg string) *Error {
+	return NewErrorString(Exc.SystemExit, msg)
+}
+func NewSystemExitFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.SystemExit, format, args...)
+}
+
+func NewTypeError(value Object) *Error {
+	return NewError(Exc.TypeError, value)
+}
+func NewTypeErrorString(msg string) *Error {
+	return NewErrorString(Exc.TypeError, msg)
+}
+func NewTypeErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.TypeError, format, args...)
+}
+
+func NewUnboundLocalError(value Object) *Error {
+	return NewError(Exc.UnboundLocalError, value)
+}
+func NewUnboundLocalErrorString(msg string) *Error {
+	return NewErrorString(Exc.UnboundLocalError, msg)
+}
+func NewUnboundLocalErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.UnboundLocalError, format, args...)
+}
+
+func NewUnicodeError(value Object) *Error {
+	return NewError(Exc.UnicodeError, value)
+}
+func NewUnicodeErrorString(msg string) *Error {
+	return NewErrorString(Exc.UnicodeError, msg)
+}
+func NewUnicodeErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.UnicodeError, format, args...)
+}
+
+func NewUnicodeEncodeError(value Object) *Error {
+	return NewError(Exc.UnicodeEncodeError, value)
+}
+func NewUnicodeEncodeErrorString(msg string) *Error {
+	return NewErrorString(Exc.UnicodeEncodeError, msg)
+}
+func NewUnicodeEncodeErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.UnicodeEncodeError, format, args...)
+}
+
+func NewUnicodeDecodeError(value Object) *Error {
+	return NewError(Exc.UnicodeDecodeError, value)
+}
+func NewUnicodeDecodeErrorString(msg string) *Error {
+	return NewErrorString(Exc.UnicodeDecodeError, msg)
+}
+func NewUnicodeDecodeErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.UnicodeDecodeError, format, args...)
+}
+
+func NewUnicodeTranslateError(value Object) *Error {
+	return NewError(Exc.UnicodeTranslateError, value)
+}
+func NewUnicodeTranslateErrorString(msg string) *Error {
+	return NewErrorString(Exc.UnicodeTranslateError, msg)
+}
+func NewUnicodeTranslateErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.UnicodeTranslateError, format, args...)
+}
+
+func NewValueError(value Object) *Error {
+	return NewError(Exc.ValueError, value)
+}
+func NewValueErrorString(msg string) *Error {
+	return NewErrorString(Exc.ValueError, msg)
+}
+func NewValueErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.ValueError, format, args...)
+}
+
+func NewZeroDivisionError(value Object) *Error {
+	return NewError(Exc.ZeroDivisionError, value)
+}
+func NewZeroDivisionErrorString(msg string) *Error {
+	return NewErrorString(Exc.ZeroDivisionError, msg)
+}
+func NewZeroDivisionErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.ZeroDivisionError, format, args...)
+}
+
+func NewBufferError(value Object) *Error {
+	return NewError(Exc.BufferError, value)
+}
+func NewBufferErrorString(msg string) *Error {
+	return NewErrorString(Exc.BufferError, msg)
+}
+func NewBufferErrorFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.BufferError, format, args...)
+}
+
+func NewMemoryErrorInst(value Object) *Error {
+	return NewError(Exc.MemoryErrorInst, value)
+}
+func NewMemoryErrorInstString(msg string) *Error {
+	return NewErrorString(Exc.MemoryErrorInst, msg)
+}
+func NewMemoryErrorInstFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.MemoryErrorInst, format, args...)
+}
+
+func NewRecursionErrorInst(value Object) *Error {
+	return NewError(Exc.RecursionErrorInst, value)
+}
+func NewRecursionErrorInstString(msg string) *Error {
+	return NewErrorString(Exc.RecursionErrorInst, msg)
+}
+func NewRecursionErrorInstFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.RecursionErrorInst, format, args...)
+}
+
+func NewWarning(value Object) *Error {
+	return NewError(Exc.Warning, value)
+}
+func NewWarningString(msg string) *Error {
+	return NewErrorString(Exc.Warning, msg)
+}
+func NewWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.Warning, format, args...)
+}
+
+func NewUserWarning(value Object) *Error {
+	return NewError(Exc.UserWarning, value)
+}
+func NewUserWarningString(msg string) *Error {
+	return NewErrorString(Exc.UserWarning, msg)
+}
+func NewUserWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.UserWarning, format, args...)
+}
+
+func NewDeprecationWarning(value Object) *Error {
+	return NewError(Exc.DeprecationWarning, value)
+}
+func NewDeprecationWarningString(msg string) *Error {
+	return NewErrorString(Exc.DeprecationWarning, msg)
+}
+func NewDeprecationWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.DeprecationWarning, format, args...)
+}
+
+func NewPendingDeprecationWarning(value Object) *Error {
+	return NewError(Exc.PendingDeprecationWarning, value)
+}
+func NewPendingDeprecationWarningString(msg string) *Error {
+	return NewErrorString(Exc.PendingDeprecationWarning, msg)
+}
+func NewPendingDeprecationWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.PendingDeprecationWarning, format, args...)
+}
+
+func NewSyntaxWarning(value Object) *Error {
+	return NewError(Exc.SyntaxWarning, value)
+}
+func NewSyntaxWarningString(msg string) *Error {
+	return NewErrorString(Exc.SyntaxWarning, msg)
+}
+func NewSyntaxWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.SyntaxWarning, format, args...)
+}
+
+func NewRuntimeWarning(value Object) *Error {
+	return NewError(Exc.RuntimeWarning, value)
+}
+func NewRuntimeWarningString(msg string) *Error {
+	return NewErrorString(Exc.RuntimeWarning, msg)
+}
+func NewRuntimeWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.RuntimeWarning, format, args...)
+}
+
+func NewFutureWarning(value Object) *Error {
+	return NewError(Exc.FutureWarning, value)
+}
+func NewFutureWarningString(msg string) *Error {
+	return NewErrorString(Exc.FutureWarning, msg)
+}
+func NewFutureWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.FutureWarning, format, args...)
+}
+
+func NewImportWarning(value Object) *Error {
+	return NewError(Exc.ImportWarning, value)
+}
+func NewImportWarningString(msg string) *Error {
+	return NewErrorString(Exc.ImportWarning, msg)
+}
+func NewImportWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.ImportWarning, format, args...)
+}
+
+func NewUnicodeWarning(value Object) *Error {
+	return NewError(Exc.UnicodeWarning, value)
+}
+func NewUnicodeWarningString(msg string) *Error {
+	return NewErrorString(Exc.UnicodeWarning, msg)
+}
+func NewUnicodeWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.UnicodeWarning, format, args...)
+}
+
+func NewBytesWarning(value Object) *Error {
+	return NewError(Exc.BytesWarning, value)
+}
+func NewBytesWarningString(msg string) *Error {
+	return NewErrorString(Exc.BytesWarning, msg)
+}
+func NewBytesWarningFormat(format string, args ...interface{}) *Error {
+	return NewErrorFormat(Exc.BytesWarning, format, args...)
+}
+

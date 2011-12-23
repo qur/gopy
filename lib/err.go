@@ -130,34 +130,6 @@ func raise(err error) {
 	C.PyErr_SetObject(exc, val)
 }
 
-func TypeError(format string, args ...interface{}) error {
-	msg := fmt.Sprintf(format, args...)
-	val, _ := NewString(msg)
-	Exc.TypeError.Incref()
-	return &Error{Exc.TypeError, val, nil}
-}
-
-func KeyError(format string, args ...interface{}) error {
-	msg := fmt.Sprintf(format, args...)
-	val, _ := NewString(msg)
-	Exc.KeyError.Incref()
-	return &Error{Exc.KeyError, val, nil}
-}
-
-func AttributeError(format string, args ...interface{}) error {
-	msg := fmt.Sprintf(format, args...)
-	val, _ := NewString(msg)
-	Exc.AttributeError.Incref()
-	return &Error{Exc.AttributeError, val, nil}
-}
-
-func NotImplemented(format string, args ...interface{}) error {
-	msg := fmt.Sprintf(format, args...)
-	val, _ := NewString(msg)
-	Exc.NotImplementedError.Incref()
-	return &Error{Exc.NotImplementedError, val, nil}
-}
-
 func int2Err(i C.int) error {
 	if i < 0 {
 		return exception()
