@@ -45,6 +45,33 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%s: %s", ts, s)
 }
 
+// Matches returns true if e.Kind matches the exception in exc.  If exc is a
+// Class, then true is returned if e.Kind is an instance.  If exc is a Tuple,
+// then all elements (and recursively for sub elements) are searched for a
+// match.
+func (e *Error) Matches(exc Object) bool {
+	return C.PyErr_GivenExceptionMatches(c(e.Kind), c(exc)) != 0
+}
+
+// Normalize adjusts e.Kind/e.Value in the case that the values aren't
+// normalized to start with.  It's possible that an Error returned from Python
+// might have e.Kind be a Class, with e.Value not being an instance of that
+// class, Normalize will fix this.  The separate normalization is implemented in
+// Python to improve performance.
+func (e *Error) Normalize() {
+	exc := c(e.Kind)
+	val := c(e.Value)
+	tb := e.tb
+	C.PyErr_NormalizeException(&exc, &val, &tb)
+	if exc != c(e.Kind) {
+		e.Kind = newObject(exc)
+	}
+	if val != c(e.Value) {
+		e.Value = newObject(val)
+	}
+	e.tb = tb
+}
+
 // NewError returns a new Error of the specified kind, and with the given value.
 func NewError(kind Object, value Object) *Error {
 	Incref(kind)
