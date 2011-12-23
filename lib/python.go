@@ -7,7 +7,15 @@ package py
 // #cgo CFLAGS: -Werror
 // #cgo LDFLAGS: -lpython2.7
 // #cgo pkg-config: libffi
+//
 // #include "utils.h"
+//
+// static inline int enterRecursive(char *w) {
+//     return Py_EnterRecursiveCall(w);
+// }
+// static inline void leaveRecursive() {
+//     Py_LeaveRecursiveCall();
+// }
 import "C"
 
 import (
@@ -55,4 +63,23 @@ func Main(args []string) int {
 	}
 
 	return int(C.Py_Main(C.int(len(argv)), &argv[0]))
+}
+
+// EnterRecusiveCall marks a point where a recursive Go-level call is about to
+// be performed.  It returns true if the recursive call is permitted, otherwise
+// a Python exception is set and false is returned.  where is a string that will
+// be appended to the RuntimeError set if the recursion limit has been exceeded
+// (e.g. " in instance check").  This function needs to be called if the
+// recursive function may not invoke Python code (which automatically tracks
+// recursion depth).
+func EnterRecursiveCall(where string) bool {
+	s := C.CString(where)
+	defer C.free(unsafe.Pointer(s))
+	return C.enterRecursive(s) == 0
+}
+
+// LeaveRecursiveCall must be called after a recursive call that was indicated
+// by EnterRecursiveCall.
+func LeaveRecursiveCall() {
+	C.leaveRecursive()
 }
