@@ -60,12 +60,23 @@ def process(inp):
     print '}\n'
 
     for exception in exceptions:
+        print '// New%s creates a new Error that wraps a %s exception,' \
+              % (exception, exception)
+        print '// with value as it\'s value'
         print 'func New%s(value Object) *Error {' % exception
         print '\treturn NewError(Exc.%s, value)' % exception
         print '}'
+        print '// New%sString creates a new Error that wraps a %s exception,' \
+              % (exception, exception)
+        print '// with a String containing msg as it\'s value'
         print 'func New%sString(msg string) *Error {' % exception
         print '\treturn NewErrorString(Exc.%s, msg)' % exception
         print '}'
+        print '// New%sFormat creates a new Error that wraps a %s exception,' \
+              % (exception, exception)
+        print '// with a String containing the result of ' \
+              'fmt.Sprintf(format, args...)'
+        print '// as it\'s value'
         print 'func New%sFormat(format string, args ...interface{}) *Error {' % exception
         print '\treturn NewErrorFormat(Exc.%s, format, args...)' % exception
         print '}\n'
