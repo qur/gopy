@@ -183,11 +183,22 @@ func (obj *BaseObject) IsSubclass(cls Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
+// Call calls obj with the given args and kwds.  kwds may be nil, args may not
+// (an empty Tuple must be used if no arguments are wanted).  Returns the result
+// of the call, or an Error on failure.  This is equivalent to
+// "obj(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
 func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, error) {
 	ret := C.PyObject_Call(c(obj), c(args), c(kwds))
 	return obj2ObjErr(ret)
 }
 
+// CallObject calls obj with the given args.  args may be nil.  Returns the
+// result of the call, or an Error on failure.  This is equivalent to
+// "obj(*args)" in Python.
+//
+// Return value: New Reference.
 func (obj *BaseObject) CallObject(args *Tuple) (Object, error) {
 	var a *C.PyObject = nil
 	if args != nil {
