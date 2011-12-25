@@ -15,6 +15,7 @@ import (
 
 type Int struct {
 	AbstractObject
+	NumberProtocol
 	o C.PyIntObject
 }
 

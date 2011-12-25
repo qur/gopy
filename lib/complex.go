@@ -15,6 +15,7 @@ import (
 
 type Complex struct {
 	AbstractObject
+	NumberProtocol
 	o C.PyComplexObject
 }
 

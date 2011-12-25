@@ -15,6 +15,7 @@ import (
 
 type Float struct {
 	AbstractObject
+	NumberProtocol
 	o C.PyFloatObject
 }
 

@@ -15,6 +15,7 @@ import (
 
 type Long struct {
 	AbstractObject
+	NumberProtocol
 	o C.PyLongObject
 }
 

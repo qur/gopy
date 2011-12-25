@@ -33,6 +33,7 @@ CGOFILES=\
 	lock.go \
 	long.go \
 	module.go \
+	number.go \
 	object.go \
 	run.go \
 	set.go \
