@@ -54,7 +54,7 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 	case *py.List:
 		argS = a.Slice()
 	default:
-		return nil, py.TypeError("args must be tuple or list")
+		return nil, py.NewTypeErrorString("args must be tuple or list")
 	}
 
 	cArgs := make([]string, len(argS))
