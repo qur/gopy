@@ -172,7 +172,7 @@ func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	if field.Type == otyp {
 		o = *(*Object)(item)
 	} else {
-		o = unsafe.Unreflect(field.Type, item).(Object)
+		o = reflect.NewAt(field.Type, item).Elem().Interface().(Object)
 	}
 
 	o.Incref()
@@ -200,8 +200,7 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	}
 
 	vt := reflect.TypeOf(value)
-	o := unsafe.Unreflect(reflect.PtrTo(field.Type), unsafe.Pointer(&item))
-	ov := reflect.ValueOf(o).Elem()
+	ov := reflect.NewAt(field.Type, unsafe.Pointer(item)).Elem()
 
 	// If the value is assignable to the field, then we do it, with the same
 	// refcount dance as above.
@@ -269,8 +268,7 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 		return -1
 	}
 
-	typ := unsafe.Typeof(class.Pointer)
-	st := reflect.TypeOf(unsafe.Unreflect(typ, unsafe.Pointer(&obj))).Elem()
+	st := reflect.TypeOf(class.Pointer).Elem()
 
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)
@@ -305,8 +303,7 @@ func goClassClear(obj unsafe.Pointer) int {
 		return -1
 	}
 
-	typ := unsafe.Typeof(class.Pointer)
-	st := reflect.TypeOf(unsafe.Unreflect(typ, unsafe.Pointer(&obj))).Elem()
+	st := reflect.TypeOf(class.Pointer).Elem()
 
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)

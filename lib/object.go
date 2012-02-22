@@ -12,6 +12,7 @@ package py
 import "C"
 
 import (
+	"reflect"
 	"unsafe"
 )
 
@@ -64,6 +65,12 @@ func registerType(pyType *C.PyTypeObject, class *Class) {
 	types[pyType] = class
 }
 
+func obj2Class(c *Class, obj *C.PyObject) (Object, bool) {
+	vp := reflect.NewAt(reflect.TypeOf(c.Pointer), unsafe.Pointer(&obj))
+	o, ok := vp.Elem().Interface().(Object)
+	return o, ok
+}
+
 func newObject(obj *C.PyObject) Object {
 	if obj == nil {
 		return nil
@@ -77,8 +84,7 @@ func newObject(obj *C.PyObject) Object {
 	pyType := (*C.PyTypeObject)(obj.ob_type)
 	class, ok := types[pyType]
 	if ok {
-		t := unsafe.Typeof(class.Pointer)
-		ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&obj)).(Object)
+		ret, ok := obj2Class(class, obj)
 		if ok {
 			return ret
 		}
@@ -87,8 +93,7 @@ func newObject(obj *C.PyObject) Object {
 		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
 		class, ok := types[pyType]
 		if ok {
-			t := unsafe.Typeof(class.Pointer)
-			ret, ok := unsafe.Unreflect(t, unsafe.Pointer(&obj)).(Object)
+			ret, ok := obj2Class(class, obj)
 			if ok {
 				return ret
 			}
