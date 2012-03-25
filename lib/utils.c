@@ -190,7 +190,7 @@ static PyTypeObject goMethodType = {
 };
 static int goMethodInit = 0;
 
-PyObject *newMethod(char *name, void *func) {
+PyObject *newMethod(char *name, void *func, int flags) {
     PyGoMethod *self;
 
     if (!goMethodInit) {
@@ -204,8 +204,21 @@ PyObject *newMethod(char *name, void *func) {
     if (self != NULL) {
         self->func = func;
         self->meth.ml_name = name;
-        self->meth.ml_meth = (PyCFunction)goClassCallMethod;
-        self->meth.ml_flags = METH_VARARGS | METH_KEYWORDS;
+        switch (flags) {
+            case METH_NOARGS:
+                self->meth.ml_meth = (PyCFunction)goClassCallMethod;
+                break;
+            case METH_VARARGS:
+                self->meth.ml_meth = (PyCFunction)goClassCallMethodArgs;
+                break;
+            case METH_VARARGS | METH_KEYWORDS:
+                self->meth.ml_meth = (PyCFunction)goClassCallMethodKwds;
+                break;
+            default:
+                fprintf(stderr, "Invalid method flags: %x\n", flags);
+                return NULL;
+        }
+        self->meth.ml_flags = flags;
         self->meth.ml_doc = "";
     }
 

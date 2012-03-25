@@ -99,7 +99,51 @@ type Class struct {
 var otyp = reflect.TypeOf(new(Object)).Elem()
 
 //export goClassCallMethod
-func goClassCallMethod(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
+	// Unpack context and self pointer from obj
+	t := (*C.PyObject)(obj)
+	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
+	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+
+	// Now call the actual struct method by pulling the method out of the
+	// reflect.Type object stored in the context
+	f := (*func(p unsafe.Pointer) (Object, error))(unsafe.Pointer(&m))
+
+	ret, err := (*f)(pyobj)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassCallMethodArgs
+func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
+	// Unpack context and self pointer from obj
+	t := (*C.PyObject)(obj)
+	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
+	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+
+	// Get args ready to use, by turning it into a pointer of the appropriate
+	// type
+	a := newTuple((*C.PyObject)(args))
+
+	// Now call the actual struct method by pulling the method out of the
+	// reflect.Type object stored in the context
+	f := (*func(p unsafe.Pointer, a *Tuple) (Object, error))(unsafe.Pointer(&m))
+
+	ret, err := (*f)(pyobj, a)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassCallMethodKwds
+func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -405,7 +449,7 @@ type prop struct {
 
 type method struct {
 	f     unsafe.Pointer
-	flags uint32
+	flags int
 }
 
 func methSigMatches(got reflect.Type, _want interface{}) error {
@@ -674,12 +718,16 @@ func (c *Class) Create() (*Type, error) {
 		parts := strings.SplitN(m.Name, "_", 2)
 		switch parts[0] {
 		case "Py":
-			err := methSigMatches(t, func(a *Tuple, k *Dict) (Object, error)(nil))
-			if err != nil {
-				C.free(unsafe.Pointer(pyType))
-				return nil, fmt.Errorf("%s: %s", fn, err)
+			switch {
+			case methSigMatches(t, pyUnaryFunc) == nil:
+				methods[parts[1]] = method{f, C.METH_NOARGS}
+			case methSigMatches(t, pyBinaryCallFunc) == nil:
+				methods[parts[1]] = method{f, C.METH_VARARGS}
+			case methSigMatches(t, pyTernaryCallFunc) == nil:
+				methods[parts[1]] = method{f, C.METH_VARARGS | C.METH_KEYWORDS}
+			default:
+				return nil, fmt.Errorf("%s: Invalid function signature", fn)
 			}
-			methods[parts[1]] = method{f, 0}
 		case "PySet":
 			err := methSigMatches(t, func(Object) error(nil))
 			if err != nil {
@@ -718,7 +766,7 @@ func (c *Class) Create() (*Type, error) {
 
 	for name, method := range methods {
 		s := C.CString(name)
-		C.setTypeAttr(pyType, s, C.newMethod(s, method.f))
+		C.setTypeAttr(pyType, s, C.newMethod(s, method.f, C.int(method.flags)))
 	}
 
 	for name, prop := range props {
