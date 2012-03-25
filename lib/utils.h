@@ -114,6 +114,7 @@ extern PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *se
 
 extern void enableClassGc(PyTypeObject *type);
 
+extern void overrideGenericAlloc(PyTypeObject *type);
 extern void setClassContext(PyTypeObject *type, ClassContext *ctxt);
 
 extern PyTypeObject *getBasePyType(PyObject *o);

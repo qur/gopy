@@ -343,16 +343,26 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	pyType := (*C.PyTypeObject)(typ)
 
 	class := types[pyType]
+	subClass := false
 
 	for class == nil && pyType.tp_base != nil {
 		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
 		class = types[pyType]
+		subClass = true
 	}
 
 	if class == nil {
 		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
 		raise(NewTypeErrorFormat("Not a recognised type: %s", t))
 		return nil
+	}
+
+	if subClass {
+		// Python forces tp_alloc/tp_free to be PyType_GenericAlloc based for
+		// subclasses created in Python (i.e. using class XXX (...)), but
+		// we need them to be goGenericAlloc based for anything derived from a
+		// Go base class
+		C.overrideGenericAlloc((*C.PyTypeObject)(typ))
 	}
 
 	var obj Object

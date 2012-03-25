@@ -7,6 +7,9 @@ package py
 // #include "utils.h"
 // static inline int typeCheck(PyObject *o) { return PyType_Check(o); }
 // static inline int typeCheckE(PyObject *o) { return PyType_CheckExact(o); }
+// static inline PyObject *typeAlloc(PyObject *t, Py_ssize_t n) {
+//    return ((PyTypeObject *)t)->tp_alloc((PyTypeObject *)t, n);
+// }
 // static inline int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k) {
 //    return ((PyTypeObject *)t)->tp_init(o, a, k);
 // }
@@ -34,8 +37,7 @@ func newType(obj *C.PyObject) *Type {
 }
 
 func (t *Type) Alloc(n int64) (Object, error) {
-	ct := (*C.PyTypeObject)(unsafe.Pointer(c(t)))
-	ret := C.PyType_GenericAlloc(ct, C.Py_ssize_t(n))
+	ret := C.typeAlloc(c(t), C.Py_ssize_t(n))
 	return obj2ObjErr(ret)
 }
 
