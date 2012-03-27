@@ -103,7 +103,7 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	}
 
 	if obj == nil {
-		raise(NewMemoryError(nil))
+		raise(MemoryError.ErrV(None))
 		return nil
 	}
 

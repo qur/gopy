@@ -90,7 +90,7 @@ func InitModule(name string, methods []Method) (*Module, error) {
 			ml.ml_flags = C.METH_VARARGS | C.METH_KEYWORDS
 
 		default:
-			return nil, NewTypeErrorFormat("InitModule: unknown func type for %s", method.Name)
+			return nil, TypeError.Err("InitModule: unknown func type for %s", method.Name)
 
 		}
 
@@ -156,7 +156,7 @@ func (mod *Module) Filename() (string, error) {
 
 func (mod *Module) AddObject(name string, obj Object) error {
 	if obj == nil {
-		return NewAssertionErrorString("ValueError: obj == nil!")
+		return AssertionError.Err("ValueError: obj == nil!")
 	}
 
 	cname := C.CString(name)

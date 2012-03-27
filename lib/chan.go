@@ -23,7 +23,7 @@ func newChan(t *Type, args *Tuple, kw *Dict) (Object, error) {
 	self, ok := obj.(*Chan)
 	if !ok {
 		defer obj.Decref()
-		return nil, NewTypeErrorFormat("Alloc returned wrong type: %T", obj)
+		return nil, TypeError.Err("Alloc returned wrong type: %T", obj)
 	}
 
 	var buffer int
@@ -47,7 +47,7 @@ func newChan(t *Type, args *Tuple, kw *Dict) (Object, error) {
 // Return value: New Reference.
 func NewChan(buffer int) (*Chan, error) {
 	if goModule == nil {
-		return nil, NewAssertionErrorString("go module has not been initialized!")
+		return nil, AssertionError.Err("go module has not been initialized!")
 	}
 
 	obj, err := chanClass.Alloc(0)
@@ -58,7 +58,7 @@ func NewChan(buffer int) (*Chan, error) {
 	self, ok := obj.(*Chan)
 	if !ok {
 		defer obj.Decref()
-		return nil, NewTypeErrorFormat("Alloc returned wrong type: %T", obj)
+		return nil, TypeError.Err("Alloc returned wrong type: %T", obj)
 	}
 
 	self.c = make(chan Object, buffer)

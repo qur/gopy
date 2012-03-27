@@ -72,24 +72,17 @@ func (e *Error) Normalize() {
 	e.tb = tb
 }
 
-// NewError returns a new Error of the specified kind, and with the given value.
-func NewError(kind Object, value Object) *Error {
+// NewErrorV returns a new Error of the specified kind, and with the given
+// value.
+func NewErrorV(kind Object, value Object) *Error {
 	Incref(kind)
 	Incref(value)
 	return &Error{kind, value, nil}
 }
 
-// NewErrorString returns a new Error of the specified kind, and with the value
-// being a new String containing msg.
-func NewErrorString(kind Object, msg string) *Error {
-	Incref(kind)
-	val, _ := NewString(msg)
-	return &Error{kind, val, nil}
-}
-
-// NewErrorFormat returns a new Error of the specified kind, and with the value
+// NewError returns a new Error of the specified kind, and with the value
 // being a new String containing the string created the given format and args.
-func NewErrorFormat(kind Object, format string, args ...interface{}) *Error {
+func NewError(kind Object, format string, args ...interface{}) *Error {
 	msg := fmt.Sprintf(format, args...)
 	Incref(kind)
 	val, _ := NewString(msg)

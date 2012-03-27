@@ -42,7 +42,7 @@ func packValues(values []interface{}) ([]unsafe.Pointer, error) {
 		case *float64:
 			cValues[i] = unsafe.Pointer(new(C.double))
 		default:
-			return nil, NewTypeErrorFormat("Unsupported type: %T", v)
+			return nil, TypeError.Err("Unsupported type: %T", v)
 		}
 	}
 	return cValues, nil
@@ -80,7 +80,7 @@ func unpackValues(cValues []unsafe.Pointer, values []interface{}) error {
 		case *float64:
 			*v = float64(*(*C.double)(cValues[i]))
 		default:
-			return NewTypeErrorFormat("Unsupported type: %T", v)
+			return TypeError.Err("Unsupported type: %T", v)
 		}
 	}
 	return nil
@@ -88,7 +88,7 @@ func unpackValues(cValues []unsafe.Pointer, values []interface{}) error {
 
 func ParseTuple(args *Tuple, format string, values ...interface{}) error {
 	if args == nil {
-		return NewAssertionErrorString("ParseTuple: args was nil")
+		return AssertionError.Err("ParseTuple: args was nil")
 	}
 
 	cv := (*unsafe.Pointer)(nil)
@@ -114,7 +114,7 @@ func ParseTuple(args *Tuple, format string, values ...interface{}) error {
 
 func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string, values ...interface{}) error {
 	if args == nil {
-		return NewAssertionErrorString("ParseTupleAndKeywords: args was nil")
+		return AssertionError.Err("ParseTupleAndKeywords: args was nil")
 	}
 
 	cv := (*unsafe.Pointer)(nil)
@@ -207,7 +207,7 @@ func BuildValue(format string, values ...interface{}) (Object, error) {
 			cValues[i]._type = &C.ffi_type_double
 			cValues[i].value = unsafe.Pointer(&fv)
 		default:
-			return nil, NewTypeErrorFormat("Unsupported type: %T", v)
+			return nil, TypeError.Err("Unsupported type: %T", v)
 		}
 	}
 	f := C.CString(format)

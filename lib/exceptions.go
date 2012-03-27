@@ -11,13 +11,22 @@ import (
 	"unsafe"
 )
 
-var Exc = _get_exceptions()
-
-type BaseException struct {
+type ExceptionClass struct {
 	AbstractObject
-	o *C.PyBaseExceptionObject
+	o C.PyBaseExceptionObject
 }
 
-func newException(obj *C.PyObject) *BaseException {
-	return (*BaseException)(unsafe.Pointer(obj))
+func newException(obj *C.PyObject) *ExceptionClass {
+	return (*ExceptionClass)(unsafe.Pointer(obj))
+}
+
+// ErrV returns a new Error of the specified kind, and with the given value.
+func (kind *ExceptionClass) ErrV(obj Object) *Error {
+	return NewErrorV(kind, obj)
+}
+
+// Err returns a new Error of the specified kind, and with the value being a
+// new String containing the string created the given format and args.
+func (kind *ExceptionClass) Err(format string, args ...interface{}) *Error {
+	return NewError(kind, format, args...)
 }

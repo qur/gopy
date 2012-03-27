@@ -258,7 +258,7 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 
 	// The given value wasn't assignable to the field - raise an error
 	tn := ov.Type().Elem().Name()
-	raise(NewTypeErrorFormat("Cannot assign '%T' to '*%v'", value, tn))
+	raise(TypeError.Err("Cannot assign '%T' to '*%v'", value, tn))
 	return -1
 }
 
@@ -273,7 +273,7 @@ func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 		return unsafe.Pointer(C.PyInt_FromLong(C.long(*i)))
 	}
 
-	raise(NewNotImplementedError(None))
+	raise(NotImplementedError.ErrV(None))
 	return nil
 }
 
@@ -296,7 +296,7 @@ func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 		return 0
 	}
 
-	raise(NewNotImplementedError(None))
+	raise(NotImplementedError.ErrV(None))
 	return -1
 }
 
@@ -308,7 +308,7 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 	class, ok := types[pyType]
 	if !ok {
 		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
-		raise(NewTypeErrorFormat("Not a recognised type: %s", t))
+		raise(TypeError.Err("Not a recognised type: %s", t))
 		return -1
 	}
 
@@ -343,7 +343,7 @@ func goClassClear(obj unsafe.Pointer) int {
 	class, ok := types[pyType]
 	if !ok {
 		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
-		raise(NewTypeErrorFormat("Not a recognised type: %s", t))
+		raise(TypeError.Err("Not a recognised type: %s", t))
 		return -1
 	}
 
@@ -397,7 +397,7 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	if class == nil {
 		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
-		raise(NewTypeErrorFormat("Not a recognised type: %s", t))
+		raise(TypeError.Err("Not a recognised type: %s", t))
 		return nil
 	}
 
