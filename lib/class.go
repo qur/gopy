@@ -5,35 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline PyTypeObject *newType(void) {
-//     return calloc(1, sizeof(PyTypeObject));
-// }
-// static inline int typeReady(PyTypeObject *o) {
-//     if (o->tp_new == NULL && o->tp_base == NULL) {
-//         o->tp_new = PyType_GenericNew;
-//     }
-//     if (o->tp_flags & Py_TPFLAGS_HAVE_GC) {
-//         enableClassGc(o);
-//     }
-//     return PyType_Ready(o);
-// }
-// static inline ClassContext *newContext(void) {
-//     // We don't use tp_methods, and it is read when calling PyType_Ready
-//     // - so we use it to hide a classContext struct.  The classContext
-//     // starts with a NULL pointer just in case, so it looks like an
-//     // empty methods list if Python does try to process it.
-//     return calloc(1, sizeof(ClassContext));
-// }
-// static inline void storeContext(PyTypeObject *t, ClassContext *c) {
-//     t->tp_methods = (void *)c;
-// }
-// static inline int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {
-//     return PyDict_SetItemString(tp->tp_dict, name, o);
-// }
-// static inline int doVisit(PyObject *o, void *v, void *a) {
-//     visitproc visit = v;
-//     return visit(o, a);
-// }
 import "C"
 
 import (

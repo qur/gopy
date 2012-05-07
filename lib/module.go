@@ -5,9 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int moduleCheck(PyObject *o) { return PyModule_Check(o); }
-// static inline int moduleCheckE(PyObject *o) { return PyModule_CheckExact(o); }
-// static inline void decref(PyObject *obj) { Py_DECREF(obj); }
 import "C"
 
 import "unsafe"

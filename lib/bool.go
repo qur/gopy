@@ -5,9 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int boolCheck(PyObject *o) { return PyBool_Check(o); }
-// static inline void *pyTrue(void) { return Py_True; }
-// static inline void *pyFalse(void) { return Py_False; }
 import "C"
 
 import (

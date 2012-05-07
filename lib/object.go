@@ -5,10 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline void decref(PyObject *obj) { Py_DECREF(obj); }
-// static inline int exceptionCheck(PyObject *obj) {
-//     return PyExceptionClass_Check(obj);
-// }
 import "C"
 
 import (

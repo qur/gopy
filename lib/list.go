@@ -5,8 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int listCheck(PyObject *o) { return PyList_Check(o); }
-// static inline int listCheckE(PyObject *o) { return PyList_CheckExact(o); }
 import "C"
 
 import (

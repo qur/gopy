@@ -5,7 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int complexCheck(PyObject *o) { return PyComplex_Check(o); }
 import "C"
 
 import (

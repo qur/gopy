@@ -9,13 +9,6 @@ package py
 // #cgo pkg-config: libffi
 //
 // #include "utils.h"
-//
-// static inline int enterRecursive(char *w) {
-//     return Py_EnterRecursiveCall(w);
-// }
-// static inline void leaveRecursive(void) {
-//     Py_LeaveRecursiveCall();
-// }
 import "C"
 
 import (

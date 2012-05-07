@@ -128,4 +128,83 @@ struct _en {
 
 extern struct _en excName(PyObject *o);
 
+extern void incref(PyObject *o);
+extern void decref(PyObject *o);
+extern void xincref(PyObject *o);
+extern void xdecref(PyObject *o);
+
+extern void *pyTrue(void);
+extern void *pyFalse(void);
+
+extern int boolCheck(PyObject *o);
+extern int cfunctionCheck(PyObject *o);
+extern int codeCheck(PyObject *o);
+extern int complexCheck(PyObject *o);
+extern int dictCheckE(PyObject *o);
+extern int dictCheck(PyObject *o);
+extern int exceptionCheck(PyObject *o);
+extern int floatCheck(PyObject *o);
+extern int frozenSetCheckE(PyObject *o);
+extern int frozenSetCheck(PyObject *o);
+extern int functionCheck(PyObject *o);
+extern int intCheck(PyObject *o);
+extern int listCheckE(PyObject *o);
+extern int listCheck(PyObject *o);
+extern int longCheck(PyObject *o);
+extern int moduleCheckE(PyObject *o);
+extern int moduleCheck(PyObject *o);
+extern int setCheck(PyObject *o);
+extern int stringCheck(PyObject *o);
+extern int tupleCheckE(PyObject *o);
+extern int tupleCheck(PyObject *o);
+extern int typeCheckE(PyObject *o);
+extern int typeCheck(PyObject *o);
+
+// --- abstract.go helper functions ---
+//
+void typeFree(PyTypeObject *type, PyObject *o);
+//
+// ----------------------------------
+
+// --- class.go helper functions ---
+//
+extern PyTypeObject *newType(void);
+extern int typeReady(PyTypeObject *o);
+extern ClassContext *newContext(void);
+extern void storeContext(PyTypeObject *t, ClassContext *c);
+extern int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o);
+extern int doVisit(PyObject *o, void *v, void *a);
+//
+// ----------------------------------
+
+// --- memory.go helper functions ---
+//
+extern size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n);
+extern void _PyObject_INIT(PyObject *obj, PyObject *typ);
+extern void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n);
+extern void __PyObject_GC_TRACK(PyObject *obj);
+extern void setGcRefs(PyGC_Head *g, Py_ssize_t refs);
+//
+// ----------------------------------
+
+// --- python.go helper functions ---
+//
+extern int enterRecursive(char *w);
+extern void leaveRecursive(void);
+//
+// ----------------------------------
+
+// --- type.go helper functions ---
+//
+extern size_t tupleItemSize(void);
+//
+// ----------------------------------
+
+// --- type.go helper functions ---
+//
+extern PyObject *typeAlloc(PyObject *t, Py_ssize_t n);
+extern int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k);
+//
+// ----------------------------------
+
 #endif /* _GO_PYTHON_UTILS_H */
