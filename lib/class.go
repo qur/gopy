@@ -306,7 +306,7 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
 
-	class, ok := types[pyType]
+	class, ok := getType(pyType)
 	if !ok {
 		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
 		raise(TypeError.Err("Not a recognised type: %s", t))
@@ -341,7 +341,7 @@ func goClassClear(obj unsafe.Pointer) int {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
 
-	class, ok := types[pyType]
+	class, ok := getType(pyType)
 	if !ok {
 		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
 		raise(TypeError.Err("Not a recognised type: %s", t))
@@ -408,12 +408,12 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)(typ)
 
-	class := types[pyType]
+	class, _ := getType(pyType)
 	subClass := false
 
 	for class == nil && pyType.tp_base != nil {
 		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
-		class = types[pyType]
+		class, _ = getType(pyType)
 		subClass = true
 	}
 

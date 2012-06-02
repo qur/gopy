@@ -13,6 +13,7 @@ import "C"
 
 import (
 	"reflect"
+	"sync"
 	"unsafe"
 )
 
@@ -59,11 +60,25 @@ func c(obj Object) *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
 }
 
-// TODO: needs lock
-var types = make(map[*C.PyTypeObject]*Class)
+var (
+	typeLock sync.Mutex
+	types = make(map[*C.PyTypeObject]*Class)
+)
 
 func registerType(pyType *C.PyTypeObject, class *Class) {
+	typeLock.Lock()
+	defer typeLock.Unlock()
+
 	types[pyType] = class
+}
+
+func getType(pyType *C.PyTypeObject) (*Class, bool) {
+	typeLock.Lock()
+	defer typeLock.Unlock()
+
+	class, ok := types[pyType]
+
+	return class, ok
 }
 
 func obj2Class(c *Class, obj *C.PyObject) (Object, bool) {
@@ -83,7 +98,7 @@ func newObject(obj *C.PyObject) Object {
 	}
 
 	pyType := (*C.PyTypeObject)(obj.ob_type)
-	class, ok := types[pyType]
+	class, ok := getType(pyType)
 	if ok {
 		ret, ok := obj2Class(class, obj)
 		if ok {
@@ -92,7 +107,7 @@ func newObject(obj *C.PyObject) Object {
 	}
 	for pyType.tp_base != nil {
 		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
-		class, ok := types[pyType]
+		class, ok := getType(pyType)
 		if ok {
 			ret, ok := obj2Class(class, obj)
 			if ok {
