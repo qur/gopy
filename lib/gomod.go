@@ -7,6 +7,7 @@ package py
 // #include "utils.h"
 import "C"
 
+// TODO: needs lock
 var goModule *Module
 
 // InitGoModules initializes (and returns) the special built-in "go" module.

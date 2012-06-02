@@ -90,6 +90,7 @@ type Method struct {
 	Doc  string
 }
 
+// TODO: needs lock
 var funcs []interface{}
 
 func saveFunc(f interface{}) *C.PyObject {

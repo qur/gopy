@@ -59,6 +59,7 @@ func c(obj Object) *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
 }
 
+// TODO: needs lock
 var types = make(map[*C.PyTypeObject]*Class)
 
 func registerType(pyType *C.PyTypeObject, class *Class) {
