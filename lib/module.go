@@ -70,36 +70,12 @@ func InitModule(name string, methods []Method) (*Module, error) {
 	}
 
 	for _, method := range methods {
-		ml := C.newMethodDef()
-
-		ml.ml_name = C.CString(method.Name)
-		ml.ml_doc = C.CString(method.Doc)
-
-		switch method.Func.(type) {
-
-		case func() (Object, error):
-			C.set_call_noargs(&ml.ml_meth)
-			ml.ml_flags = C.METH_NOARGS
-
-		case func(a *Tuple) (Object, error):
-			C.set_call_args(&ml.ml_meth)
-			ml.ml_flags = C.METH_VARARGS
-
-		case func(a *Tuple, k *Dict) (Object, error):
-			C.set_call_keywords(&ml.ml_meth)
-			ml.ml_flags = C.METH_VARARGS | C.METH_KEYWORDS
-
-		default:
-			return nil, TypeError.Err("InitModule: unknown func type for %s", method.Name)
-
+		pyF, err := makeCFunction(method.Name, method.Func, method.Doc, n)
+		if err != nil {
+			return nil, err
 		}
 
-		v := C.PyCFunction_NewEx(ml, saveFunc(method.Func), n)
-		if v == nil {
-			return nil, exception()
-		}
-
-		if C.PyDict_SetItemString(d, ml.ml_name, v) != 0 {
+		if C.PyDict_SetItemString(d, C.CString(method.Name), c(pyF)) != 0 {
 			return nil, exception()
 		}
 	}

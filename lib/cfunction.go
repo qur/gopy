@@ -27,6 +27,10 @@ func newCFunction(obj *C.PyObject) *CFunction {
 }
 
 func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {
+	return makeCFunction(name, fn, doc, nil)
+}
+
+func makeCFunction(name string, fn interface{}, doc string, mod_name *C.PyObject) (*CFunction, error) {
 	ml := C.newMethodDef()
 
 	switch fn.(type) {
@@ -49,7 +53,7 @@ func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {
 
 	}
 
-	ret := C.PyCFunction_NewEx(ml, saveFunc(fn), nil)
+	ret := C.PyCFunction_NewEx(ml, saveFunc(fn), mod_name)
 	if ret == nil {
 		C.free(unsafe.Pointer(ml))
 		return nil, exception()
