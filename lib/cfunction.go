@@ -98,7 +98,7 @@ type Method struct {
 }
 
 var (
-	funcLock sync.Mutex
+	funcLock sync.RWMutex
 	funcs []interface{}
 )
 
@@ -111,8 +111,8 @@ func saveFunc(f interface{}) *C.PyObject {
 }
 
 func getFunc(self unsafe.Pointer) interface{} {
-	funcLock.Lock()
-	defer funcLock.Unlock()
+	funcLock.RLock()
+	defer funcLock.RUnlock()
 
 	idx := int(C.PyInt_AsLong((*C.PyObject)(self)))
 

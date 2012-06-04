@@ -61,7 +61,7 @@ func c(obj Object) *C.PyObject {
 }
 
 var (
-	typeLock sync.Mutex
+	typeLock sync.RWMutex
 	types = make(map[*C.PyTypeObject]*Class)
 )
 
@@ -73,8 +73,8 @@ func registerType(pyType *C.PyTypeObject, class *Class) {
 }
 
 func getType(pyType *C.PyTypeObject) (*Class, bool) {
-	typeLock.Lock()
-	defer typeLock.Unlock()
+	typeLock.RLock()
+	defer typeLock.RUnlock()
 
 	class, ok := types[pyType]
 

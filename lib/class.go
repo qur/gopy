@@ -373,7 +373,7 @@ func goClassClear(obj unsafe.Pointer) int {
 }
 
 var (
-	ctxtLock sync.Mutex
+	ctxtLock sync.RWMutex
 	contexts = map[uintptr]*C.ClassContext{}
 )
 
@@ -393,8 +393,8 @@ func clearClassContext(obj unsafe.Pointer) {
 }
 
 func getClassContext(obj unsafe.Pointer) *C.ClassContext {
-	ctxtLock.Lock()
-	defer ctxtLock.Unlock()
+	ctxtLock.RLock()
+	defer ctxtLock.RUnlock()
 
 	ctxt := contexts[uintptr(obj)]
 	if ctxt == nil {
@@ -529,7 +529,7 @@ func Clear(obj Object) error {
 }
 
 var (
-	fieldLock sync.Mutex
+	fieldLock sync.RWMutex
 	fields []reflect.StructField
 )
 
@@ -542,8 +542,8 @@ func registerField(field reflect.StructField) C.int {
 }
 
 func getField(idx int) reflect.StructField {
-	fieldLock.Lock()
-	defer fieldLock.Unlock()
+	fieldLock.RLock()
+	defer fieldLock.RUnlock()
 
 	if idx >= len(fields) {
 		panic("Request for unregistered field!")
