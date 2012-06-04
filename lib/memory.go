@@ -54,7 +54,7 @@ func goGcMalloc(size uintptr) *C.PyObject {
 	memLock.Lock()
 	defer memLock.Unlock()
 
-	g := (*C.PyGC_Head)(unsafe.Pointer(goMalloc(size + headSize)))
+	g := (*C.PyGC_Head)(unsafe.Pointer(_goMalloc(size + headSize)))
 	C.setGcRefs(g, C._PyGC_REFS_UNTRACKED)
 	p := fromGc(g)
 
