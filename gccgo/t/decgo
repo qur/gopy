@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+import os
+import re
+import sys
+
+c = re.compile(r'(^|\W)C\.(\w+)')
+
+def load_map():
+    l = {}
+    if os.path.exists('typedefs.map'):
+        execfile('typedefs.map', {}, l)
+    m = l.get('map', {})
+    m['float'] = 'float32'
+    m['double'] = 'float64'
+    m['int'] = 'int32'
+    m['char'] = 'int8'
+    m['long'] = 'int64'
+    m['longlong'] = 'int64'
+    return m
+
+def load_vars():
+    v = []
+    f = open('gen-py.go')
+    for line in f:
+        if not line.startswith('var '):
+            continue
+        name, _ = line[4:].split(' ', 1)
+        v.append(name[1:])
+    f.close()
+    return v
+
+def replace(m):
+    a = m.group(1)
+    b = m.group(2)
+    if b in typedefs:
+        return '%s%s' % (a, typedefs[b])
+    elif b in vars:
+        return '%s*_%s' % (a, b)
+    return '%s_%s' % (a, b)
+
+def main():
+    global typedefs, vars
+    typedefs = load_map()
+    vars = load_vars()
+    for line in sys.stdin:
+        if line.strip() == 'import "C"':
+            sys.stdout.write('//')
+        sys.stdout.write(c.sub(replace, line))
+
+if __name__ == "__main__":
+    main()

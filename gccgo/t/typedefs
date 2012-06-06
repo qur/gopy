@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+import re
+import sys
+
+native = [
+    'int', 'int8', 'int16', 'int32', 'int64',
+    'uint', 'uint8', 'uint16', 'uint32', 'uint64',
+    'float32', 'float64', 'byte',
+]
+
+td = re.compile(r'type (?P<name>\S+) (?P<p>\*?)(?P<base>\w+)$')
+
+def main():
+    print "map = {"
+    for line in sys.stdin:
+        m = td.match(line)
+        if m:
+            name = m.group('name')
+            p = m.group('p')
+            base = m.group('base')
+            if base not in native:
+                continue
+            if name.startswith('__'):
+                continue
+            print "  '%s': '%s'," % (name[1:], p+base)
+    print "}"
+
+if __name__ == "__main__":
+    main()

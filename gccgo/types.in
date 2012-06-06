@@ -1,0 +1,16 @@
+Module          E
+Type            E
+Tuple           E
+String
+Dict            E
+List            E
+Bool
+Int
+Long
+Float
+Set
+FrozenSet       E
+Complex
+Function
+Code
+CFunction

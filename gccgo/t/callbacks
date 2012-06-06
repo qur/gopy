@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+def output(name, data):
+    data.setdefault('ret', 'void')
+    ret = data.get('ret', 'void')
+    args = data.get('args', [])
+    pname = name[0].lower() + name[1:]
+    print "extern %s _2_%s(" % (ret, name),
+    print ",".join(data.get('args', [])),
+    print ") __asm__ (\"go.py.%s\");" % name
+    print
+    print "static void _1_%s(void *_a) {" % name
+    print "    struct {"
+    if ret != 'void':
+        print "        %s ret;" % ret
+    for i, t in enumerate(args):
+        print "        %s a%d;" % (t, i+1)
+    print "    } *a = _a;"
+    print "   ",
+    if ret != 'void':
+        print "a->ret =",
+    print "_2_%s(" % name,
+    print ",".join(["a->a%d" % (i+1) for i in range(len(args))]),
+    print ");"
+    print "}"
+    print
+    print "static %s %s(" % (ret, pname)
+    for i, t in enumerate(args):
+        print "   ",
+        if i > 0:
+            print ",",
+        print "%s a%d" % (t, i+1)
+    print ") {"
+    print "    struct {"
+    if ret != 'void':
+        print "        %s ret;" % ret
+    for i, t in enumerate(args):
+        print "        %s a%d;" % (t, i+1)
+    print "    } a;"
+    for i, t in enumerate(args):
+        print "    a.a%d = a%d;" % (i+1, i+1)
+    print "    cgocallback(_1_%s, &a);" % name
+    if ret != 'void':
+        print "    return a.ret;"
+    print "}"
+    print
+
+def main():
+    data = {}
+    execfile('callbacks.dat', {}, data)
+    for name, fn in data.items():
+        if name[0].isupper():
+            output(name, fn)
+
+if __name__ == "__main__":
+    main()

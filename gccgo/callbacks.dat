@@ -1,0 +1,210 @@
+binaryfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'PyObject *'],
+}
+cmpfunc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'PyObject *'],
+}
+destructor = {
+    'args': ['PyObject *'],
+}
+getattrfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'char *'],
+}
+getattrofunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'PyObject *'],
+}
+getiterfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *'],
+}
+hashfunc = {
+    'ret': 'long',
+    'args': ['PyObject *'],
+}
+initproc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'PyObject *', 'PyObject *'],
+}
+inquiry = {
+    'ret': 'int',
+    'args': ['PyObject *'],
+}
+iternextfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *'],
+}
+lenfunc = {
+    'ret': 'Py_ssize_t',
+    'args': ['PyObject *'],
+}
+newfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyTypeObject *', 'PyObject *', 'PyObject *'],
+}
+objobjargproc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'PyObject *', 'PyObject *'],
+}
+objobjproc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'PyObject *'],
+}
+reprfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *'],
+}
+richcmpfunc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'PyObject *', 'int'],
+}
+setattrfunc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'char *', 'PyObject *'],
+}
+setattrofunc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'PyObject *', 'PyObject *'],
+}
+ssizeargfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'Py_ssize_t'],
+}
+ssizeobjargproc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'Py_ssize_t', 'PyObject *'],
+}
+ternaryfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'PyObject *', 'PyObject *'],
+}
+traverseproc = {
+    'ret': 'int',
+    'args': ['PyObject *', 'visitproc', 'void *'],
+}
+unaryfunc = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *'],
+}
+
+GoClassTraverse = traverseproc
+GoClassClear = inquiry
+GoClassNew = newfunc
+GoClassDealloc = destructor
+GoClassCall = ternaryfunc
+GoClassCompare = cmpfunc
+GoClassGetAttr = getattrfunc
+GoClassGetAttrObj = getattrofunc
+GoClassHash = hashfunc
+GoClassInit = initproc
+GoClassIter = getiterfunc
+GoClassIterNext = iternextfunc
+GoClassRepr = reprfunc
+GoClassRichCmp = richcmpfunc
+GoClassSetAttr = setattrfunc
+GoClassSetAttrObj = setattrofunc
+GoClassStr = reprfunc
+GoClassMapLen = lenfunc
+GoClassMapGet = binaryfunc
+GoClassMapSet = objobjargproc
+GoClassNumAdd = binaryfunc
+GoClassNumSubtract = binaryfunc
+GoClassNumMultiply = binaryfunc
+GoClassNumDivide = binaryfunc
+GoClassNumRemainder = binaryfunc
+GoClassNumDivmod = binaryfunc
+GoClassNumPower = ternaryfunc
+GoClassNumNegative = unaryfunc
+GoClassNumPositive = unaryfunc
+GoClassNumAbsolute = unaryfunc
+GoClassNumNonzero = inquiry
+GoClassNumInvert = unaryfunc
+GoClassNumLshift = binaryfunc
+GoClassNumRshift = binaryfunc
+GoClassNumAnd = binaryfunc
+GoClassNumXor = binaryfunc
+GoClassNumOr = binaryfunc
+GoClassNumInt = unaryfunc
+GoClassNumLong = unaryfunc
+GoClassNumFloat = unaryfunc
+GoClassNumOct = unaryfunc
+GoClassNumHex = unaryfunc
+GoClassNumInplaceAdd = binaryfunc
+GoClassNumInplaceSubtract = binaryfunc
+GoClassNumInplaceMultiply = binaryfunc
+GoClassNumInplaceDivide = binaryfunc
+GoClassNumInplaceRemainder = binaryfunc
+GoClassNumInplacePower = ternaryfunc
+GoClassNumInplaceLshift = binaryfunc
+GoClassNumInplaceRshift = binaryfunc
+GoClassNumInplaceAnd = binaryfunc
+GoClassNumInplaceXor = binaryfunc
+GoClassNumInplaceOr = binaryfunc
+GoClassNumFloorDivide = binaryfunc
+GoClassNumTrueDivide = binaryfunc
+GoClassNumInplaceFloorDivide = binaryfunc
+GoClassNumInplaceTrueDivide = binaryfunc
+GoClassNumIndex = unaryfunc
+GoClassSeqLength = lenfunc
+GoClassSeqConcat = binaryfunc
+GoClassSeqRepeat = ssizeargfunc
+GoClassSeqGetItem = ssizeargfunc
+GoClassSeqSetItem = ssizeobjargproc
+GoClassSeqContains = objobjproc
+GoClassSeqIpConcat = binaryfunc
+GoClassSeqIpRepeat = ssizeargfunc
+
+GoClassCallMethod = binaryfunc
+GoClassCallMethodArgs = binaryfunc
+GoClassCallMethodKwds = ternaryfunc
+
+GoClassObjGet = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'int'],
+}
+GoClassObjSet = {
+    'ret': 'int',
+    'args': ['PyObject *', 'int', 'PyObject *'],
+}
+
+GoClassNatGet = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'int'],
+}
+GoClassNatSet = {
+    'ret': 'int',
+    'args': ['PyObject *', 'int', 'PyObject *'],
+}
+
+GoClassGetProp = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'void *'],
+}
+GoClassSetProp = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'PyObject *', 'void *'],
+}
+
+CallWithoutArgs = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'PyObject *'],
+}
+CallWithArgs = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'PyObject *'],
+}
+CallWithKeywords = {
+    'ret': 'PyObject *',
+    'args': ['PyObject *', 'PyObject *', 'PyObject *'],
+}
+
+GoGenericAlloc = {
+    'ret': 'PyObject *',
+    'args': ['PyTypeObject *', 'Py_ssize_t'],
+}
+GoGenericFree = {
+    'args': ['void *'],
+}
