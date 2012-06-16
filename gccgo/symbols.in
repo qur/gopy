@@ -303,6 +303,10 @@ _PyObject_GC_Malloc
 Py_TPFLAGS_HEAPTYPE
 PyObject_GC_Del
 
+# object.go
+_Py_NoneStruct
+get__Py_NoneStruct
+
 # py.c
 set_call_noargs
 set_call_args
@@ -310,7 +314,6 @@ set_call_keywords
 incref
 decref
 xdecref
-getNone
 compileFile
 ClassContext
 newMethod
@@ -388,10 +391,14 @@ PyNumberMethods
 PyMappingMethods
 PySequenceMethods
 
-getBaseType
+PyBaseObject_Type
+get_PyBaseObject_Type
 
 pyTrue
 pyFalse
+
+PyExc_Exception
+get_PyExc_Exception
 
 getBasePyType
 

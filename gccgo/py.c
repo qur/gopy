@@ -60,12 +60,16 @@ extern void xdecref(PyObject *o) {
     Py_XDECREF(o);
 }
 
-extern PyObject *getNone(void) {
-    return Py_None;
+extern PyObject *get__Py_NoneStruct(void) {
+    return &_Py_NoneStruct;
 }
 
-extern PyObject *getBaseType(void) {
-    return (PyObject *)&PyBaseObject_Type;
+extern PyTypeObject *get_PyBaseObject_Type(void) {
+    return &PyBaseObject_Type;
+}
+
+extern PyObject **get_PyExc_Exception(void) {
+    return &PyExc_Exception;
 }
 
 extern void typeFree(PyTypeObject *type, PyObject *o) {

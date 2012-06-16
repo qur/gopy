@@ -124,8 +124,9 @@ extern void set_call_keywords(PyCFunction *f);
 extern void incref(PyObject *o);
 extern void decref(PyObject *o);
 extern void xdecref(PyObject *o);
-extern PyObject *getNone(void);
-extern PyObject *getBaseType(void);
+extern PyObject *get__Py_NoneStruct(void);
+extern PyTypeObject *get_PyBaseObject_Type(void);
+extern PyObject **get_PyExc_Exception(void);
 extern void typeFree(PyTypeObject *type, PyObject *o);
 
 extern int doParseTuple(PyObject *args, char *fmt, void *values[], int c);
