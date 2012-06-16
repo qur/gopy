@@ -171,40 +171,6 @@ int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt, char *kwlist[], 
     return (int)result;
 }
 
-static inline ffi_type *at2ft(uint32_t at)
-{
-    switch (at) {
-    case at_pointer:
-        return &ffi_type_pointer;
-    case at_int:
-        return &ffi_type_sint;
-    case at_int8:
-        return &ffi_type_sint8;
-    case at_int16:
-        return &ffi_type_sint16;
-    case at_int32:
-        return &ffi_type_sint32;
-    case at_int64:
-        return &ffi_type_sint64;
-    case at_uint:
-        return &ffi_type_uint;
-    case at_uint8:
-        return &ffi_type_uint8;
-    case at_uint16:
-        return &ffi_type_uint16;
-    case at_uint32:
-        return &ffi_type_uint32;
-    case at_uint64:
-        return &ffi_type_uint64;
-    case at_float:
-        return &ffi_type_float;
-    case at_double:
-        return &ffi_type_double;
-    default:
-        exit(1);
-    }
-}
-
 PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
     ffi_cif cif;
     ffi_status status;

@@ -408,20 +408,6 @@ doBuildValue
 
 ArgValue
 
-at_pointer
-at_uint
-at_uint8
-at_uint16
-at_uint32
-at_uint64
-at_int
-at_int8
-at_int16
-at_int32
-at_int64
-at_float
-at_double
-
 # FFI types
 _ffi_type
 ffi_type
