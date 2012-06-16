@@ -1,0 +1,11 @@
+--- class_sequence.orig.go	2012-06-16 18:25:50.000000000 +0100
++++ class_sequence.go	2012-06-16 18:26:39.000000000 +0100
+@@ -9,7 +9,7 @@
+ 
+ import "unsafe"
+ 
+-func csCallSsizeArgFunc(fn, obj unsafe.Pointer, s int64) unsafe.Pointer {
++func csCallSsizeArgFunc(fn *byte, obj unsafe.Pointer, s int64) unsafe.Pointer {
+ 	// Turn the function into something we can call
+ 	f := (*func(unsafe.Pointer, int64) (Object, error))(unsafe.Pointer(&fn))
+ 

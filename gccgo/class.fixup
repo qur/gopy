@@ -1,0 +1,44 @@
+--- class.orig.go	2012-06-16 18:00:04.000000000 +0100
++++ class.go	2012-06-16 18:05:21.000000000 +0100
+@@ -301,7 +301,7 @@
+ }
+ 
+ //export goClassTraverse
+-func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
++func goClassTraverse(obj *_PyObject, visit, arg *byte) int {
+ 	// Get the Python type object
+ 	pyType := (*_PyTypeObject)((*_PyObject)(obj).ob_type)
+ 
+@@ -319,7 +319,7 @@
+ 		if !field.Type.AssignableTo(otyp) {
+ 			continue
+ 		}
+-		v := unsafe.Pointer(uintptr(obj) + field.Offset)
++		v := unsafe.Pointer(uintptr(unsafe.Pointer(obj)) + field.Offset)
+ 		var o Object
+ 		if field.Type == otyp {
+ 			o = *(*Object)(v)
+@@ -688,7 +688,7 @@
+ 			_free(unsafe.Pointer(pyType))
+ 			return nil, fmt.Errorf("%s embeds %s as first member, which is not a supported \"base class\"", btyp.Name(), firstName)
+ 		}
+-		pyType.tp_base = (*_struct__typeobject)(unsafe.Pointer(baseType))
++		pyType.tp_base = (*__typeobject)(unsafe.Pointer(baseType))
+ 	}
+ 
+ 	// Get a new context structure
+@@ -766,12 +766,12 @@
+ 
+ 	for name, method := range methods {
+ 		s := _CString(name)
+-		_setTypeAttr(pyType, s, _newMethod(s, method.f, int32(method.flags)))
++		_setTypeAttr(pyType, s, _newMethod(s, (*byte)(method.f), int32(method.flags)))
+ 	}
+ 
+ 	for name, prop := range props {
+ 		s := _CString(name)
+-		_setTypeAttr(pyType, s, _newProperty(pyType, s, prop.get, prop.set))
++		_setTypeAttr(pyType, s, _newProperty(pyType, s, (*byte)(prop.get), (*byte)(prop.set)))
+ 	}
+ 
+ 	for i := 0; i < btyp.NumField(); i++ {

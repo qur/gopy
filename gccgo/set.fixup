@@ -1,0 +1,20 @@
+--- set.orig.go	2012-06-16 18:23:11.000000000 +0100
++++ set.go	2012-06-16 18:24:18.000000000 +0100
+@@ -35,7 +35,7 @@
+ }
+ 
+ func frozenSetCheck(obj Object) bool {
+-	return _frozenSetCheck(c(obj)) != 0
++	return _frozensetCheck(c(obj)) != 0
+ }
+ 
+ func newSet(obj *_PyObject) *Set {
+@@ -73,7 +73,7 @@
+ }
+ 
+ func (f *FrozenSet) CheckExact() bool {
+-	ret := _frozenSetCheckE(c(f))
++	ret := _frozensetCheckE(c(f))
+ 	return ret != 0
+ }
+ 

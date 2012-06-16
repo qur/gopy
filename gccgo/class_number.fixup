@@ -1,0 +1,29 @@
+--- class_number.orig.go	2012-06-16 17:44:15.000000000 +0100
++++ class_number.go	2012-06-16 17:46:24.000000000 +0100
+@@ -9,7 +9,7 @@
+ 
+ import "unsafe"
+ 
+-func cnCallUnary(fn, obj unsafe.Pointer) unsafe.Pointer {
++func cnCallUnary(fn *byte, obj unsafe.Pointer) unsafe.Pointer {
+ 	// Turn the function into something we can call
+ 	f := (*func(unsafe.Pointer) (Object, error))(unsafe.Pointer(&fn))
+ 
+@@ -22,7 +22,7 @@
+ 	return unsafe.Pointer(c(ret))
+ }
+ 
+-func cnCallBinary(fn, obj1, obj2 unsafe.Pointer) unsafe.Pointer {
++func cnCallBinary(fn *byte, obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+ 	// Turn the function into something we can call
+ 	f := (*func(unsafe.Pointer, Object) (Object, error))(unsafe.Pointer(&fn))
+ 
+@@ -38,7 +38,7 @@
+ 	return unsafe.Pointer(c(ret))
+ }
+ 
+-func cnCallTernary(fn, obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
++func cnCallTernary(fn *byte, obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
+ 	// Turn the function into something we can call
+ 	f := (*func(unsafe.Pointer, Object, Object) (Object, error))(unsafe.Pointer(&fn))
+ 

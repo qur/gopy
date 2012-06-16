@@ -1,0 +1,11 @@
+--- memory.orig.go	2012-06-16 18:22:30.000000000 +0100
++++ memory.go	2012-06-16 18:22:41.000000000 +0100
+@@ -134,7 +134,7 @@
+ 	// updated as appropriate.
+ 	proxy, ok := gcProxies[uintptr(o)]
+ 	if ok {
+-		_PyObject_GC_Del(unsafe.Pointer(proxy))
++		_PyObject_GC_Del((*byte)(unsafe.Pointer(proxy)))
+ 		delete(gcProxies, uintptr(o))
+ 	}
+ }
