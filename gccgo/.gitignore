@@ -35,3 +35,4 @@ tuple.go
 type.go
 *.so
 gopy
+gopy.1.gz

@@ -178,7 +178,7 @@ func main() {
 
 	GCC, found = syscall.Getenv("GOPY_CC")
 	if !found {
-		GCC = "gcc-4.7"
+		GCC = "gcc"
 	}
 
 	GCCGO, found = syscall.Getenv("GOPY_GO")

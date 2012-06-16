@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-BINDIR ?= ~/misc/gcc/bin
+BINDIR ?= /usr/bin
 CFLAGS ?= -g -fsplit-stack
 
 GCC = $(BINDIR)/gcc
@@ -13,7 +13,7 @@ ifndef V
 .SILENT:
 endif
 
-all: libgopy.so libgopy.ext.so gopy
+all: libgopy.so libgopy.ext.so gopy gopy.1.gz
 
 GOFILES=\
 	abstract.go \
@@ -74,7 +74,7 @@ typedefs.map: gen-py.go t/typedefs
 
 gopy.1.gz: gopy.rst
 	@$(ECHO) "  RST2MAN\t$@"
-	rst2man $< | gzip > $@
+	rst2man.py $< | gzip > $@
 
 py.o: $(GOFILES) py.go bindings.go exc.go
 	@$(ECHO) "  GCCGO\t\t$@"
@@ -146,7 +146,7 @@ exc: t/exc.go t/utils.go
 
 clean:
 	@$(ECHO) "  CLEAN"
-	rm -f *.o *.so *.[68] sym bindings.go gen-py.go types.c types.sym types sym.in exc exc.c exc.go types.h pywrap pybase.c cgo cgo.c gopy callbacks.c gopy.1.gz $(GOFILES) typedefs.map
+	rm -f *.o *.so *.[68] sym bindings.go gen-py.go types.c types.sym types sym.in exc exc.c exc.go types.h pywrap pybase.c cgo cgo.c gopy callbacks.c gopy.1.gz $(GOFILES) typedefs.map gopy.1.gz
 
 .PHONY: all clean
 .INTERMEDIATE: bindings.go gen-py.go py.o sym.in types.c types.h types.sym exc.go exc.c exc types sym pywrap pybase.c cgo cgo.c callbacks.c typedefs.map
