@@ -34,3 +34,4 @@ string.go
 tuple.go
 type.go
 *.so
+gopy
