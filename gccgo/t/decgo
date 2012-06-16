@@ -68,11 +68,17 @@ def main():
     filename = sys.argv[1]
     outname = sys.argv[2]
     fixup = outname.replace('.go', '.fixup')
+    ex = []
     f = open(filename)
     o = open(outname, "w")
     for line in f:
         if line.strip() == 'import "C"':
             o.write('//')
+        elif line.startswith('//export'):
+            ex.append(line[8:].strip())
+        for e in ex:
+            e2 = e[0].upper() + e[1:]
+            line = line.replace(e, e2)
         o.write(c.sub(replace, line))
     o.close()
     if os.path.exists(fixup):

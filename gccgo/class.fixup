@@ -3,9 +3,9 @@
 @@ -301,7 +301,7 @@
  }
  
- //export goClassTraverse
--func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
-+func goClassTraverse(obj *_PyObject, visit, arg *byte) int {
+ //export GoClassTraverse
+-func GoClassTraverse(obj, visit, arg unsafe.Pointer) int {
++func GoClassTraverse(obj *_PyObject, visit, arg *byte) int {
  	// Get the Python type object
  	pyType := (*_PyTypeObject)((*_PyObject)(obj).ob_type)
  
