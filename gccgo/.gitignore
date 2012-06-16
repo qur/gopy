@@ -33,3 +33,4 @@ set.go
 string.go
 tuple.go
 type.go
+*.so
