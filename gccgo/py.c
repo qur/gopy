@@ -243,11 +243,11 @@ PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
     return result;
 }
 
-extern PyObject *getTrue(void) {
+extern PyObject *pyTrue(void) {
     return Py_True;
 }
 
-extern PyObject *getFalse(void) {
+extern PyObject *pyFalse(void) {
     return Py_False;
 }
 

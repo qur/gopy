@@ -390,8 +390,8 @@ PySequenceMethods
 
 getBaseType
 
-getTrue
-getFalse
+pyTrue
+pyFalse
 
 getBasePyType
 

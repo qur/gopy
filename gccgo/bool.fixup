@@ -1,0 +1,16 @@
+--- bool.orig.go	2012-06-16 18:39:56.000000000 +0100
++++ bool.go	2012-06-16 18:40:13.000000000 +0100
+@@ -28,11 +28,11 @@
+ 
+ // True is the true value of the Bool type.  It is a singleton value, all true
+ // values refer to the same instance.
+-var True = (*Bool)(_pyTrue())
++var True = (*Bool)(unsafe.Pointer(_pyTrue()))
+ 
+ // False is the false value of the Bool type.  It is a singleton value, all
+ // false values refer to the same instance.
+-var False = (*Bool)(_pyFalse())
++var False = (*Bool)(unsafe.Pointer(_pyFalse()))
+ 
+ func boolCheck(obj Object) bool {
+ 	return _boolCheck(c(obj)) != 0

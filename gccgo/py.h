@@ -132,8 +132,8 @@ extern int doParseTuple(PyObject *args, char *fmt, void *values[], int c);
 extern int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt, char *kwlist[], void *values[], int c);
 extern PyObject *doBuildValue(char *fmt, ArgValue values[], int c);
 
-extern PyObject *getTrue(void);
-extern PyObject *getFalse(void);
+extern PyObject *pyTrue(void);
+extern PyObject *pyFalse(void);
 
 extern PyObject *newMethod(char *name, void *func, int flags);
 extern PyObject *newObjMember(int idx, char *doc);
