@@ -20,6 +20,17 @@ def load_map():
     m['longlong'] = 'int64'
     return m
 
+def load_aliases():
+    a = {}
+    f = open('gen-py.go')
+    for line in f:
+        if not line.startswith('// unknowndefine '):
+            continue
+        name, alias = line[17:].strip().split(' ', 1)
+        a[name] = alias
+    f.close()
+    return a
+
 def load_vars():
     v = []
     f = open('gen-py.go')
@@ -31,21 +42,28 @@ def load_vars():
     f.close()
     return v
 
+def resolve_alias(n):
+    while n in aliases:
+        n = aliases[n]
+    return n
+
 def replace(m):
     a = m.group(1)
     b = m.group(2)
-    if b in typedefs:
+    ab = resolve_alias(b)
+    if ab in typedefs:
         return '%s%s' % (a, typedefs[b])
-    elif b in vars:
+    elif ab in vars:
         return '%s*_%s' % (a, b)
     return '%s_%s' % (a, b)
 
 def main():
-    global typedefs, vars, fixup
+    global typedefs, vars, fixup, aliases
     if len(sys.argv) < 3:
         print >> sys.stderr, "usage: %s <input> <output>" % sys.argv[0]
         sys.exit(1)
     typedefs = load_map()
+    aliases = load_aliases()
     vars = load_vars()
     filename = sys.argv[1]
     outname = sys.argv[2]
