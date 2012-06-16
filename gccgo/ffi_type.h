@@ -1,0 +1,13 @@
+extern ffi_type *get_ffi_type_pointer(void);
+extern ffi_type *get_ffi_type_sint(void);
+extern ffi_type *get_ffi_type_sint8(void);
+extern ffi_type *get_ffi_type_sint16(void);
+extern ffi_type *get_ffi_type_sint32(void);
+extern ffi_type *get_ffi_type_sint64(void);
+extern ffi_type *get_ffi_type_uint(void);
+extern ffi_type *get_ffi_type_uint8(void);
+extern ffi_type *get_ffi_type_uint16(void);
+extern ffi_type *get_ffi_type_uint32(void);
+extern ffi_type *get_ffi_type_uint64(void);
+extern ffi_type *get_ffi_type_float(void);
+extern ffi_type *get_ffi_type_double(void);

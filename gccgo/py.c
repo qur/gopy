@@ -219,7 +219,7 @@ PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
 
     arg_types[0] = &ffi_type_pointer;
     for (i = 0; i < c; i++) {
-        arg_types[i+1] = at2ft(values[i].type);
+        arg_types[i+1] = values[i].type;
     }
 
     status = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, c+1,

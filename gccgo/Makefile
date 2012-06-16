@@ -88,7 +88,7 @@ libgopy.ext.so: base.c pybase.c
 	@$(ECHO) "  GCC\t\t$@"
 	$(GCC) -shared $(CFLAGS) -fPIC -o $@ $^ -lgo -static-libgcc
 
-libgopy.so: py.c cgo.c types.c exc.c py.o
+libgopy.so: py.c ffi_type.c cgo.c types.c exc.c py.o
 	@$(ECHO) "  GCC\t\t$@"
 	$(GCC) -shared $(CFLAGS) -fPIC -o $@ $^ -lgo $(FFI) -static-libgcc
 

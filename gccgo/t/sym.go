@@ -19,7 +19,7 @@ func rewriteForCgo(name string, sym Sym) Sym {
 }
 
 func rewriteVar(name string, sym Sym) Sym {
-	sym.declare = "= _get" + name + "()"
+	sym.declare = "= _get_" + name + "()"
 	return sym
 }
 

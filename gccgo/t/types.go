@@ -53,9 +53,9 @@ func process(lines []string, base string) error {
 			fmt.Fprintf(cOut, "    return Py%s_CheckExact(o);\n", name)
 			fmt.Fprintf(cOut, "}\n\n")
 		}
-		fmt.Fprintf(sOut, "getPy%s_Type\n", name)
-		fmt.Fprintf(hOut, "extern PyTypeObject *getPy%s_Type(void);\n", name)
-		fmt.Fprintf(cOut, "extern PyTypeObject *getPy%s_Type(void) {\n", name)
+		fmt.Fprintf(sOut, "get_Py%s_Type\n", name)
+		fmt.Fprintf(hOut, "extern PyTypeObject *get_Py%s_Type(void);\n", name)
+		fmt.Fprintf(cOut, "extern PyTypeObject *get_Py%s_Type(void) {\n", name)
 		fmt.Fprintf(cOut, "    return &Py%s_Type;\n", name)
 		fmt.Fprintf(cOut, "}\n\n")
 	}

@@ -8,6 +8,8 @@
 #include <ffi.h>
 #include <python2.7/Python.h>
 
+#include "ffi_type.h"
+
 enum arg_type {
     at_pointer = 0,
     at_uint,
@@ -25,7 +27,7 @@ enum arg_type {
 };
 
 typedef struct {
-    uint32_t type;
+    ffi_type *type;
     void *value;
 } ArgValue;
 
