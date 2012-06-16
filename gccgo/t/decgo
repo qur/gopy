@@ -2,6 +2,7 @@
 
 import os
 import re
+import subprocess
 import sys
 
 c = re.compile(r'(^|\W)C\.(\w+)')
@@ -40,13 +41,26 @@ def replace(m):
     return '%s_%s' % (a, b)
 
 def main():
-    global typedefs, vars
+    global typedefs, vars, fixup
+    if len(sys.argv) < 3:
+        print >> sys.stderr, "usage: %s <input> <output>" % sys.argv[0]
+        sys.exit(1)
     typedefs = load_map()
     vars = load_vars()
-    for line in sys.stdin:
+    filename = sys.argv[1]
+    outname = sys.argv[2]
+    fixup = outname.replace('.go', '.fixup')
+    f = open(filename)
+    o = open(outname, "w")
+    for line in f:
         if line.strip() == 'import "C"':
-            sys.stdout.write('//')
-        sys.stdout.write(c.sub(replace, line))
+            o.write('//')
+        o.write(c.sub(replace, line))
+    o.close()
+    if os.path.exists(fixup):
+        if subprocess.call(['patch', '-F0', '-s', '-i', fixup]) != 0:
+            print >> sys.stderr, "Failed to apply fixup for %s" % outname
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()

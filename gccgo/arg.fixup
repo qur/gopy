@@ -1,0 +1,110 @@
+--- arg.orig.go	2012-06-16 16:46:21.000000000 +0100
++++ arg.go	2012-06-16 16:48:13.000000000 +0100
+@@ -91,14 +91,14 @@
+ 		return AssertionError.Err("ParseTuple: args was nil")
+ 	}
+ 
+-	cv := (*unsafe.Pointer)(nil)
++	cv := (**byte)(nil)
+ 	cValues, err := packValues(values)
+ 	if err != nil {
+ 		return nil
+ 	}
+ 
+ 	if len(cValues) > 0 {
+-		cv = &cValues[0]
++		cv = (**byte)(unsafe.Pointer(&cValues[0]))
+ 	}
+ 
+ 	f := _CString(format)
+@@ -117,14 +117,14 @@
+ 		return AssertionError.Err("ParseTupleAndKeywords: args was nil")
+ 	}
+ 
+-	cv := (*unsafe.Pointer)(nil)
++	cv := (**byte)(nil)
+ 	cValues, err := packValues(values)
+ 	if err != nil {
+ 		return nil
+ 	}
+ 
+ 	if len(cValues) > 0 {
+-		cv = &cValues[0]
++		cv = (**byte)(unsafe.Pointer(&cValues[0]))
+ 	}
+ 
+ 	f := _CString(format)
+@@ -153,59 +153,59 @@
+ 			s := _CString(v)
+ 			defer _free(unsafe.Pointer(s))
+ 			cValues[i]._type = &*_ffi_type_pointer
+-			cValues[i].value = unsafe.Pointer(&s)
++			cValues[i].value = (*byte)(unsafe.Pointer(&s))
+ 		case Object:
+ 			b := v.Base()
+ 			cValues[i]._type = &*_ffi_type_pointer
+-			cValues[i].value = unsafe.Pointer(&b)
++			cValues[i].value = (*byte)(unsafe.Pointer(&b))
+ 		case int:
+ 			iv := int32(v)
+ 			cValues[i]._type = &*_ffi_type_sint
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case int8:
+ 			iv := int8(v)
+ 			cValues[i]._type = &*_ffi_type_sint8
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case int16:
+ 			iv := int16(v)
+ 			cValues[i]._type = &*_ffi_type_sint16
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case int32:
+ 			iv := int32(v)
+ 			cValues[i]._type = &*_ffi_type_sint32
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case int64:
+ 			iv := int64(v)
+ 			cValues[i]._type = &*_ffi_type_sint64
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case uint:
+ 			iv := uint32(v)
+ 			cValues[i]._type = &*_ffi_type_uint
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case uint8:
+ 			iv := uint8(v)
+ 			cValues[i]._type = &*_ffi_type_uint8
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case uint16:
+ 			iv := uint16(v)
+ 			cValues[i]._type = &*_ffi_type_uint16
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case uint32:
+ 			iv := uint32(v)
+ 			cValues[i]._type = &*_ffi_type_uint32
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case uint64:
+ 			iv := uint64(v)
+ 			cValues[i]._type = &*_ffi_type_uint64
+-			cValues[i].value = unsafe.Pointer(&iv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&iv))
+ 		case float32:
+ 			fv := float32(v)
+ 			cValues[i]._type = &*_ffi_type_float
+-			cValues[i].value = unsafe.Pointer(&fv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&fv))
+ 		case float64:
+ 			fv := float64(v)
+ 			cValues[i]._type = &*_ffi_type_double
+-			cValues[i].value = unsafe.Pointer(&fv)
++			cValues[i].value = (*byte)(unsafe.Pointer(&fv))
+ 		default:
+ 			return nil, TypeError.Err("Unsupported type: %T", v)
+ 		}

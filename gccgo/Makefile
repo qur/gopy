@@ -66,7 +66,7 @@ install: libgopy.so libgopy.ext.so gopy gopy.1.gz
 
 %.go:: ../lib/%.go t/decgo typedefs.map gen-py.go
 	@$(ECHO) "  DE-CGO\t$@"
-	./t/decgo < $< > $@ || rm $@
+	./t/decgo $< $@ || (rm $@; exit 1)
 
 typedefs.map: gen-py.go t/typedefs
 	@$(ECHO) "  TYPEDEFS\t$@"
