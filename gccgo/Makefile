@@ -55,6 +55,8 @@ GOFILES=\
 
 FFI=$(shell pkg-config --cflags --libs libffi)
 
+VERSION=$(shell git describe --match 'ext/v*' --dirty | cut -c6-)
+
 gofiles: $(GOFILES)
 
 install: libgopy.so libgopy.ext.so gopy gopy.1.gz
@@ -69,6 +71,13 @@ install: libgopy.so libgopy.ext.so gopy gopy.1.gz
 %.go:: ../lib/%.go t/decgo typedefs.map gen-py.go
 	@$(ECHO) "  DE-CGO\t$@"
 	./t/decgo $< $@ || (rm $@; exit 1)
+
+gopy-$(VERSION).tgz: $(GOFILES)
+	@$(ECHO) "  TAR\t\t$@"
+	tar --transform "s/^\./gopy-$(VERSION)/" --exclude '*.fixup' \
+		--exclude '.gitignore' --exclude 'gopy-*.tgz' -czf $@ .
+
+tarball: gopy-$(VERSION).tgz
 
 typedefs.map: gen-py.go t/typedefs
 	@$(ECHO) "  TYPEDEFS\t$@"
@@ -148,7 +157,7 @@ exc: t/exc.go t/utils.go
 
 clean:
 	@$(ECHO) "  CLEAN"
-	rm -f *.o *.so *.[68] sym bindings.go gen-py.go types.c types.sym types sym.in exc exc.c exc.go types.h pywrap pybase.c cgo cgo.c gopy callbacks.c gopy.1.gz $(GOFILES) typedefs.map gopy.1.gz
+	rm -f *.o *.so *.[68] sym bindings.go gen-py.go types.c types.sym types sym.in exc exc.c exc.go types.h pywrap pybase.c cgo cgo.c gopy callbacks.c gopy.1.gz $(GOFILES) typedefs.map gopy.1.gz gopy-*.tgz
 
-.PHONY: all clean gofiles
+.PHONY: all clean gofiles tarball
 .INTERMEDIATE: bindings.go gen-py.go py.o sym.in types.c types.h types.sym exc.go exc.c exc types sym pywrap pybase.c cgo cgo.c callbacks.c typedefs.map
