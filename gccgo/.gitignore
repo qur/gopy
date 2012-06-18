@@ -33,6 +33,7 @@ set.go
 string.go
 tuple.go
 type.go
+utils.[ch]
 *.so
 gopy
 gopy.1.gz
