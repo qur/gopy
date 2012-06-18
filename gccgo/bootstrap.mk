@@ -14,7 +14,7 @@ utils.h: ../lib/utils.h
 	@$(ECHO) "  COPY\t\t$@"
 	cp $< $@
 
-gopy-$(VERSION).tgz: $(GOFILES) utils.c utils.h
+gopy-$(VERSION).tgz: clean $(GOFILES) utils.c utils.h
 	@$(ECHO) "  TAR\t\t$@"
 	tar --transform "s/^\./gopy-$(VERSION)/" --exclude '*.fixup' \
 		--exclude '.gitignore' --exclude 'gopy-*.tgz' \
