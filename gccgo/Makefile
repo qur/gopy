@@ -54,9 +54,8 @@ GOFILES=\
 
 FFI=$(shell pkg-config --cflags --libs libffi)
 
-VERSION=$(shell git describe --match 'ext/v*' --dirty | cut -c6-)
-
-gofiles: $(GOFILES) utils.c utils.h
+# Extra make rules that only apply to version-controlled source
+-include bootstrap.mk
 
 install: libgopy.so libgopy.ext.so gopy gopy.1.gz
 	@$(ECHO) "  INSTALL"
@@ -66,17 +65,6 @@ install: libgopy.so libgopy.ext.so gopy gopy.1.gz
 	install -t $(DESTDIR)/usr/bin/ gopy
 	install -t $(DESTDIR)/etc/ld.so.conf.d/ gccgo.conf
 	install -t $(DESTDIR)/usr/share/man/man1/ gopy.1.gz
-
-%.go:: ../lib/%.go t/decgo typedefs.map gen-py.go
-	@$(ECHO) "  DE-CGO\t$@"
-	./t/decgo $< $@ || (rm $@; exit 1)
-
-gopy-$(VERSION).tgz: $(GOFILES) utils.c utils.h
-	@$(ECHO) "  TAR\t\t$@"
-	tar --transform "s/^\./gopy-$(VERSION)/" --exclude '*.fixup' \
-		--exclude '.gitignore' --exclude 'gopy-*.tgz' -czf $@ .
-
-tarball: gopy-$(VERSION).tgz
 
 typedefs.map: gen-py.go t/typedefs
 	@$(ECHO) "  TYPEDEFS\t$@"
@@ -101,14 +89,6 @@ libgopy.ext.so: base.c pybase.c
 libgopy.so: py.c ffi_type.c cgo.c types.c exc.c py.o
 	@$(ECHO) "  GCC\t\t$@"
 	$(GCC) -shared $(CFLAGS) -fPIC -o $@ $^ -lgo $(FFI) -static-libgcc
-
-utils.c: ../lib/utils.c utils.h
-	@$(ECHO) "  COPY\t\t$@"
-	cp $< $@
-
-utils.h: ../lib/utils.h
-	@$(ECHO) "  COPY\t\t$@"
-	cp $< $@
 
 callbacks.c: t/callbacks callbacks.dat
 	@$(ECHO) "  CALLBACKS\t$@"
@@ -162,13 +142,9 @@ exc: t/exc.go t/utils.go
 	@$(ECHO) "  GCCGO\t\t$@"
 	$(GCCGO) -O2 -s -o $@ $^ -static-libgo -static-libgcc
 
-deepclean: clean
-	@$(ECHO) "  DEEPCLEAN"
-	rm -f $(GOFILES) utils.[ch]
-
 clean:
 	@$(ECHO) "  CLEAN"
 	rm -f *.o *.so *.[68] sym bindings.go gen-py.go types.c types.sym types sym.in exc exc.c exc.go types.h pywrap pybase.c cgo cgo.c gopy callbacks.c gopy.1.gz typedefs.map gopy.1.gz gopy-*.tgz
 
-.PHONY: all clean gofiles tarball deepclean
+.PHONY: all clean
 .INTERMEDIATE: bindings.go gen-py.go py.o sym.in types.c types.h types.sym exc.go exc.c exc types sym pywrap pybase.c cgo cgo.c callbacks.c typedefs.map
