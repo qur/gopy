@@ -1,5 +1,5 @@
 --- lock.orig.go	2012-06-19 20:45:29.000000000 +0100
-+++ lock.go	2012-06-19 23:58:12.000000000 +0100
++++ lock.go	2012-06-20 00:33:41.000000000 +0100
 @@ -124,8 +124,9 @@
  //
  //   lock.Unlock()
@@ -12,7 +12,7 @@
  }
  
  // NewLock returns a new locked Lock
-@@ -150,7 +151,10 @@
+@@ -150,7 +151,13 @@
  		panic("Lock() called with threads unblocked!")
  	}
  
@@ -21,10 +21,13 @@
 +		runtime.LockOSThread()
 +		lock.unlockThread = true
 +	}
++	// Make sure Python thread support is enabled - as it isn't enabled by
++	// default ...
++	_PyEval_InitThreads()
  	lock.gilState = GilState_Ensure()
  }
  
-@@ -171,7 +175,9 @@
+@@ -171,7 +178,9 @@
  	}
  
  	lock.gilState.Release()
