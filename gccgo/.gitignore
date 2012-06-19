@@ -37,3 +37,6 @@ utils.[ch]
 *.so
 gopy
 gopy.1.gz
+gopy-*.tgz
+VERSION
+LICENSE

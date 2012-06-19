@@ -14,7 +14,15 @@ utils.h: ../lib/utils.h
 	@$(ECHO) "  COPY\t\t$@"
 	cp $< $@
 
-gopy-$(VERSION).tgz: clean $(GOFILES) utils.c utils.h
+VERSION:
+	@$(ECHO) "  VERSION"
+	echo $(VERSION) > $@
+
+LICENSE: ../LICENSE
+	@$(ECHO) "  LICENSE"
+	cp $< $@
+
+gopy-$(VERSION).tgz: clean $(GOFILES) utils.c utils.h VERSION LICENSE
 	@$(ECHO) "  TAR\t\t$@"
 	tar --transform "s/^\./gopy-$(VERSION)/" --exclude '*.fixup' \
 		--exclude '.gitignore' --exclude 'gopy-*.tgz' \
@@ -24,6 +32,6 @@ tarball: gopy-$(VERSION).tgz
 
 deepclean: clean
 	@$(ECHO) "  DEEPCLEAN"
-	rm -f $(GOFILES) utils.[ch]
+	rm -f $(GOFILES) utils.[ch] VERSION LICENSE
 
 .PHONY: gofiles tarball deepclean
