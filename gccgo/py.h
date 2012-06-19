@@ -11,6 +11,8 @@
 #include "utils.h"
 #include "ffi_type.h"
 
+extern int thread_locked(void);
+
 extern void incref(PyObject *o);
 extern void decref(PyObject *o);
 extern void xdecref(PyObject *o);

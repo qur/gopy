@@ -1,0 +1,37 @@
+--- lock.orig.go	2012-06-19 20:45:29.000000000 +0100
++++ lock.go	2012-06-19 23:58:12.000000000 +0100
+@@ -124,8 +124,9 @@
+ //
+ //   lock.Unlock()
+ type Lock struct {
+-	gilState *GilState
+-	thState  *_PyThreadState
++	gilState     *GilState
++	thState      *_PyThreadState
++	unlockThread bool
+ }
+ 
+ // NewLock returns a new locked Lock
+@@ -150,7 +151,10 @@
+ 		panic("Lock() called with threads unblocked!")
+ 	}
+ 
+-	runtime.LockOSThread()
++	if _thread_locked() == 0 {
++		runtime.LockOSThread()
++		lock.unlockThread = true
++	}
+ 	lock.gilState = GilState_Ensure()
+ }
+ 
+@@ -171,7 +175,9 @@
+ 	}
+ 
+ 	lock.gilState.Release()
+-	runtime.UnlockOSThread()
++	if lock.unlockThread {
++		runtime.UnlockOSThread()
++	}
+ 	lock.gilState = nil
+ }
+ 

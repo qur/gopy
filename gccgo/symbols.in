@@ -308,6 +308,7 @@ _Py_NoneStruct
 get__Py_NoneStruct
 
 # py.c
+thread_locked
 set_call_noargs
 set_call_args
 set_call_keywords
