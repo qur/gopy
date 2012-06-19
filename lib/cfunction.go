@@ -8,7 +8,10 @@ package py
 // static inline int cfunctionCheck(PyObject *o) { return PyCFunction_Check(o); }
 import "C"
 
-import "unsafe"
+import (
+	"sync"
+	"unsafe"
+)
 
 type CFunction struct {
 	AbstractObject
@@ -27,6 +30,10 @@ func newCFunction(obj *C.PyObject) *CFunction {
 }
 
 func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {
+	return makeCFunction(name, fn, doc, nil)
+}
+
+func makeCFunction(name string, fn interface{}, doc string, mod_name *C.PyObject) (*CFunction, error) {
 	ml := C.newMethodDef()
 
 	switch fn.(type) {
@@ -49,7 +56,7 @@ func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {
 
 	}
 
-	ret := C.PyCFunction_NewEx(ml, saveFunc(fn), nil)
+	ret := C.PyCFunction_NewEx(ml, saveFunc(fn), mod_name)
 	if ret == nil {
 		C.free(unsafe.Pointer(ml))
 		return nil, exception()
@@ -90,20 +97,37 @@ type Method struct {
 	Doc  string
 }
 
-var funcs []interface{}
+var (
+	funcLock sync.RWMutex
+	funcs []interface{}
+)
 
 func saveFunc(f interface{}) *C.PyObject {
+	funcLock.Lock()
+	defer funcLock.Unlock()
+
 	funcs = append(funcs, f)
 	return C.PyInt_FromLong(C.long(len(funcs) - 1))
 }
 
+func getFunc(self unsafe.Pointer) interface{} {
+	funcLock.RLock()
+	defer funcLock.RUnlock()
+
+	idx := int(C.PyInt_AsLong((*C.PyObject)(self)))
+
+	if idx >= len(funcs) {
+		return nil
+	}
+
+	return funcs[idx]
+}
+
 //export callWithoutArgs
 func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
-	_idx := (*C.PyObject)(self)
-	idx := C.PyInt_AsLong(_idx)
-	f, ok := funcs[idx].(func() (Object, error))
+	f, ok := getFunc(self).(func() (Object, error))
 	if !ok {
-		raise(AssertionError.Err("callWithoutArgs: invalid index: %d", idx))
+		raise(AssertionError.Err("callWithoutArgs: wrong function type!!!"))
 		return nil
 	}
 	ret, err := f()
@@ -116,11 +140,9 @@ func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
 
 //export callWithArgs
 func callWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
-	_idx := (*C.PyObject)(self)
-	idx := C.PyInt_AsLong(_idx)
-	f, ok := funcs[idx].(func(a *Tuple) (Object, error))
+	f, ok := getFunc(self).(func(a *Tuple) (Object, error))
 	if !ok {
-		raise(AssertionError.Err("callWithArgs: invalid index: %d", idx))
+		raise(AssertionError.Err("callWithArgs: wrong function type!!!"))
 		return nil
 	}
 	a := newTuple((*C.PyObject)(args))
@@ -134,11 +156,9 @@ func callWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
 
 //export callWithKeywords
 func callWithKeywords(self, args, kw unsafe.Pointer) unsafe.Pointer {
-	_idx := (*C.PyObject)(self)
-	idx := C.PyInt_AsLong(_idx)
-	f, ok := funcs[idx].(func(a *Tuple, k *Dict) (Object, error))
+	f, ok := getFunc(self).(func(a *Tuple, k *Dict) (Object, error))
 	if !ok {
-		raise(AssertionError.Err("callWithKeywords: invalid index: %d", idx))
+		raise(AssertionError.Err("callWithKeywords: wrong function type!!!"))
 		return nil
 	}
 	a := newTuple((*C.PyObject)(args))

@@ -40,6 +40,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 	"unsafe"
 )
 
@@ -208,7 +209,7 @@ func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 
 //export goClassObjGet
 func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
-	field := fields[idx]
+	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
 	var o Object
@@ -225,7 +226,7 @@ func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 
 //export goClassObjSet
 func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
-	field := fields[idx]
+	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
 	// This is the new value we are being asked to set
@@ -264,7 +265,7 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 
 //export goClassNatGet
 func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
-	field := fields[idx]
+	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
 	switch field.Type.Kind() {
@@ -279,7 +280,7 @@ func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 
 //export goClassNatSet
 func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
-	field := fields[idx]
+	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
 	// This is the new value we are being asked to set
@@ -305,7 +306,7 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
 
-	class, ok := types[pyType]
+	class, ok := getType(pyType)
 	if !ok {
 		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
 		raise(TypeError.Err("Not a recognised type: %s", t))
@@ -340,7 +341,7 @@ func goClassClear(obj unsafe.Pointer) int {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
 
-	class, ok := types[pyType]
+	class, ok := getType(pyType)
 	if !ok {
 		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
 		raise(TypeError.Err("Not a recognised type: %s", t))
@@ -371,9 +372,30 @@ func goClassClear(obj unsafe.Pointer) int {
 	return 0
 }
 
-var contexts = map[uintptr]*C.ClassContext{}
+var (
+	ctxtLock sync.RWMutex
+	contexts = map[uintptr]*C.ClassContext{}
+)
+
+func setClassContext(obj unsafe.Pointer, pyType *C.PyTypeObject) {
+	ctxtLock.Lock()
+	defer ctxtLock.Unlock()
+
+	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
+	contexts[uintptr(obj)] = ctxt
+}
+
+func clearClassContext(obj unsafe.Pointer) {
+	ctxtLock.Lock()
+	defer ctxtLock.Unlock()
+
+	delete(contexts, uintptr(obj))
+}
 
 func getClassContext(obj unsafe.Pointer) *C.ClassContext {
+	ctxtLock.RLock()
+	defer ctxtLock.RUnlock()
+
 	ctxt := contexts[uintptr(obj)]
 	if ctxt == nil {
 		panic("Asked for context of unregistered object!")
@@ -386,12 +408,12 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)(typ)
 
-	class := types[pyType]
+	class, _ := getType(pyType)
 	subClass := false
 
 	for class == nil && pyType.tp_base != nil {
 		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
-		class = types[pyType]
+		class, _ = getType(pyType)
 		subClass = true
 	}
 
@@ -436,8 +458,7 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	ret := unsafe.Pointer(c(obj))
 
 	// register class context against new object
-	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
-	contexts[uintptr(ret)] = ctxt
+	setClassContext(ret, pyType)
 
 	return ret
 }
@@ -494,8 +515,7 @@ func (class *Class) Alloc(n int64) (obj Object, err error) {
 	// Since we are creating this object for Go code, this is probably the only
 	// opportunity we will get to register this object instance.
 	pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.Type)))
-	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
-	contexts[uintptr(unsafe.Pointer(c(obj)))] = ctxt
+	setClassContext(unsafe.Pointer(c(obj)), pyType)
 
 	return
 }
@@ -508,11 +528,28 @@ func Clear(obj Object) error {
 	return nil
 }
 
-var fields []reflect.StructField
+var (
+	fieldLock sync.RWMutex
+	fields []reflect.StructField
+)
 
 func registerField(field reflect.StructField) C.int {
+	fieldLock.Lock()
+	defer fieldLock.Unlock()
+
 	fields = append(fields, field)
 	return C.int(len(fields) - 1)
+}
+
+func getField(idx int) reflect.StructField {
+	fieldLock.RLock()
+	defer fieldLock.RUnlock()
+
+	if idx >= len(fields) {
+		panic("Request for unregistered field!")
+	}
+
+	return fields[idx]
 }
 
 var exportable = map[reflect.Kind]bool{

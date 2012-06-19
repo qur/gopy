@@ -26,6 +26,8 @@ import "C"
 // Go runtime in here. :(
 import "unsafe"
 
+import "sync"
+
 // Some sizes that we need for various calculations
 const (
 	upSize   = unsafe.Sizeof(unsafe.Pointer(nil))
@@ -34,8 +36,9 @@ const (
 )
 
 // We need to keep track of things that we have allocated, and the proxies that
-// we have created
+// we have created, memLock must be locked whilst using these variables.
 var (
+	memLock sync.Mutex
 	allocated = make(map[uintptr][]unsafe.Pointer)
 	gcProxies = make(map[uintptr]*C.PyObject)
 )
@@ -47,7 +50,11 @@ func fromGc(g *C.PyGC_Head) *C.PyObject {
 }
 
 func goGcMalloc(size uintptr) *C.PyObject {
-	g := (*C.PyGC_Head)(unsafe.Pointer(goMalloc(size + headSize)))
+	// first, lock memLock, and arrange for it to be unlocked on return
+	memLock.Lock()
+	defer memLock.Unlock()
+
+	g := (*C.PyGC_Head)(unsafe.Pointer(_goMalloc(size + headSize)))
 	C.setGcRefs(g, C._PyGC_REFS_UNTRACKED)
 	p := fromGc(g)
 
@@ -73,7 +80,8 @@ func goGcMalloc(size uintptr) *C.PyObject {
 	return p
 }
 
-func goMalloc(size uintptr) *C.PyObject {
+// _goMalloc must be called with memLock already locked.
+func _goMalloc(size uintptr) *C.PyObject {
 	// We have to use []unsafe.Pointer instead of []byte, otherwise the Go
 	// runtime will mark the memory as not containing pointers, and won't use it
 	// to pin other Go allocations in memory - in which case we might as well
@@ -87,6 +95,15 @@ func goMalloc(size uintptr) *C.PyObject {
 	allocated[uintptr(p)] = s
 
 	return (*C.PyObject)(p)
+}
+
+func goMalloc(size uintptr) *C.PyObject {
+	// first, lock memLock, and arrange for it to be unlocked on return
+	memLock.Lock()
+	defer memLock.Unlock()
+
+	// now call _goMalloc to do the actual work
+	return _goMalloc(size)
 }
 
 //export goGenericAlloc
@@ -126,6 +143,10 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 
 //export goGenericFree
 func goGenericFree(o unsafe.Pointer) {
+	// first, lock memLock, and arrange for it to be unlocked on return
+	memLock.Lock()
+	defer memLock.Unlock()
+
 	// Remove the entry from allocated, to let the Go runtime reclaim the memory
 	// in the next GC run.
 	delete(allocated, uintptr(o))

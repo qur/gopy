@@ -87,9 +87,11 @@ func (obj *AbstractObject) Not() bool {
 // obj should no longer be used.
 func (obj *AbstractObject) Free() {
 	o := c(obj)
-	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
-	C.typeFree(pyType, o)
 
 	// Make sure this instance isn't registered anymore
-	delete(contexts, uintptr(unsafe.Pointer(o)))
+	clearClassContext(unsafe.Pointer(o))
+
+	// Call Python free function
+	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
+	C.typeFree(pyType, o)
 }

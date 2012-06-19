@@ -7,7 +7,12 @@ package py
 // #include "utils.h"
 import "C"
 
-var goModule *Module
+import "sync"
+
+var (
+	goModLock sync.Mutex
+	goModule *Module
+)
 
 // InitGoModules initializes (and returns) the special built-in "go" module.
 // This module exports go specific items to Python that can be accessed by
@@ -18,6 +23,9 @@ var goModule *Module
 // This function may be called more than once to get at the *Module, the module
 // will only be created and initialized once.
 func InitGoModule() (*Module, error) {
+	goModLock.Lock()
+	defer goModLock.Unlock()
+
 	if goModule != nil {
 		return goModule, nil
 	}
