@@ -102,7 +102,9 @@ func main() {
 		cSym := convertToC(name, sym)
 		fmt.Printf("//[%s] [%s] [%s]\n", sym.kind, name, sym.declare)
 		fmt.Printf("static void _do_%s(void *_a) {\n", name)
-		fmt.Printf("    %s *a = _a;\n", cSym.aStct)
+		if cSym.ret != "void" || len(cSym.args) > 0 {
+			fmt.Printf("    %s *a = _a;\n", cSym.aStct)
+		}
 		fmt.Printf("    ")
 		if cSym.ret != "void" {
 			fmt.Printf("a->ret = ")
@@ -128,11 +130,16 @@ func main() {
 			}
 		}
 		fmt.Printf(") {\n")
-		fmt.Printf("    %s a;\n", cSym.aStct)
+		a := "&a"
+		if cSym.ret == "void" && len(cSym.args) == 0 {
+			a = "NULL"
+		} else {
+			fmt.Printf("    %s a;\n", cSym.aStct)
+		}
 		for i := range cSym.args {
 			fmt.Printf("    a.a%d = a%d;\n", i+1, i+1)
 		}
-        fmt.Printf("    simple_cgocall(_do_%s, &a);\n", name)
+        fmt.Printf("    simple_cgocall(_do_%s, %s);\n", name, a)
 		if cSym.ret != "void" {
 			fmt.Printf("    return a.ret;\n")
 		}
