@@ -25,8 +25,6 @@ extern void *__go_go(void (*fn)(void *), void *);
 extern void runtime_mstart(void *);
 extern void *runtime_m(void);
 
-extern void runtime_bootstrap(void (*)(void*), void*);
-
 extern void runtime_entersyscall(void) __asm__("libgo_syscall.syscall.Entersyscall");
 extern void runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.Exitsyscall");
 extern void runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
@@ -108,16 +106,6 @@ static void mainstart(void *arg __attribute__((unused))) {
     runtime_main();
 }
 
-static void start(void *arg __attribute__((unused))) {
-    // We need to make sure that we don't get switched off to another thread,
-    // otherwise Python will get very confused when we return from a function
-    // call on a different thread to the one that called it!
-    runtime_LockOSThread();
-
-    // Kick off the goroutine main function that will "run" on this thread.
-    main_main();
-}
-
 static void activate_go(void) {
     struct sigaction handlers[_NSIG];
 
@@ -162,23 +150,6 @@ static void go_main(void) {
     runtime_schedinit();
     __go_go(mainstart, NULL);
     runtime_mstart(runtime_m());
-}
-
-static void go_register(void) {
-    runtime_bootstrap(start, NULL);
-    /*
-    // TODO - some serious hackery ...
-    fprintf(stderr, "allocate m\n");
-    void *m = calloc(1, 512);
-    fprintf(stderr, "mcommoninit(m)\n");
-    //mcommoninit(m);
-    fprintf(stderr, "__go_go(start, NULL)\n");
-    void *g = __go_go(start, NULL);
-    fprintf(stderr, "m->nextg = g\n");
-    *(void **)((char *)m + 72) = g; //m->nextg = g;
-    fprintf(stderr, "runtime_mstart(m)\n");
-    runtime_mstart(m);
-    */
 }
 
 static void state_init(void (*fn)(void)) {
@@ -232,11 +203,10 @@ static void cgocallback_wrapper(void (*fn)(void*), void *param) {
         void (*fn)(void*);
         void *arg;
     } a;
-    if (!s) state_init(go_register);
-//    if (!s) {
-//        fprintf(stderr, "Unable to call Go code from thread.\n");
-//        abort();
-//    }
+    if (!s) {
+        fprintf(stderr, "Unable to call Go code from thread.\n");
+        abort();
+    }
     if (s->in_go) return simple_cgocallback(fn, param);
     a.fn = fn;
     a.arg = param;
