@@ -26,13 +26,13 @@ void simple_cgocall(void (*f)(void*), void *a) {
 }
 
 extern void runtime_cgocallback(void (*)(void*), void*);
-void simple_cgocallback(void (*f)(void*), void *a) {
+void simple_cgocallback(void (*f)(void*), void (*f2)(void*), void *a) {
     runtime_exitsyscall();
     f(a);
     runtime_entersyscall();
 }
 
-void (*cgocallback)(void (*)(void*), void*) = simple_cgocallback;
+void (*cgocallback)(void (*)(void*), void (*)(void*), void*) = simple_cgocallback;
 
 #include "callbacks.c"
 #include "utils.c"

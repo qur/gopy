@@ -12,11 +12,11 @@ extern void __splitstack_getcontext(void *context[10]);
 extern void __splitstack_setcontext(void *context[10]);
 
 extern void simple_cgocall(void (*)(void*), void*);
-extern void simple_cgocallback(void (*)(void*), void*);
+extern void simple_cgocallback(void (*)(void*), void (*)(void*), void*);
 
 extern void runtime_cgocall(void (*)(void*), void*);
 extern void runtime_cgocallback(void (*)(void*), void*);
-extern void (*cgocallback)(void (*)(void*), void*);
+extern void (*cgocallback)(void (*)(void*), void (*)(void*), void*);
 
 extern void runtime_check(void);
 extern void runtime_osinit(void);
@@ -195,19 +195,17 @@ static void cgocallback_g(void *_a) {
         void (*fn)(void*);
         void *arg;
     } *a = _a;
-    simple_cgocallback(a->fn, a->arg);
+    simple_cgocallback(a->fn, NULL, a->arg);
 }
 
-static void cgocallback_wrapper(void (*fn)(void*), void *param) {
+static void cgocallback_wrapper(void (*fn)(void*), void (*ef)(void*),
+                                void *param) {
     struct {
         void (*fn)(void*);
         void *arg;
     } a;
-    if (!s) {
-        fprintf(stderr, "Unable to call Go code from thread.\n");
-        abort();
-    }
-    if (s->in_go) return simple_cgocallback(fn, param);
+    if (!s) return ef(param);
+    if (s->in_go) return simple_cgocallback(fn, NULL, param);
     a.fn = fn;
     a.arg = param;
     run_on_g0(cgocallback_g, &a);
