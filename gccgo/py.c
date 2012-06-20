@@ -25,7 +25,6 @@ void simple_cgocall(void (*f)(void*), void *a) {
     if (lock) runtime_UnlockOSThread();
 }
 
-extern void runtime_cgocallback(void (*)(void*), void*);
 void simple_cgocallback(void (*f)(void*), void (*f2)(void*), void *a) {
     runtime_exitsyscall();
     f(a);

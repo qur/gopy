@@ -14,8 +14,6 @@ extern void __splitstack_setcontext(void *context[10]);
 extern void simple_cgocall(void (*)(void*), void*);
 extern void simple_cgocallback(void (*)(void*), void (*)(void*), void*);
 
-extern void runtime_cgocall(void (*)(void*), void*);
-extern void runtime_cgocallback(void (*)(void*), void*);
 extern void (*cgocallback)(void (*)(void*), void (*)(void*), void*);
 
 extern void runtime_check(void);
