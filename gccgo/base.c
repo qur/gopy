@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <ucontext.h>
 #include <sys/syscall.h>
+#include <errno.h>
+#include <semaphore.h>
+#include <pthread.h>
 
 extern void __splitstack_getcontext(void *context[10]);
 extern void __splitstack_setcontext(void *context[10]);
@@ -26,8 +29,18 @@ extern void *runtime_m(void);
 extern void runtime_entersyscall(void) __asm__("libgo_syscall.syscall.Entersyscall");
 extern void runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.Exitsyscall");
 extern void runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
+extern void runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
 
 extern void main_init(void) __asm__ ("__go_init_main");
+
+typedef struct ctxt {
+    struct ctxt *next;
+    void (*fn)(void*);
+    void *arg;
+    void (*gfn)(void*);
+    void *garg;
+    sem_t sem;
+} Ctxt;
 
 typedef struct state {
     int in_go;
@@ -44,6 +57,11 @@ typedef struct state {
 
 static __thread S *s;
 static S *s0;
+
+static Ctxt *ctxt_head = NULL;
+static Ctxt *ctxt_tail = NULL;
+static sem_t ctxt_sem;
+static pthread_mutex_t ctxt_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static volatile int base_init_done = 0;
 
@@ -91,8 +109,138 @@ static void g0_main(void *_) {
     setcontext(&s->c);
 }
 
+static void ctxtHandler(void *arg) {
+    Ctxt *ctxt = arg;
+
+    runtime_LockOSThread();
+
+    runtime_entersyscall();
+
+    // Create a new state object
+    s = calloc(1, sizeof(S));
+
+    // Swap over to the Go signal handlers
+    store_signal_handlers(s->handlers);
+    restore_signal_handlers(s0->handlers);
+
+    // we are about to go into go
+    s->in_go = 1;
+
+    // use s->fn as a "still doing init" flag
+    s->fn = (void *)1;
+
+    // Store the current context, this is where we will jump back to
+    __splitstack_getcontext(&s->stack[0]);
+    getcontext(&s->c);
+
+    // !in_go && s->fn == 1 means we are back from g0_main to setup s
+    if (!s->in_go && s->fn == (void *)1) {
+        // we are about to go into go
+        s->in_go = 1;
+
+        // Copy fn/gfn from ctxt to s
+        s->fn   = ctxt->fn;
+        s->arg  = ctxt->arg;
+        s->gfn  = ctxt->gfn;
+        s->garg = ctxt->garg;
+
+        // jump back to g0_main
+        __splitstack_setcontext(&s->g0_stack[0]);
+        setcontext(&s->g0c);
+    }
+
+    runtime_exitsyscall();
+
+    // !in_go && s->fn != 1 means we are done
+    if (!s->in_go) {
+        // Swap back to our own signal handlers
+        restore_signal_handlers(s->handlers);
+
+        // Free state
+        free(s);
+        s = NULL;
+
+        runtime_UnlockOSThread();
+
+        sem_post(&ctxt->sem);
+        return;
+    }
+
+    while (1) {
+        simple_cgocall(g0_main, NULL);
+        // g0_main only returns when we want to run code in a goroutine ...
+        s->gfn(s->garg);
+    }
+}
+
+static Ctxt *recv_ctxt(void) {
+    Ctxt *head = NULL;
+    while (sem_wait(&ctxt_sem) != 0) {
+        if (errno == EINTR) continue;
+        fprintf(stderr, "libgopy.ext internal error: sem_wait failed.\n");
+        abort();
+    }
+    pthread_mutex_lock(&ctxt_mutex);
+    if (!ctxt_head) {
+        fprintf(stderr, "libgopy.ext internal error: ctxt_head NULL.\n");
+        abort();
+    }
+    head = ctxt_head;
+    ctxt_head = ctxt_head->next;
+    if (ctxt_tail == head) ctxt_tail = ctxt_head;
+    pthread_mutex_unlock(&ctxt_mutex);
+    return head;
+}
+
+static void send_ctxt(Ctxt *ctxt) {
+    pthread_mutex_lock(&ctxt_mutex);
+    if (ctxt_tail) {
+        ctxt_tail->next = ctxt;
+        ctxt_tail = ctxt;
+    } else {
+        ctxt_head = ctxt;
+        ctxt_tail = ctxt;
+    }
+    pthread_mutex_unlock(&ctxt_mutex);
+    sem_post(&ctxt_sem);
+}
+
+// This function runs in a goroutine and runs ctxt requests in new goroutines
+static void ctxtDispatcher(void *arg __attribute__((unused))) {
+    Ctxt *ctxt;
+    while (1) {
+        runtime_entersyscall();
+        ctxt = recv_ctxt();
+        runtime_exitsyscall();
+        __go_go(ctxtHandler, ctxt);
+    }
+}
+
+static void run_on_ctxt(void (*fn)(void*), void *arg,
+                        void (*gfn)(void*), void *garg) {
+    Ctxt *ctxt = malloc(sizeof(*ctxt));
+    if (!ctxt) {
+        fprintf(stderr, "libgopy.ext internal error: ctxt NULL.\n");
+        abort();
+    }
+    ctxt->fn   = fn;
+    ctxt->arg  = arg;
+    ctxt->gfn  = gfn;
+    ctxt->garg = garg;
+    sem_init(&ctxt->sem, 0, 0);
+    send_ctxt(ctxt);
+    while (sem_wait(&ctxt->sem) != 0) {
+        if (errno == EINTR) continue;
+        fprintf(stderr, "libgopy.ext internal error: sem_wait failed.\n");
+        abort();
+    }
+    sem_destroy(&ctxt->sem);
+    free(ctxt);
+}
+
 extern void main_main(void) __asm__ ("main.main");
 extern void main_main(void) {
+    __go_go(ctxtDispatcher, NULL);
     while (1) {
         simple_cgocall(g0_main, NULL);
         // g0_main only returns when we want to run code in a goroutine ...
@@ -111,7 +259,7 @@ static void activate_go(void) {
 
     // Swap over to the Go signal handlers
     store_signal_handlers(handlers);
-    restore_signal_handlers(s->handlers);
+    restore_signal_handlers(s0->handlers);
 
     __splitstack_getcontext(&s->stack[0]);
     getcontext(&s->c);
@@ -126,12 +274,14 @@ static void activate_go(void) {
 }
 
 static void run_on_g0(void (*f)(void*), void *p) {
+    if (!s) return run_on_ctxt(f, p, NULL, NULL);
     s->fn = f;
     s->arg = p;
     activate_go();
 }
 
 static void run_on_g(void (*f)(void*), void *p) {
+    if (!s) return run_on_ctxt(NULL, NULL, f, p);
     s->gfn = f;
     s->garg = p;
     activate_go();
@@ -202,8 +352,7 @@ static void cgocallback_wrapper(void (*fn)(void*), void (*ef)(void*),
         void (*fn)(void*);
         void *arg;
     } a;
-    if (!s) return ef(param);
-    if (s->in_go) return simple_cgocallback(fn, NULL, param);
+    if (s && s->in_go) return simple_cgocallback(fn, NULL, param);
     a.fn = fn;
     a.arg = param;
     run_on_g0(cgocallback_g, &a);
