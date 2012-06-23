@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/*****************************************************************************
+******************************************************************************
+**
+** Includes
+**
+******************************************************************************
+*****************************************************************************/
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,27 +19,13 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-extern void __splitstack_getcontext(void *context[10]);
-extern void __splitstack_setcontext(void *context[10]);
-
-extern void simple_cgocall(void (*)(void*), void*);
-extern void simple_cgocallback(void (*)(void*), void (*)(void*), void*);
-
-extern void (*cgocallback)(void (*)(void*), void (*)(void*), void*);
-
-extern void runtime_check(void);
-extern void runtime_osinit(void);
-extern void runtime_schedinit(void);
-extern void *__go_go(void (*fn)(void *), void *);
-extern void runtime_mstart(void *);
-extern void *runtime_m(void);
-
-extern void runtime_entersyscall(void) __asm__("libgo_syscall.syscall.Entersyscall");
-extern void runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.Exitsyscall");
-extern void runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
-extern void runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
-
-extern void main_init(void) __asm__ ("__go_init_main");
+/*****************************************************************************
+******************************************************************************
+**
+** Types
+**
+******************************************************************************
+*****************************************************************************/
 
 typedef struct ctxt {
     struct ctxt *next;
@@ -55,6 +49,62 @@ typedef struct state {
     struct sigaction handlers[_NSIG];
 } S;
 
+typedef void (*ifunc)(void);
+
+struct ie {
+    ifunc f;
+    struct ie *n;
+};
+
+/*****************************************************************************
+******************************************************************************
+**
+** Externs
+**
+******************************************************************************
+*****************************************************************************/
+
+extern void __splitstack_getcontext(void *context[10]);
+extern void __splitstack_setcontext(void *context[10]);
+
+// Functions in main goPy library
+extern void simple_cgocall(void (*)(void*), void*);
+extern void simple_cgocallback(void (*)(void*), void (*)(void*), void*);
+
+// Function pointer in main goPy library
+extern void (*cgocallback)(void (*)(void*), void (*)(void*), void*);
+
+// C functions in the Go runtime
+extern void runtime_check(void);
+extern void runtime_osinit(void);
+extern void runtime_schedinit(void);
+extern void *__go_go(void (*fn)(void *), void *);
+extern void runtime_mstart(void *);
+extern void *runtime_m(void);
+extern void runtime_main(void);
+
+// "Go" functions in the Go runtime
+extern void runtime_entersyscall(void) __asm__("libgo_syscall.syscall.Entersyscall");
+extern void runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.Exitsyscall");
+extern void runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
+extern void runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
+
+// "Go" functions normally implemented by a Go program
+extern void main_init(void) __asm__ ("__go_init_main");
+extern void main_main(void) __asm__ ("main.main");
+
+// The list of init functions that need to be called to initialise the gopy
+// library, exported by pyext.c
+extern ifunc py_init_funcs[];
+
+/*****************************************************************************
+******************************************************************************
+**
+** Static Variables
+**
+******************************************************************************
+*****************************************************************************/
+
 static __thread S *s;
 static S *s0;
 
@@ -65,12 +115,18 @@ static pthread_mutex_t ctxt_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static volatile int base_init_done = 0;
 
-S *get_s(void) __attribute__((noinline, no_split_stack));
+static struct ie *init_done = NULL;
 
-S *get_s(void) {
-    return s;
-}
+/*****************************************************************************
+******************************************************************************
+**
+** Interface Functions
+**
+******************************************************************************
+*****************************************************************************/
 
+// This function stores the currently registered signal handlers into the given
+// list.
 static void store_signal_handlers(struct sigaction handlers[_NSIG]) {
     int i;
     for (i = 0; i < _NSIG; i++) {
@@ -78,6 +134,8 @@ static void store_signal_handlers(struct sigaction handlers[_NSIG]) {
     }
 }
 
+// This function sets the signal handlers to be the ones saved in the given
+// list.
 static void restore_signal_handlers(struct sigaction handlers[_NSIG]) {
     int i;
     for (i = 0; i < _NSIG; i++) {
@@ -85,6 +143,121 @@ static void restore_signal_handlers(struct sigaction handlers[_NSIG]) {
     }
 }
 
+// This function is called from inside the Go runtime to receive a context
+// structure
+static Ctxt *recv_ctxt(void) {
+    Ctxt *head = NULL;
+    while (sem_wait(&ctxt_sem) != 0) {
+        if (errno == EINTR) continue;
+        fprintf(stderr, "libgopy.ext internal error: sem_wait failed.\n");
+        abort();
+    }
+    pthread_mutex_lock(&ctxt_mutex);
+    if (!ctxt_head) {
+        fprintf(stderr, "libgopy.ext internal error: ctxt_head NULL.\n");
+        abort();
+    }
+    head = ctxt_head;
+    ctxt_head = ctxt_head->next;
+    if (ctxt_tail == head) ctxt_tail = ctxt_head;
+    pthread_mutex_unlock(&ctxt_mutex);
+    return head;
+}
+
+// This function is called from outside the Go runtime to send a context
+// structure
+static void send_ctxt(Ctxt *ctxt) {
+    pthread_mutex_lock(&ctxt_mutex);
+    ctxt->next = NULL;
+    if (ctxt_tail) {
+        ctxt_tail->next = ctxt;
+        ctxt_tail = ctxt;
+    } else {
+        ctxt_head = ctxt;
+        ctxt_tail = ctxt;
+    }
+    pthread_mutex_unlock(&ctxt_mutex);
+    sem_post(&ctxt_sem);
+}
+
+// This function sends a context to the dispatcher runing inside the Go runtime
+// (using the send_ctxt/recv_ctxt functions), asking the handler to run fn(arg)
+// in syscall context and/or gfn(garg) in goroutine context.
+static void run_on_ctxt(void (*fn)(void*), void *arg,
+                        void (*gfn)(void*), void *garg) {
+    Ctxt *ctxt = malloc(sizeof(*ctxt));
+    if (!ctxt) {
+        fprintf(stderr, "libgopy.ext internal error: ctxt NULL.\n");
+        abort();
+    }
+    ctxt->fn   = fn;
+    ctxt->arg  = arg;
+    ctxt->gfn  = gfn;
+    ctxt->garg = garg;
+    sem_init(&ctxt->sem, 0, 0);
+    send_ctxt(ctxt);
+    while (sem_wait(&ctxt->sem) != 0) {
+        if (errno == EINTR) continue;
+        fprintf(stderr, "libgopy.ext internal error: sem_wait failed.\n");
+        abort();
+    }
+    sem_destroy(&ctxt->sem);
+    free(ctxt);
+}
+
+// This function is the second entry/exit point for the context jumping in the
+// main thread.  It is called by run_on_g0 and run_on_g to jump into the Go
+// runtime when they are called on the main thread.
+static void activate_go(void) {
+    struct sigaction handlers[_NSIG];
+
+    s->in_go = 1;
+
+    // Swap over to the Go signal handlers
+    store_signal_handlers(handlers);
+    restore_signal_handlers(s0->handlers);
+
+    __splitstack_getcontext(&s->stack[0]);
+    getcontext(&s->c);
+
+    if (s->in_go) {
+        __splitstack_setcontext(&s->g0_stack[0]);
+        setcontext(&s->g0c);
+    }
+
+    // Swap back to our own signal handlers
+    restore_signal_handlers(handlers);
+}
+
+// This function arranges for the given function to be run inside the Go runtime
+// in syscall context - i.e. it will be called from g0_main.
+static void run_on_g0(void (*f)(void*), void *p) {
+    if (!s) return run_on_ctxt(f, p, NULL, NULL);
+    s->fn = f;
+    s->arg = p;
+    activate_go();
+}
+
+// This function arranges for the given function to be run inside the Go runtime
+// in normal goroutine context - i.e. it will be called from either ctxtHandler,
+// or main_main.
+static void run_on_g(void (*f)(void*), void *p) {
+    if (!s) return run_on_ctxt(NULL, NULL, f, p);
+    s->gfn = f;
+    s->garg = p;
+    activate_go();
+}
+
+/*****************************************************************************
+******************************************************************************
+**
+** Run Inside Go Runtime
+**
+******************************************************************************
+*****************************************************************************/
+
+// This function is run in "syscall" context, and comprises half of the code
+// running, context jumping loop.
 static void g0_main(void *_) {
     // Initialise state
     s->gfn = NULL;
@@ -109,11 +282,20 @@ static void g0_main(void *_) {
     setcontext(&s->c);
 }
 
+// The main function for a proxy thread.  This function runs in normal goroutine
+// context.  It forms part of a code running, context jumping loop with g0_main
+// - but it also initialises that loop with the functions in the provided
+// context.
 static void ctxtHandler(void *arg) {
     Ctxt *ctxt = arg;
 
+    // We are using TLS storage, so we need to keep this goroutine on the same
+    // thread.
     runtime_LockOSThread();
 
+    // From here to exitsyscall is conceptually a simple_cgocall to a setup
+    // function for the code running loop - except that then we would be jumping
+    // between two functions trying to use the same stack ...
     runtime_entersyscall();
 
     // Create a new state object
@@ -149,6 +331,8 @@ static void ctxtHandler(void *arg) {
         setcontext(&s->g0c);
     }
 
+    // This exitsyscall marks the end of the conceptual simple_cgocall to a
+    // setup function
     runtime_exitsyscall();
 
     // !in_go && s->fn != 1 means we are done
@@ -173,40 +357,13 @@ static void ctxtHandler(void *arg) {
     }
 }
 
-static Ctxt *recv_ctxt(void) {
-    Ctxt *head = NULL;
-    while (sem_wait(&ctxt_sem) != 0) {
-        if (errno == EINTR) continue;
-        fprintf(stderr, "libgopy.ext internal error: sem_wait failed.\n");
-        abort();
-    }
-    pthread_mutex_lock(&ctxt_mutex);
-    if (!ctxt_head) {
-        fprintf(stderr, "libgopy.ext internal error: ctxt_head NULL.\n");
-        abort();
-    }
-    head = ctxt_head;
-    ctxt_head = ctxt_head->next;
-    if (ctxt_tail == head) ctxt_tail = ctxt_head;
-    pthread_mutex_unlock(&ctxt_mutex);
-    return head;
-}
-
-static void send_ctxt(Ctxt *ctxt) {
-    pthread_mutex_lock(&ctxt_mutex);
-    ctxt->next = NULL;
-    if (ctxt_tail) {
-        ctxt_tail->next = ctxt;
-        ctxt_tail = ctxt;
-    } else {
-        ctxt_head = ctxt;
-        ctxt_tail = ctxt;
-    }
-    pthread_mutex_unlock(&ctxt_mutex);
-    sem_post(&ctxt_sem);
-}
-
-// This function runs in a goroutine and runs ctxt requests in new goroutines
+// This function runs in a goroutine, receives contexts from outside the Go
+// runtime, and fires off ctxtHandler in a new goroutine to handle each context.
+// In go it would look something like:
+//
+// for {
+//     go ctxtHandler(<- ctxtChannel)
+// }
 static void ctxtDispatcher(void *arg __attribute__((unused))) {
     Ctxt *ctxt;
     sem_init(&ctxt_sem, 0, 0);
@@ -218,29 +375,51 @@ static void ctxtDispatcher(void *arg __attribute__((unused))) {
     }
 }
 
-static void run_on_ctxt(void (*fn)(void*), void *arg,
-                        void (*gfn)(void*), void *garg) {
-    Ctxt *ctxt = malloc(sizeof(*ctxt));
-    if (!ctxt) {
-        fprintf(stderr, "libgopy.ext internal error: ctxt NULL.\n");
-        abort();
+// This function calls the given init function, unless it has already been
+// called - which it tracks using the init_done list.
+static void do_init(ifunc f) {
+    struct ie *i = init_done;
+    while (i) {
+        if ((i)->f == f) return;
+        i = i->n;
     }
-    ctxt->fn   = fn;
-    ctxt->arg  = arg;
-    ctxt->gfn  = gfn;
-    ctxt->garg = garg;
-    sem_init(&ctxt->sem, 0, 0);
-    send_ctxt(ctxt);
-    while (sem_wait(&ctxt->sem) != 0) {
-        if (errno == EINTR) continue;
-        fprintf(stderr, "libgopy.ext internal error: sem_wait failed.\n");
-        abort();
-    }
-    sem_destroy(&ctxt->sem);
-    free(ctxt);
+    f();
+    i = malloc(sizeof(*i));
+    i->f = f;
+    i->n = init_done;
+    init_done = i;
 }
 
-extern void main_main(void) __asm__ ("main.main");
+// This function is called by _init_go to call the init functions in funcs
+static void do_inits(ifunc funcs[]) {
+    int i = 0;
+    while (funcs[i]) {
+        do_init(funcs[i++]);
+    }
+}
+
+// This function is just to unbox the arguments to simple_cgocallback and call
+// it, but it does so from Go runtime syscall context
+static void cgocallback_g(void *_a) {
+    struct {
+        void (*fn)(void*);
+        void *arg;
+    } *a = _a;
+    simple_cgocallback(a->fn, NULL, a->arg);
+}
+
+/*****************************************************************************
+******************************************************************************
+**
+** Go "main" Package Functions
+**
+******************************************************************************
+*****************************************************************************/
+
+// This function is the Go "main" function from the main package that is called
+// by the Runtime at then end of startup.  It forms a code running, context
+// jumping loop with g0_main in the special Go runtime context created on the
+// "main" thread.
 extern void main_main(void) {
     __go_go(ctxtDispatcher, NULL);
     while (1) {
@@ -250,45 +429,58 @@ extern void main_main(void) {
     }
 }
 
+// This function is the equivalent of the init() functions from the main
+// package, it is run as part of the Go runtime initialisation.
+extern void main_init(void) {
+    // We need to make sure that we don't get switched off to another thread,
+    // otherwise Python will get very confused when we return from a function
+    // call on a different thread to the one that called it!
+    runtime_LockOSThread();
+
+    do_inits(py_init_funcs);
+}
+
+/*****************************************************************************
+******************************************************************************
+**
+** Callback Entry Point
+**
+******************************************************************************
+*****************************************************************************/
+
+// This function either calls simple_cgocallback directly if already inside the
+// Go runtime, other wise it arranges for it to be called from Go syscall
+// context via run_on_g0 and cgocallback_g.
+static void cgocallback_wrapper(void (*fn)(void*), void (*ef)(void*),
+                                void *param) {
+    struct {
+        void (*fn)(void*);
+        void *arg;
+    } a;
+    if (s && s->in_go) return simple_cgocallback(fn, NULL, param);
+    a.fn = fn;
+    a.arg = param;
+    run_on_g0(cgocallback_g, &a);
+}
+
+/*****************************************************************************
+******************************************************************************
+**
+** Go Runtime Startup Functions
+**
+******************************************************************************
+*****************************************************************************/
+
+// This function is called as part of the Go runtime startup, it is called by
+// go_main as the function to run on the first goroutine - all it has to do is
+// call runtime_main().
 static void mainstart(void *arg __attribute__((unused))) {
     runtime_main();
 }
 
-static void activate_go(void) {
-    struct sigaction handlers[_NSIG];
-
-    s->in_go = 1;
-
-    // Swap over to the Go signal handlers
-    store_signal_handlers(handlers);
-    restore_signal_handlers(s0->handlers);
-
-    __splitstack_getcontext(&s->stack[0]);
-    getcontext(&s->c);
-
-    if (s->in_go) {
-        __splitstack_setcontext(&s->g0_stack[0]);
-        setcontext(&s->g0c);
-    }
-
-    // Swap back to our own signal handlers
-    restore_signal_handlers(handlers);
-}
-
-static void run_on_g0(void (*f)(void*), void *p) {
-    if (!s) return run_on_ctxt(f, p, NULL, NULL);
-    s->fn = f;
-    s->arg = p;
-    activate_go();
-}
-
-static void run_on_g(void (*f)(void*), void *p) {
-    if (!s) return run_on_ctxt(NULL, NULL, f, p);
-    s->gfn = f;
-    s->garg = p;
-    activate_go();
-}
-
+// This function starts the Go runtime - in a normal Go program this would be
+// the C main function.  Here it is the first function run in a specially
+// created context.
 static void go_main(void) {
     // 2 because Go expects to find a null terminated list of env strings at the
     // end of argv ...
@@ -302,27 +494,35 @@ static void go_main(void) {
     runtime_mstart(runtime_m());
 }
 
-static void state_init(void (*fn)(void)) {
+// This function prepares the new context that the Go runtime will run in, keeps
+// a copy of the signal handlers setup by Go, and provides one of the entry/exit
+// points for the context jumping in the main thead's loop.
+static void base_init(void) {
     size_t ss;
+    struct sigaction handlers[_NSIG];
+
+    // We need to replace the cgocallback used in gopy with our wrapper - so
+    // that we can get into the Go runtime.
+    cgocallback = cgocallback_wrapper;
+
+    // we need to save all the signal handlers, so we can stop Go from co-opting
+    // them.
+    store_signal_handlers(handlers);
 
     // Create a new state object
     s = calloc(1, sizeof(S));
 
     // we can't start the go runtime from the current context, so we need to
-    // creeate a new one ...
+    // create a new one ...
     getcontext(&s->gmc);
     s->gmc.uc_stack.ss_sp = malloc(2 * 1024 * 1024);
     s->gmc.uc_stack.ss_size = 2 * 1024 * 1024;
     s->gmc.uc_link = NULL;
-    makecontext(&s->gmc, fn, 0);
+    makecontext(&s->gmc, go_main, 0);
     __splitstack_makecontext(s->gmc.uc_stack.ss_size, &s->gm_stack[0], &ss);
 
     // we are about to go into go
     s->in_go = 1;
-
-    // If this isn't s0, then we need to restore the s0 signal handlers, as
-    // those are the ones Go expects to be running.
-    if (s0) restore_signal_handlers(s0->handlers);
 
     // once we have started the go runtime in it's own context, we need to be
     // able to get back to this one to return from this function
@@ -338,40 +538,8 @@ static void state_init(void (*fn)(void)) {
     // save the signal handlers that Go is using, so that we can reactivate them
     // when switching into Go context ...
     store_signal_handlers(s->handlers);
-}
 
-static void cgocallback_g(void *_a) {
-    struct {
-        void (*fn)(void*);
-        void *arg;
-    } *a = _a;
-    simple_cgocallback(a->fn, NULL, a->arg);
-}
-
-static void cgocallback_wrapper(void (*fn)(void*), void (*ef)(void*),
-                                void *param) {
-    struct {
-        void (*fn)(void*);
-        void *arg;
-    } a;
-    if (s && s->in_go) return simple_cgocallback(fn, NULL, param);
-    a.fn = fn;
-    a.arg = param;
-    run_on_g0(cgocallback_g, &a);
-}
-
-static void base_init(void) {
-    struct sigaction handlers[_NSIG];
-
-    cgocallback = cgocallback_wrapper;
-
-    // we need to save all the signal handlers, so we can stop Go from co-opting
-    // them.
-    store_signal_handlers(handlers);
-
-    state_init(go_main);
-
-    // store the base state so that all states can look at it
+    // store the base state so that all threads can get at the signal handlers
     s0 = s;
 
     // we should restore the signal handlers now.
@@ -382,50 +550,21 @@ static void base_init(void) {
     base_init_done = 1;
 }
 
-typedef void (*ifunc)(void);
+/*****************************************************************************
+******************************************************************************
+**
+** External Interface
+**
+******************************************************************************
+*****************************************************************************/
 
-struct ie {
-    ifunc f;
-    struct ie *n;
-};
-
-static struct ie *init_done = NULL;
-
-static void do_init(ifunc f) {
-    struct ie *i = init_done;
-    while (i) {
-        if ((i)->f == f) return;
-        i = i->n;
-    }
-    f();
-    i = malloc(sizeof(*i));
-    i->f = f;
-    i->n = init_done;
-    init_done = i;
-}
-
-static void do_inits(ifunc funcs[]) {
-    int i = 0;
-    while (funcs[i]) {
-        do_init(funcs[i++]);
-    }
-}
-
+// This is the function called by generated initXXX CPython extension module
+// init function.  funcs is the list of init functions that need to be called
+// for the module in question.
 extern void _init_go(ifunc funcs[]) {
     int i = 0;
 
     if (!base_init_done) base_init();
 
     run_on_g((void (*)(void*))do_inits, funcs);
-}
-
-extern ifunc py_init_funcs[];
-
-extern void main_init(void) {
-    // We need to make sure that we don't get switched off to another thread,
-    // otherwise Python will get very confused when we return from a function
-    // call on a different thread to the one that called it!
-    runtime_LockOSThread();
-
-    do_inits(py_init_funcs);
 }
