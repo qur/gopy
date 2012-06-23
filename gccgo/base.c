@@ -194,6 +194,7 @@ static Ctxt *recv_ctxt(void) {
 
 static void send_ctxt(Ctxt *ctxt) {
     pthread_mutex_lock(&ctxt_mutex);
+    ctxt->next = NULL;
     if (ctxt_tail) {
         ctxt_tail->next = ctxt;
         ctxt_tail = ctxt;
@@ -208,6 +209,7 @@ static void send_ctxt(Ctxt *ctxt) {
 // This function runs in a goroutine and runs ctxt requests in new goroutines
 static void ctxtDispatcher(void *arg __attribute__((unused))) {
     Ctxt *ctxt;
+    sem_init(&ctxt_sem, 0, 0);
     while (1) {
         runtime_entersyscall();
         ctxt = recv_ctxt();
