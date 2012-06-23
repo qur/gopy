@@ -78,11 +78,11 @@ py.o: $(GOFILES) py.go bindings.go exc.go
 	@$(ECHO) "  GCCGO\t\t$@"
 	$(GCCGO) -c $(CFLAGS) -fPIC -o $@ $^
 
-pybase.c: py.o pywrap
+pyext.c: py.o pywrap
 	@$(ECHO) "  PYWRAP\t$@"
 	./pywrap $< > $@
 
-libgopy.ext.so: base.c pybase.c
+libgopy.ext.so: ext.c pyext.c
 	@$(ECHO) "  GCC\t\t$@"
 	$(GCC) -shared $(CFLAGS) -fPIC -o $@ $^ -lgo -static-libgcc
 
@@ -144,7 +144,7 @@ exc: t/exc.go t/utils.go
 
 clean:
 	@$(ECHO) "  CLEAN"
-	rm -f *.o *.so *.[68] sym bindings.go gen-py.go types.c types.sym types sym.in exc exc.c exc.go types.h pywrap pybase.c cgo cgo.c gopy callbacks.c gopy.1.gz typedefs.map gopy.1.gz gopy-*.tgz examples/*.so
+	rm -f *.o *.so *.[68] sym bindings.go gen-py.go types.c types.sym types sym.in exc exc.c exc.go types.h pywrap pyext.c cgo cgo.c gopy callbacks.c gopy.1.gz typedefs.map gopy.1.gz gopy-*.tgz examples/*.so
 
 .PHONY: all clean
-.INTERMEDIATE: bindings.go gen-py.go py.o sym.in types.c types.h types.sym exc.go exc.c exc types sym pywrap pybase.c cgo cgo.c callbacks.c typedefs.map
+.INTERMEDIATE: bindings.go gen-py.go py.o sym.in types.c types.h types.sym exc.go exc.c exc types sym pywrap pyext.c cgo cgo.c callbacks.c typedefs.map
