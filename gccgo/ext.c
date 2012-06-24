@@ -37,8 +37,6 @@ typedef struct ctxt {
 } Ctxt;
 
 typedef struct state {
-    int in_go;
-    ucontext_t gmc, c, g0c;
     void *gm_stack[10];
     void *stack[10];
     void *g0_stack[10];
@@ -47,6 +45,8 @@ typedef struct state {
     void (*gfn)(void*);
     void *garg;
     struct sigaction handlers[_NSIG];
+    ucontext_t c, g0c;
+    int in_go;
 } S;
 
 typedef void (*ifunc)(void);
@@ -107,6 +107,8 @@ extern ifunc py_init_funcs[];
 
 static __thread S *s;
 static S *s0;
+
+static ucontext_t gmc;
 
 static Ctxt *ctxt_head = NULL;
 static Ctxt *ctxt_tail = NULL;
@@ -208,19 +210,27 @@ static void run_on_ctxt(void (*fn)(void*), void *arg,
 // This function is the second entry/exit point for the context jumping in the
 // main thread.  It is called by run_on_g0 and run_on_g to jump into the Go
 // runtime when they are called on the main thread.
-static void activate_go(void) {
+static void activate_go(void (*fn)(void*), void *arg,
+                        void (*gfn)(void*), void *garg) {
     struct sigaction handlers[_NSIG];
 
+    // Setup state to jump into Go
     s->in_go = 1;
+    s->fn    = fn;
+    s->arg   = arg;
+    s->gfn   = gfn;
+    s->garg  = garg;
 
     // Swap over to the Go signal handlers
     store_signal_handlers(handlers);
     restore_signal_handlers(s0->handlers);
 
+    // Setup the return point
     __splitstack_getcontext(&s->stack[0]);
     getcontext(&s->c);
 
     if (s->in_go) {
+        // Jump into Go context
         __splitstack_setcontext(&s->g0_stack[0]);
         setcontext(&s->g0c);
     }
@@ -233,9 +243,7 @@ static void activate_go(void) {
 // in syscall context - i.e. it will be called from g0_main.
 static void run_on_g0(void (*f)(void*), void *p) {
     if (!s) return run_on_ctxt(f, p, NULL, NULL);
-    s->fn = f;
-    s->arg = p;
-    activate_go();
+    activate_go(f, p, NULL, NULL);
 }
 
 // This function arranges for the given function to be run inside the Go runtime
@@ -243,9 +251,7 @@ static void run_on_g0(void (*f)(void*), void *p) {
 // or main_main.
 static void run_on_g(void (*f)(void*), void *p) {
     if (!s) return run_on_ctxt(NULL, NULL, f, p);
-    s->gfn = f;
-    s->garg = p;
-    activate_go();
+    activate_go(NULL, NULL, f, p);
 }
 
 /*****************************************************************************
@@ -259,10 +265,6 @@ static void run_on_g(void (*f)(void*), void *p) {
 // This function is run in "syscall" context, and comprises half of the code
 // running, context jumping loop.
 static void g0_main(void *_) {
-    // Initialise state
-    s->gfn = NULL;
-    s->in_go = 0;
-
     // Setup return entry point
     __splitstack_getcontext(&s->g0_stack[0]);
     getcontext(&s->g0c);
@@ -270,11 +272,10 @@ static void g0_main(void *_) {
     // in_go + gfn == return to call gfn from goroutine
     if (s->in_go && s->gfn) return;
 
-    // just in_go == we have come back to run some go code on g0 ...
-    if (s->in_go) s->fn(s->arg);
+    // in_go + fn == we have come back to run some go code on g0 ...
+    if (s->in_go && s->fn) s->fn(s->arg);
 
-    // reset state
-    s->gfn = NULL;
+    // We are now leaving Go context
     s->in_go = 0;
 
     // jump back to whatever non-go code got us here
@@ -308,34 +309,21 @@ static void ctxtHandler(void *arg) {
     // we are about to go into go
     s->in_go = 1;
 
-    // use s->fn as a "still doing init" flag
-    s->fn = (void *)1;
+    // Copy fn/gfn from ctxt to s
+    s->fn   = ctxt->fn;
+    s->arg  = ctxt->arg;
+    s->gfn  = ctxt->gfn;
+    s->garg = ctxt->garg;
 
     // Store the current context, this is where we will jump back to
     __splitstack_getcontext(&s->stack[0]);
     getcontext(&s->c);
 
-    // !in_go && s->fn == 1 means we are back from g0_main to setup s
-    if (!s->in_go && s->fn == (void *)1) {
-        // we are about to go into go
-        s->in_go = 1;
-
-        // Copy fn/gfn from ctxt to s
-        s->fn   = ctxt->fn;
-        s->arg  = ctxt->arg;
-        s->gfn  = ctxt->gfn;
-        s->garg = ctxt->garg;
-
-        // jump back to g0_main
-        __splitstack_setcontext(&s->g0_stack[0]);
-        setcontext(&s->g0c);
-    }
-
     // This exitsyscall marks the end of the conceptual simple_cgocall to a
     // setup function
     runtime_exitsyscall();
 
-    // !in_go && s->fn != 1 means we are done
+    // !in_go means we are done
     if (!s->in_go) {
         // Swap back to our own signal handlers
         restore_signal_handlers(s->handlers);
@@ -354,6 +342,8 @@ static void ctxtHandler(void *arg) {
         simple_cgocall(g0_main, NULL);
         // g0_main only returns when we want to run code in a goroutine ...
         s->gfn(s->garg);
+        // We are now leaving Go context
+        s->in_go = 0;
     }
 }
 
@@ -426,6 +416,8 @@ extern void main_main(void) {
         simple_cgocall(g0_main, NULL);
         // g0_main only returns when we want to run code in a goroutine ...
         s->gfn(s->garg);
+        // We are now leaving Go context
+        s->in_go = 0;
     }
 }
 
@@ -514,12 +506,12 @@ static void base_init(void) {
 
     // we can't start the go runtime from the current context, so we need to
     // create a new one ...
-    getcontext(&s->gmc);
-    s->gmc.uc_stack.ss_sp = malloc(2 * 1024 * 1024);
-    s->gmc.uc_stack.ss_size = 2 * 1024 * 1024;
-    s->gmc.uc_link = NULL;
-    makecontext(&s->gmc, go_main, 0);
-    __splitstack_makecontext(s->gmc.uc_stack.ss_size, &s->gm_stack[0], &ss);
+    getcontext(&gmc);
+    gmc.uc_stack.ss_sp = malloc(2 * 1024 * 1024);
+    gmc.uc_stack.ss_size = 2 * 1024 * 1024;
+    gmc.uc_link = NULL;
+    makecontext(&gmc, go_main, 0);
+    __splitstack_makecontext(gmc.uc_stack.ss_size, &s->gm_stack[0], &ss);
 
     // we are about to go into go
     s->in_go = 1;
@@ -532,7 +524,7 @@ static void base_init(void) {
     if (s->in_go) {
         // actually jump into go
         __splitstack_setcontext(&s->gm_stack[0]);
-        setcontext(&s->gmc);
+        setcontext(&gmc);
     }
 
     // save the signal handlers that Go is using, so that we can reactivate them
