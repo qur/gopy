@@ -69,10 +69,10 @@ extern void __splitstack_setcontext(void *context[10]);
 
 // Functions in main goPy library
 extern void simple_cgocall(void (*)(void*), void*);
-extern void simple_cgocallback(void (*)(void*), void (*)(void*), void*);
+extern void simple_cgocallback(void (*)(void*), void*);
 
 // Function pointer in main goPy library
-extern void (*cgocallback)(void (*)(void*), void (*)(void*), void*);
+extern void (*cgocallback)(void (*)(void*), void*);
 
 // C functions in the Go runtime
 extern void runtime_check(void);
@@ -395,7 +395,7 @@ static void cgocallback_g(void *_a) {
         void (*fn)(void*);
         void *arg;
     } *a = _a;
-    simple_cgocallback(a->fn, NULL, a->arg);
+    simple_cgocallback(a->fn, a->arg);
 }
 
 /*****************************************************************************
@@ -443,13 +443,12 @@ extern void main_init(void) {
 // This function either calls simple_cgocallback directly if already inside the
 // Go runtime, other wise it arranges for it to be called from Go syscall
 // context via run_on_g0 and cgocallback_g.
-static void cgocallback_wrapper(void (*fn)(void*), void (*ef)(void*),
-                                void *param) {
+static void cgocallback_wrapper(void (*fn)(void*), void *param) {
     struct {
         void (*fn)(void*);
         void *arg;
     } a;
-    if (s && s->in_go) return simple_cgocallback(fn, NULL, param);
+    if (s && s->in_go) return simple_cgocallback(fn, param);
     a.fn = fn;
     a.arg = param;
     run_on_g0(cgocallback_g, &a);

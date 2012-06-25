@@ -25,13 +25,13 @@ void simple_cgocall(void (*f)(void*), void *a) {
     if (lock) runtime_UnlockOSThread();
 }
 
-void simple_cgocallback(void (*f)(void*), void (*f2)(void*), void *a) {
+void simple_cgocallback(void (*f)(void*), void *a) {
     runtime_exitsyscall();
     f(a);
     runtime_entersyscall();
 }
 
-void (*cgocallback)(void (*)(void*), void (*)(void*), void*) = simple_cgocallback;
+void (*cgocallback)(void (*)(void*), void*) = simple_cgocallback;
 
 #include "callbacks.c"
 #include "utils.c"
