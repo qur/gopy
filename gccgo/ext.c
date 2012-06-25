@@ -560,3 +560,45 @@ extern void _init_go(ifunc funcs[]) {
 
     run_on_g((void (*)(void*))do_inits, funcs);
 }
+
+// This function initialises the Go runtime without creating a new context, and
+// then calls the given list of init funcs.  This functions is used to make a Go
+// executable that can load extension modules.
+extern int _init_go_main(int argc, char *argv[], ifunc funcs[]) {
+    // We need to replace the cgocallback used in gopy with our wrapper - so
+    // that we can call back into the Go runtime from Python threads.
+    cgocallback = cgocallback_wrapper;
+
+    // Create a new state object
+    s = calloc(1, sizeof(S));
+
+    // we are about to go into go
+    s->in_go = 1;
+
+    // Once in Go, call do_inits in a goroutine, with funcs as the argument
+    s->gfn  = (void (*)(void *))do_inits;
+    s->garg = funcs;
+
+    // we set the base_init_done flag to stop _init_go from trying to start the
+    // Go runtime for a second time.
+    base_init_done = 1;
+
+    // once we have started the go runtime, we can only get back by jumping back
+    // to this context (since that is the way the main code loop works).
+    __splitstack_getcontext(&s->stack[0]);
+    getcontext(&s->c);
+
+    // !in_go means we are back from Go - exit.
+    if (!s->in_go) exit(0);
+
+    // Initialise the Go runtime, which will take over ownership of this thread.
+    runtime_check();
+    runtime_args(argc, argv);
+    runtime_osinit();
+    runtime_schedinit();
+    __go_go(mainstart, NULL);
+    runtime_mstart(runtime_m());
+
+    // We should never get here - force a SIGSEGV.
+    while (1) *(int *)0 = 0;
+}
