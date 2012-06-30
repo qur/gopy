@@ -302,10 +302,6 @@ static void ctxtHandler(void *arg) {
     // Create a new state object
     s = calloc(1, sizeof(S));
 
-    // Swap over to the Go signal handlers
-    store_signal_handlers(s->handlers);
-    restore_signal_handlers(s0->handlers);
-
     // we are about to go into go
     s->in_go = 1;
 
@@ -325,9 +321,6 @@ static void ctxtHandler(void *arg) {
 
     // !in_go means we are done
     if (!s->in_go) {
-        // Swap back to our own signal handlers
-        restore_signal_handlers(s->handlers);
-
         // Free state
         free(s);
         s = NULL;
