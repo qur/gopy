@@ -6,7 +6,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/qur/gopy/lib"
+	"github.com/qur/gopy/py"
 	"os"
 )
 

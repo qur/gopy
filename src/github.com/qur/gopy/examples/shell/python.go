@@ -6,10 +6,11 @@ package main
 
 import (
 	"os"
+	"syscall"
 	"path"
 	"path/filepath"
 	"strings"
-	"github.com/qur/gopy/lib"
+	"github.com/qur/gopy/py"
 )
 
 var mydir string
@@ -96,7 +97,7 @@ func findPyCmd(cmd string) (CmdFunc, error) {
 	_, err := os.Stat(name)
 	if err != nil {
 		perr := err.(*os.PathError)
-		if perr.Err == os.ENOENT {
+		if perr.Err == syscall.ENOENT {
 			return nil, nil
 		}
 		return nil, err
