@@ -4,7 +4,7 @@
 
 package main
 
-import "github.com/qur/gopy/lib"
+import "github.com/qur/gopy/py"
 
 var shMod *py.Module
 
@@ -54,7 +54,7 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 	case *py.List:
 		argS = a.Slice()
 	default:
-		return nil, py.NewTypeErrorString("args must be tuple or list")
+		return nil, py.TypeError.Err("args must be tuple or list")
 	}
 
 	cArgs := make([]string, len(argS))

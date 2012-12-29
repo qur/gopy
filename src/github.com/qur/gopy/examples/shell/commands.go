@@ -45,8 +45,8 @@ func chdir(args []string) error {
 		return os.Chdir(args[0])
 	}
 
-	home, err := os.Getenverror("HOME")
-	if err != nil {
+	home := os.Getenv("HOME")
+	if home == "" {
 		return fmt.Errorf("HOME not set")
 	}
 

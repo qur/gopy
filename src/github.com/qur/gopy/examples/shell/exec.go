@@ -23,7 +23,7 @@ func execCmd(cmd, fname string, args []string) error {
 		return err
 	}
 
-	_, err = p.Wait(0)
+	_, err = p.Wait()
 	if err != nil {
 		return err
 	}
