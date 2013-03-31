@@ -30,14 +30,28 @@ type ExampleClass struct {
 	called bool
 }
 
-func (e *ExampleClass) PyStr() string {
+func (e *ExampleClass) Py_Test() (py.Object, error) {
 	panic("called")
-	return "my test"
+}
+
+func (e *ExampleClass) Py_Test2(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
+	if v, err := args.GetItem(0); err != nil {
+		panic(err)
+	} else if i, ok := v.(*py.Int); !ok {
+		panic(v)
+	} else if i.Int() != 10 {
+		panic(i)
+	}
+	panic("called2")
+}
+
+func (e *ExampleClass) PyStr() string {
+	panic("strcalled")
 }
 
 var exampleClass = py.Class{
 	Name:    "test.test",
-	Pointer: (*ExampleClass)(nil),
+	Pointer: &ExampleClass{},
 }
 
 func TestMethod(t *testing.T) {
@@ -79,13 +93,33 @@ func TestMethod2(t *testing.T) {
 		t.Fatal(err)
 	} else if err := m.AddObject("test", c); err != nil {
 		t.Fatal(err)
-	} else if _, err := py.RunString("import test; a = test.test().__str__", py.SingleInput, main, nil); err != nil {
+	} else if _, err := py.RunString("import test; a = test.test()", py.SingleInput, main, nil); err != nil {
 		t.Fatal(err)
 	} else if a, err := main.GetItemString("a"); err != nil {
 		t.Fatal(err)
 	} else {
-		_ = a
-		// Hangs forever...
-		//		t.Log(a.Base().CallObject(nil))
+		type Test struct {
+			m    string
+			pan  string
+			f    string
+			args []interface{}
+		}
+		tests := []Test{
+			{"Test", "called", "", nil},
+			{"Test2", "called2", "i", []interface{}{10}},
+			{"__str__", "strcalled", "", nil},
+		}
+		for _, test := range tests {
+			func() {
+				defer func() {
+					if i := recover(); i == test.pan {
+						t.Log("Success!")
+					} else {
+						t.Error("Paniced for some other reason:", i)
+					}
+				}()
+				a.Base().CallMethod(test.m, test.f, test.args...)
+			}()
+		}
 	}
 }
