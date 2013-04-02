@@ -1,7 +1,7 @@
 package pytesting
 
 import (
-	"github.com/qur/gopy/lib"
+	"lime/3rdparty/gopy/lib"
 	"testing"
 )
 
