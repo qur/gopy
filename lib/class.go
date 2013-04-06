@@ -740,8 +740,9 @@ func (c *Class) Create() (*Type, error) {
 			continue
 		}
 		t := m.Func.Type()
-		fi := unsafe.Pointer(m.Func.Pointer())
-		f := unsafe.Pointer(&fi)
+		v := C.malloc(8)
+		*(*uintptr)(unsafe.Pointer(v)) = m.Func.Pointer()
+		f := unsafe.Pointer(v)
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
 		meth, ok := methodMap[m.Name]
 		if ok {
