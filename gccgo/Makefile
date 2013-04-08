@@ -108,7 +108,7 @@ cgo.c: sym.in gen-py.go cgo
 
 gen-py.go: py.c utils.c callbacks.c types.h
 	@$(ECHO) "  DUMP-GO-SPEC\t$@"
-	$(GCC) -S -o /dev/null -fdump-go-spec=$@ $< || (rm -f $@; false)
+	$(GCC) -S -o /dev/null -fdump-go-spec=$@ $(FFI) $< || (rm -f $@; false)
 
 types.c types.h types.sym: types.in types
 	@$(ECHO) "  TYPES\t\t$@"
