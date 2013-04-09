@@ -188,10 +188,11 @@ func goClassRepr(obj unsafe.Pointer) unsafe.Pointer {
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer) string)(unsafe.Pointer(&ctxt.repr))
 
-	s := C.CString((*f)(obj))
-	defer C.free(unsafe.Pointer(s))
-
-	return unsafe.Pointer(C.PyString_FromString(s))
+	if u, err := NewUnicode((*f)(obj)); err != nil {
+		return nil
+	} else {
+		return unsafe.Pointer(u)
+	}
 }
 
 //export goClassRichCmp
@@ -262,8 +263,9 @@ func goClassStr(obj unsafe.Pointer) unsafe.Pointer {
 	// Turn the function into something we can call
 	f := (*func(unsafe.Pointer) string)(unsafe.Pointer(&ctxt.str))
 
-	s := C.CString((*f)(obj))
-	defer C.free(unsafe.Pointer(s))
-
-	return unsafe.Pointer(C.PyString_FromString(s))
+	if u, err := NewUnicode((*f)(obj)); err != nil {
+		return nil
+	} else {
+		return unsafe.Pointer(u)
+	}
 }

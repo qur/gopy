@@ -4,10 +4,6 @@
 
 package py
 
-// #cgo CFLAGS: -Werror
-// #cgo LDFLAGS: -lpython2.7
-// #cgo pkg-config: libffi
-//
 // #include "utils.h"
 //
 // static inline int enterRecursive(char *w) {
@@ -24,6 +20,10 @@ import (
 
 func Initialize() {
 	C.Py_Initialize()
+}
+
+func Finalize() {
+	C.Py_Finalize()
 }
 
 func InitializeEx(initsigs bool) {
@@ -46,7 +46,7 @@ func AddToPath(dir string) {
 	s := C.CString(dir)
 	defer C.free(unsafe.Pointer(s))
 
-	pDir := C.PyString_FromString(s)
+	pDir := C.PyUnicode_FromString(s)
 	if pDir == nil {
 		return
 	}
@@ -55,14 +55,15 @@ func AddToPath(dir string) {
 }
 
 func Main(args []string) int {
-	argv := make([]*C.char, len(args))
+	panic("Main not ported")
+	// argv := make([]*C.char, len(args))
 
-	for i, arg := range args {
-		argv[i] = C.CString(arg)
-		defer C.free(unsafe.Pointer(argv[i]))
-	}
+	// for i, arg := range args {
+	// 	argv[i] = C.CString(arg)
+	// 	defer C.free(unsafe.Pointer(argv[i]))
+	// }
 
-	return int(C.Py_Main(C.int(len(argv)), &argv[0]))
+	// return int(C.Py_Main(C.int(len(argv)), &argv[0]))
 }
 
 // EnterRecusiveCall marks a point where a recursive Go-level call is about to

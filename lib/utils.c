@@ -152,8 +152,7 @@ static PyObject *method_get(PyGoMethod *self, PyObject *obj, PyObject *type) {
 }
 
 static PyTypeObject goMethodType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "GoMethod",                /*tp_name*/
     sizeof(PyGoMethod),        /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -161,7 +160,7 @@ static PyTypeObject goMethodType = {
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
+    0,                         /*tp_reserved*/
     0,                         /*tp_repr*/
     0,                         /*tp_as_number*/
     0,                         /*tp_as_sequence*/
@@ -187,6 +186,7 @@ static PyTypeObject goMethodType = {
     0,                         /* tp_dict */
     (descrgetfunc)method_get,  /* tp_descr_get */
     0,                         /* tp_descr_set */
+
 };
 static int goMethodInit = 0;
 
@@ -240,7 +240,7 @@ static int objmemb_set(PyGoObjMember *self, PyObject *obj, PyObject *value) {
 }
 
 static PyObject *objmemb_doc(PyGoObjMember *self, void *closure) {
-    return PyString_FromString(self->doc);
+    return PyUnicode_FromString(self->doc);
 }
 
 static PyGetSetDef objmemb_getset[] = {
@@ -321,7 +321,7 @@ static int natmemb_set(PyGoNatMember *self, PyObject *obj, PyObject *value) {
 }
 
 static PyObject *natmemb_doc(PyGoNatMember *self, void *closure) {
-    return PyString_FromString(self->doc);
+    return PyUnicode_FromString(self->doc);
 }
 
 static PyGetSetDef natmemb_getset[] = {
@@ -432,7 +432,6 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     type->tp_free    = (freefunc)   goGenericFree;
 
     if (ctxt->call)     type->tp_call        = (ternaryfunc)  goClassCall;
-    if (ctxt->compare)  type->tp_compare     = (cmpfunc)      goClassCompare;
     if (ctxt->getattr)  type->tp_getattr     = (getattrfunc)  goClassGetAttr;
     if (ctxt->getattro) type->tp_getattro    = (getattrofunc) goClassGetAttrObj;
     if (ctxt->hash)     type->tp_hash        = (hashfunc)     goClassHash;
@@ -459,14 +458,12 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
         if (ctxt->nb_add)          m->nb_add                  = (binaryfunc)  goClassNumAdd;
         if (ctxt->nb_subtract)     m->nb_subtract             = (binaryfunc)  goClassNumSubtract;
         if (ctxt->nb_multiply)     m->nb_multiply             = (binaryfunc)  goClassNumMultiply;
-        if (ctxt->nb_divide)       m->nb_divide               = (binaryfunc)  goClassNumDivide;
         if (ctxt->nb_remainder)    m->nb_remainder            = (binaryfunc)  goClassNumRemainder;
         if (ctxt->nb_divmod)       m->nb_divmod               = (binaryfunc)  goClassNumDivmod;
         if (ctxt->nb_power)        m->nb_power                = (ternaryfunc) goClassNumPower;
         if (ctxt->nb_negative)     m->nb_negative             = (unaryfunc)   goClassNumNegative;
         if (ctxt->nb_positive)     m->nb_positive             = (unaryfunc)   goClassNumPositive;
         if (ctxt->nb_absolute)     m->nb_absolute             = (unaryfunc)   goClassNumAbsolute;
-        if (ctxt->nb_nonzero)      m->nb_nonzero              = (inquiry)     goClassNumNonzero;
         if (ctxt->nb_invert)       m->nb_invert               = (unaryfunc)   goClassNumInvert;
         if (ctxt->nb_lshift)       m->nb_lshift               = (binaryfunc)  goClassNumLshift;
         if (ctxt->nb_rshift)       m->nb_rshift               = (binaryfunc)  goClassNumRshift;
@@ -474,14 +471,10 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
         if (ctxt->nb_xor)          m->nb_xor                  = (binaryfunc)  goClassNumXor;
         if (ctxt->nb_or)           m->nb_or                   = (binaryfunc)  goClassNumOr;
         if (ctxt->nb_int)          m->nb_int                  = (unaryfunc)   goClassNumInt;
-        if (ctxt->nb_long)         m->nb_long                 = (unaryfunc)   goClassNumLong;
         if (ctxt->nb_float)        m->nb_float                = (unaryfunc)   goClassNumFloat;
-        if (ctxt->nb_oct)          m->nb_oct                  = (unaryfunc)   goClassNumOct;
-        if (ctxt->nb_hex)          m->nb_hex                  = (unaryfunc)   goClassNumHex;
         if (ctxt->nb_ip_add)       m->nb_inplace_add          = (binaryfunc)  goClassNumInplaceAdd;
         if (ctxt->nb_ip_subtract)  m->nb_inplace_remainder    = (binaryfunc)  goClassNumInplaceSubtract;
         if (ctxt->nb_ip_multiply)  m->nb_inplace_multiply     = (binaryfunc)  goClassNumInplaceMultiply;
-        if (ctxt->nb_ip_divide)    m->nb_inplace_divide       = (binaryfunc)  goClassNumInplaceDivide;
         if (ctxt->nb_ip_remainder) m->nb_inplace_remainder    = (binaryfunc)  goClassNumInplaceRemainder;
         if (ctxt->nb_ip_power)     m->nb_inplace_power        = (ternaryfunc) goClassNumInplacePower;
         if (ctxt->nb_ip_lshift)    m->nb_inplace_lshift       = (binaryfunc)  goClassNumInplaceLshift;
@@ -516,10 +509,9 @@ PyTypeObject *getBasePyType(PyObject *o) {
     if (PyTuple_Check(o))     return &PyTuple_Type;
     if (PyDict_Check(o))      return &PyDict_Type;
     if (PyList_Check(o))      return &PyList_Type;
-    if (PyString_Check(o))    return &PyString_Type;
+    if (PyUnicode_Check(o))   return &PyUnicode_Type;
     if (PyBool_Check(o))      return &PyBool_Type;
     if (PyLong_Check(o))      return &PyLong_Type;
-    if (PyInt_Check(o))       return &PyInt_Type;
     if (PyFloat_Check(o))     return &PyFloat_Type;
     if (PyModule_Check(o))    return &PyModule_Type;
     if (PyType_Check(o))      return &PyType_Type;
@@ -534,19 +526,20 @@ PyTypeObject *getBasePyType(PyObject *o) {
 }
 
 PyObject *compileFile(char *name) {
-    PyObject *f = PyFile_FromString(name, "rU");
-    if (!f) return NULL;
-    struct _node *n = PyParser_SimpleParseFile(PyFile_AsFile(f), name,
-                                               Py_file_input);
-    Py_DECREF(f);
-    if (!n) return NULL;
-    return (PyObject *)PyNode_Compile(n, name);
+    return NULL;
+    // PyObject *f = PyFile_FromString(name, "rU");
+    // if (!f) return NULL;
+    // struct _node *n = PyParser_SimpleParseFile(PyFile_AsFile(f), name,
+    //                                            Py_file_input);
+    // Py_DECREF(f);
+    // if (!n) return NULL;
+    // return (PyObject *)PyNode_Compile(n, name);
 }
 
 struct _en excName(PyObject *o) {
     struct _en en = { NULL, NULL };
 
-    PyObject *m;
+    PyObject *m, *u;
 
     if (!PyExceptionClass_Check(o)) {
         return en;
@@ -565,8 +558,14 @@ struct _en excName(PyObject *o) {
         en.m = "<unknown>";
         return en;
     }
+    u = PyUnicode_AsUTF8String(m);
+    if (u == NULL) {
+        Py_DECREF(m);
+        en.m = "<unknown>";
+        return en;
+    }
 
-    en.m = PyString_AsString(m);
+    en.m = PyBytes_AsString(u);
     if (en.m != NULL && !strcmp(en.m, "exceptions")) {
         en.m = NULL;
     }

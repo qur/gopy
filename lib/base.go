@@ -126,16 +126,6 @@ func (obj *BaseObject) RichCompareBool(obj2 Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-// PyObject_Cmp : Thanks to multiple return values, we don't need this function
-// to be available in Go.
-
-// Compare returns the result of comparing "obj" and "obj2".  This is equivalent
-// to the Python "cmp(obj, obj2)".
-func (obj *BaseObject) Compare(obj2 Object) (int, error) {
-	ret := C.PyObject_Compare(c(obj), c(obj2))
-	return int(ret), exception()
-}
-
 // Repr returns a String representation of "obj".  This is equivalent to the
 // Python "repr(obj)".
 //

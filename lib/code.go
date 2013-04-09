@@ -40,7 +40,7 @@ func codeCheck(obj Object) bool {
 }
 
 func (code *Code) Eval(globals, locals Object) (Object, error) {
-	pyCode := (*C.PyCodeObject)(unsafe.Pointer(code))
+	pyCode := (*C.PyObject)(unsafe.Pointer(code))
 	ret := C.PyEval_EvalCode(pyCode, c(globals), c(locals))
 	return obj2ObjErr(ret)
 }

@@ -17,7 +17,8 @@ func TestRunString(t *testing.T) {
 		t.Fatal(err)
 	} else if a, err := main.GetItemString("a"); err != nil {
 		t.Fatal(err)
-	} else if b, ok := a.(*py.String); !ok || b.String() != "hello world!" {
+	} else if b, ok := a.(*py.Unicode); !ok || b.String() != "hello world!" {
 		t.Error(b, err)
 	}
+	py.Finalize()
 }

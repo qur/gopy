@@ -20,7 +20,6 @@ type Number interface {
 	Add(obj Object) (Object, error)
 	Subtract(obj Object) (Object, error)
 	Multiply(obj Object) (Object, error)
-	Divide(obj Object) (Object, error)
 	FloorDivide(obj Object) (Object, error)
 	TrueDivide(obj Object) (Object, error)
 	Remainder(obj Object) (Object, error)
@@ -38,7 +37,6 @@ type Number interface {
 	InPlaceAdd(obj Object) (Object, error)
 	InPlaceSubtract(obj Object) (Object, error)
 	InPlaceMultiply(obj Object) (Object, error)
-	InPlaceDivide(obj Object) (Object, error)
 	InPlaceFloorDivide(obj Object) (Object, error)
 	InPlaceTrueDivide(obj Object) (Object, error)
 	InPlaceRemainder(obj Object) (Object, error)
@@ -100,15 +98,6 @@ func (n *NumberProtocol) Subtract(obj Object) (Object, error) {
 // Return value: New Reference.
 func (n *NumberProtocol) Multiply(obj Object) (Object, error) {
 	ret := C.PyNumber_Multiply(cnp(n), c(obj))
-	return obj2ObjErr(ret)
-}
-
-// Divide returns the result of dividing n by obj.  The equivalent Python is "n
-// / obj".
-//
-// Return value: New Reference.
-func (n *NumberProtocol) Divide(obj Object) (Object, error) {
-	ret := C.PyNumber_Divide(cnp(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -253,15 +242,6 @@ func (n *NumberProtocol) InPlaceSubtract(obj Object) (Object, error) {
 // Return value: New Reference.
 func (n *NumberProtocol) InPlaceMultiply(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceMultiply(cnp(n), c(obj))
-	return obj2ObjErr(ret)
-}
-
-// InPlaceDivide returns the result of dividing n by obj.  This is done in place
-// if supported by n.  The equivalent Python is "n /= obj".
-//
-// Return value: New Reference.
-func (n *NumberProtocol) InPlaceDivide(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceDivide(cnp(n), c(obj))
 	return obj2ObjErr(ret)
 }
 

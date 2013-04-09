@@ -60,9 +60,17 @@ func c(obj Object) *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
 }
 
+func stringify(obj Object) string {
+	tpyS := C.PyObject_Str(c(obj))
+	defer C.decref(tpyS)
+	u := C.PyUnicode_AsUTF8String(tpyS)
+	defer C.decref(u)
+	return C.GoString(C.PyBytes_AsString(u))
+}
+
 var (
 	typeLock sync.RWMutex
-	types = make(map[*C.PyTypeObject]*Class)
+	types    = make(map[*C.PyTypeObject]*Class)
 )
 
 func registerType(pyType *C.PyTypeObject, class *Class) {
@@ -123,12 +131,10 @@ func newObject(obj *C.PyObject) Object {
 		return (*Tuple)(o)
 	case &C.PyDict_Type:
 		return (*Dict)(o)
-	case &C.PyString_Type:
-		return (*String)(o)
+	case &C.PyUnicode_Type:
+		return (*Unicode)(o)
 	case &C.PyBool_Type:
 		return newBool(obj)
-	case &C.PyInt_Type:
-		return (*Int)(o)
 	case &C.PyLong_Type:
 		return (*Long)(o)
 	case &C.PyFloat_Type:

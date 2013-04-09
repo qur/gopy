@@ -6,7 +6,10 @@
 #define _GO_PYTHON_UTILS_H_
 
 #include <ffi.h>
-#include <python2.7/Python.h>
+#include <Python.h>
+#if PY_MAJOR_VERSION < 3
+#error "PY_MAJOR_VERSION < 3: Please make sure your cgo.go is configured properly."
+#endif
 
 typedef struct {
     ffi_type *type;

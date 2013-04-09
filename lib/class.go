@@ -271,7 +271,7 @@ func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	switch field.Type.Kind() {
 	case reflect.Int:
 		i := (*int)(item)
-		return unsafe.Pointer(C.PyInt_FromLong(C.long(*i)))
+		return unsafe.Pointer(C.PyLong_FromLong(C.long(*i)))
 	}
 
 	raise(NotImplementedError.ErrV(None))
@@ -288,7 +288,7 @@ func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 
 	switch field.Type.Kind() {
 	case reflect.Int:
-		v := int(C.PyInt_AsLong(c(value)))
+		v := int(C.PyLong_AsLong(c(value)))
 		if exceptionRaised() {
 			return -1
 		}
@@ -693,17 +693,16 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 }
 
 var typeMap = map[string]*Type{
-	"Bool":   BoolType,
-	"Code":   CodeType,
-	"Dict":   DictType,
-	"Float":  FloatType,
-	"Int":    IntType,
-	"List":   ListType,
-	"Long":   LongType,
-	"Module": ModuleType,
-	"String": StringType,
-	"Tuple":  TupleType,
-	"Type":   TypeType,
+	"Bool":    BoolType,
+	"Code":    CodeType,
+	"Dict":    DictType,
+	"Float":   FloatType,
+	"List":    ListType,
+	"Long":    LongType,
+	"Module":  ModuleType,
+	"Unicode": UnicodeType,
+	"Tuple":   TupleType,
+	"Type":    TypeType,
 }
 
 // Create creates and returns a pointer to a PyTypeObject that is the Python
@@ -790,7 +789,7 @@ func (c *Class) Create() (*Type, error) {
 
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.Py_TPFLAGS_CHECKTYPES | C.long(c.Flags)
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.long(c.Flags)
 
 	C.setClassContext(pyType, ctxt)
 

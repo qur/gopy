@@ -5,11 +5,11 @@
 package main
 
 import (
+	"github.com/qur/gopy/lib"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
-	"github.com/qur/gopy/lib"
 )
 
 var mydir string

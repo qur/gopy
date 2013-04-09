@@ -10,7 +10,9 @@ package py
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
 import "C"
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 type Module struct {
 	AbstractObject
@@ -35,7 +37,7 @@ func Import(name string) (*Module, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 
-	pyName := C.PyString_FromString(s)
+	pyName := C.PyUnicode_FromString(s)
 	defer C.decref(pyName)
 
 	obj := C.PyImport_Import(pyName)
@@ -47,25 +49,20 @@ func Import(name string) (*Module, error) {
 }
 
 func InitModule(name string, methods []Method) (*Module, error) {
-	cName := C.CString(name)
-	defer C.free(unsafe.Pointer(cName))
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
 
-	m := C.Py_InitModule4(cName, nil, nil, nil, C.PYTHON_API_VERSION)
-	if m == nil {
+	cm := C.PyImport_AddModule(cname)
+	if cm == nil {
 		return nil, exception()
 	}
-
+	m := newModule(cm)
 	if len(methods) == 0 {
-		return newModule(m), nil
+		return m, nil
 	}
-
-	n := C.PyString_FromString(cName)
+	defer m.Decref()
+	n := C.PyUnicode_FromString(cname)
 	if n == nil {
-		return nil, exception()
-	}
-
-	d := C.PyModule_GetDict(m)
-	if d == nil {
 		return nil, exception()
 	}
 
@@ -74,13 +71,12 @@ func InitModule(name string, methods []Method) (*Module, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		if C.PyDict_SetItemString(d, C.CString(method.Name), c(pyF)) != 0 {
-			return nil, exception()
+		if m.AddObject(method.Name, pyF); err != nil {
+			return nil, err
 		}
 	}
-
-	return newModule(m), nil
+	m.Incref()
+	return m, nil
 }
 
 func ExecCodeModule(name string, code Object) (*Module, error) {

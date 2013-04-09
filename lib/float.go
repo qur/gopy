@@ -38,19 +38,6 @@ func NewFloat(v float64) (*Float, error) {
 	return newFloat(ret), nil
 }
 
-func NewFloatString(v string) (*Float, error) {
-	s, err := NewString(v)
-	if err != nil {
-		return nil, err
-	}
-	defer s.Decref()
-	ret := C.PyFloat_FromString(c(s), nil)
-	if ret == nil {
-		return nil, exception()
-	}
-	return newFloat(ret), nil
-}
-
 func (f *Float) Float64() float64 {
 	return float64(C.PyFloat_AsDouble(c(f)))
 }

@@ -31,6 +31,12 @@ def get_ffi_flags():
     out, err = p.communicate()
     return out.strip().split(' ')
 
+def get_python3_flags():
+    cmd = ['python3.3-config', '--cflags']
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    return out.strip().split(' ')
+
 def process(inp):
     exceptions = []
     maxlen = 0
@@ -54,7 +60,7 @@ def process(inp):
     print ')\n'
 
 def main():
-    cmd = ["gcc", "-E", "-o", "-", "utils.c"] + get_ffi_flags()
+    cmd = ["cc", "-E", "-o", "-", "utils.c"] + get_ffi_flags() + get_python3_flags()
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     t = threading.Thread(target=process, args=(p.stdout,))
     t.start()

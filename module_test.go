@@ -12,9 +12,9 @@ func TestFunction(t *testing.T) {
 		called = true
 		return py.None, nil
 	}
-	if m, err := py.InitModule("test", []py.Method{{"test", f, ""}}); err != nil {
+	if m, err := py.InitModule("mytest", []py.Method{{"mytest", f, ""}}); err != nil {
 		t.Fatal(err)
-	} else if t2, err := m.Dict().GetItemString("test"); err != nil {
+	} else if t2, err := m.Dict().GetItemString("mytest"); err != nil {
 		t.Fatal(err)
 	} else {
 		t2.Base().CallObject(nil)
@@ -22,6 +22,7 @@ func TestFunction(t *testing.T) {
 	if !called {
 		t.Error("Function wasn't called")
 	}
+	py.Finalize()
 }
 
 type ExampleClass struct {
@@ -36,9 +37,9 @@ func (e *ExampleClass) Py_Test() (py.Object, error) {
 func (e *ExampleClass) Py_Test2(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	if v, err := args.GetItem(0); err != nil {
 		panic(err)
-	} else if i, ok := v.(*py.Int); !ok {
+	} else if i, ok := v.(*py.Long); !ok {
 		panic(v)
-	} else if i.Int() != 10 {
+	} else if i.Int64() != 10 {
 		panic(i)
 	}
 	panic("called2")
@@ -49,7 +50,7 @@ func (e *ExampleClass) PyStr() string {
 }
 
 var exampleClass = py.Class{
-	Name:    "test.test",
+	Name:    "mytest.mytest",
 	Pointer: &ExampleClass{},
 }
 
@@ -58,7 +59,7 @@ func TestMethod(t *testing.T) {
 
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
-	} else if m, err := py.InitModule("test", nil); err != nil {
+	} else if m, err := py.InitModule("mytest", nil); err != nil {
 		t.Fatal(err)
 	} else if c, err := exampleClass.Create(); err != nil {
 		t.Fatal(err)
@@ -66,22 +67,25 @@ func TestMethod(t *testing.T) {
 		t.Fatal(err)
 	} else if err := main.SetItemString("__builtins__", g); err != nil {
 		t.Fatal(err)
-	} else if err := m.AddObject("test", c); err != nil {
+	} else if err := m.AddObject("mytest", c); err != nil {
 		t.Fatal(err)
-	} else if _, err := py.RunString("import test; a = test.test()", py.SingleInput, main, nil); err != nil {
+		// } else if err := main.SetItemString("mytest", m); err != nil {
+		// 	t.Fatal(err)
+	} else if _, err := py.RunString("import mytest; a = mytest.mytest()", py.SingleInput, main, nil); err != nil {
 		t.Fatal(err)
 	} else if a, err := main.GetItemString("a"); err != nil {
 		t.Fatal(err)
-	} else if a == py.None || a.Type().String() != "<type 'test.test'>" {
+	} else if a == py.None || a.Type().String() != "<class 'mytest.mytest'>" {
 		t.Error(a.Type().String())
 	}
+	py.Finalize()
 }
 
 func TestMethod2(t *testing.T) {
 	py.Initialize()
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
-	} else if m, err := py.InitModule("test", nil); err != nil {
+	} else if m, err := py.InitModule("mytest", nil); err != nil {
 		t.Fatal(err)
 	} else if c, err := exampleClass.Create(); err != nil {
 		t.Fatal(err)
@@ -89,9 +93,9 @@ func TestMethod2(t *testing.T) {
 		t.Fatal(err)
 	} else if err := main.SetItemString("__builtins__", g); err != nil {
 		t.Fatal(err)
-	} else if err := m.AddObject("test", c); err != nil {
+	} else if err := m.AddObject("mytest", c); err != nil {
 		t.Fatal(err)
-	} else if _, err := py.RunString("import test; a = test.test()", py.SingleInput, main, nil); err != nil {
+	} else if _, err := py.RunString("import mytest; a = mytest.mytest()", py.SingleInput, main, nil); err != nil {
 		t.Fatal(err)
 	} else if a, err := main.GetItemString("a"); err != nil {
 		t.Fatal(err)
@@ -120,4 +124,5 @@ func TestMethod2(t *testing.T) {
 			}()
 		}
 	}
+	py.Finalize()
 }

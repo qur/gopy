@@ -28,9 +28,7 @@ func (e *Error) Error() string {
 	ts := ""
 	en := C.excName(c(e.Kind))
 	if en.c == nil {
-		tpyS := C.PyObject_Str(c(e.Kind))
-		defer C.decref(tpyS)
-		ts = C.GoString(C.PyString_AsString(tpyS))
+		ts = stringify(e.Kind)
 	} else {
 		if en.m != nil {
 			ts = C.GoString(en.m) + "."
@@ -38,9 +36,7 @@ func (e *Error) Error() string {
 		ts += C.GoString(en.c)
 	}
 
-	pyS := C.PyObject_Str(c(e.Value))
-	defer C.decref(pyS)
-	s := C.GoString(C.PyString_AsString(pyS))
+	s := stringify(e.Value)
 
 	return fmt.Sprintf("%s: %s", ts, s)
 }
@@ -85,7 +81,7 @@ func NewErrorV(kind Object, value Object) *Error {
 func NewError(kind Object, format string, args ...interface{}) *Error {
 	msg := fmt.Sprintf(format, args...)
 	Incref(kind)
-	val, _ := NewString(msg)
+	val, _ := NewUnicode(msg)
 	return &Error{kind, val, nil}
 }
 
@@ -116,7 +112,7 @@ func raise(err error) {
 		exc = c(e.Kind)
 		val = c(e.Value)
 	} else {
-		v, _ := NewString(err.Error())
+		v, _ := NewUnicode(err.Error())
 		val = c(v)
 	}
 

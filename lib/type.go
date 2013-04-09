@@ -54,7 +54,7 @@ func (t *Type) String() string {
 	if pyS == nil {
 		return "<unknown type>"
 	}
-	return C.GoString(C.PyString_AsString(pyS))
+	return stringify(t)
 }
 
 // CheckExact returns true when "t" is an actual Type object, and not some form

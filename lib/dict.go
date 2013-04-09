@@ -243,7 +243,7 @@ func (d *Dict) MapString() (map[string]Object, error) {
 	for int(C.PyDict_Next(c(d), &p, &k, &v)) != 0 {
 		key := newObject(k)
 		value := newObject(v)
-		s, ok := key.(*String)
+		s, ok := key.(*Unicode)
 		if !ok {
 			return nil, TypeError.Err("%v is not a string", key)
 		}
