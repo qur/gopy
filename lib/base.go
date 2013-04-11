@@ -203,6 +203,7 @@ func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object,
 	if err != nil {
 		return nil, err
 	}
+	defer t.Decref()
 	return obj.CallObject(t)
 }
 
@@ -224,6 +225,7 @@ func (obj *BaseObject) CallMethod(name string, format string, args ...interface{
 	if err != nil {
 		return nil, err
 	}
+	defer t.Decref()
 
 	ret := C.PyObject_CallObject(f, c(t))
 	return obj2ObjErr(ret)
@@ -234,6 +236,7 @@ func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer t.Decref()
 	return obj.CallObject(t)
 }
 
@@ -255,6 +258,7 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, e
 	if err != nil {
 		return nil, err
 	}
+	defer t.Decref()
 
 	ret := C.PyObject_CallObject(f, c(t))
 	return obj2ObjErr(ret)
