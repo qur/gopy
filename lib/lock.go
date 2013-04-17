@@ -152,6 +152,58 @@ func (lock *Lock) Lock() {
 
 	runtime.LockOSThread()
 	lock.gilState = GilState_Ensure()
+	lock.inc()
+}
+
+func (lock *Lock) setCount(l int64) {
+	dict := newDict(C.PyThreadState_GetDict())
+	pl := NewLong(l)
+	if err := dict.SetItemString("gopy.count", pl); err != nil {
+		panic(err)
+	} else {
+		pl.Decref()
+	}
+}
+
+func (lock *Lock) inc() {
+	dict := newDict(C.PyThreadState_GetDict())
+	if dict == nil {
+		panic("Nil dict")
+	}
+	if c, err := dict.GetItemString("gopy.count"); err == nil {
+		if c2, ok := c.(*Long); ok {
+			l := c2.Int64()
+			l++
+			lock.setCount(l)
+		} else {
+			lock.setCount(1)
+		}
+	} else {
+		lock.setCount(1)
+	}
+}
+
+func (lock *Lock) dec() bool {
+	releaseOsThread := true
+	dict := newDict(C.PyThreadState_GetDict())
+	if dict == nil {
+		panic("Nil dict")
+	}
+	if c, err := dict.GetItemString("gopy.count"); err == nil {
+		if c2, ok := c.(*Long); ok {
+			l := c2.Int64()
+			l--
+			if l != 0 {
+				releaseOsThread = false
+			}
+			lock.setCount(l)
+		} else {
+			panic(c)
+		}
+		return releaseOsThread
+	} else {
+		panic(err)
+	}
 }
 
 // Unlock unlocks the lock.  When it returns no calls into Python made be made.
@@ -170,8 +222,12 @@ func (lock *Lock) Unlock() {
 		lock.thState = nil
 	}
 
+	releaseOsThread := lock.dec()
+
 	lock.gilState.Release()
-	runtime.UnlockOSThread()
+	if releaseOsThread {
+		runtime.UnlockOSThread()
+	}
 	lock.gilState = nil
 }
 
