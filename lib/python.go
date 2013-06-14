@@ -13,7 +13,7 @@ package py
 // static inline int enterRecursive(char *w) {
 //     return Py_EnterRecursiveCall(w);
 // }
-// static inline void leaveRecursive() {
+// static inline void leaveRecursive(void) {
 //     Py_LeaveRecursiveCall();
 // }
 import "C"
