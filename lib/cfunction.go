@@ -99,7 +99,7 @@ type Method struct {
 
 var (
 	funcLock sync.RWMutex
-	funcs []interface{}
+	funcs    []interface{}
 )
 
 func saveFunc(f interface{}) *C.PyObject {

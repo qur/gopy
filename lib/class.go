@@ -530,7 +530,7 @@ func Clear(obj Object) error {
 
 var (
 	fieldLock sync.RWMutex
-	fields []reflect.StructField
+	fields    []reflect.StructField
 )
 
 func registerField(field reflect.StructField) C.int {
@@ -579,27 +579,27 @@ type goMethod struct {
 // signatures (hence the names are one greater than the number of arguments
 // taken).
 var (
-	pyInitFunc        = func(*Tuple, *Dict) error(nil)
+	pyInitFunc        = (func(*Tuple, *Dict) error)(nil)
 	pyVoidFunc        = (func())(nil)
-	pyReprFunc        = func() string(nil)
-	pyLenFunc         = func() int64(nil)
-	pyHashFunc        = func() (uint32, error)(nil)
-	pyInquiryFunc     = func() (bool, error)(nil)
-	pyUnaryFunc       = func() (Object, error)(nil)
-	pyBinaryFunc      = func(Object) (Object, error)(nil)
-	pyTernaryFunc     = func(a, b Object) (Object, error)(nil)
-	pyBinaryCallFunc  = func(*Tuple) (Object, error)(nil)
-	pyTernaryCallFunc = func(*Tuple, *Dict) (Object, error)(nil)
-	pyCompareFunc     = func(Object) (int, error)(nil)
-	pyRichCmpFunc     = func(Object, Op) (Object, error)(nil)
-	pyObjObjArgFunc   = func(a, b Object) error(nil)
-	pySsizeArgFunc    = func(int64) (Object, error)(nil)
-	pySsizeObjArgFunc = func(int64, Object) error(nil)
-	pyObjObjFunc      = func(Object) (bool, error)(nil)
-	pyGetAttrFunc     = func(string) (Object, error)(nil)
-	pyGetAttrObjFunc  = func(Object) (Object, error)(nil)
-	pySetAttrFunc     = func(string, Object) error(nil)
-	pySetAttrObjFunc  = func(Object, Object) error(nil)
+	pyReprFunc        = (func() string)(nil)
+	pyLenFunc         = (func() int64)(nil)
+	pyHashFunc        = (func() (uint32, error))(nil)
+	pyInquiryFunc     = (func() (bool, error))(nil)
+	pyUnaryFunc       = (func() (Object, error))(nil)
+	pyBinaryFunc      = (func(Object) (Object, error))(nil)
+	pyTernaryFunc     = (func(a, b Object) (Object, error))(nil)
+	pyBinaryCallFunc  = (func(*Tuple) (Object, error))(nil)
+	pyTernaryCallFunc = (func(*Tuple, *Dict) (Object, error))(nil)
+	pyCompareFunc     = (func(Object) (int, error))(nil)
+	pyRichCmpFunc     = (func(Object, Op) (Object, error))(nil)
+	pyObjObjArgFunc   = (func(a, b Object) error)(nil)
+	pySsizeArgFunc    = (func(int64) (Object, error))(nil)
+	pySsizeObjArgFunc = (func(int64, Object) error)(nil)
+	pyObjObjFunc      = (func(Object) (bool, error))(nil)
+	pyGetAttrFunc     = (func(string) (Object, error))(nil)
+	pyGetAttrObjFunc  = (func(Object) (Object, error))(nil)
+	pySetAttrFunc     = (func(string, Object) error)(nil)
+	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
 )
 
 var methodMap = map[string]goMethod{
@@ -693,22 +693,23 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 }
 
 var directFnCall = (*bool)(nil)
+
 func methodAsPointer(m reflect.Method) unsafe.Pointer {
 	// Go 1.0 uses direct function calls, Go 1.1 uses indirect function calls
-    // (so that contextual data for closures can be held).  Figure out which
-    // this is, and set directFnCall as appropriate.
-    if directFnCall == nil {
-        m := unsafe.Pointer(reflect.ValueOf(methodAsPointer).Pointer())
-        f := (*func(reflect.Method) unsafe.Pointer)(unsafe.Pointer(&m))
-        direct := fmt.Sprintf("%v", m) == fmt.Sprintf("%v", *f)
-        directFnCall = &direct
-    }
+	// (so that contextual data for closures can be held).  Figure out which
+	// this is, and set directFnCall as appropriate.
+	if directFnCall == nil {
+		m := unsafe.Pointer(reflect.ValueOf(methodAsPointer).Pointer())
+		f := (*func(reflect.Method) unsafe.Pointer)(unsafe.Pointer(&m))
+		direct := fmt.Sprintf("%v", m) == fmt.Sprintf("%v", *f)
+		directFnCall = &direct
+	}
 
-    fp := unsafe.Pointer(m.Func.Pointer())
-    if *directFnCall {
-        return fp
-    }
-    return unsafe.Pointer(&fp)
+	fp := unsafe.Pointer(m.Func.Pointer())
+	if *directFnCall {
+		return fp
+	}
+	return unsafe.Pointer(&fp)
 }
 
 var typeMap = map[string]*Type{
@@ -785,7 +786,7 @@ func (c *Class) Create() (*Type, error) {
 				return nil, fmt.Errorf("%s: Invalid function signature", fn)
 			}
 		case "PySet":
-			err := methSigMatches(t, func(Object) error(nil))
+			err := methSigMatches(t, (func(Object) error)(nil))
 			if err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
@@ -794,7 +795,7 @@ func (c *Class) Create() (*Type, error) {
 			p.set = f
 			props[parts[1]] = p
 		case "PyGet":
-			err := methSigMatches(t, func() (Object, error)(nil))
+			err := methSigMatches(t, (func() (Object, error))(nil))
 			if err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
