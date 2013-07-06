@@ -112,9 +112,7 @@ func TestMethod2(t *testing.T) {
 		for _, test := range tests {
 			func() {
 				defer func() {
-					if i := recover(); i == test.pan {
-						t.Log("Success!")
-					} else {
+					if i := recover(); i != test.pan {
 						t.Error("Paniced for some other reason:", i)
 					}
 				}()
