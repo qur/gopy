@@ -47,6 +47,7 @@ typedef struct state {
     struct sigaction handlers[_NSIG];
     ucontext_t c, g0c;
     int in_go;
+    int go_exe;
 } S;
 
 typedef void (*ifunc)(void);
@@ -550,7 +551,11 @@ extern void _init_go(ifunc funcs[]) {
 
     if (!base_init_done) base_init();
 
-    run_on_g((void (*)(void*))do_inits, funcs);
+    if (!s || !s->go_exe) return run_on_g((void (*)(void*))do_inits, funcs);
+
+    runtime_exitsyscall();
+    do_inits(funcs);
+    runtime_entersyscall();
 }
 
 // This function initialises the Go runtime without creating a new context, and
@@ -563,6 +568,9 @@ extern int _init_go_main(int argc, char *argv[], ifunc funcs[]) {
 
     // Create a new state object
     s = calloc(1, sizeof(S));
+
+    // we are running with a Go executable.
+    s->go_exe = 1;
 
     // we are about to go into go
     s->in_go = 1;
