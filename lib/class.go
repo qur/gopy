@@ -692,7 +692,10 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 	}
 }
 
-var directFnCall = (*bool)(nil)
+var (
+	directFnCall = (*bool)(nil)
+	indirections = make([]*unsafe.Pointer, 0, 100)
+)
 
 func methodAsPointer(m reflect.Method) unsafe.Pointer {
 	// Go 1.0 uses direct function calls, Go 1.1 uses indirect function calls
@@ -709,7 +712,9 @@ func methodAsPointer(m reflect.Method) unsafe.Pointer {
 	if *directFnCall {
 		return fp
 	}
-	return unsafe.Pointer(&fp)
+	ifp := &fp
+	indirections = append(indirections, ifp)
+	return unsafe.Pointer(ifp)
 }
 
 var typeMap = map[string]*Type{
