@@ -158,55 +158,41 @@ func (lock *Lock) Lock() {
 func (lock *Lock) setCount(l int64) {
 	dict := newDict(C.PyThreadState_GetDict())
 	pl := NewLong(l)
-	if err := dict.SetItemString("gopy.count", pl); err != nil {
+	defer pl.Decref()
+	err := dict.SetItemString("gopy.count", pl)
+	if err != nil {
 		panic(err)
-	} else {
-		pl.Decref()
 	}
+}
+
+func (lock *Lock) getCount() int64 {
+	dict := newDict(C.PyThreadState_GetDict())
+	val, err := dict.GetItemString("gopy.count")
+	if err != nil {
+		return 0
+	}
+	count, ok := val.(*Long)
+	if !ok {
+		return 0
+	}
+	return count.Int64()
 }
 
 func (lock *Lock) inc() {
-	dict := newDict(C.PyThreadState_GetDict())
-	if dict == nil {
-		panic("Nil dict")
-	}
-	if c, err := dict.GetItemString("gopy.count"); err == nil {
-		if c2, ok := c.(*Long); ok {
-			l := c2.Int64()
-			l++
-			lock.setCount(l)
-		} else {
-			lock.setCount(1)
-		}
-	} else {
-		lock.setCount(1)
-	}
+	lock.setCount(lock.getCount() + 1)
 }
 
 func (lock *Lock) dec() bool {
-	releaseOsThread := true
-	dict := newDict(C.PyThreadState_GetDict())
-	if dict == nil {
-		panic("Nil dict")
+	count := lock.getCount()
+	if count <= 0 {
+		panic("Lock.dec() called with count <1!")
 	}
-	if c, err := dict.GetItemString("gopy.count"); err == nil {
-		if c2, ok := c.(*Long); ok {
-			l := c2.Int64()
-			l--
-			if l != 0 {
-				releaseOsThread = false
-			}
-			lock.setCount(l)
-		} else {
-			panic(c)
-		}
-		return releaseOsThread
-	} else {
-		panic(err)
-	}
+	count--
+	lock.setCount(count)
+	return count == 0
 }
 
-// Unlock unlocks the lock.  When it returns no calls into Python made be made.
+// Unlock unlocks the lock.  When it returns no calls into Python may be made.
 //
 // If the lock is not locked when this function is called, then nothing happens,
 // and the function returns immediately.  Also, it is not necessay to call
