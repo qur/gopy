@@ -692,6 +692,25 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 	}
 }
 
+var directFnCall = (*bool)(nil)
+func methodAsPointer(m reflect.Method) unsafe.Pointer {
+	// Go 1.0 uses direct function calls, Go 1.1 uses indirect function calls
+    // (so that contextual data for closures can be held).  Figure out which
+    // this is, and set directFnCall as appropriate.
+    if directFnCall == nil {
+        m := unsafe.Pointer(reflect.ValueOf(methodAsPointer).Pointer())
+        f := (*func(reflect.Method) unsafe.Pointer)(unsafe.Pointer(&m))
+        direct := fmt.Sprintf("%v", m) == fmt.Sprintf("%v", *f)
+        directFnCall = &direct
+    }
+
+    fp := unsafe.Pointer(m.Func.Pointer())
+    if *directFnCall {
+        return fp
+    }
+    return unsafe.Pointer(&fp)
+}
+
 var typeMap = map[string]*Type{
 	"Bool":   BoolType,
 	"Code":   CodeType,
@@ -740,7 +759,7 @@ func (c *Class) Create() (*Type, error) {
 			continue
 		}
 		t := m.Func.Type()
-		f := unsafe.Pointer(m.Func.Pointer())
+		f := methodAsPointer(m)
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
 		meth, ok := methodMap[m.Name]
 		if ok {
