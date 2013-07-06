@@ -34,6 +34,10 @@ func InitializeEx(initsigs bool) {
 	}
 }
 
+func Finalize() {
+	C.Py_Finalize()
+}
+
 func AddToPath(dir string) {
 	p := C.CString("path")
 	defer C.free(unsafe.Pointer(p))

@@ -7,6 +7,8 @@ import (
 
 func TestFunction(t *testing.T) {
 	py.Initialize()
+	defer py.Finalize()
+
 	called := false
 	f := func() (py.Object, error) {
 		called = true
@@ -41,6 +43,7 @@ var exampleClass = py.Class{
 
 func TestMethod(t *testing.T) {
 	py.Initialize()
+	defer py.Finalize()
 
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
@@ -65,6 +68,8 @@ func TestMethod(t *testing.T) {
 
 func TestMethod2(t *testing.T) {
 	py.Initialize()
+	defer py.Finalize()
+
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
 	} else if m, err := py.InitModule("test", nil); err != nil {
