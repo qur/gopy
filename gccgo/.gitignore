@@ -40,3 +40,5 @@ gopy.1.gz
 gopy-*.tgz
 VERSION
 LICENSE
+pyext.c
+types.c
