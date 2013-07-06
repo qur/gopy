@@ -1,11 +1,12 @@
 package pytesting
 
 import (
-	"lime/3rdparty/libs/gopy/lib"
 	"math/rand"
 	"runtime"
 	"testing"
 	"time"
+
+	"github.com/qur/gopy/lib"
 )
 
 func test2() {
