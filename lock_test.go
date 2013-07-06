@@ -29,10 +29,7 @@ func test() {
 func TestLock(t *testing.T) {
 	l := py.InitAndLock()
 	l.Unlock()
-	defer func() {
-		l.Lock()
-		py.Finalize()
-	}()
+	defer l.Lock()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	go test()
 	go test()
