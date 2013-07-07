@@ -21,9 +21,6 @@ extern PyTypeObject *get_PyBaseObject_Type(void);
 extern PyObject **get_PyExc_Exception(void);
 extern void typeFree(PyTypeObject *type, PyObject *o);
 
-extern PyObject *pyTrue(void);
-extern PyObject *pyFalse(void);
-
 extern void storeContext(PyTypeObject *t, ClassContext *c);
 extern PyTypeObject *newType(void);
 extern int typeReady(PyTypeObject *o);

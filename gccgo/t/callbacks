@@ -4,7 +4,6 @@ def output(name, data):
     data.setdefault('ret', 'void')
     ret = data.get('ret', 'void')
     args = data.get('args', [])
-    pname = name[0].lower() + name[1:]
     print "extern %s _2_%s(" % (ret, name),
     print ",".join(data.get('args', [])),
     print ") __asm__ (\"gopy.%s\");" % name
@@ -24,7 +23,7 @@ def output(name, data):
     print ");"
     print "}"
     print
-    print "static %s %s(" % (ret, pname)
+    print "static %s %s(" % (ret, name)
     for i, t in enumerate(args):
         print "   ",
         if i > 0:

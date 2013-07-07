@@ -1,6 +1,6 @@
---- bool.orig.go	2012-06-16 18:39:56.000000000 +0100
-+++ bool.go	2012-06-16 18:40:13.000000000 +0100
-@@ -28,11 +28,11 @@
+--- bool.go.orig	2013-07-07 16:41:23.195617519 +0100
++++ bool.go	2013-07-07 16:41:23.195617519 +0100
+@@ -25,11 +25,11 @@
  
  // True is the true value of the Bool type.  It is a singleton value, all true
  // values refer to the same instance.

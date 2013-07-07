@@ -1,40 +1,12 @@
---- lock.orig.go	2012-06-19 20:45:29.000000000 +0100
-+++ lock.go	2012-06-20 00:33:41.000000000 +0100
-@@ -124,8 +124,9 @@
- //
- //   lock.Unlock()
- type Lock struct {
--	gilState *GilState
--	thState  *_PyThreadState
-+	gilState     *GilState
-+	thState      *_PyThreadState
-+	unlockThread bool
- }
- 
- // NewLock returns a new locked Lock
-@@ -150,7 +151,13 @@
- 		panic("Lock() called with threads unblocked!")
+--- lock.orig.go	2013-07-07 16:12:58.874900606 +0100
++++ lock.go	2013-07-07 16:14:09.677258648 +0100
+@@ -151,6 +151,9 @@
  	}
  
--	runtime.LockOSThread()
-+	if _thread_locked() == 0 {
-+		runtime.LockOSThread()
-+		lock.unlockThread = true
-+	}
+ 	runtime.LockOSThread()
 +	// Make sure Python thread support is enabled - as it isn't enabled by
 +	// default ...
 +	_PyEval_InitThreads()
  	lock.gilState = GilState_Ensure()
+ 	lock.inc()
  }
- 
-@@ -171,7 +178,9 @@
- 	}
- 
- 	lock.gilState.Release()
--	runtime.UnlockOSThread()
-+	if lock.unlockThread {
-+		runtime.UnlockOSThread()
-+	}
- 	lock.gilState = nil
- }
- 

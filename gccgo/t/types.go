@@ -39,19 +39,13 @@ func process(lines []string, base string) error {
 			name = parts[0]
 			flags = strings.TrimSpace(parts[1])
 		}
-		lname := strings.ToLower(name)
+		lname := strings.ToLower(name[0:1]) + name[1:]
 		fmt.Fprintf(sOut, "Py%s_Type\n", name)
 		fmt.Fprintf(sOut, "%sCheck\n", lname)
 		fmt.Fprintf(hOut, "extern int %sCheck(PyObject *o);\n", lname)
-		fmt.Fprintf(cOut, "extern int %sCheck(PyObject *o) {\n", lname)
-		fmt.Fprintf(cOut, "    return Py%s_Check(o);\n", name)
-		fmt.Fprintf(cOut, "}\n\n")
 		if strings.Contains(flags, "E") {
 			fmt.Fprintf(sOut, "%sCheckE\n", lname)
 			fmt.Fprintf(hOut, "extern int %sCheckE(PyObject *o);\n", lname)
-			fmt.Fprintf(cOut, "extern int %sCheckE(PyObject *o) {\n", lname)
-			fmt.Fprintf(cOut, "    return Py%s_CheckExact(o);\n", name)
-			fmt.Fprintf(cOut, "}\n\n")
 		}
 		fmt.Fprintf(sOut, "get_Py%s_Type\n", name)
 		fmt.Fprintf(hOut, "extern PyTypeObject *get_Py%s_Type(void);\n", name)

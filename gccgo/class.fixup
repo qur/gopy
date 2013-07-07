@@ -1,6 +1,6 @@
---- class.go.orig	2012-06-19 20:50:54.000000000 +0100
-+++ class.go	2012-06-19 20:50:54.000000000 +0100
-@@ -302,7 +302,7 @@
+--- class.go.orig	2013-07-07 16:41:23.295615219 +0100
++++ class.go	2013-07-07 16:41:23.295615219 +0100
+@@ -273,7 +273,7 @@
  }
  
  //export GoClassTraverse
@@ -9,7 +9,7 @@
  	// Get the Python type object
  	pyType := (*_PyTypeObject)((*_PyObject)(obj).ob_type)
  
-@@ -320,7 +320,7 @@
+@@ -291,7 +291,7 @@
  		if !field.Type.AssignableTo(otyp) {
  			continue
  		}
@@ -18,7 +18,7 @@
  		var o Object
  		if field.Type == otyp {
  			o = *(*Object)(v)
-@@ -725,7 +725,7 @@
+@@ -721,7 +721,7 @@
  			_free(unsafe.Pointer(pyType))
  			return nil, fmt.Errorf("%s embeds %s as first member, which is not a supported \"base class\"", btyp.Name(), firstName)
  		}
@@ -27,7 +27,7 @@
  	}
  
  	// Get a new context structure
-@@ -803,12 +803,12 @@
+@@ -799,12 +799,12 @@
  
  	for name, method := range methods {
  		s := _CString(name)

@@ -90,6 +90,7 @@ PyGILState_STATE
 Py_Initialize
 Py_InitializeEx
 Py_Main
+Py_Finalize
 
 # PySys
 PySys_GetObject
@@ -107,6 +108,7 @@ Py_tracefunc
 _ts
 _frame
 PyThreadState
+PyThreadState_GetDict
 
 # PyCode
 PyCodeObject
@@ -281,6 +283,7 @@ PyErr_SetObject
 PyErr_Fetch
 PyErr_GivenExceptionMatches
 PyErr_NormalizeException
+PyErr_SetInterrupt
 
 PyBaseExceptionObject
 
@@ -294,6 +297,7 @@ Py_eval_input
 Py_file_input
 Py_single_input
 PyCompilerFlags
+PyRun_StringFlags
 
 # memory.go
 _gc_head

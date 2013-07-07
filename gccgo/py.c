@@ -36,18 +36,6 @@ void (*cgocallback)(void (*)(void*), void*) = simple_cgocallback;
 #include "callbacks.c"
 #include "utils.c"
 
-extern void incref(PyObject *o) {
-    Py_INCREF(o);
-}
-
-extern void decref(PyObject *o) {
-    Py_DECREF(o);
-}
-
-extern void xdecref(PyObject *o) {
-    Py_XDECREF(o);
-}
-
 extern PyObject *get__Py_NoneStruct(void) {
     return &_Py_NoneStruct;
 }
@@ -60,18 +48,6 @@ extern PyObject **get_PyExc_Exception(void) {
     return &PyExc_Exception;
 }
 
-extern void typeFree(PyTypeObject *type, PyObject *o) {
-    type->tp_free(o);
-}
-
-extern PyObject *pyTrue(void) {
-    return Py_True;
-}
-
-extern PyObject *pyFalse(void) {
-    return Py_False;
-}
-
 extern struct _dfr { FILE *f; int err; } do_fopen(const char *path, const char *mode) {
     struct _dfr s;
     s.err = 0;
@@ -79,89 +55,3 @@ extern struct _dfr { FILE *f; int err; } do_fopen(const char *path, const char *
     if (!s.f) s.err = errno;
     return s;
 }
-
-// --- class.go helper functions ---
-//
-extern PyTypeObject *newType(void) {
-    return calloc(1, sizeof(PyTypeObject));
-}
-extern int typeReady(PyTypeObject *o) {
-    if (o->tp_new == NULL && o->tp_base == NULL) {
-        o->tp_new = PyType_GenericNew;
-    }
-    if (o->tp_flags & Py_TPFLAGS_HAVE_GC) {
-        enableClassGc(o);
-    }
-    return PyType_Ready(o);
-}
-extern ClassContext *newContext(void) {
-    // We don't use tp_methods, and it is read when calling PyType_Ready
-    // - so we use it to hide a classContext struct.  The classContext
-    // starts with a NULL pointer just in case, so it looks like an
-    // empty methods list if Python does try to process it.
-    return calloc(1, sizeof(ClassContext));
-}
-extern void storeContext(PyTypeObject *t, ClassContext *c) {
-    t->tp_methods = (void *)c;
-}
-extern int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {
-    return PyDict_SetItemString(tp->tp_dict, name, o);
-}
-extern int doVisit(PyObject *o, void *v, void *a) {
-    visitproc visit = v;
-    return visit(o, a);
-}
-//
-// ----------------------------------
-
-// --- object.go helper functions ---
-//
-extern int exceptionCheck(PyObject *obj) {
-    return PyExceptionClass_Check(obj);
-}
-//
-// ----------------------------------
-
-// --- memory.go helper functions ---
-//
-size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n) {
-    return _PyObject_VAR_SIZE((PyTypeObject *)obj, n);
-}
-void _PyObject_INIT(PyObject *obj, PyObject *typ) {
-    PyObject_INIT(obj, (PyTypeObject *)typ);
-}
-void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n) {
-    PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
-}
-void __PyObject_GC_TRACK(PyObject *obj) {
-    _PyObject_GC_TRACK(obj);
-}
-void setGcRefs(PyGC_Head *g, Py_ssize_t refs) {
-    g->gc.gc_refs = refs;
-}
-//
-// ----------------------------------
-
-// --- python.go helper functions ---
-//
-int enterRecursive(char *w) { return Py_EnterRecursiveCall(w); }
-void leaveRecursive(void) { Py_LeaveRecursiveCall(); }
-//
-// ----------------------------------
-
-// --- tuple.go helper functions ---
-//
-size_t tupleItemSize() { return sizeof(PyObject *); }
-//
-// ----------------------------------
-
-// --- type.go helper functions ---
-//
-PyObject *typeAlloc(PyObject *t, Py_ssize_t n) {
-    return ((PyTypeObject *)t)->tp_alloc((PyTypeObject *)t, n);
-}
-int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k) {
-    return ((PyTypeObject *)t)->tp_init(o, a, k);
-}
-//
-// ----------------------------------
