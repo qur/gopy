@@ -73,6 +73,15 @@ func get_imports(filename string) (string, string, []imp, error) {
 			prefix = string(b[7 : len(b)-1])
 			continue
 		}
+		if bytes.HasPrefix(b, []byte("pkgpath ")) {
+			path := string(b[8 : len(b)-1])
+			if strings.Contains(path, ".") {
+				parts := strings.Split(path, ".")
+				prefix = strings.Join(parts[:len(parts)-1], ".")
+				name = parts[len(parts)-1]
+			}
+			continue
+		}
 		if bytes.Equal(b, []byte("func Main ();")) {
 			has_main = true
 		}
