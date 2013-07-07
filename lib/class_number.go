@@ -55,68 +55,68 @@ func cnCallTernary(fn, obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassNumAdd
-func GoClassNumAdd(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumAdd
+func goClassNumAdd(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_add, obj1, obj2)
 }
 
-//export GoClassNumSubtract
-func GoClassNumSubtract(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumSubtract
+func goClassNumSubtract(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_subtract, obj1, obj2)
 }
 
-//export GoClassNumMultiply
-func GoClassNumMultiply(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumMultiply
+func goClassNumMultiply(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_multiply, obj1, obj2)
 }
 
-//export GoClassNumDivide
-func GoClassNumDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumDivide
+func goClassNumDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_divide, obj1, obj2)
 }
 
-//export GoClassNumRemainder
-func GoClassNumRemainder(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumRemainder
+func goClassNumRemainder(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_remainder, obj1, obj2)
 }
 
-//export GoClassNumDivmod
-func GoClassNumDivmod(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumDivmod
+func goClassNumDivmod(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_divmod, obj1, obj2)
 }
 
-//export GoClassNumPower
-func GoClassNumPower(obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumPower
+func goClassNumPower(obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallTernary(ctxt.nb_power, obj1, obj2, obj3)
 }
 
-//export GoClassNumNegative
-func GoClassNumNegative(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumNegative
+func goClassNumNegative(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_negative, obj)
 }
 
-//export GoClassNumPositive
-func GoClassNumPositive(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumPositive
+func goClassNumPositive(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_positive, obj)
 }
 
-//export GoClassNumAbsolute
-func GoClassNumAbsolute(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumAbsolute
+func goClassNumAbsolute(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_absolute, obj)
 }
 
-//export GoClassNumNonzero
-func GoClassNumNonzero(obj unsafe.Pointer) int {
+//export goClassNumNonzero
+func goClassNumNonzero(obj unsafe.Pointer) int {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
@@ -135,166 +135,166 @@ func GoClassNumNonzero(obj unsafe.Pointer) int {
 	return 0
 }
 
-//export GoClassNumInvert
-func GoClassNumInvert(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInvert
+func goClassNumInvert(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_invert, obj)
 }
 
-//export GoClassNumLshift
-func GoClassNumLshift(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumLshift
+func goClassNumLshift(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_lshift, obj1, obj2)
 }
 
-//export GoClassNumRshift
-func GoClassNumRshift(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumRshift
+func goClassNumRshift(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_rshift, obj1, obj2)
 }
 
-//export GoClassNumAnd
-func GoClassNumAnd(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumAnd
+func goClassNumAnd(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_and, obj1, obj2)
 }
 
-//export GoClassNumXor
-func GoClassNumXor(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumXor
+func goClassNumXor(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_xor, obj1, obj2)
 }
 
-//export GoClassNumOr
-func GoClassNumOr(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumOr
+func goClassNumOr(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_or, obj1, obj2)
 }
 
 //nb_coerce
 
-//export GoClassNumInt
-func GoClassNumInt(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInt
+func goClassNumInt(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_int, obj)
 }
 
-//export GoClassNumLong
-func GoClassNumLong(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumLong
+func goClassNumLong(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_long, obj)
 }
 
-//export GoClassNumFloat
-func GoClassNumFloat(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumFloat
+func goClassNumFloat(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_float, obj)
 }
 
-//export GoClassNumOct
-func GoClassNumOct(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumOct
+func goClassNumOct(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_oct, obj)
 }
 
-//export GoClassNumHex
-func GoClassNumHex(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumHex
+func goClassNumHex(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_hex, obj)
 }
 
-//export GoClassNumInplaceAdd
-func GoClassNumInplaceAdd(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceAdd
+func goClassNumInplaceAdd(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_add, obj1, obj2)
 }
 
-//export GoClassNumInplaceSubtract
-func GoClassNumInplaceSubtract(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceSubtract
+func goClassNumInplaceSubtract(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_subtract, obj1, obj2)
 }
 
-//export GoClassNumInplaceMultiply
-func GoClassNumInplaceMultiply(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceMultiply
+func goClassNumInplaceMultiply(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_multiply, obj1, obj2)
 }
 
-//export GoClassNumInplaceDivide
-func GoClassNumInplaceDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceDivide
+func goClassNumInplaceDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_divide, obj1, obj2)
 }
 
-//export GoClassNumInplaceRemainder
-func GoClassNumInplaceRemainder(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceRemainder
+func goClassNumInplaceRemainder(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_remainder, obj1, obj2)
 }
 
-//export GoClassNumInplacePower
-func GoClassNumInplacePower(obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplacePower
+func goClassNumInplacePower(obj1, obj2, obj3 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallTernary(ctxt.nb_ip_power, obj1, obj2, obj3)
 }
 
-//export GoClassNumInplaceLshift
-func GoClassNumInplaceLshift(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceLshift
+func goClassNumInplaceLshift(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_lshift, obj1, obj2)
 }
 
-//export GoClassNumInplaceRshift
-func GoClassNumInplaceRshift(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceRshift
+func goClassNumInplaceRshift(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_rshift, obj1, obj2)
 }
 
-//export GoClassNumInplaceAnd
-func GoClassNumInplaceAnd(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceAnd
+func goClassNumInplaceAnd(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_and, obj1, obj2)
 }
 
-//export GoClassNumInplaceXor
-func GoClassNumInplaceXor(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceXor
+func goClassNumInplaceXor(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_xor, obj1, obj2)
 }
 
-//export GoClassNumInplaceOr
-func GoClassNumInplaceOr(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceOr
+func goClassNumInplaceOr(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_or, obj1, obj2)
 }
 
-//export GoClassNumFloorDivide
-func GoClassNumFloorDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumFloorDivide
+func goClassNumFloorDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_floordiv, obj1, obj2)
 }
 
-//export GoClassNumTrueDivide
-func GoClassNumTrueDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumTrueDivide
+func goClassNumTrueDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_truediv, obj1, obj2)
 }
 
-//export GoClassNumInplaceFloorDivide
-func GoClassNumInplaceFloorDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceFloorDivide
+func goClassNumInplaceFloorDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_floordiv, obj1, obj2)
 }
 
-//export GoClassNumInplaceTrueDivide
-func GoClassNumInplaceTrueDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassNumInplaceTrueDivide
+func goClassNumInplaceTrueDivide(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.nb_ip_truediv, obj1, obj2)
 }
 
-//export GoClassNumIndex
-func GoClassNumIndex(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassNumIndex
+func goClassNumIndex(obj unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return cnCallUnary(ctxt.nb_index, obj)
 }

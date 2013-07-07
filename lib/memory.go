@@ -91,8 +91,8 @@ func goMalloc(size uintptr) *C.PyObject {
 	return _goMalloc(size)
 }
 
-//export GoGenericAlloc
-func GoGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
+//export goGenericAlloc
+func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	var obj *C.PyObject
 
 	typ := newType((*C.PyObject)(t))
@@ -126,8 +126,8 @@ func GoGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	return unsafe.Pointer(obj)
 }
 
-//export GoGenericFree
-func GoGenericFree(o unsafe.Pointer) {
+//export goGenericFree
+func goGenericFree(o unsafe.Pointer) {
 	// first, lock memLock, and arrange for it to be unlocked on return
 	memLock.Lock()
 	defer memLock.Unlock()
