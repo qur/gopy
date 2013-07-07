@@ -29,8 +29,10 @@ objects over a Go channel.
 
 Python Extensions
 
-Currently it is not possible to write Python extensions in Go, as there is no
-support for producing Go shared libraries in the gc compiler suite, and no
-support for using shared libraries in the gccgo Go runtime.
+Currently there is experimental support for creating CPython extensions in Go on
+the ext branch.  This uses gccgo, as there is not currently any support for
+creating shared libraries in the gc toolchain.
+
+More information about this can be found at http://gopy.qur.me/extensions
 */
 package py
