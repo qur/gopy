@@ -72,7 +72,7 @@ typedefs.map: gen-py.go t/typedefs
 
 gopy.1.gz: gopy.rst
 	@$(ECHO) "  RST2MAN\t$@"
-	rst2man.py $< | gzip > $@
+	./t/rst2man $< | gzip > $@
 
 py.o: $(GOFILES) py.go bindings.go exc.go
 	@$(ECHO) "  GCCGO\t\t$@"

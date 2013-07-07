@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if rst2man.py --version >/dev/null 2>&1; then
+    rst2man="rst2man.py"
+elif rst2man --version >/dev/null 2>&1; then
+    rst2man="rst2man"
+fi
+
+exec "$rst2man" "$@"
