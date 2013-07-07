@@ -9,8 +9,8 @@ import "C"
 
 import "unsafe"
 
-//export GoClassCall
-func GoClassCall(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+//export goClassCall
+func goClassCall(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -31,8 +31,8 @@ func GoClassCall(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassCompare
-func GoClassCompare(obj1, obj2 unsafe.Pointer) int {
+//export goClassCompare
+func goClassCompare(obj1, obj2 unsafe.Pointer) int {
 	// Get the class context
 	ctxt := getClassContext(obj1)
 
@@ -50,8 +50,8 @@ func GoClassCompare(obj1, obj2 unsafe.Pointer) int {
 	return ret
 }
 
-//export GoClassGetAttr
-func GoClassGetAttr(obj unsafe.Pointer, name *C.char) unsafe.Pointer {
+//export goClassGetAttr
+func goClassGetAttr(obj unsafe.Pointer, name *C.char) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -69,8 +69,8 @@ func GoClassGetAttr(obj unsafe.Pointer, name *C.char) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassGetAttrObj
-func GoClassGetAttrObj(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassGetAttrObj
+func goClassGetAttrObj(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj1)
 
@@ -88,8 +88,8 @@ func GoClassGetAttrObj(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassDealloc
-func GoClassDealloc(obj unsafe.Pointer) {
+//export goClassDealloc
+func goClassDealloc(obj unsafe.Pointer) {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -103,8 +103,8 @@ func GoClassDealloc(obj unsafe.Pointer) {
 	}
 }
 
-//export GoClassHash
-func GoClassHash(obj unsafe.Pointer) C.long {
+//export goClassHash
+func goClassHash(obj unsafe.Pointer) C.long {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -122,8 +122,8 @@ func GoClassHash(obj unsafe.Pointer) C.long {
 	return C.long(ret)
 }
 
-//export GoClassInit
-func GoClassInit(obj, args, kwds unsafe.Pointer) int {
+//export goClassInit
+func goClassInit(obj, args, kwds unsafe.Pointer) int {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -144,8 +144,8 @@ func GoClassInit(obj, args, kwds unsafe.Pointer) int {
 	return 0
 }
 
-//export GoClassIter
-func GoClassIter(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassIter
+func goClassIter(obj unsafe.Pointer) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -161,8 +161,8 @@ func GoClassIter(obj unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassIterNext
-func GoClassIterNext(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassIterNext
+func goClassIterNext(obj unsafe.Pointer) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -180,8 +180,8 @@ func GoClassIterNext(obj unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassRepr
-func GoClassRepr(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassRepr
+func goClassRepr(obj unsafe.Pointer) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -194,8 +194,8 @@ func GoClassRepr(obj unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(C.PyString_FromString(s))
 }
 
-//export GoClassRichCmp
-func GoClassRichCmp(obj1, obj2 unsafe.Pointer, op int) unsafe.Pointer {
+//export goClassRichCmp
+func goClassRichCmp(obj1, obj2 unsafe.Pointer, op int) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj1)
 
@@ -214,8 +214,8 @@ func GoClassRichCmp(obj1, obj2 unsafe.Pointer, op int) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassSetAttr
-func GoClassSetAttr(obj unsafe.Pointer, name *C.char, obj2 unsafe.Pointer) int {
+//export goClassSetAttr
+func goClassSetAttr(obj unsafe.Pointer, name *C.char, obj2 unsafe.Pointer) int {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -234,8 +234,8 @@ func GoClassSetAttr(obj unsafe.Pointer, name *C.char, obj2 unsafe.Pointer) int {
 	return 0
 }
 
-//export GoClassSetAttrObj
-func GoClassSetAttrObj(obj1, obj2, obj3 unsafe.Pointer) int {
+//export goClassSetAttrObj
+func goClassSetAttrObj(obj1, obj2, obj3 unsafe.Pointer) int {
 	// Get the class context
 	ctxt := getClassContext(obj1)
 
@@ -254,8 +254,8 @@ func GoClassSetAttrObj(obj1, obj2, obj3 unsafe.Pointer) int {
 	return 0
 }
 
-//export GoClassStr
-func GoClassStr(obj unsafe.Pointer) unsafe.Pointer {
+//export goClassStr
+func goClassStr(obj unsafe.Pointer) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj)
 

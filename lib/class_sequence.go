@@ -22,8 +22,8 @@ func csCallSsizeArgFunc(fn, obj unsafe.Pointer, s C.Py_ssize_t) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassSeqLength
-func GoClassSeqLength(obj unsafe.Pointer) C.Py_ssize_t {
+//export goClassSeqLength
+func goClassSeqLength(obj unsafe.Pointer) C.Py_ssize_t {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
@@ -32,26 +32,26 @@ func GoClassSeqLength(obj unsafe.Pointer) C.Py_ssize_t {
 	return C.Py_ssize_t((*f)(obj))
 }
 
-//export GoClassSeqConcat
-func GoClassSeqConcat(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassSeqConcat
+func goClassSeqConcat(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.sq_concat, obj1, obj2)
 }
 
-//export GoClassSeqRepeat
-func GoClassSeqRepeat(obj unsafe.Pointer, count C.Py_ssize_t) unsafe.Pointer {
+//export goClassSeqRepeat
+func goClassSeqRepeat(obj unsafe.Pointer, count C.Py_ssize_t) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return csCallSsizeArgFunc(ctxt.sq_repeat, obj, count)
 }
 
-//export GoClassSeqGetItem
-func GoClassSeqGetItem(obj unsafe.Pointer, idx C.Py_ssize_t) unsafe.Pointer {
+//export goClassSeqGetItem
+func goClassSeqGetItem(obj unsafe.Pointer, idx C.Py_ssize_t) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return csCallSsizeArgFunc(ctxt.sq_get, obj, idx)
 }
 
-//export GoClassSeqSetItem
-func GoClassSeqSetItem(obj unsafe.Pointer, i C.Py_ssize_t, v unsafe.Pointer) int {
+//export goClassSeqSetItem
+func goClassSeqSetItem(obj unsafe.Pointer, i C.Py_ssize_t, v unsafe.Pointer) int {
 	ctxt := getClassContext(obj)
 
 	// Turn the function into something we can call
@@ -69,8 +69,8 @@ func GoClassSeqSetItem(obj unsafe.Pointer, i C.Py_ssize_t, v unsafe.Pointer) int
 	return 0
 }
 
-//export GoClassSeqContains
-func GoClassSeqContains(obj1, obj2 unsafe.Pointer) int {
+//export goClassSeqContains
+func goClassSeqContains(obj1, obj2 unsafe.Pointer) int {
 	ctxt := getClassContext(obj1)
 
 	// Turn the function into something we can call
@@ -92,14 +92,14 @@ func GoClassSeqContains(obj1, obj2 unsafe.Pointer) int {
 	return 0
 }
 
-//export GoClassSeqIpConcat
-func GoClassSeqIpConcat(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
+//export goClassSeqIpConcat
+func goClassSeqIpConcat(obj1, obj2 unsafe.Pointer) unsafe.Pointer {
 	ctxt := getClassContext(obj1)
 	return cnCallBinary(ctxt.sq_ip_concat, obj1, obj2)
 }
 
-//export GoClassSeqIpRepeat
-func GoClassSeqIpRepeat(obj unsafe.Pointer, count C.Py_ssize_t) unsafe.Pointer {
+//export goClassSeqIpRepeat
+func goClassSeqIpRepeat(obj unsafe.Pointer, count C.Py_ssize_t) unsafe.Pointer {
 	ctxt := getClassContext(obj)
 	return csCallSsizeArgFunc(ctxt.sq_ip_repeat, obj, count)
 }

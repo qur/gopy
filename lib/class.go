@@ -70,8 +70,8 @@ type Class struct {
 
 var otyp = reflect.TypeOf(new(Object)).Elem()
 
-//export GoClassCallMethod
-func GoClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
+//export goClassCallMethod
+func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -90,8 +90,8 @@ func GoClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassCallMethodArgs
-func GoClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
+//export goClassCallMethodArgs
+func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -114,8 +114,8 @@ func GoClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassCallMethodKwds
-func GoClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+//export goClassCallMethodKwds
+func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -139,8 +139,8 @@ func GoClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassSetProp
-func GoClassSetProp(obj, arg, closure unsafe.Pointer) int {
+//export goClassSetProp
+func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
@@ -160,8 +160,8 @@ func GoClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	return 0
 }
 
-//export GoClassGetProp
-func GoClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
+//export goClassGetProp
+func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
@@ -178,8 +178,8 @@ func GoClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export GoClassObjGet
-func GoClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
+//export goClassObjGet
+func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
@@ -195,8 +195,8 @@ func GoClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	return unsafe.Pointer(c(o))
 }
 
-//export GoClassObjSet
-func GoClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
+//export goClassObjSet
+func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
@@ -234,8 +234,8 @@ func GoClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	return -1
 }
 
-//export GoClassNatGet
-func GoClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
+//export goClassNatGet
+func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
@@ -249,8 +249,8 @@ func GoClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	return nil
 }
 
-//export GoClassNatSet
-func GoClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
+//export goClassNatSet
+func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
@@ -272,8 +272,8 @@ func GoClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	return -1
 }
 
-//export GoClassTraverse
-func GoClassTraverse(obj, visit, arg unsafe.Pointer) int {
+//export goClassTraverse
+func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
 
@@ -307,8 +307,8 @@ func GoClassTraverse(obj, visit, arg unsafe.Pointer) int {
 	return 0
 }
 
-//export GoClassClear
-func GoClassClear(obj unsafe.Pointer) int {
+//export goClassClear
+func goClassClear(obj unsafe.Pointer) int {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
 
@@ -374,8 +374,8 @@ func getClassContext(obj unsafe.Pointer) *C.ClassContext {
 	return ctxt
 }
 
-//export GoClassNew
-func GoClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
+//export goClassNew
+func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)(typ)
 
@@ -492,7 +492,7 @@ func (class *Class) Alloc(n int64) (obj Object, err error) {
 }
 
 func Clear(obj Object) error {
-	ret := GoClassClear(unsafe.Pointer(c(obj)))
+	ret := goClassClear(unsafe.Pointer(c(obj)))
 	if ret < 0 {
 		return exception()
 	}

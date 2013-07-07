@@ -122,8 +122,8 @@ func getFunc(self unsafe.Pointer) interface{} {
 	return funcs[idx]
 }
 
-//export CallWithoutArgs
-func CallWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
+//export callWithoutArgs
+func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	f, ok := getFunc(self).(func() (Object, error))
 	if !ok {
 		raise(AssertionError.Err("callWithoutArgs: wrong function type!!!"))
@@ -137,8 +137,8 @@ func CallWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export CallWithArgs
-func CallWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
+//export callWithArgs
+func callWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	f, ok := getFunc(self).(func(a *Tuple) (Object, error))
 	if !ok {
 		raise(AssertionError.Err("callWithArgs: wrong function type!!!"))
@@ -153,8 +153,8 @@ func CallWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export CallWithKeywords
-func CallWithKeywords(self, args, kw unsafe.Pointer) unsafe.Pointer {
+//export callWithKeywords
+func callWithKeywords(self, args, kw unsafe.Pointer) unsafe.Pointer {
 	f, ok := getFunc(self).(func(a *Tuple, k *Dict) (Object, error))
 	if !ok {
 		raise(AssertionError.Err("callWithKeywords: wrong function type!!!"))
