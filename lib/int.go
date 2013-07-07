@@ -5,7 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int intCheck(PyObject *o) { return PyInt_Check(o); }
 import "C"
 
 import (

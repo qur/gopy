@@ -5,35 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline PyTypeObject *newType(void) {
-//     return calloc(1, sizeof(PyTypeObject));
-// }
-// static inline int typeReady(PyTypeObject *o) {
-//     if (o->tp_new == NULL && o->tp_base == NULL) {
-//         o->tp_new = PyType_GenericNew;
-//     }
-//     if (o->tp_flags & Py_TPFLAGS_HAVE_GC) {
-//         enableClassGc(o);
-//     }
-//     return PyType_Ready(o);
-// }
-// static inline ClassContext *newContext(void) {
-//     // We don't use tp_methods, and it is read when calling PyType_Ready
-//     // - so we use it to hide a classContext struct.  The classContext
-//     // starts with a NULL pointer just in case, so it looks like an
-//     // empty methods list if Python does try to process it.
-//     return calloc(1, sizeof(ClassContext));
-// }
-// static inline void storeContext(PyTypeObject *t, ClassContext *c) {
-//     t->tp_methods = (void *)c;
-// }
-// static inline int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {
-//     return PyDict_SetItemString(tp->tp_dict, name, o);
-// }
-// static inline int doVisit(PyObject *o, void *v, void *a) {
-//     visitproc visit = v;
-//     return visit(o, a);
-// }
 import "C"
 
 import (
@@ -99,8 +70,8 @@ type Class struct {
 
 var otyp = reflect.TypeOf(new(Object)).Elem()
 
-//export goClassCallMethod
-func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
+//export GoClassCallMethod
+func GoClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -119,8 +90,8 @@ func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export goClassCallMethodArgs
-func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
+//export GoClassCallMethodArgs
+func GoClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -143,8 +114,8 @@ func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export goClassCallMethodKwds
-func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+//export GoClassCallMethodKwds
+func GoClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -168,8 +139,8 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export goClassSetProp
-func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
+//export GoClassSetProp
+func GoClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
@@ -189,8 +160,8 @@ func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	return 0
 }
 
-//export goClassGetProp
-func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
+//export GoClassGetProp
+func GoClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
@@ -207,8 +178,8 @@ func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export goClassObjGet
-func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
+//export GoClassObjGet
+func GoClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
@@ -224,8 +195,8 @@ func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	return unsafe.Pointer(c(o))
 }
 
-//export goClassObjSet
-func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
+//export GoClassObjSet
+func GoClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
@@ -263,8 +234,8 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	return -1
 }
 
-//export goClassNatGet
-func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
+//export GoClassNatGet
+func GoClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
@@ -278,8 +249,8 @@ func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	return nil
 }
 
-//export goClassNatSet
-func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
+//export GoClassNatSet
+func GoClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	field := getField(idx)
 	item := unsafe.Pointer(uintptr(obj) + field.Offset)
 
@@ -301,8 +272,8 @@ func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	return -1
 }
 
-//export goClassTraverse
-func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
+//export GoClassTraverse
+func GoClassTraverse(obj, visit, arg unsafe.Pointer) int {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
 
@@ -336,8 +307,8 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 	return 0
 }
 
-//export goClassClear
-func goClassClear(obj unsafe.Pointer) int {
+//export GoClassClear
+func GoClassClear(obj unsafe.Pointer) int {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
 
@@ -403,8 +374,8 @@ func getClassContext(obj unsafe.Pointer) *C.ClassContext {
 	return ctxt
 }
 
-//export goClassNew
-func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
+//export GoClassNew
+func GoClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)(typ)
 
@@ -521,7 +492,7 @@ func (class *Class) Alloc(n int64) (obj Object, err error) {
 }
 
 func Clear(obj Object) error {
-	ret := goClassClear(unsafe.Pointer(c(obj)))
+	ret := GoClassClear(unsafe.Pointer(c(obj)))
 	if ret < 0 {
 		return exception()
 	}
@@ -530,7 +501,7 @@ func Clear(obj Object) error {
 
 var (
 	fieldLock sync.RWMutex
-	fields []reflect.StructField
+	fields    []reflect.StructField
 )
 
 func registerField(field reflect.StructField) C.int {
@@ -579,27 +550,27 @@ type goMethod struct {
 // signatures (hence the names are one greater than the number of arguments
 // taken).
 var (
-	pyInitFunc        = func(*Tuple, *Dict) error(nil)
+	pyInitFunc        = (func(*Tuple, *Dict) error)(nil)
 	pyVoidFunc        = (func())(nil)
-	pyReprFunc        = func() string(nil)
-	pyLenFunc         = func() int64(nil)
-	pyHashFunc        = func() (uint32, error)(nil)
-	pyInquiryFunc     = func() (bool, error)(nil)
-	pyUnaryFunc       = func() (Object, error)(nil)
-	pyBinaryFunc      = func(Object) (Object, error)(nil)
-	pyTernaryFunc     = func(a, b Object) (Object, error)(nil)
-	pyBinaryCallFunc  = func(*Tuple) (Object, error)(nil)
-	pyTernaryCallFunc = func(*Tuple, *Dict) (Object, error)(nil)
-	pyCompareFunc     = func(Object) (int, error)(nil)
-	pyRichCmpFunc     = func(Object, Op) (Object, error)(nil)
-	pyObjObjArgFunc   = func(a, b Object) error(nil)
-	pySsizeArgFunc    = func(int64) (Object, error)(nil)
-	pySsizeObjArgFunc = func(int64, Object) error(nil)
-	pyObjObjFunc      = func(Object) (bool, error)(nil)
-	pyGetAttrFunc     = func(string) (Object, error)(nil)
-	pyGetAttrObjFunc  = func(Object) (Object, error)(nil)
-	pySetAttrFunc     = func(string, Object) error(nil)
-	pySetAttrObjFunc  = func(Object, Object) error(nil)
+	pyReprFunc        = (func() string)(nil)
+	pyLenFunc         = (func() int64)(nil)
+	pyHashFunc        = (func() (uint32, error))(nil)
+	pyInquiryFunc     = (func() (bool, error))(nil)
+	pyUnaryFunc       = (func() (Object, error))(nil)
+	pyBinaryFunc      = (func(Object) (Object, error))(nil)
+	pyTernaryFunc     = (func(a, b Object) (Object, error))(nil)
+	pyBinaryCallFunc  = (func(*Tuple) (Object, error))(nil)
+	pyTernaryCallFunc = (func(*Tuple, *Dict) (Object, error))(nil)
+	pyCompareFunc     = (func(Object) (int, error))(nil)
+	pyRichCmpFunc     = (func(Object, Op) (Object, error))(nil)
+	pyObjObjArgFunc   = (func(a, b Object) error)(nil)
+	pySsizeArgFunc    = (func(int64) (Object, error))(nil)
+	pySsizeObjArgFunc = (func(int64, Object) error)(nil)
+	pyObjObjFunc      = (func(Object) (bool, error))(nil)
+	pyGetAttrFunc     = (func(string) (Object, error))(nil)
+	pyGetAttrObjFunc  = (func(Object) (Object, error))(nil)
+	pySetAttrFunc     = (func(string, Object) error)(nil)
+	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
 )
 
 var methodMap = map[string]goMethod{
@@ -692,6 +663,31 @@ func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 	}
 }
 
+var (
+	directFnCall = (*bool)(nil)
+	indirections = make([]*unsafe.Pointer, 0, 100)
+)
+
+func methodAsPointer(m reflect.Method) unsafe.Pointer {
+	// Go 1.0 uses direct function calls, Go 1.1 uses indirect function calls
+	// (so that contextual data for closures can be held).  Figure out which
+	// this is, and set directFnCall as appropriate.
+	if directFnCall == nil {
+		m := unsafe.Pointer(reflect.ValueOf(methodAsPointer).Pointer())
+		f := (*func(reflect.Method) unsafe.Pointer)(unsafe.Pointer(&m))
+		direct := fmt.Sprintf("%v", m) == fmt.Sprintf("%v", *f)
+		directFnCall = &direct
+	}
+
+	fp := unsafe.Pointer(m.Func.Pointer())
+	if *directFnCall {
+		return fp
+	}
+	ifp := &fp
+	indirections = append(indirections, ifp)
+	return unsafe.Pointer(ifp)
+}
+
 var typeMap = map[string]*Type{
 	"Bool":   BoolType,
 	"Code":   CodeType,
@@ -740,7 +736,7 @@ func (c *Class) Create() (*Type, error) {
 			continue
 		}
 		t := m.Func.Type()
-		f := unsafe.Pointer(m.Func.Pointer())
+		f := methodAsPointer(m)
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
 		meth, ok := methodMap[m.Name]
 		if ok {
@@ -766,7 +762,7 @@ func (c *Class) Create() (*Type, error) {
 				return nil, fmt.Errorf("%s: Invalid function signature", fn)
 			}
 		case "PySet":
-			err := methSigMatches(t, func(Object) error(nil))
+			err := methSigMatches(t, (func(Object) error)(nil))
 			if err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
@@ -775,7 +771,7 @@ func (c *Class) Create() (*Type, error) {
 			p.set = f
 			props[parts[1]] = p
 		case "PyGet":
-			err := methSigMatches(t, func() (Object, error)(nil))
+			err := methSigMatches(t, (func() (Object, error))(nil))
 			if err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)

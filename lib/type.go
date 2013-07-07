@@ -5,14 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int typeCheck(PyObject *o) { return PyType_Check(o); }
-// static inline int typeCheckE(PyObject *o) { return PyType_CheckExact(o); }
-// static inline PyObject *typeAlloc(PyObject *t, Py_ssize_t n) {
-//    return ((PyTypeObject *)t)->tp_alloc((PyTypeObject *)t, n);
-// }
-// static inline int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k) {
-//    return ((PyTypeObject *)t)->tp_init(o, a, k);
-// }
 import "C"
 
 import "unsafe"

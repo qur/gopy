@@ -5,9 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int setCheck(PyObject *o) { return PySet_Check(o); }
-// static inline int frozenSetCheck(PyObject *o) { return PyFrozenSet_Check(o); }
-// static inline int frozenSetCheckE(PyObject *o) { return PyFrozenSet_CheckExact(o); }
 import "C"
 
 import "unsafe"

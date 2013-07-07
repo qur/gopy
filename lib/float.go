@@ -5,7 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int floatCheck(PyObject *o) { return PyFloat_Check(o); }
 import "C"
 
 import (

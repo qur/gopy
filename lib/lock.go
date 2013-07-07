@@ -152,9 +152,47 @@ func (lock *Lock) Lock() {
 
 	runtime.LockOSThread()
 	lock.gilState = GilState_Ensure()
+	lock.inc()
 }
 
-// Unlock unlocks the lock.  When it returns no calls into Python made be made.
+func (lock *Lock) setCount(l int64) {
+	dict := newDict(C.PyThreadState_GetDict())
+	pl := NewLong(l)
+	defer pl.Decref()
+	err := dict.SetItemString("gopy.count", pl)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (lock *Lock) getCount() int64 {
+	dict := newDict(C.PyThreadState_GetDict())
+	val, err := dict.GetItemString("gopy.count")
+	if err != nil {
+		return 0
+	}
+	count, ok := val.(*Long)
+	if !ok {
+		return 0
+	}
+	return count.Int64()
+}
+
+func (lock *Lock) inc() {
+	lock.setCount(lock.getCount() + 1)
+}
+
+func (lock *Lock) dec() bool {
+	count := lock.getCount()
+	if count <= 0 {
+		panic("Lock.dec() called with count <1!")
+	}
+	count--
+	lock.setCount(count)
+	return count == 0
+}
+
+// Unlock unlocks the lock.  When it returns no calls into Python may be made.
 //
 // If the lock is not locked when this function is called, then nothing happens,
 // and the function returns immediately.  Also, it is not necessay to call
@@ -170,8 +208,12 @@ func (lock *Lock) Unlock() {
 		lock.thState = nil
 	}
 
+	releaseOsThread := lock.dec()
+
 	lock.gilState.Release()
-	runtime.UnlockOSThread()
+	if releaseOsThread {
+		runtime.UnlockOSThread()
+	}
 	lock.gilState = nil
 }
 

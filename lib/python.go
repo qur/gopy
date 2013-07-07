@@ -9,13 +9,6 @@ package py
 // #cgo pkg-config: libffi
 //
 // #include "utils.h"
-//
-// static inline int enterRecursive(char *w) {
-//     return Py_EnterRecursiveCall(w);
-// }
-// static inline void leaveRecursive() {
-//     Py_LeaveRecursiveCall();
-// }
 import "C"
 
 import (
@@ -32,6 +25,10 @@ func InitializeEx(initsigs bool) {
 	} else {
 		C.Py_InitializeEx(0)
 	}
+}
+
+func Finalize() {
+	C.Py_Finalize()
 }
 
 func AddToPath(dir string) {

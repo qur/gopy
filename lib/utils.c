@@ -6,20 +6,20 @@
 #include "_cgo_export.h"
 
 
-PyMethodDef *newMethodDef() {
+PyMethodDef *newMethodDef(void) {
     return (PyMethodDef *)calloc(1, sizeof(PyMethodDef));
 }
 
 void set_call_noargs(PyCFunction *f) {
-    *f = (PyCFunction)callWithoutArgs;
+    *f = (PyCFunction)CallWithoutArgs;
 }
 
 void set_call_args(PyCFunction *f) {
-    *f = (PyCFunction)callWithArgs;
+    *f = (PyCFunction)CallWithArgs;
 }
 
 void set_call_keywords(PyCFunction *f) {
-    *f = (PyCFunction)callWithKeywords;
+    *f = (PyCFunction)CallWithKeywords;
 }
 
 int doParseTuple(PyObject *args, char *fmt, void *values[], int c) {
@@ -206,13 +206,13 @@ PyObject *newMethod(char *name, void *func, int flags) {
         self->meth.ml_name = name;
         switch (flags) {
             case METH_NOARGS:
-                self->meth.ml_meth = (PyCFunction)goClassCallMethod;
+                self->meth.ml_meth = (PyCFunction)GoClassCallMethod;
                 break;
             case METH_VARARGS:
-                self->meth.ml_meth = (PyCFunction)goClassCallMethodArgs;
+                self->meth.ml_meth = (PyCFunction)GoClassCallMethodArgs;
                 break;
             case METH_VARARGS | METH_KEYWORDS:
-                self->meth.ml_meth = (PyCFunction)goClassCallMethodKwds;
+                self->meth.ml_meth = (PyCFunction)GoClassCallMethodKwds;
                 break;
             default:
                 fprintf(stderr, "Invalid method flags: %x\n", flags);
@@ -232,11 +232,11 @@ typedef struct {
 } PyGoObjMember;
 
 static PyObject *objmemb_get(PyGoObjMember *self, PyObject *obj, PyObject *type) {
-    return goClassObjGet(obj, self->field);
+    return GoClassObjGet(obj, self->field);
 }
 
 static int objmemb_set(PyGoObjMember *self, PyObject *obj, PyObject *value) {
-    return goClassObjSet(obj, self->field, value);
+    return GoClassObjSet(obj, self->field, value);
 }
 
 static PyObject *objmemb_doc(PyGoObjMember *self, void *closure) {
@@ -313,11 +313,11 @@ typedef struct {
 } PyGoNatMember;
 
 static PyObject *natmemb_get(PyGoNatMember *self, PyObject *obj, PyObject *type) {
-    return goClassNatGet(obj, self->field);
+    return GoClassNatGet(obj, self->field);
 }
 
 static int natmemb_set(PyGoNatMember *self, PyObject *obj, PyObject *value) {
-    return goClassNatSet(obj, self->field, value);
+    return GoClassNatSet(obj, self->field, value);
 }
 
 static PyObject *natmemb_doc(PyGoNatMember *self, void *closure) {
@@ -399,12 +399,12 @@ PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
     gsp->closure = PyTuple_Pack(2, Py_None, Py_None);
 
     if (get != NULL) {
-        gsp->get = (getter)goClassGetProp;
+        gsp->get = (getter)GoClassGetProp;
         PyTuple_SetItem(gsp->closure, 0, PyCapsule_New(get, NULL, NULL));
     }
 
     if (set != NULL) {
-        gsp->set = (setter)goClassSetProp;
+        gsp->set = (setter)GoClassSetProp;
         PyTuple_SetItem(gsp->closure, 1, PyCapsule_New(set, NULL, NULL));
     }
 
@@ -412,101 +412,101 @@ PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
 }
 
 void enableClassGc(PyTypeObject *type) {
-    type->tp_traverse = (traverseproc) goClassTraverse;
-    type->tp_clear    = (inquiry)      goClassClear;
+    type->tp_traverse = (traverseproc) GoClassTraverse;
+    type->tp_clear    = (inquiry)      GoClassClear;
 }
 
 void overrideGenericAlloc(PyTypeObject *type) {
     if (type->tp_alloc == PyType_GenericAlloc) {
-        type->tp_alloc   = (allocfunc)  goGenericAlloc;
-        type->tp_free    = (freefunc)   goGenericFree;
+        type->tp_alloc   = (allocfunc)  GoGenericAlloc;
+        type->tp_free    = (freefunc)   GoGenericFree;
     }
 }
 
 void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     ctxt->zero = NULL;
 
-    type->tp_new     = (newfunc)    goClassNew;
-    type->tp_alloc   = (allocfunc)  goGenericAlloc;
-    type->tp_dealloc = (destructor) goClassDealloc;
-    type->tp_free    = (freefunc)   goGenericFree;
+    type->tp_new     = (newfunc)    GoClassNew;
+    type->tp_alloc   = (allocfunc)  GoGenericAlloc;
+    type->tp_dealloc = (destructor) GoClassDealloc;
+    type->tp_free    = (freefunc)   GoGenericFree;
 
-    if (ctxt->call)     type->tp_call        = (ternaryfunc)  goClassCall;
-    if (ctxt->compare)  type->tp_compare     = (cmpfunc)      goClassCompare;
-    if (ctxt->getattr)  type->tp_getattr     = (getattrfunc)  goClassGetAttr;
-    if (ctxt->getattro) type->tp_getattro    = (getattrofunc) goClassGetAttrObj;
-    if (ctxt->hash)     type->tp_hash        = (hashfunc)     goClassHash;
-    if (ctxt->init)     type->tp_init        = (initproc)     goClassInit;
-    if (ctxt->iter)     type->tp_iter        = (getiterfunc)  goClassIter;
-    if (ctxt->iternext) type->tp_iternext    = (iternextfunc) goClassIterNext;
-    if (ctxt->repr)     type->tp_repr        = (reprfunc)     goClassRepr;
-    if (ctxt->richcmp)  type->tp_richcompare = (richcmpfunc)  goClassRichCmp;
-    if (ctxt->setattr)  type->tp_setattr     = (setattrfunc)  goClassSetAttr;
-    if (ctxt->setattro) type->tp_setattro    = (setattrofunc) goClassSetAttrObj;
-    if (ctxt->str)      type->tp_str         = (reprfunc)     goClassStr;
+    if (ctxt->call)     type->tp_call        = (ternaryfunc)  GoClassCall;
+    if (ctxt->compare)  type->tp_compare     = (cmpfunc)      GoClassCompare;
+    if (ctxt->getattr)  type->tp_getattr     = (getattrfunc)  GoClassGetAttr;
+    if (ctxt->getattro) type->tp_getattro    = (getattrofunc) GoClassGetAttrObj;
+    if (ctxt->hash)     type->tp_hash        = (hashfunc)     GoClassHash;
+    if (ctxt->init)     type->tp_init        = (initproc)     GoClassInit;
+    if (ctxt->iter)     type->tp_iter        = (getiterfunc)  GoClassIter;
+    if (ctxt->iternext) type->tp_iternext    = (iternextfunc) GoClassIterNext;
+    if (ctxt->repr)     type->tp_repr        = (reprfunc)     GoClassRepr;
+    if (ctxt->richcmp)  type->tp_richcompare = (richcmpfunc)  GoClassRichCmp;
+    if (ctxt->setattr)  type->tp_setattr     = (setattrfunc)  GoClassSetAttr;
+    if (ctxt->setattro) type->tp_setattro    = (setattrofunc) GoClassSetAttrObj;
+    if (ctxt->str)      type->tp_str         = (reprfunc)     GoClassStr;
 
     if (ctxt->has_mp) {
         PyMappingMethods *m = &ctxt->mp_meth;
         type->tp_as_mapping = m;
-        if (ctxt->mp_len) m->mp_length        = (lenfunc)       goClassMapLen;
-        if (ctxt->mp_get) m->mp_subscript     = (binaryfunc)    goClassMapGet;
-        if (ctxt->mp_set) m->mp_ass_subscript = (objobjargproc) goClassMapSet;
+        if (ctxt->mp_len) m->mp_length        = (lenfunc)       GoClassMapLen;
+        if (ctxt->mp_get) m->mp_subscript     = (binaryfunc)    GoClassMapGet;
+        if (ctxt->mp_set) m->mp_ass_subscript = (objobjargproc) GoClassMapSet;
     }
 
     if (ctxt->has_nb) {
         PyNumberMethods *m = &ctxt->nb_meth;
         type->tp_as_number = m;
-        if (ctxt->nb_add)          m->nb_add                  = (binaryfunc)  goClassNumAdd;
-        if (ctxt->nb_subtract)     m->nb_subtract             = (binaryfunc)  goClassNumSubtract;
-        if (ctxt->nb_multiply)     m->nb_multiply             = (binaryfunc)  goClassNumMultiply;
-        if (ctxt->nb_divide)       m->nb_divide               = (binaryfunc)  goClassNumDivide;
-        if (ctxt->nb_remainder)    m->nb_remainder            = (binaryfunc)  goClassNumRemainder;
-        if (ctxt->nb_divmod)       m->nb_divmod               = (binaryfunc)  goClassNumDivmod;
-        if (ctxt->nb_power)        m->nb_power                = (ternaryfunc) goClassNumPower;
-        if (ctxt->nb_negative)     m->nb_negative             = (unaryfunc)   goClassNumNegative;
-        if (ctxt->nb_positive)     m->nb_positive             = (unaryfunc)   goClassNumPositive;
-        if (ctxt->nb_absolute)     m->nb_absolute             = (unaryfunc)   goClassNumAbsolute;
-        if (ctxt->nb_nonzero)      m->nb_nonzero              = (inquiry)     goClassNumNonzero;
-        if (ctxt->nb_invert)       m->nb_invert               = (unaryfunc)   goClassNumInvert;
-        if (ctxt->nb_lshift)       m->nb_lshift               = (binaryfunc)  goClassNumLshift;
-        if (ctxt->nb_rshift)       m->nb_rshift               = (binaryfunc)  goClassNumRshift;
-        if (ctxt->nb_and)          m->nb_and                  = (binaryfunc)  goClassNumAnd;
-        if (ctxt->nb_xor)          m->nb_xor                  = (binaryfunc)  goClassNumXor;
-        if (ctxt->nb_or)           m->nb_or                   = (binaryfunc)  goClassNumOr;
-        if (ctxt->nb_int)          m->nb_int                  = (unaryfunc)   goClassNumInt;
-        if (ctxt->nb_long)         m->nb_long                 = (unaryfunc)   goClassNumLong;
-        if (ctxt->nb_float)        m->nb_float                = (unaryfunc)   goClassNumFloat;
-        if (ctxt->nb_oct)          m->nb_oct                  = (unaryfunc)   goClassNumOct;
-        if (ctxt->nb_hex)          m->nb_hex                  = (unaryfunc)   goClassNumHex;
-        if (ctxt->nb_ip_add)       m->nb_inplace_add          = (binaryfunc)  goClassNumInplaceAdd;
-        if (ctxt->nb_ip_subtract)  m->nb_inplace_remainder    = (binaryfunc)  goClassNumInplaceSubtract;
-        if (ctxt->nb_ip_multiply)  m->nb_inplace_multiply     = (binaryfunc)  goClassNumInplaceMultiply;
-        if (ctxt->nb_ip_divide)    m->nb_inplace_divide       = (binaryfunc)  goClassNumInplaceDivide;
-        if (ctxt->nb_ip_remainder) m->nb_inplace_remainder    = (binaryfunc)  goClassNumInplaceRemainder;
-        if (ctxt->nb_ip_power)     m->nb_inplace_power        = (ternaryfunc) goClassNumInplacePower;
-        if (ctxt->nb_ip_lshift)    m->nb_inplace_lshift       = (binaryfunc)  goClassNumInplaceLshift;
-        if (ctxt->nb_ip_rshift)    m->nb_inplace_rshift       = (binaryfunc)  goClassNumInplaceRshift;
-        if (ctxt->nb_ip_and)       m->nb_inplace_and          = (binaryfunc)  goClassNumInplaceAnd;
-        if (ctxt->nb_ip_xor)       m->nb_inplace_xor          = (binaryfunc)  goClassNumInplaceXor;
-        if (ctxt->nb_ip_or)        m->nb_inplace_or           = (binaryfunc)  goClassNumInplaceOr;
-        if (ctxt->nb_floordiv)     m->nb_floor_divide         = (binaryfunc)  goClassNumFloorDivide;
-        if (ctxt->nb_truediv)      m->nb_true_divide          = (binaryfunc)  goClassNumTrueDivide;
-        if (ctxt->nb_ip_floordiv)  m->nb_inplace_floor_divide = (binaryfunc)  goClassNumInplaceFloorDivide;
-        if (ctxt->nb_ip_truediv)   m->nb_inplace_true_divide  = (binaryfunc)  goClassNumInplaceTrueDivide;
-        if (ctxt->nb_index)        m->nb_index                = (unaryfunc)   goClassNumIndex;
+        if (ctxt->nb_add)          m->nb_add                  = (binaryfunc)  GoClassNumAdd;
+        if (ctxt->nb_subtract)     m->nb_subtract             = (binaryfunc)  GoClassNumSubtract;
+        if (ctxt->nb_multiply)     m->nb_multiply             = (binaryfunc)  GoClassNumMultiply;
+        if (ctxt->nb_divide)       m->nb_divide               = (binaryfunc)  GoClassNumDivide;
+        if (ctxt->nb_remainder)    m->nb_remainder            = (binaryfunc)  GoClassNumRemainder;
+        if (ctxt->nb_divmod)       m->nb_divmod               = (binaryfunc)  GoClassNumDivmod;
+        if (ctxt->nb_power)        m->nb_power                = (ternaryfunc) GoClassNumPower;
+        if (ctxt->nb_negative)     m->nb_negative             = (unaryfunc)   GoClassNumNegative;
+        if (ctxt->nb_positive)     m->nb_positive             = (unaryfunc)   GoClassNumPositive;
+        if (ctxt->nb_absolute)     m->nb_absolute             = (unaryfunc)   GoClassNumAbsolute;
+        if (ctxt->nb_nonzero)      m->nb_nonzero              = (inquiry)     GoClassNumNonzero;
+        if (ctxt->nb_invert)       m->nb_invert               = (unaryfunc)   GoClassNumInvert;
+        if (ctxt->nb_lshift)       m->nb_lshift               = (binaryfunc)  GoClassNumLshift;
+        if (ctxt->nb_rshift)       m->nb_rshift               = (binaryfunc)  GoClassNumRshift;
+        if (ctxt->nb_and)          m->nb_and                  = (binaryfunc)  GoClassNumAnd;
+        if (ctxt->nb_xor)          m->nb_xor                  = (binaryfunc)  GoClassNumXor;
+        if (ctxt->nb_or)           m->nb_or                   = (binaryfunc)  GoClassNumOr;
+        if (ctxt->nb_int)          m->nb_int                  = (unaryfunc)   GoClassNumInt;
+        if (ctxt->nb_long)         m->nb_long                 = (unaryfunc)   GoClassNumLong;
+        if (ctxt->nb_float)        m->nb_float                = (unaryfunc)   GoClassNumFloat;
+        if (ctxt->nb_oct)          m->nb_oct                  = (unaryfunc)   GoClassNumOct;
+        if (ctxt->nb_hex)          m->nb_hex                  = (unaryfunc)   GoClassNumHex;
+        if (ctxt->nb_ip_add)       m->nb_inplace_add          = (binaryfunc)  GoClassNumInplaceAdd;
+        if (ctxt->nb_ip_subtract)  m->nb_inplace_remainder    = (binaryfunc)  GoClassNumInplaceSubtract;
+        if (ctxt->nb_ip_multiply)  m->nb_inplace_multiply     = (binaryfunc)  GoClassNumInplaceMultiply;
+        if (ctxt->nb_ip_divide)    m->nb_inplace_divide       = (binaryfunc)  GoClassNumInplaceDivide;
+        if (ctxt->nb_ip_remainder) m->nb_inplace_remainder    = (binaryfunc)  GoClassNumInplaceRemainder;
+        if (ctxt->nb_ip_power)     m->nb_inplace_power        = (ternaryfunc) GoClassNumInplacePower;
+        if (ctxt->nb_ip_lshift)    m->nb_inplace_lshift       = (binaryfunc)  GoClassNumInplaceLshift;
+        if (ctxt->nb_ip_rshift)    m->nb_inplace_rshift       = (binaryfunc)  GoClassNumInplaceRshift;
+        if (ctxt->nb_ip_and)       m->nb_inplace_and          = (binaryfunc)  GoClassNumInplaceAnd;
+        if (ctxt->nb_ip_xor)       m->nb_inplace_xor          = (binaryfunc)  GoClassNumInplaceXor;
+        if (ctxt->nb_ip_or)        m->nb_inplace_or           = (binaryfunc)  GoClassNumInplaceOr;
+        if (ctxt->nb_floordiv)     m->nb_floor_divide         = (binaryfunc)  GoClassNumFloorDivide;
+        if (ctxt->nb_truediv)      m->nb_true_divide          = (binaryfunc)  GoClassNumTrueDivide;
+        if (ctxt->nb_ip_floordiv)  m->nb_inplace_floor_divide = (binaryfunc)  GoClassNumInplaceFloorDivide;
+        if (ctxt->nb_ip_truediv)   m->nb_inplace_true_divide  = (binaryfunc)  GoClassNumInplaceTrueDivide;
+        if (ctxt->nb_index)        m->nb_index                = (unaryfunc)   GoClassNumIndex;
     }
 
     if (ctxt->has_sq) {
         PySequenceMethods *m = &ctxt->sq_meth;
         type->tp_as_sequence = m;
-        if (ctxt->sq_length)    m->sq_length         = (lenfunc)         goClassSeqLength;
-        if (ctxt->sq_concat)    m->sq_concat         = (binaryfunc)      goClassSeqConcat;
-        if (ctxt->sq_repeat)    m->sq_repeat         = (ssizeargfunc)    goClassSeqRepeat;
-        if (ctxt->sq_get)       m->sq_item           = (ssizeargfunc)    goClassSeqGetItem;
-        if (ctxt->sq_set)       m->sq_ass_item       = (ssizeobjargproc) goClassSeqSetItem;
-        if (ctxt->sq_contains)  m->sq_contains       = (objobjproc)      goClassSeqContains;
-        if (ctxt->sq_ip_concat) m->sq_inplace_concat = (binaryfunc)      goClassSeqIpConcat;
-        if (ctxt->sq_ip_repeat) m->sq_inplace_repeat = (ssizeargfunc)    goClassSeqIpRepeat;
+        if (ctxt->sq_length)    m->sq_length         = (lenfunc)         GoClassSeqLength;
+        if (ctxt->sq_concat)    m->sq_concat         = (binaryfunc)      GoClassSeqConcat;
+        if (ctxt->sq_repeat)    m->sq_repeat         = (ssizeargfunc)    GoClassSeqRepeat;
+        if (ctxt->sq_get)       m->sq_item           = (ssizeargfunc)    GoClassSeqGetItem;
+        if (ctxt->sq_set)       m->sq_ass_item       = (ssizeobjargproc) GoClassSeqSetItem;
+        if (ctxt->sq_contains)  m->sq_contains       = (objobjproc)      GoClassSeqContains;
+        if (ctxt->sq_ip_concat) m->sq_inplace_concat = (binaryfunc)      GoClassSeqIpConcat;
+        if (ctxt->sq_ip_repeat) m->sq_inplace_repeat = (ssizeargfunc)    GoClassSeqIpRepeat;
     }
 }
 
@@ -575,3 +575,119 @@ struct _en excName(PyObject *o) {
 
     return en;
 }
+
+void incref(PyObject *o) { Py_INCREF(o); }
+void decref(PyObject *o) { Py_DECREF(o); }
+void xincref(PyObject *o) { Py_INCREF(o); }
+void xdecref(PyObject *o) { Py_XDECREF(o); }
+
+void *pyTrue(void) { return Py_True; }
+void *pyFalse(void) { return Py_False; }
+
+int boolCheck(PyObject *o) { return PyBool_Check(o); }
+int cfunctionCheck(PyObject *o) { return PyCFunction_Check(o); }
+int codeCheck(PyObject *o) { return PyCode_Check(o); }
+int complexCheck(PyObject *o) { return PyComplex_Check(o); }
+int dictCheckE(PyObject *o) { return PyDict_CheckExact(o); }
+int dictCheck(PyObject *o) { return PyDict_Check(o); }
+int exceptionCheck(PyObject *o) { return PyExceptionClass_Check(o); }
+int floatCheck(PyObject *o) { return PyFloat_Check(o); }
+int frozenSetCheckE(PyObject *o) { return PyFrozenSet_CheckExact(o); }
+int frozenSetCheck(PyObject *o) { return PyFrozenSet_Check(o); }
+int functionCheck(PyObject *o) { return PyFunction_Check(o); }
+int intCheck(PyObject *o) { return PyInt_Check(o); }
+int listCheckE(PyObject *o) { return PyList_CheckExact(o); }
+int listCheck(PyObject *o) { return PyList_Check(o); }
+int longCheck(PyObject *o) { return PyLong_Check(o); }
+int moduleCheckE(PyObject *o) { return PyModule_CheckExact(o); }
+int moduleCheck(PyObject *o) { return PyModule_Check(o); }
+int setCheck(PyObject *o) { return PySet_Check(o); }
+int stringCheck(PyObject *o) { return PyString_Check(o); }
+int tupleCheckE(PyObject *o) { return PyTuple_CheckExact(o); }
+int tupleCheck(PyObject *o) { return PyTuple_Check(o); }
+int typeCheckE(PyObject *o) { return PyType_CheckExact(o); }
+int typeCheck(PyObject *o) { return PyType_Check(o); }
+
+// --- abstract.go helper functions ---
+//
+void typeFree(PyTypeObject *type, PyObject *o) { type->tp_free(o); }
+//
+// ----------------------------------
+
+// --- class.go helper functions ---
+//
+PyTypeObject *newType(void) {
+    return calloc(1, sizeof(PyTypeObject));
+}
+int typeReady(PyTypeObject *o) {
+    if (o->tp_new == NULL && o->tp_base == NULL) {
+        o->tp_new = PyType_GenericNew;
+    }
+    if (o->tp_flags & Py_TPFLAGS_HAVE_GC) {
+        enableClassGc(o);
+    }
+    return PyType_Ready(o);
+}
+ClassContext *newContext(void) {
+    // We don't use tp_methods, and it is read when calling PyType_Ready
+    // - so we use it to hide a classContext struct.  The classContext
+    // starts with a NULL pointer just in case, so it looks like an
+    // empty methods list if Python does try to process it.
+    return calloc(1, sizeof(ClassContext));
+}
+void storeContext(PyTypeObject *t, ClassContext *c) {
+    t->tp_methods = (void *)c;
+}
+int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {
+    return PyDict_SetItemString(tp->tp_dict, name, o);
+}
+int doVisit(PyObject *o, void *v, void *a) {
+    visitproc visit = v;
+    return visit(o, a);
+}
+//
+// ----------------------------------
+
+// --- memory.go helper functions ---
+//
+size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n) {
+    return _PyObject_VAR_SIZE((PyTypeObject *)obj, n);
+}
+void _PyObject_INIT(PyObject *obj, PyObject *typ) {
+    PyObject_INIT(obj, (PyTypeObject *)typ);
+}
+void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n) {
+    PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
+}
+void __PyObject_GC_TRACK(PyObject *obj) {
+    _PyObject_GC_TRACK(obj);
+}
+void setGcRefs(PyGC_Head *g, Py_ssize_t refs) {
+    g->gc.gc_refs = refs;
+}
+//
+// ----------------------------------
+
+// --- python.go helper functions ---
+//
+int enterRecursive(char *w) { return Py_EnterRecursiveCall(w); }
+void leaveRecursive(void) { Py_LeaveRecursiveCall(); }
+//
+// ----------------------------------
+
+// --- type.go helper functions ---
+//
+size_t tupleItemSize(void) { return sizeof(PyObject *); }
+//
+// ----------------------------------
+
+// --- type.go helper functions ---
+//
+PyObject *typeAlloc(PyObject *t, Py_ssize_t n) {
+   return ((PyTypeObject *)t)->tp_alloc((PyTypeObject *)t, n);
+}
+int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k) {
+   return ((PyTypeObject *)t)->tp_init(o, a, k);
+}
+//
+// ----------------------------------

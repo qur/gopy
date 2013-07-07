@@ -5,9 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int tupleCheck(PyObject *o) { return PyTuple_Check(o); }
-// static inline int tupleCheckE(PyObject *o) { return PyTuple_CheckExact(o); }
-// static inline size_t tupleItemSize() { return sizeof(PyObject *); }
 import "C"
 
 import (

@@ -9,8 +9,8 @@ import "C"
 
 import "unsafe"
 
-//export goClassMapLen
-func goClassMapLen(obj unsafe.Pointer) C.Py_ssize_t {
+//export GoClassMapLen
+func GoClassMapLen(obj unsafe.Pointer) C.Py_ssize_t {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -20,8 +20,8 @@ func goClassMapLen(obj unsafe.Pointer) C.Py_ssize_t {
 	return C.Py_ssize_t((*f)(obj))
 }
 
-//export goClassMapGet
-func goClassMapGet(obj, arg unsafe.Pointer) unsafe.Pointer {
+//export GoClassMapGet
+func GoClassMapGet(obj, arg unsafe.Pointer) unsafe.Pointer {
 	// Get the class context
 	ctxt := getClassContext(obj)
 
@@ -39,8 +39,8 @@ func goClassMapGet(obj, arg unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-//export goClassMapSet
-func goClassMapSet(obj, arg1, arg2 unsafe.Pointer) int {
+//export GoClassMapSet
+func GoClassMapSet(obj, arg1, arg2 unsafe.Pointer) int {
 	// Get the class context
 	ctxt := getClassContext(obj)
 

@@ -5,9 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline void incref(PyObject *obj) { Py_INCREF(obj); }
-// static inline void decref(PyObject *obj) { Py_DECREF(obj); }
-// static inline void typeFree(PyTypeObject *type, PyObject *o) { type->tp_free(o); }
 import "C"
 
 import "unsafe"

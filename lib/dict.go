@@ -5,8 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int dictCheck(PyObject *o) { return PyDict_Check(o); }
-// static inline int dictCheckE(PyObject *o) { return PyDict_CheckExact(o); }
 import "C"
 
 import (

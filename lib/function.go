@@ -5,7 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline int functionCheck(PyObject *o) { return PyFunction_Check(o); }
 import "C"
 
 import "unsafe"

@@ -5,21 +5,6 @@
 package py
 
 // #include "utils.h"
-// static size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n) {
-//     return _PyObject_VAR_SIZE((PyTypeObject *)obj, n);
-// }
-// static void _PyObject_INIT(PyObject *obj, PyObject *typ) {
-//     PyObject_INIT(obj, (PyTypeObject *)typ);
-// }
-// static void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n) {
-//     PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
-// }
-// static void __PyObject_GC_TRACK(PyObject *obj) {
-//     _PyObject_GC_TRACK(obj);
-// }
-// static void setGcRefs(PyGC_Head *g, Py_ssize_t refs) {
-//     g->gc.gc_refs = refs;
-// }
 import "C"
 
 // This file is about as unsafe as you can get ... we are playing tricks on the
@@ -38,7 +23,7 @@ const (
 // We need to keep track of things that we have allocated, and the proxies that
 // we have created, memLock must be locked whilst using these variables.
 var (
-	memLock sync.Mutex
+	memLock   sync.Mutex
 	allocated = make(map[uintptr][]unsafe.Pointer)
 	gcProxies = make(map[uintptr]*C.PyObject)
 )
@@ -106,8 +91,8 @@ func goMalloc(size uintptr) *C.PyObject {
 	return _goMalloc(size)
 }
 
-//export goGenericAlloc
-func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
+//export GoGenericAlloc
+func GoGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	var obj *C.PyObject
 
 	typ := newType((*C.PyObject)(t))
@@ -124,7 +109,7 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 		return nil
 	}
 
-	if typ.o.tp_flags & C.Py_TPFLAGS_HEAPTYPE != 0 {
+	if typ.o.tp_flags&C.Py_TPFLAGS_HEAPTYPE != 0 {
 		typ.Incref()
 	}
 
@@ -141,8 +126,8 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	return unsafe.Pointer(obj)
 }
 
-//export goGenericFree
-func goGenericFree(o unsafe.Pointer) {
+//export GoGenericFree
+func GoGenericFree(o unsafe.Pointer) {
 	// first, lock memLock, and arrange for it to be unlocked on return
 	memLock.Lock()
 	defer memLock.Unlock()

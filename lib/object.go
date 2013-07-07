@@ -5,10 +5,6 @@
 package py
 
 // #include "utils.h"
-// static inline void decref(PyObject *obj) { Py_DECREF(obj); }
-// static inline int exceptionCheck(PyObject *obj) {
-//     return PyExceptionClass_Check(obj);
-// }
 import "C"
 
 import (
@@ -62,7 +58,7 @@ func c(obj Object) *C.PyObject {
 
 var (
 	typeLock sync.RWMutex
-	types = make(map[*C.PyTypeObject]*Class)
+	types    = make(map[*C.PyTypeObject]*Class)
 )
 
 func registerType(pyType *C.PyTypeObject, class *Class) {

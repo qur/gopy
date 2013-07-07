@@ -11,7 +11,7 @@ import "sync"
 
 var (
 	goModLock sync.Mutex
-	goModule *Module
+	goModule  *Module
 )
 
 // InitGoModules initializes (and returns) the special built-in "go" module.
