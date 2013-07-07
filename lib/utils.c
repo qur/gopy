@@ -675,7 +675,7 @@ void leaveRecursive(void) { Py_LeaveRecursiveCall(); }
 //
 // ----------------------------------
 
-// --- type.go helper functions ---
+// --- tuple.go helper functions ---
 //
 size_t tupleItemSize(void) { return sizeof(PyObject *); }
 //
