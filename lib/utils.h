@@ -137,7 +137,7 @@ extern void *pyTrue(void);
 extern void *pyFalse(void);
 
 extern int boolCheck(PyObject *o);
-extern int cfunctionCheck(PyObject *o);
+extern int cFunctionCheck(PyObject *o);
 extern int codeCheck(PyObject *o);
 extern int complexCheck(PyObject *o);
 extern int dictCheckE(PyObject *o);
