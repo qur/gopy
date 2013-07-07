@@ -144,9 +144,9 @@ func build(out string, in []string) error {
 func link(out string, in ...string) error {
 	args := []string{"-shared", "-fPIC", "-o", out}
 	args = append(args, CFLAGS...)
+	args = append(args, in...)
 	args = append(args, "-L/usr/lib/gccgo", "-L/usr/local/lib/gccgo")
 	args = append(args, "-lgo", "-lgopy", "-lgopy.ext", "-static-libgcc")
-	args = append(args, in...)
 	if *verbose {
 		fmt.Printf("link: %s %v\n", GCC, args)
 	}
