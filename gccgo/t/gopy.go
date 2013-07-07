@@ -126,8 +126,11 @@ var CFLAGS []string
 func build(out string, in []string) error {
 	args := []string{"-c", "-fPIC", "-o", out}
 	args = append(args, "-I/usr/lib/gccgo", "-I/usr/local/lib/gccgo")
-	args = append(args, in...)
 	args = append(args, CFLAGS...)
+	args = append(args, in...)
+	if *verbose {
+		fmt.Printf("build: %s %v\n", GCCGO, args)
+	}
 	cmd := exec.Command(GCCGO, args...)
 	var errOut bytes.Buffer
 	cmd.Stderr = &errOut
@@ -140,10 +143,13 @@ func build(out string, in []string) error {
 
 func link(out string, in ...string) error {
 	args := []string{"-shared", "-fPIC", "-o", out}
-	args = append(args, in...)
 	args = append(args, CFLAGS...)
 	args = append(args, "-L/usr/lib/gccgo", "-L/usr/local/lib/gccgo")
 	args = append(args, "-lgo", "-lgopy", "-lgopy.ext", "-static-libgcc")
+	args = append(args, in...)
+	if *verbose {
+		fmt.Printf("link: %s %v\n", GCC, args)
+	}
 	cmd := exec.Command(GCC, args...)
 	var errOut bytes.Buffer
 	cmd.Stderr = &errOut
@@ -154,7 +160,10 @@ func link(out string, in ...string) error {
 	return err
 }
 
-var work = flag.Bool("work", false, "print and keep work directory")
+var (
+	work = flag.Bool("work", false, "print and keep work directory")
+	verbose = flag.Bool("v", false, "verbose output")
+)
 
 func main() {
 	flag.Parse()

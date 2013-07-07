@@ -16,7 +16,7 @@ Build a CPython extenstion module from Go package source files
 Synopis
 =======
 
-gopy [-work] <sourcefile>+
+gopy [-v] [-work] <sourcefile>+
 
 Description
 ===========
@@ -31,6 +31,7 @@ Options
 =======
 
 -h	Show help
+-v      Verbose output.  Shows the commands that are being run.
 -work	Print the path of the temporary directory used for intermediate files,
 	and don't delete them after building.
 
