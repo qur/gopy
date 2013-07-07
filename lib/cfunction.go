@@ -21,7 +21,7 @@ func cfunctionCheck(obj Object) bool {
 	if obj == nil {
 		return false
 	}
-	return C.cfunctionCheck(c(obj)) != 0
+	return C.cFunctionCheck(c(obj)) != 0
 }
 
 func newCFunction(obj *C.PyObject) *CFunction {

@@ -585,7 +585,7 @@ void *pyTrue(void) { return Py_True; }
 void *pyFalse(void) { return Py_False; }
 
 int boolCheck(PyObject *o) { return PyBool_Check(o); }
-int cfunctionCheck(PyObject *o) { return PyCFunction_Check(o); }
+int cFunctionCheck(PyObject *o) { return PyCFunction_Check(o); }
 int codeCheck(PyObject *o) { return PyCode_Check(o); }
 int complexCheck(PyObject *o) { return PyComplex_Check(o); }
 int dictCheckE(PyObject *o) { return PyDict_CheckExact(o); }
@@ -675,7 +675,7 @@ void leaveRecursive(void) { Py_LeaveRecursiveCall(); }
 //
 // ----------------------------------
 
-// --- type.go helper functions ---
+// --- tuple.go helper functions ---
 //
 size_t tupleItemSize(void) { return sizeof(PyObject *); }
 //
