@@ -24,7 +24,7 @@ def output(name, data):
     print
     print "extern %s _2_%s(" % (ret, name),
     print ",".join(data.get('args', [])),
-    print ") __asm__ (\"go.py.%s\");" % name
+    print ") __asm__ (\"gopy.%s\");" % name
     print
     print "static void _1_%s(void *_a) {" % name
     print "    struct {"

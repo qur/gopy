@@ -76,7 +76,7 @@ gopy.1.gz: gopy.rst
 
 py.o: $(GOFILES) py.go bindings.go exc.go
 	@$(ECHO) "  GCCGO\t\t$@"
-	$(GCCGO) -c $(CFLAGS) -fPIC -o $@ $^
+	$(GCCGO) -c $(CFLAGS) -fPIC -fgo-pkgpath=gopy -o $@ $^
 
 pyext.c: py.o pywrap
 	@$(ECHO) "  PYWRAP\t$@"

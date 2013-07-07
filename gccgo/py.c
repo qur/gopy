@@ -6,10 +6,10 @@
 
 #include "types.h"
 
-extern void runtime_entersyscall(void) __asm__("libgo_syscall.syscall.Entersyscall");
-extern void runtime_exitsyscall(void) __asm__("libgo_syscall.syscall.Exitsyscall");
-extern void runtime_LockOSThread(void) __asm__("libgo_runtime.runtime.LockOSThread");
-extern void runtime_UnlockOSThread(void) __asm__("libgo_runtime.runtime.UnlockOSThread");
+extern void runtime_entersyscall(void) __asm__("syscall.Entersyscall");
+extern void runtime_exitsyscall(void) __asm__("syscall.Exitsyscall");
+extern void runtime_LockOSThread(void) __asm__("runtime.LockOSThread");
+extern void runtime_UnlockOSThread(void) __asm__("runtime.UnlockOSThread");
 extern int runtime_lockedOSThread(void);
 
 extern int thread_locked(void) {
