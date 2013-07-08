@@ -26,12 +26,12 @@ gopy-$(VERSION).tgz: clean $(GOFILES) utils.c utils.h VERSION LICENSE
 	@$(ECHO) "  TAR\t\t$@"
 	tar --transform "s/^\./gopy-$(VERSION)/" --exclude '*.fixup' \
 		--exclude '.gitignore' --exclude 'gopy-*.tgz' \
-		--exclude 'bootstrap.mk' -czf $@ .
+		--exclude 'bootstrap.mk' -czf $@ ./*
 
 tarball: gopy-$(VERSION).tgz
 
 deepclean: clean
 	@$(ECHO) "  DEEPCLEAN"
-	rm -f $(GOFILES) utils.[ch] VERSION LICENSE
+	rm -f $(GOFILES) utils.[ch] VERSION LICENSE gopy-*.tgz
 
 .PHONY: gofiles tarball deepclean
