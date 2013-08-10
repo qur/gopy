@@ -43,6 +43,7 @@ func (u *Unicode) String() string {
 	if s == nil {
 		panic(exception())
 	}
+	defer C.decref(s)
 	ret := C.PyString_AsString(s)
 	if ret == nil {
 		panic(exception())
