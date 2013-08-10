@@ -53,3 +53,36 @@ func (s *String) Format(args *Tuple) (*String, error) {
 	}
 	return newString(ret), nil
 }
+
+func (s *String) Size() int64 {
+	ret := C.PyString_Size(c(s))
+	return int64(ret)
+}
+
+func (s *String) Decode(encoding, errors string) (Object, error) {
+	var cEncoding, cErrors *C.char
+	if encoding == "" {
+		cEncoding = C.CString(encoding)
+		defer C.free(unsafe.Pointer(cEncoding))
+	}
+	if errors != "" {
+		cErrors = C.CString(errors)
+		defer C.free(unsafe.Pointer(cErrors))
+	}
+	ret := C.PyString_AsDecodedObject(c(s), cEncoding, cErrors)
+	return obj2ObjErr(ret)
+}
+
+func (s *String) Encode(encoding, errors string) (Object, error) {
+	var cEncoding, cErrors *C.char
+	if encoding == "" {
+		cEncoding = C.CString(encoding)
+		defer C.free(unsafe.Pointer(cEncoding))
+	}
+	if errors != "" {
+		cErrors = C.CString(errors)
+		defer C.free(unsafe.Pointer(cErrors))
+	}
+	ret := C.PyString_AsEncodedObject(c(s), cEncoding, cErrors)
+	return obj2ObjErr(ret)
+}
