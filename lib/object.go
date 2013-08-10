@@ -151,6 +151,8 @@ func newObject(obj *C.PyObject) Object {
 		return (*MethodObj)(o)
 	case &C.PyFile_Type:
 		return (*File)(o)
+	case &C.PyUnicode_Type:
+		return (*Unicode)(o)
 	}
 
 	if C.exceptionCheck(obj) != 0 {

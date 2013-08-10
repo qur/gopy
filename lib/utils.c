@@ -532,6 +532,7 @@ PyTypeObject *getBasePyType(PyObject *o) {
     if (PyFrame_Check(o))     return &PyFrame_Type;
     if (PyMethod_Check(o))    return &PyMethod_Type;
     if (PyFile_Check(o))      return &PyFile_Type;
+    if (PyUnicode_Check(o))   return &PyUnicode_Type;
 
     return o->ob_type;
 }
@@ -615,6 +616,7 @@ int typeCheck(PyObject *o) { return PyType_Check(o); }
 int frameCheck(PyObject *o) { return PyFrame_Check(o); }
 int methodCheck(PyObject *o) { return PyMethod_Check(o); }
 int fileCheck(PyObject *o) { return PyFile_Check(o); }
+int unicodeCheck(PyObject *o) { return PyUnicode_Check(o); }
 
 // --- abstract.go helper functions ---
 //

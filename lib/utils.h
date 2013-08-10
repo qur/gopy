@@ -165,6 +165,7 @@ extern int typeCheck(PyObject *o);
 extern int frameCheck(PyObject *o);
 extern int methodCheck(PyObject *o);
 extern int fileCheck(PyObject *o);
+extern int unicodeCheck(PyObject *o);
 
 // --- abstract.go helper functions ---
 //
