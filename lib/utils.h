@@ -7,6 +7,7 @@
 
 #include <ffi.h>
 #include <python2.7/Python.h>
+#include <python2.7/frameobject.h>
 
 typedef struct {
     ffi_type *type;
@@ -128,6 +129,8 @@ struct _en {
 
 extern struct _en excName(PyObject *o);
 
+extern int PyCode_GetNumFree_(PyCodeObject *o);
+
 extern void incref(PyObject *o);
 extern void decref(PyObject *o);
 extern void xincref(PyObject *o);
@@ -159,6 +162,9 @@ extern int tupleCheckE(PyObject *o);
 extern int tupleCheck(PyObject *o);
 extern int typeCheckE(PyObject *o);
 extern int typeCheck(PyObject *o);
+extern int frameCheck(PyObject *o);
+extern int methodCheck(PyObject *o);
+extern int fileCheck(PyObject *o);
 
 // --- abstract.go helper functions ---
 //

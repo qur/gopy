@@ -12,6 +12,7 @@ package py
 import "C"
 
 import (
+	"os"
 	"unsafe"
 )
 
@@ -29,6 +30,11 @@ func InitializeEx(initsigs bool) {
 
 func Finalize() {
 	C.Py_Finalize()
+}
+
+func Exit(status int) {
+	C.Py_Finalize()
+	os.Exit(status)
 }
 
 func AddToPath(dir string) {

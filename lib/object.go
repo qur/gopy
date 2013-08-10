@@ -145,6 +145,12 @@ func newObject(obj *C.PyObject) Object {
 		return (*Set)(o)
 	case &C.PyFunction_Type:
 		return (*Function)(o)
+	case &C.PyFrame_Type:
+		return (*Frame)(o)
+	case &C.PyMethod_Type:
+		return (*MethodObj)(o)
+	case &C.PyFile_Type:
+		return (*File)(o)
 	}
 
 	if C.exceptionCheck(obj) != 0 {

@@ -43,3 +43,9 @@ func (code *Code) Eval(globals, locals Object) (Object, error) {
 	ret := C.PyEval_EvalCode(pyCode, c(globals), c(locals))
 	return obj2ObjErr(ret)
 }
+
+func (code *Code) NumFree() int {
+	pyCode := (*C.PyCodeObject)(unsafe.Pointer(code))
+	n := C.PyCode_GetNumFree_(pyCode)
+	return int(n)
+}

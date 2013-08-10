@@ -9,18 +9,17 @@ import "C"
 
 func GetBuiltins() (Object, error) {
 	ret := C.PyEval_GetBuiltins()
-	if ret == nil {
-		return nil, exception()
-	}
-	return newObject(ret), nil
+	return obj2ObjErr(ret)
+}
+
+func GetLocals() (Object, error) {
+	ret := C.PyEval_GetLocals()
+	return obj2ObjErr(ret)
 }
 
 func GetGlobals() (Object, error) {
 	ret := C.PyEval_GetGlobals()
-	if ret == nil {
-		return nil, exception()
-	}
-	return newObject(ret), nil
+	return obj2ObjErr(ret)
 }
 
 func InitThreads() {

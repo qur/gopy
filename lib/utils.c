@@ -529,6 +529,9 @@ PyTypeObject *getBasePyType(PyObject *o) {
     if (PyFrozenSet_Check(o)) return &PyFrozenSet_Type;
     if (PySet_Check(o))       return &PySet_Type;
     if (PyFunction_Check(o))  return &PyFunction_Type;
+    if (PyFrame_Check(o))     return &PyFrame_Type;
+    if (PyMethod_Check(o))    return &PyMethod_Type;
+    if (PyFile_Check(o))      return &PyFile_Type;
 
     return o->ob_type;
 }
@@ -576,6 +579,8 @@ struct _en excName(PyObject *o) {
     return en;
 }
 
+int PyCode_GetNumFree_(PyCodeObject *o) { return PyCode_GetNumFree(o); }
+
 void incref(PyObject *o) { Py_INCREF(o); }
 void decref(PyObject *o) { Py_DECREF(o); }
 void xincref(PyObject *o) { Py_INCREF(o); }
@@ -607,6 +612,9 @@ int tupleCheckE(PyObject *o) { return PyTuple_CheckExact(o); }
 int tupleCheck(PyObject *o) { return PyTuple_Check(o); }
 int typeCheckE(PyObject *o) { return PyType_CheckExact(o); }
 int typeCheck(PyObject *o) { return PyType_Check(o); }
+int frameCheck(PyObject *o) { return PyFrame_Check(o); }
+int methodCheck(PyObject *o) { return PyMethod_Check(o); }
+int fileCheck(PyObject *o) { return PyFile_Check(o); }
 
 // --- abstract.go helper functions ---
 //
