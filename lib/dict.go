@@ -17,6 +17,7 @@ import (
 // the PyDict_XXX functions from the Python C API.
 type Dict struct {
 	AbstractObject
+	MappingProtocol
 	o C.PyDictObject
 }
 

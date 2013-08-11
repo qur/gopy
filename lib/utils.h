@@ -214,4 +214,12 @@ extern int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k);
 //
 // ----------------------------------
 
+// --- mapping.go helper functions ---
+//
+extern PyObject *PyMapping_Keys_(PyObject *o);
+extern PyObject *PyMapping_Values_(PyObject *o);
+extern PyObject *PyMapping_Items_(PyObject *o);
+//
+// ----------------------------------
+
 #endif /* _GO_PYTHON_UTILS_H */

@@ -701,3 +701,17 @@ int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k) {
 }
 //
 // ----------------------------------
+
+// --- mapping.go helper functions ---
+//
+PyObject *PyMapping_Keys_(PyObject *o) {
+    return PyMapping_Keys(o);
+}
+PyObject *PyMapping_Values_(PyObject *o) {
+    return PyMapping_Values(o);
+}
+PyObject *PyMapping_Items_(PyObject *o) {
+    return PyMapping_Items(o);
+}
+//
+// ----------------------------------
