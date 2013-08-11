@@ -14,6 +14,7 @@ import (
 
 type Tuple struct {
 	AbstractObject
+	SequenceProtocol
 	o C.PyTupleObject
 }
 

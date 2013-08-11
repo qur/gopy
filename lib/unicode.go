@@ -11,6 +11,7 @@ import "unsafe"
 
 type Unicode struct {
 	AbstractObject
+	SequenceProtocol
 	o C.PyUnicodeObject
 }
 

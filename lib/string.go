@@ -11,6 +11,7 @@ import "unsafe"
 
 type String struct {
 	AbstractObject
+	SequenceProtocol
 	o C.PyStringObject
 }
 

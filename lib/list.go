@@ -17,6 +17,7 @@ import (
 // the PyList_XXX functions from the Python C API.
 type List struct {
 	AbstractObject
+	SequenceProtocol
 	o C.PyListObject
 }
 
