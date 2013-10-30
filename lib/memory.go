@@ -5,19 +5,19 @@
 package py
 
 // #include "utils.h"
-// static size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n) {
+// __attribute__ ((used)) static size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n){
 //     return _PyObject_VAR_SIZE((PyTypeObject *)obj, n);
 // }
-// static void _PyObject_INIT(PyObject *obj, PyObject *typ) {
+// __attribute__ ((used)) static void _PyObject_INIT(PyObject *obj, PyObject *typ){
 //     PyObject_INIT(obj, (PyTypeObject *)typ);
 // }
-// static void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n) {
+// __attribute__ ((used)) static void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n){
 //     PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
 // }
-// static void __PyObject_GC_TRACK(PyObject *obj) {
+// __attribute__ ((used)) static void __PyObject_GC_TRACK(PyObject *obj){
 //     _PyObject_GC_TRACK(obj);
 // }
-// static void setGcRefs(PyGC_Head *g, Py_ssize_t refs) {
+// __attribute__ ((used)) static void setGcRefs(PyGC_Head *g, Py_ssize_t refs){
 //     g->gc.gc_refs = refs;
 // }
 import "C"
