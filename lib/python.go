@@ -19,7 +19,7 @@ import (
 )
 
 func Initialize() {
-	C.Py_Initialize()
+	InitializeEx(false)
 }
 
 func Finalize() {
@@ -28,7 +28,7 @@ func Finalize() {
 
 func InitializeEx(initsigs bool) {
 	if initsigs {
-		C.Py_InitializeEx(1)
+		panic("Python signal handlers can not be enabled. See https://code.google.com/p/go/issues/detail?id=5287 for details")
 	} else {
 		C.Py_InitializeEx(0)
 	}

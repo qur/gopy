@@ -7,6 +7,7 @@ import (
 
 func TestFunction(t *testing.T) {
 	py.Initialize()
+	defer py.Finalize()
 	called := false
 	f := func() (py.Object, error) {
 		called = true
@@ -22,7 +23,6 @@ func TestFunction(t *testing.T) {
 	if !called {
 		t.Error("Function wasn't called")
 	}
-	py.Finalize()
 }
 
 type ExampleClass struct {
@@ -56,6 +56,7 @@ var exampleClass = py.Class{
 
 func TestMethod(t *testing.T) {
 	py.Initialize()
+	defer py.Finalize()
 
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
@@ -78,11 +79,11 @@ func TestMethod(t *testing.T) {
 	} else if a == py.None || a.Type().String() != "<class 'mytest.mytest'>" {
 		t.Error(a.Type().String())
 	}
-	py.Finalize()
 }
 
 func TestMethod2(t *testing.T) {
 	py.Initialize()
+	defer py.Finalize()
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
 	} else if m, err := py.InitModule("mytest", nil); err != nil {
@@ -124,5 +125,4 @@ func TestMethod2(t *testing.T) {
 			}()
 		}
 	}
-	py.Finalize()
 }

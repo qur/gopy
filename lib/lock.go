@@ -55,7 +55,7 @@ func initAndLock(initsigs bool) *Lock {
 
 	// Initialize the default Python interpreter
 	if initsigs {
-		C.Py_InitializeEx(1)
+		panic("Signals cannot be used. See https://code.google.com/p/go/issues/detail?id=5287 for details")
 	} else {
 		C.Py_InitializeEx(0)
 	}

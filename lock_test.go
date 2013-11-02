@@ -4,6 +4,7 @@ import (
 	"lime/3rdparty/libs/gopy/lib"
 	"math/rand"
 	"runtime"
+	"sync"
 	"testing"
 	"time"
 )
@@ -13,7 +14,7 @@ func test2() {
 	defer l.Unlock()
 }
 
-func test() {
+func test(wg *sync.WaitGroup) {
 	t := time.Now()
 	for time.Since(t) < time.Second*2 {
 		func() {
@@ -23,6 +24,7 @@ func test() {
 			time.Sleep(time.Duration(float64(time.Millisecond) * (1 + rand.Float64())))
 		}()
 	}
+	wg.Done()
 }
 
 func TestLock(t *testing.T) {
@@ -33,8 +35,11 @@ func TestLock(t *testing.T) {
 		py.Finalize()
 	}()
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	go test()
-	go test()
-	go test()
-	test()
+	var wg sync.WaitGroup
+	wg.Add(4)
+	go test(&wg)
+	go test(&wg)
+	go test(&wg)
+	test(&wg)
+	wg.Wait()
 }

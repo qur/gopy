@@ -7,6 +7,7 @@ import (
 
 func TestRunString(t *testing.T) {
 	py.Initialize()
+	defer py.Finalize()
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
 	} else if g, err := py.GetBuiltins(); err != nil {
@@ -20,5 +21,4 @@ func TestRunString(t *testing.T) {
 	} else if b, ok := a.(*py.Unicode); !ok || b.String() != "hello world!" {
 		t.Error(b, err)
 	}
-	py.Finalize()
 }

@@ -146,7 +146,3 @@ func obj2ObjErr(obj *C.PyObject) (Object, error) {
 	}
 	return newObject(obj), nil
 }
-
-func SetInterrupt() {
-	C.PyErr_SetInterrupt()
-}
