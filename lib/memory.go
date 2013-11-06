@@ -15,7 +15,7 @@ package py
 //     PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
 // }
 // __attribute__ ((used)) static void __PyObject_GC_TRACK(PyObject *obj){
-//     _PyObject_GC_TRACK(obj);
+//     _PyObject_GC_Track(obj);
 // }
 // __attribute__ ((used)) static void setGcRefs(PyGC_Head *g, Py_ssize_t refs){
 //     g->gc.gc_refs = refs;
