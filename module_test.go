@@ -101,8 +101,6 @@ func TestMethod2(t *testing.T) {
 	} else if a, err := main.GetItemString("a"); err != nil {
 		t.Fatal(err)
 	} else {
-		t.Fatalf("YTBD")
-		return
 		type Test struct {
 			m    string
 			pan  string
@@ -120,7 +118,7 @@ func TestMethod2(t *testing.T) {
 					if i := recover(); i == test.pan {
 						t.Log("Success!")
 					} else {
-						t.Error("Paniced for some other reason:", i)
+						t.Error("Panicked for some other reason:", i)
 					}
 				}()
 				a.Base().CallMethod(test.m, test.f, test.args...)
