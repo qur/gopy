@@ -101,6 +101,8 @@ func TestMethod2(t *testing.T) {
 	} else if a, err := main.GetItemString("a"); err != nil {
 		t.Fatal(err)
 	} else {
+		t.Fatalf("YTBD")
+		return
 		type Test struct {
 			m    string
 			pan  string
