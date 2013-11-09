@@ -198,39 +198,6 @@ func (obj *BaseObject) CallObject(args *Tuple) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object, error) {
-	t, err := buildTuple(format, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer t.Decref()
-	return obj.CallObject(t)
-}
-
-func (obj *BaseObject) CallMethod(name string, format string, args ...interface{}) (Object, error) {
-	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
-
-	f := C.PyObject_GetAttrString(c(obj), cname)
-	if f == nil {
-		return nil, AttributeError.Err(name)
-	}
-	defer C.decref(f)
-
-	if C.PyCallable_Check(f) == 0 {
-		return nil, TypeError.Err("attribute of type '%s' is not callable", name)
-	}
-
-	t, err := buildTuple(format, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer t.Decref()
-
-	ret := C.PyObject_CallObject(f, c(t))
-	return obj2ObjErr(ret)
-}
-
 func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, error) {
 	t, err := PackTuple(args...)
 	if err != nil {

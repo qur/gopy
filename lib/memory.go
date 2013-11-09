@@ -38,7 +38,7 @@ const (
 // We need to keep track of things that we have allocated, and the proxies that
 // we have created, memLock must be locked whilst using these variables.
 var (
-	memLock sync.Mutex
+	memLock   sync.Mutex
 	allocated = make(map[uintptr][]unsafe.Pointer)
 	gcProxies = make(map[uintptr]*C.PyObject)
 )
@@ -124,7 +124,7 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 		return nil
 	}
 
-	if typ.o.tp_flags & C.Py_TPFLAGS_HEAPTYPE != 0 {
+	if typ.o.tp_flags&C.Py_TPFLAGS_HEAPTYPE != 0 {
 		typ.Incref()
 	}
 

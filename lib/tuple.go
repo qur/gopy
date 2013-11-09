@@ -34,21 +34,6 @@ func newTuple(obj *C.PyObject) *Tuple {
 	return (*Tuple)(unsafe.Pointer(obj))
 }
 
-func buildTuple(format string, args ...interface{}) (*Tuple, error) {
-	if format == "" {
-		return NewTuple(0)
-	}
-	bv, err := BuildValue(format, args...)
-	if err != nil {
-		return nil, err
-	}
-	t, ok := bv.(*Tuple)
-	if ok {
-		return t, nil
-	}
-	return PackTuple(bv)
-}
-
 // NewTuple returns a new *Tuple of the specified size.  However the entries are
 // all set to NULL, so the tuple should not be shared, especially with Python
 // code, until the entries have all been set.
