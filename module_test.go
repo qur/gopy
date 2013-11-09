@@ -104,13 +104,12 @@ func TestMethod2(t *testing.T) {
 		type Test struct {
 			m    string
 			pan  string
-			f    string
-			args []interface{}
+			args []py.Object
 		}
 		tests := []Test{
-			{"Test", "called", "", nil},
-			{"Test2", "called2", "i", []interface{}{10}},
-			{"__str__", "strcalled", "", nil},
+			{"Test", "called", nil},
+			{"Test2", "called2", []py.Object{py.NewLong(10)}},
+			{"__str__", "strcalled", nil},
 		}
 		for _, test := range tests {
 			func() {
@@ -121,7 +120,7 @@ func TestMethod2(t *testing.T) {
 						t.Error("Panicked for some other reason:", i)
 					}
 				}()
-				a.Base().CallMethod(test.m, test.f, test.args...)
+				a.Base().CallMethodObjArgs(test.m, test.args...)
 			}()
 		}
 	}
