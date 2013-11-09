@@ -14,8 +14,8 @@ package py
 // __attribute__ ((used)) static void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n){
 //     PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
 // }
-// __attribute__ ((used)) static void __PyObject_GC_TRACK(PyObject *obj){
-//     _PyObject_GC_TRACK(obj);
+// __attribute__ ((used)) static void _PyObject_GC_Track(PyObject *obj){
+//     PyObject_GC_Track(obj);
 // }
 // __attribute__ ((used)) static void setGcRefs(PyGC_Head *g, Py_ssize_t refs){
 //     g->gc.gc_refs = refs;
@@ -135,7 +135,7 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	}
 
 	if typ.IsGc() {
-		C.__PyObject_GC_TRACK(obj)
+		C._PyObject_GC_Track(obj)
 	}
 
 	return unsafe.Pointer(obj)

@@ -5,6 +5,7 @@
 package py
 
 // #include "utils.h"
+// #include "gopy_types.h"
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
 // static inline int exceptionCheck(PyObject *obj) {
 //     return PyExceptionClass_Check(obj);
@@ -124,42 +125,40 @@ func newObject(obj *C.PyObject) Object {
 		}
 	}
 
-	switch C.getBasePyType(obj) {
-	case &C.PyList_Type:
+	switch C.getBaseGoPyType(obj) {
+	case C.GoPyList_Type:
 		return (*List)(o)
-	case &C.PyTuple_Type:
+	case C.GoPyTuple_Type:
 		return (*Tuple)(o)
-	case &C.PyDict_Type:
+	case C.GoPyDict_Type:
 		return (*Dict)(o)
-	case &C.PyUnicode_Type:
+	case C.GoPyUnicode_Type:
 		return (*Unicode)(o)
-	case &C.PyBool_Type:
+	case C.GoPyBool_Type:
 		return newBool(obj)
-	case &C.PyLong_Type:
+	case C.GoPyLong_Type:
 		return (*Long)(o)
-	case &C.PyFloat_Type:
+	case C.GoPyFloat_Type:
 		return (*Float)(o)
-	case &C.PyModule_Type:
+	case C.GoPyModule_Type:
 		return (*Module)(o)
-	case &C.PyType_Type:
+	case C.GoPyType_Type:
 		return (*Type)(o)
-	case &C.PyCode_Type:
+	case C.GoPyCode_Type:
 		return (*Code)(o)
-	case &C.PyCFunction_Type:
+	case C.GoPyCFunction_Type:
 		return (*CFunction)(o)
-	case &C.PyComplex_Type:
+	case C.GoPyComplex_Type:
 		return (*Complex)(o)
-	case &C.PyFrozenSet_Type:
+	case C.GoPyFrozenSet_Type:
 		return (*FrozenSet)(o)
-	case &C.PySet_Type:
+	case C.GoPySet_Type:
 		return (*Set)(o)
-	case &C.PyFunction_Type:
+	case C.GoPyFunction_Type:
 		return (*Function)(o)
 	}
-
 	if C.exceptionCheck(obj) != 0 {
 		return newException(obj)
 	}
-
 	return newBaseObject(obj)
 }

@@ -117,7 +117,7 @@ func TestMethod2(t *testing.T) {
 					if i := recover(); i == test.pan {
 						t.Log("Success!")
 					} else {
-						t.Error("Paniced for some other reason:", i)
+						t.Error("Panicked for some other reason:", i)
 					}
 				}()
 				a.Base().CallMethodObjArgs(test.m, test.args...)

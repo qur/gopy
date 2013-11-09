@@ -111,6 +111,7 @@ extern void overrideGenericAlloc(PyTypeObject *type);
 extern void setClassContext(PyTypeObject *type, ClassContext *ctxt);
 
 extern PyTypeObject *getBasePyType(PyObject *o);
+extern int getBaseGoPyType(PyObject *o);
 
 extern PyObject *compileFile(char *name);
 

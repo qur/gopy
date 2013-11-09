@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include "utils.h"
+#include "gopy_types.h"
 #include "_cgo_export.h"
 
 
@@ -409,6 +410,27 @@ PyTypeObject *getBasePyType(PyObject *o) {
     if (PyFunction_Check(o))  return &PyFunction_Type;
 
     return o->ob_type;
+}
+
+int getBaseGoPyType(PyObject *o) {
+    if (o == NULL) return GoPyNilType;
+
+    if (PyTuple_Check(o))     return GoPyTuple_Type;
+    if (PyDict_Check(o))      return GoPyDict_Type;
+    if (PyList_Check(o))      return GoPyList_Type;
+    if (PyUnicode_Check(o))   return GoPyUnicode_Type;
+    if (PyBool_Check(o))      return GoPyBool_Type;
+    if (PyLong_Check(o))      return GoPyLong_Type;
+    if (PyFloat_Check(o))     return GoPyFloat_Type;
+    if (PyModule_Check(o))    return GoPyModule_Type;
+    if (PyType_Check(o))      return GoPyType_Type;
+    if (PyCode_Check(o))      return GoPyCode_Type;
+    if (PyCFunction_Check(o)) return GoPyCFunction_Type;
+    if (PyComplex_Check(o))   return GoPyComplex_Type;
+    if (PyFrozenSet_Check(o)) return GoPyFrozenSet_Type;
+    if (PySet_Check(o))       return GoPySet_Type;
+    if (PyFunction_Check(o))  return GoPyFunction_Type;
+    return GoPyOtherType;
 }
 
 PyObject *compileFile(char *name) {
