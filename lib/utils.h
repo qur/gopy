@@ -94,6 +94,11 @@ typedef struct {
     PyNumberMethods   nb_meth;
     PySequenceMethods sq_meth;
 } ClassContext;
+extern size_t var_size(PyObject *obj, Py_ssize_t n);
+extern void _PyObject_INIT(PyObject *obj, PyObject *typ);
+extern void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n);
+extern void _PyObject_GC_Track(PyObject *obj);
+extern void setGcRefs(PyGC_Head *g, Py_ssize_t refs);
 
 extern PyMethodDef *newMethodDef(void);
 extern void set_call_noargs(PyCFunction *f);
@@ -110,7 +115,7 @@ extern void enableClassGc(PyTypeObject *type);
 extern void overrideGenericAlloc(PyTypeObject *type);
 extern void setClassContext(PyTypeObject *type, ClassContext *ctxt);
 
-extern PyTypeObject *getBasePyType(PyObject *o);
+extern PyTypeObject *getBasePyType(int);
 extern int getBaseGoPyType(PyObject *o);
 
 extern PyObject *compileFile(char *name);
@@ -121,5 +126,7 @@ struct _en {
 };
 
 extern struct _en excName(PyObject *o);
+
+#include "gopy_types.h"
 
 #endif /* _GO_PYTHON_UTILS_H */

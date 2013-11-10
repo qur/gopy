@@ -390,26 +390,29 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     }
 }
 
-PyTypeObject *getBasePyType(PyObject *o) {
-    if (o == NULL) return NULL;
-
-    if (PyTuple_Check(o))     return &PyTuple_Type;
-    if (PyDict_Check(o))      return &PyDict_Type;
-    if (PyList_Check(o))      return &PyList_Type;
-    if (PyUnicode_Check(o))   return &PyUnicode_Type;
-    if (PyBool_Check(o))      return &PyBool_Type;
-    if (PyLong_Check(o))      return &PyLong_Type;
-    if (PyFloat_Check(o))     return &PyFloat_Type;
-    if (PyModule_Check(o))    return &PyModule_Type;
-    if (PyType_Check(o))      return &PyType_Type;
-    if (PyCode_Check(o))      return &PyCode_Type;
-    if (PyCFunction_Check(o)) return &PyCFunction_Type;
-    if (PyComplex_Check(o))   return &PyComplex_Type;
-    if (PyFrozenSet_Check(o)) return &PyFrozenSet_Type;
-    if (PySet_Check(o))       return &PySet_Type;
-    if (PyFunction_Check(o))  return &PyFunction_Type;
-
-    return o->ob_type;
+PyTypeObject *getBasePyType(int t) {
+    switch (t) {
+//    case GoPyNilType:         return &PyNone_Type;
+    case GoPyBaseObject_Type: return &PyBaseObject_Type;
+    case GoPyBool_Type:       return &PyBool_Type;
+    case GoPyCFunction_Type:  return &PyCFunction_Type;
+    case GoPyCode_Type:       return &PyCode_Type;
+    case GoPyComplex_Type:    return &PyComplex_Type;
+    case GoPyDict_Type:       return &PyDict_Type;
+    case GoPyFloat_Type:      return &PyFloat_Type;
+    case GoPyFrozenSet_Type:  return &PyFrozenSet_Type;
+    case GoPyFunction_Type:   return &PyFunction_Type;
+    case GoPyList_Type:       return &PyList_Type;
+    case GoPyLong_Type:       return &PyLong_Type;
+    case GoPyModule_Type:     return &PyModule_Type;
+//    case GoPyObject_Type:     return &PyObject_Type;
+    case GoPySet_Type:        return &PySet_Type;
+    case GoPyTuple_Type:      return &PyTuple_Type;
+    case GoPyType_Type:       return &PyType_Type;
+    case GoPyUnicode_Type:    return &PyUnicode_Type;
+//    case GoPyOtherType:       return &PyOther_Type;
+    default:                  return NULL;
+    }
 }
 
 int getBaseGoPyType(PyObject *o) {
@@ -481,4 +484,19 @@ struct _en excName(PyObject *o) {
     Py_DECREF(m);
 
     return en;
+}
+size_t var_size(PyObject *obj, Py_ssize_t n) {
+    return _PyObject_VAR_SIZE((PyTypeObject *)obj, n);
+}
+void _PyObject_INIT(PyObject *obj, PyObject *typ){
+    PyObject_INIT(obj, (PyTypeObject *)typ);
+}
+void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n){
+    PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
+}
+void _PyObject_GC_Track(PyObject *obj){
+    PyObject_GC_Track(obj);
+}
+void setGcRefs(PyGC_Head *g, Py_ssize_t refs){
+    g->gc.gc_refs = refs;
 }

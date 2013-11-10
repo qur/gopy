@@ -5,21 +5,6 @@
 package py
 
 // #include "utils.h"
-// __attribute__ ((used)) static size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n){
-//     return _PyObject_VAR_SIZE((PyTypeObject *)obj, n);
-// }
-// __attribute__ ((used)) static void _PyObject_INIT(PyObject *obj, PyObject *typ){
-//     PyObject_INIT(obj, (PyTypeObject *)typ);
-// }
-// __attribute__ ((used)) static void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n){
-//     PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
-// }
-// __attribute__ ((used)) static void _PyObject_GC_Track(PyObject *obj){
-//     PyObject_GC_Track(obj);
-// }
-// __attribute__ ((used)) static void setGcRefs(PyGC_Head *g, Py_ssize_t refs){
-//     g->gc.gc_refs = refs;
-// }
 import "C"
 
 // This file is about as unsafe as you can get ... we are playing tricks on the
@@ -111,7 +96,7 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	var obj *C.PyObject
 
 	typ := newType((*C.PyObject)(t))
-	size := uintptr(C.__PyObject_VAR_SIZE(c(typ), n))
+	size := uintptr(C.var_size(c(typ), n))
 
 	if typ.IsGc() {
 		obj = goGcMalloc(size)

@@ -25,10 +25,10 @@ type FrozenSet struct {
 }
 
 // SetType is the Type object that represents the Set type.
-var SetType = (*Type)(unsafe.Pointer(&C.PySet_Type))
+var SetType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPySet_Type)))
 
 // FrozenSetType is the Type object that represents the FrozenSet type.
-var FrozenSetType = (*Type)(unsafe.Pointer(&C.PyFrozenSet_Type))
+var FrozenSetType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyFrozenSet_Type)))
 
 func setCheck(obj Object) bool {
 	return C.setCheck(c(obj)) != 0

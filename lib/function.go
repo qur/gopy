@@ -18,7 +18,7 @@ type Function struct {
 }
 
 // FunctionType is the Type object that represents the Function type.
-var FunctionType = (*Type)(unsafe.Pointer(&C.PyFunction_Type))
+var FunctionType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyFunction_Type)))
 
 func newFunction(obj *C.PyObject) *Function {
 	return (*Function)(unsafe.Pointer(obj))

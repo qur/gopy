@@ -16,7 +16,7 @@ type Code struct {
 }
 
 // CodeType is the Type object that represents the Code type.
-var CodeType = (*Type)(unsafe.Pointer(&C.PyCode_Type))
+var CodeType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyCode_Type)))
 
 func newCode(obj *C.PyObject) *Code {
 	return (*Code)(unsafe.Pointer(obj))

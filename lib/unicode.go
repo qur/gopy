@@ -16,7 +16,7 @@ type Unicode struct {
 }
 
 // UnicodeType is the Type object that represents the Unicode type.
-var UnicodeType = (*Type)(unsafe.Pointer(&C.PyUnicode_Type))
+var UnicodeType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyUnicode_Type)))
 
 func unicodeCheck(obj Object) bool {
 	return C.unicodeCheck(c(obj)) != 0

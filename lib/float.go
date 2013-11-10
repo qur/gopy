@@ -20,7 +20,7 @@ type Float struct {
 }
 
 // FloatType is the Type object that represents the Float type.
-var FloatType = (*Type)(unsafe.Pointer(&C.PyFloat_Type))
+var FloatType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyFloat_Type)))
 
 func floatCheck(obj Object) bool {
 	return C.floatCheck(c(obj)) != 0

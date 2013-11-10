@@ -22,7 +22,7 @@ type BaseObject struct {
 }
 
 // BaseType is the Type object that represents the BaseObject type.
-var BaseType = (*Type)(unsafe.Pointer(&C.PyBaseObject_Type))
+var BaseType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyBaseObject_Type)))
 
 func newBaseObject(obj *C.PyObject) *BaseObject {
 	return (*BaseObject)(unsafe.Pointer(obj))

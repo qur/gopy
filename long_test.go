@@ -22,8 +22,8 @@ func TestLong(t *testing.T) {
         if l3, ok := l2.(*py.Long); !ok {
             t.Fatalf("Unable to cast to long")
         } else {
-            if 10 != l3.Int64() {
-                t.Fatalf("Bad value")
+            if v := l3.Int64(); v != 10 {
+                t.Fatalf("Bad value: %d", v)
             }
         }
     }

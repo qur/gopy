@@ -24,7 +24,7 @@ type Bool struct {
 }
 
 // BoolType is the Type object that represents the Bool type.
-var BoolType = (*Type)(unsafe.Pointer(&C.PyBool_Type))
+var BoolType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyBool_Type)))
 
 // True is the true value of the Bool type.  It is a singleton value, all true
 // values refer to the same instance.

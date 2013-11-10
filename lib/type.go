@@ -23,7 +23,7 @@ type Type struct {
 }
 
 // TypeType is the Type object that represents the Type type.
-var TypeType = (*Type)(unsafe.Pointer(&C.PyType_Type))
+var TypeType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyType_Type)))
 
 func typeCheck(obj Object) bool {
 	if obj == nil {

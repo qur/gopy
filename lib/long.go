@@ -20,7 +20,7 @@ type Long struct {
 }
 
 // LongType is the Type object that represents the Long type.
-var LongType = (*Type)(unsafe.Pointer(&C.PyLong_Type))
+var LongType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyLong_Type)))
 
 func longCheck(obj Object) bool {
 	if obj == nil {
@@ -34,11 +34,12 @@ func newLong(obj *C.PyObject) *Long {
 }
 
 func NewLong(i int64) *Long {
-	return newLong(C.PyLong_FromLongLong(C.longlong(i)))
+	return newLong(C.PyLong_FromLongLong(C.PY_LONG_LONG(i)))
 }
 
 func (l *Long) Int64() int64 {
-	return int64(C.PyLong_AsLongLong(c(l)))
+	// TODO: AsLongLong doesn't work for me on windows...
+	return int64(C.PyLong_AsLong(c(l)))
 }
 
 func (l *Long) String() string {

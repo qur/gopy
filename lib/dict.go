@@ -23,7 +23,7 @@ type Dict struct {
 }
 
 // DictType is the Type object that represents the Dict type.
-var DictType = (*Type)(unsafe.Pointer(&C.PyDict_Type))
+var DictType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyDict_Type)))
 
 func dictCheck(obj Object) bool {
 	if obj == nil {

@@ -20,7 +20,7 @@ type Module struct {
 }
 
 // ModuleType is the Type object that represents the Module type.
-var ModuleType = (*Type)(unsafe.Pointer(&C.PyModule_Type))
+var ModuleType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyModule_Type)))
 
 func moduleCheck(obj Object) bool {
 	if obj == nil {
