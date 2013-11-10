@@ -95,9 +95,9 @@ typedef struct {
     PySequenceMethods sq_meth;
 } ClassContext;
 extern size_t var_size(PyObject *obj, Py_ssize_t n);
-extern void _PyObject_INIT(PyObject *obj, PyObject *typ);
-extern void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n);
-extern void _PyObject_GC_Track(PyObject *obj);
+extern void GoPyObject_INIT(PyObject *obj, PyObject *typ);
+extern void GoPyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n);
+extern void GoPyObject_GC_Track(PyObject *obj);
 extern void setGcRefs(PyGC_Head *g, Py_ssize_t refs);
 
 extern PyMethodDef *newMethodDef(void);

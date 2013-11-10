@@ -488,13 +488,13 @@ struct _en excName(PyObject *o) {
 size_t var_size(PyObject *obj, Py_ssize_t n) {
     return _PyObject_VAR_SIZE((PyTypeObject *)obj, n);
 }
-void _PyObject_INIT(PyObject *obj, PyObject *typ){
+void GoPyObject_INIT(PyObject *obj, PyObject *typ){
     PyObject_INIT(obj, (PyTypeObject *)typ);
 }
-void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n){
+void GoPyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n){
     PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
 }
-void _PyObject_GC_Track(PyObject *obj){
+void GoPyObject_GC_Track(PyObject *obj){
     PyObject_GC_Track(obj);
 }
 void setGcRefs(PyGC_Head *g, Py_ssize_t refs){

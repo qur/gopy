@@ -59,7 +59,7 @@ func goGcMalloc(size uintptr) *C.PyObject {
 		delete(allocated, px)
 		return nil
 	}
-	C._PyObject_INIT(proxy, c(BaseType))
+	C.GoPyObject_INIT(proxy, c(BaseType))
 	gcProxies[px] = proxy
 
 	return p
@@ -114,13 +114,13 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	}
 
 	if typ.o.tp_itemsize == 0 {
-		C._PyObject_INIT(obj, c(typ))
+		C.GoPyObject_INIT(obj, c(typ))
 	} else {
-		C._PyObject_INIT_VAR(obj, c(typ), n)
+		C.GoPyObject_INIT_VAR(obj, c(typ), n)
 	}
 
 	if typ.IsGc() {
-		C._PyObject_GC_Track(obj)
+		C.GoPyObject_GC_Track(obj)
 	}
 
 	return unsafe.Pointer(obj)
