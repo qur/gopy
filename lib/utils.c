@@ -500,3 +500,13 @@ void GoPyObject_GC_Track(PyObject *obj){
 void setGcRefs(PyGC_Head *g, Py_ssize_t refs){
     g->gc.gc_refs = refs;
 }
+extern void stub(void* addr);
+void cinit() {
+    stub(&sigaltstack);
+    stub(&signal);
+    stub(&sigaction);
+#ifdef __APPLE__
+    extern void __sigaltstack();
+    stub(&__sigaltstack);
+#endif
+}

@@ -33,6 +33,7 @@ var builtins = map[string]CmdFunc{
 	"echo": echo,
 	"cd":   chdir,
 }
+
 //////////////////////////////////////////////////////////////////////////////
 
 func echo(args []string) error {
