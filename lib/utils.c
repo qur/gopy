@@ -136,8 +136,7 @@ static PyGetSetDef objmemb_getset[] = {
 };
 
 static PyTypeObject goObjMemberType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "GoObjMember",             /*tp_name*/
     sizeof(PyGoObjMember),     /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -217,8 +216,7 @@ static PyGetSetDef natmemb_getset[] = {
 };
 
 static PyTypeObject goNatMemberType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "GoNatMember",             /*tp_name*/
     sizeof(PyGoNatMember),     /*tp_basicsize*/
     0,                         /*tp_itemsize*/
