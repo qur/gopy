@@ -22,3 +22,22 @@ Currently, only Python 2.7 is supported.  Though I do hope to add support for
 other versions in the future.
 
 Note: Python 2.6 support is currently available on the python2.6 branch.
+
+Docker image
+-------------
+
+To provide an low entry point a docker image ([docker-gopy](https://github.com/ChristianKniep/docker-gopy)) is available.
+The image ([qnib/gopy](https://registry.hub.docker.com/u/qnib/gopy/)) is part of the offizial docker registry, so it can be fetched quite easily.
+
+To run the project's examples, one has to install docker and run the following:
+
+```
+$ docker run --rm -ti qnib/gopy /bin/bash
+root@10515b87b862:/# su -
+root@10515b87b862:~# gopy simple.go 
+root@10515b87b862:~# python simple.py 
+simple.example: [hello map[123:true]]
+root@10515b87b862:~# gopy parallel.go 
+root@10515b87b862:~# python parallel.py
+x = [1, 2, 3, 4]
+```
