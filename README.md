@@ -26,10 +26,11 @@ Note: Python 2.6 support is currently available on the python2.6 branch.
 Docker image
 -------------
 
-To provide an low entry point a docker image ([docker-gopy](https://github.com/ChristianKniep/docker-gopy)) is available.
-The image ([qnib/gopy](https://registry.hub.docker.com/u/qnib/gopy/)) is part of the offizial docker registry, so it can be fetched quite easily.
+To provide a low entry point a docker image ([docker-gopy](https://github.com/ChristianKniep/docker-gopy)) is available.
+The image ([qnib/gopy](https://registry.hub.docker.com/u/qnib/gopy/)) is part of the official docker registry.
 
-To run the project's examples, one has to install docker and run the following:
+To run the project's examples, one has to install docker and run the following. If it's not available locally it is
+going to be pulled from the 'internet'.
 
 ```
 $ docker run --rm -ti qnib/gopy /bin/bash
