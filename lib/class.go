@@ -789,7 +789,7 @@ func (c *Class) Create() (*Type, error) {
 
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.long(c.Flags)
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(c.Flags)
 
 	C.setClassContext(pyType, ctxt)
 
