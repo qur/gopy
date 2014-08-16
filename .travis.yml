@@ -11,5 +11,5 @@ install:
   - go get github.com/axw/gocov/gocov
 
 script:
-  - go test -covermode=count -coverprofile=coverage.cov
+  - go test github.com/limetext/gopy/lib -covermode=count -coverprofile=coverage.cov
   - $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/goveralls -coverprofile=coverage.cov -service=travis-ci

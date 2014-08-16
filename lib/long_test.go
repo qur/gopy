@@ -1,4 +1,4 @@
-package pytesting
+package py_test
 
 import (
 	"github.com/limetext/gopy/lib"
