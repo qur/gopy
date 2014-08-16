@@ -1,24 +1,2 @@
-goPy
-====
-
-What is this?
--------------
-
-Idiomatic Python bindings for Google Go
-
-What does that mean?
---------------------
-
-Instead of simply duplicating the Python C API in Go, this is an attempt to
-provide the Python API in a form that fits with writing normal Go code.
-
-This means that `PyFoo_XXX(foo, ...)` is `foo.XXX(...)`, and `PyFoo_Check(obj)`
-is `foo, ok := obj.(*Foo)` to give a couple of examples.
-
-What versions of Python are supported?
---------------------------------------
-
-Currently, only Python 2.7 is supported.  Though I do hope to add support for
-other versions in the future.
-
-Note: Python 2.6 support is currently available on the python2.6 branch.
+[![Build Status](https://travis-ci.org/limetext/gopy.svg)](https://travis-ci.org/limetext/gopy) [![Coverage Status](https://img.shields.io/coveralls/limetext/gopy.svg)](https://coveralls.io/r/limetext/gopy)
+This is a fork of the original repository to add in Python 3 support and other tweaks necessary for the limetext project.
