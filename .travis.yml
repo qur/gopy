@@ -2,7 +2,13 @@ sudo: false
 
 language: go
 
-go: 1.5.1
+go:
+  - 1.5
+  - tip
+
+os:
+  - linux
+  - osx
 
 addons:
   apt:
