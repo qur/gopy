@@ -6,8 +6,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/qur/gopy/lib"
 	"os"
+
+	"github.com/limetext/gopy"
 )
 
 func example(args *py.Tuple) (py.Object, error) {

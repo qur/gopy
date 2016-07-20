@@ -5,11 +5,12 @@
 package main
 
 import (
-	"github.com/qur/gopy/lib"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/limetext/gopy"
 )
 
 var mydir string

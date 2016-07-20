@@ -1,8 +1,9 @@
 package py_test
 
 import (
-	"github.com/limetext/gopy/lib"
 	"testing"
+
+	"github.com/limetext/gopy"
 )
 
 func TestLong(t *testing.T) {

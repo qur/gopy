@@ -1,12 +1,13 @@
 package py_test
 
 import (
-	"github.com/limetext/gopy/lib"
 	"math/rand"
 	"runtime"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/limetext/gopy"
 )
 
 func test2() {

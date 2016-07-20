@@ -4,7 +4,7 @@
 
 package main
 
-import "github.com/qur/gopy/lib"
+import "github.com/limetext/gopy"
 
 var shMod *py.Module
 

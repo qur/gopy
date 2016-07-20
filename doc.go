@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package py (github.com/qur/gopy/lib) provides access to the CPython C API.  This
+Package py (github.com/limetext/gopy) provides access to the CPython C API.  This
 package presents an idomatic Go interface to the CPython C API described at
 http://docs.python.org/c-api/index.html
 
