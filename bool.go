@@ -20,19 +20,19 @@ import (
 // same instance, and every False value refers to the same value.
 type Bool struct {
 	AbstractObject
-	o C.PyObject
+	o *C.PyObject
 }
 
 // BoolType is the Type object that represents the Bool type.
-var BoolType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyBool_Type)))
+var BoolType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyBool_Type))))
 
 // True is the true value of the Bool type.  It is a singleton value, all true
 // values refer to the same instance.
-var True = (*Bool)(C.pyTrue())
+var True = &Bool{o: (*C.PyObject)(C.pyTrue())}
 
 // False is the false value of the Bool type.  It is a singleton value, all
 // false values refer to the same instance.
-var False = (*Bool)(C.pyFalse())
+var False = &Bool{o: (*C.PyObject)(C.pyFalse())}
 
 func boolCheck(obj Object) bool {
 	return C.boolCheck(c(obj)) != 0

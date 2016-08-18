@@ -16,11 +16,13 @@ import (
 type Long struct {
 	AbstractObject
 	NumberProtocol
-	o C.PyLongObject
+	o *C.PyLongObject
 }
 
+var longObjMap = make(map[*C.PyObject]*Long)
+
 // LongType is the Type object that represents the Long type.
-var LongType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyLong_Type)))
+var LongType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyLong_Type))))
 
 func longCheck(obj Object) bool {
 	if obj == nil {
@@ -30,7 +32,12 @@ func longCheck(obj Object) bool {
 }
 
 func newLong(obj *C.PyObject) *Long {
-	return (*Long)(unsafe.Pointer(obj))
+	if l, ok := longObjMap[obj]; ok {
+		return l
+	}
+	l := &Long{o: (*C.PyLongObject)(unsafe.Pointer(obj))}
+	longObjMap[obj] = l
+	return l
 }
 
 func NewLong(i int64) *Long {

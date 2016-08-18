@@ -54,7 +54,7 @@ type Number interface {
 type number struct {
 	AbstractObject
 	NumberProtocol
-	o C.PyObject
+	o *C.PyObject
 }
 
 func cnp(n *NumberProtocol) *C.PyObject {

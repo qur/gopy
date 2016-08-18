@@ -13,6 +13,7 @@ package py
 import "C"
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 	"unsafe"
@@ -42,12 +43,14 @@ type Object interface {
 }
 
 // None is the Python equivalent to nil.
-var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
+var nonePtr = (*C.PyObject)(unsafe.Pointer(&C._Py_NoneStruct))
+var None = &NoneObject{o: nonePtr}
 
 // NoneObject is the type of the None value.  The only value of this type is
 // None.
 type NoneObject struct {
 	AbstractObject
+	o *C.PyObject
 }
 
 func (n *NoneObject) String() string {
@@ -58,7 +61,11 @@ func c(obj Object) *C.PyObject {
 	if obj == nil {
 		return nil
 	}
-	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
+	b := obj.Base()
+	if b.o == nil {
+		panic(fmt.Sprintf("nil! %T", obj))
+	}
+	return obj.Base().o
 }
 
 func stringify(obj Object) string {
@@ -91,8 +98,10 @@ func getType(pyType *C.PyTypeObject) (*Class, bool) {
 }
 
 func obj2Class(c *Class, obj *C.PyObject) (Object, bool) {
-	vp := reflect.NewAt(reflect.TypeOf(c.Pointer), unsafe.Pointer(&obj))
-	o, ok := vp.Elem().Interface().(Object)
+	// vp := reflect.NewAt(reflect.TypeOf(c.Pointer), unsafe.Pointer(&obj))
+	vp := reflect.New(reflect.TypeOf(c.Pointer).Elem())
+	o, ok := vp.Interface().(Object)
+	o.Base().o = obj
 	return o, ok
 }
 
@@ -101,8 +110,7 @@ func newObject(obj *C.PyObject) Object {
 		return nil
 	}
 
-	o := unsafe.Pointer(obj)
-	if o == unsafe.Pointer(None) {
+	if obj == nonePtr {
 		return None
 	}
 
@@ -127,35 +135,35 @@ func newObject(obj *C.PyObject) Object {
 
 	switch C.getBaseGoPyType(obj) {
 	case C.GoPyList_Type:
-		return (*List)(o)
+		return newList(obj)
 	case C.GoPyTuple_Type:
-		return (*Tuple)(o)
+		return newTuple(obj)
 	case C.GoPyDict_Type:
-		return (*Dict)(o)
+		return newDict(obj)
 	case C.GoPyUnicode_Type:
-		return (*Unicode)(o)
+		return newUnicode(obj)
 	case C.GoPyBool_Type:
 		return newBool(obj)
 	case C.GoPyLong_Type:
-		return (*Long)(o)
+		return newLong(obj)
 	case C.GoPyFloat_Type:
-		return (*Float)(o)
+		return newFloat(obj)
 	case C.GoPyModule_Type:
-		return (*Module)(o)
+		return newModule(obj)
 	case C.GoPyType_Type:
-		return (*Type)(o)
+		return newType(obj)
 	case C.GoPyCode_Type:
-		return (*Code)(o)
+		return newCode(obj)
 	case C.GoPyCFunction_Type:
-		return (*CFunction)(o)
+		return newCFunction(obj)
 	case C.GoPyComplex_Type:
-		return (*Complex)(o)
+		return newComplex(obj)
 	case C.GoPyFrozenSet_Type:
-		return (*FrozenSet)(o)
+		return newFrozenSet(obj)
 	case C.GoPySet_Type:
-		return (*Set)(o)
+		return newSet(obj)
 	case C.GoPyFunction_Type:
-		return (*Function)(o)
+		return newFunction(obj)
 	}
 	if C.exceptionCheck(obj) != 0 {
 		return newException(obj)

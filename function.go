@@ -14,14 +14,21 @@ import "unsafe"
 // using the "def" statement.
 type Function struct {
 	AbstractObject
-	o C.PyFunctionObject
+	o *C.PyFunctionObject
 }
 
+var functionObjMap = make(map[*C.PyObject]*Function)
+
 // FunctionType is the Type object that represents the Function type.
-var FunctionType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyFunction_Type)))
+var FunctionType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyFunction_Type))))
 
 func newFunction(obj *C.PyObject) *Function {
-	return (*Function)(unsafe.Pointer(obj))
+	if f, ok := functionObjMap[obj]; ok {
+		return f
+	}
+	f := &Function{o: (*C.PyFunctionObject)(unsafe.Pointer(obj))}
+	functionObjMap[obj] = f
+	return f
 }
 
 func functionCheck(obj Object) bool {

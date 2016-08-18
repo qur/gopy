@@ -19,18 +19,25 @@ import (
 // the PyList_XXX functions from the Python C API.
 type List struct {
 	AbstractObject
-	o C.PyListObject
+	o *C.PyListObject
 }
 
+var listObjMap = make(map[*C.PyObject]*List)
+
 // ListType is the Type object that represents the List type.
-var ListType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyList_Type)))
+var ListType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyList_Type))))
 
 func listCheck(obj Object) bool {
 	return C.listCheck(c(obj)) != 0
 }
 
 func newList(obj *C.PyObject) *List {
-	return (*List)(unsafe.Pointer(obj))
+	if l, ok := listObjMap[obj]; ok {
+		return l
+	}
+	l := &List{o: (*C.PyListObject)(unsafe.Pointer(obj))}
+	listObjMap[obj] = l
+	return l
 }
 
 // NewList creates a new Python List instance.  The created list has initial

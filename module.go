@@ -11,16 +11,19 @@ package py
 import "C"
 
 import (
+	"fmt"
 	"unsafe"
 )
 
 type Module struct {
 	AbstractObject
-	o C.PyObject
+	o *C.PyObject
 }
 
+var moduleObjMap = make(map[*C.PyObject]*Module)
+
 // ModuleType is the Type object that represents the Module type.
-var ModuleType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyModule_Type)))
+var ModuleType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyModule_Type))))
 
 func moduleCheck(obj Object) bool {
 	if obj == nil {
@@ -30,7 +33,12 @@ func moduleCheck(obj Object) bool {
 }
 
 func newModule(obj *C.PyObject) *Module {
-	return (*Module)(unsafe.Pointer(obj))
+	if m, ok := moduleObjMap[obj]; ok {
+		return m
+	}
+	m := &Module{o: obj}
+	moduleObjMap[obj] = m
+	return m
 }
 
 func Import(name string) (*Module, error) {
@@ -133,6 +141,8 @@ func (mod *Module) AddObject(name string, obj Object) error {
 
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
+
+	fmt.Printf("AddObject: [%s] = %T\n", name, obj)
 
 	ret := C.PyModule_AddObject(c(mod), cname, c(obj))
 	if ret < 0 {

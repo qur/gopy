@@ -16,9 +16,9 @@ import "unsafe"
 // concrete types to provide the Object interface functions.
 type AbstractObject struct{}
 
-func newAbstractObject(obj *C.PyObject) *AbstractObject {
-	return (*AbstractObject)(unsafe.Pointer(obj))
-}
+// func newAbstractObject(obj *C.PyObject) *AbstractObject {
+// 	return (*AbstractObject)(unsafe.Pointer(obj))
+// }
 
 // Init initialises obj.  It is equivalent to "obj.__init__(*args, **kw)" in
 // Python.

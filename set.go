@@ -17,18 +17,20 @@ import "unsafe"
 // the PySet_XXX functions from the Python C API.
 type Set struct {
 	AbstractObject
-	o C.PySetObject
+	o *C.PySetObject
 }
 
 type FrozenSet struct {
 	Set
 }
 
+var setObjMap = make(map[*C.PyObject]*Set)
+
 // SetType is the Type object that represents the Set type.
-var SetType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPySet_Type)))
+var SetType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPySet_Type))))
 
 // FrozenSetType is the Type object that represents the FrozenSet type.
-var FrozenSetType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyFrozenSet_Type)))
+var FrozenSetType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyFrozenSet_Type))))
 
 func setCheck(obj Object) bool {
 	return C.setCheck(c(obj)) != 0
@@ -39,11 +41,16 @@ func frozenSetCheck(obj Object) bool {
 }
 
 func newSet(obj *C.PyObject) *Set {
-	return (*Set)(unsafe.Pointer(obj))
+	if s, ok := setObjMap[obj]; ok {
+		return s
+	}
+	s := &Set{o: (*C.PySetObject)(unsafe.Pointer(obj))}
+	setObjMap[obj] = s
+	return s
 }
 
 func newFrozenSet(obj *C.PyObject) *FrozenSet {
-	return (*FrozenSet)(unsafe.Pointer(obj))
+	return (*FrozenSet)(unsafe.Pointer(newSet(obj)))
 }
 
 // NewSet create a new Python set instance.  The set contains the values from

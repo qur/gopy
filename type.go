@@ -7,11 +7,11 @@ package py
 // #include "utils.h"
 // static inline int typeCheck(PyObject *o) { return PyType_Check(o); }
 // static inline int typeCheckE(PyObject *o) { return PyType_CheckExact(o); }
-// static inline PyObject *typeAlloc(PyObject *t, Py_ssize_t n) {
-//    return ((PyTypeObject *)t)->tp_alloc((PyTypeObject *)t, n);
+// static inline PyObject *typeAlloc(PyTypeObject *t, Py_ssize_t n) {
+//    return t->tp_alloc(t, n);
 // }
-// static inline int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k) {
-//    return ((PyTypeObject *)t)->tp_init(o, a, k);
+// static inline int typeInit(PyTypeObject *t, PyObject *o, PyObject *a, PyObject *k) {
+//    return t->tp_init(o, a, k);
 // }
 import "C"
 
@@ -19,11 +19,13 @@ import "unsafe"
 
 type Type struct {
 	AbstractObject
-	o C.PyTypeObject
+	o *C.PyTypeObject
 }
 
+var typeObjMap = make(map[*C.PyObject]*Type)
+
 // TypeType is the Type object that represents the Type type.
-var TypeType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyType_Type)))
+var TypeType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyType_Type))))
 
 func typeCheck(obj Object) bool {
 	if obj == nil {
@@ -33,16 +35,21 @@ func typeCheck(obj Object) bool {
 }
 
 func newType(obj *C.PyObject) *Type {
-	return (*Type)(unsafe.Pointer(obj))
+	if t, ok := typeObjMap[obj]; ok {
+		return t
+	}
+	t := &Type{o: (*C.PyTypeObject)(unsafe.Pointer(obj))}
+	typeObjMap[obj] = t
+	return t
 }
 
 func (t *Type) Alloc(n int64) (Object, error) {
-	ret := C.typeAlloc(c(t), C.Py_ssize_t(n))
+	ret := C.typeAlloc(t.o, C.Py_ssize_t(n))
 	return obj2ObjErr(ret)
 }
 
 func (t *Type) Init(obj Object, args *Tuple, kw *Dict) error {
-	ret := C.typeInit(c(t), c(obj), c(args), c(kw))
+	ret := C.typeInit(t.o, c(obj), c(args), c(kw))
 	if ret < 0 {
 		return exception()
 	}
@@ -68,7 +75,7 @@ func (t *Type) CheckExact() bool {
 // Modified should be called after the attributes or base class of a Type have
 // been changed.
 func (t *Type) Modified() {
-	C.PyType_Modified(&t.o)
+	C.PyType_Modified(t.o)
 }
 
 // HasFeature returns true when "t" has the feature in question.
@@ -83,7 +90,7 @@ func (t *Type) IsGc() bool {
 
 // IsSubtype returns true if "t" is a subclass of "t2".
 func (t *Type) IsSubtype(t2 *Type) bool {
-	return C.PyType_IsSubtype(&t.o, &t2.o) == 1
+	return C.PyType_IsSubtype(t.o, t2.o) == 1
 }
 
 // PyType_GenericAlloc : This is an internal function, which we should not need

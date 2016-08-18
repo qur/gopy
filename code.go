@@ -12,14 +12,21 @@ import "unsafe"
 
 type Code struct {
 	AbstractObject
-	o C.PyCodeObject
+	o *C.PyCodeObject
 }
 
+var codeObjMap = make(map[*C.PyObject]*Code)
+
 // CodeType is the Type object that represents the Code type.
-var CodeType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyCode_Type)))
+var CodeType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyCode_Type))))
 
 func newCode(obj *C.PyObject) *Code {
-	return (*Code)(unsafe.Pointer(obj))
+	if c, ok := codeObjMap[obj]; ok {
+		return c
+	}
+	c := &Code{o: (*C.PyCodeObject)(unsafe.Pointer(obj))}
+	codeObjMap[obj] = c
+	return c
 }
 
 func CompileFile(name string) (*Code, error) {

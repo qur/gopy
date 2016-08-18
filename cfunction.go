@@ -15,8 +15,10 @@ import (
 
 type CFunction struct {
 	AbstractObject
-	o C.PyCFunctionObject
+	o *C.PyCFunctionObject
 }
+
+var cfunctionObjMap = make(map[*C.PyObject]*CFunction)
 
 func cfunctionCheck(obj Object) bool {
 	if obj == nil {
@@ -26,7 +28,12 @@ func cfunctionCheck(obj Object) bool {
 }
 
 func newCFunction(obj *C.PyObject) *CFunction {
-	return (*CFunction)(unsafe.Pointer(obj))
+	if cf, ok := cfunctionObjMap[obj]; ok {
+		return cf
+	}
+	cf := &CFunction{o: (*C.PyCFunctionObject)(unsafe.Pointer(obj))}
+	cfunctionObjMap[obj] = cf
+	return cf
 }
 
 func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {

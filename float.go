@@ -16,18 +16,25 @@ import (
 type Float struct {
 	AbstractObject
 	NumberProtocol
-	o C.PyFloatObject
+	o *C.PyFloatObject
 }
 
+var floatObjMap = make(map[*C.PyObject]*Float)
+
 // FloatType is the Type object that represents the Float type.
-var FloatType = (*Type)(unsafe.Pointer(C.getBasePyType(C.GoPyFloat_Type)))
+var FloatType = newType((*C.PyObject)(unsafe.Pointer(C.getBasePyType(C.GoPyFloat_Type))))
 
 func floatCheck(obj Object) bool {
 	return C.floatCheck(c(obj)) != 0
 }
 
 func newFloat(obj *C.PyObject) *Float {
-	return (*Float)(unsafe.Pointer(obj))
+	if f, ok := floatObjMap[obj]; ok {
+		return f
+	}
+	f := &Float{o: (*C.PyFloatObject)(unsafe.Pointer(obj))}
+	floatObjMap[obj] = f
+	return f
 }
 
 func NewFloat(v float64) (*Float, error) {
