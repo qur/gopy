@@ -103,7 +103,6 @@ func (d *Dict) SetItem(key, val Object) error {
 // with a *String with the value of "key" will be used as the key).  If "key" is
 // not hashable, then a TypeError will be returned.
 func (d *Dict) SetItemString(key string, val Object) error {
-	fmt.Printf("SetItemString: [%s] = %T\n", key, val)
 	s := C.CString(key)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyDict_SetItemString(c(d), s, c(val))

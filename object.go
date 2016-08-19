@@ -10,6 +10,9 @@ package py
 // static inline int exceptionCheck(PyObject *obj) {
 //     return PyExceptionClass_Check(obj);
 // }
+// static inline PyObject *mycgocheck(PyObject *obj) {
+//     return obj;
+// }
 import "C"
 
 import (
@@ -65,7 +68,12 @@ func c(obj Object) *C.PyObject {
 	if b.o == nil {
 		panic(fmt.Sprintf("nil! %T", obj))
 	}
-	return obj.Base().o
+	defer func() {
+		if r := recover(); r != nil {
+			panic(fmt.Sprintf("Panic in c() for %T: %v", obj, r))
+		}
+	}()
+	return C.mycgocheck(obj.Base().o)
 }
 
 func stringify(obj Object) string {
@@ -101,7 +109,9 @@ func obj2Class(c *Class, obj *C.PyObject) (Object, bool) {
 	// vp := reflect.NewAt(reflect.TypeOf(c.Pointer), unsafe.Pointer(&obj))
 	vp := reflect.New(reflect.TypeOf(c.Pointer).Elem())
 	o, ok := vp.Interface().(Object)
-	o.Base().o = obj
+	if ok {
+		o.Base().o = obj
+	}
 	return o, ok
 }
 
@@ -112,6 +122,10 @@ func newObject(obj *C.PyObject) Object {
 
 	if obj == nonePtr {
 		return None
+	}
+
+	if goobj, ok := goObjMap[obj]; ok {
+		return goobj
 	}
 
 	pyType := (*C.PyTypeObject)(obj.ob_type)

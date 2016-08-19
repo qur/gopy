@@ -16,15 +16,15 @@ import "sync"
 // Some sizes that we need for various calculations
 const (
 	upSize   = unsafe.Sizeof(unsafe.Pointer(nil))
-	headSize = unsafe.Sizeof(C.PyGC_Head{})
-	baseSize = unsafe.Sizeof(C.PyObject{})
+	headSize = C.sizeof_PyGC_Head
+	baseSize = C.sizeof_PyObject
 )
 
 // We need to keep track of things that we have allocated, and the proxies that
 // we have created, memLock must be locked whilst using these variables.
 var (
-	memLock   sync.Mutex
-	allocated = make(map[uintptr][]unsafe.Pointer)
+	memLock sync.Mutex
+	// allocated = make(map[uintptr][]unsafe.Pointer)
 	gcProxies = make(map[uintptr]*C.PyObject)
 )
 
@@ -46,9 +46,10 @@ func goGcMalloc(size uintptr) *C.PyObject {
 	// We need to move the original tracked entry to be indexed by the offset
 	// address from fromGc
 	px := uintptr(unsafe.Pointer(p))
-	gx := uintptr(unsafe.Pointer(g))
-	allocated[px] = allocated[gx]
-	delete(allocated, gx)
+	// gx := uintptr(unsafe.Pointer(g))
+	// TODO!
+	// allocated[px] = allocated[gx]
+	// delete(allocated, gx)
 
 	// We can't access the internals of the GC Module to manipulate the
 	// generation counts, so we have to use a proxy object instead.  We just
@@ -56,7 +57,8 @@ func goGcMalloc(size uintptr) *C.PyObject {
 	// cleaned up later.
 	proxy := C._PyObject_GC_Malloc(C.size_t(baseSize))
 	if proxy == nil {
-		delete(allocated, px)
+		// TODO!
+		// delete(allocated, px)
 		return nil
 	}
 	C.GoPyObject_INIT(proxy, c(BaseType))
@@ -71,13 +73,18 @@ func _goMalloc(size uintptr) *C.PyObject {
 	// runtime will mark the memory as not containing pointers, and won't use it
 	// to pin other Go allocations in memory - in which case we might as well
 	// just stick with the Python allocator.
-	n := (size + upSize - 1) / upSize
-	s := make([]unsafe.Pointer, n)
-	p := unsafe.Pointer(&s[0])
+	// n := (size + upSize - 1) / upSize
+	// s := make([]unsafe.Pointer, n)
+	// p := unsafe.Pointer(&s[0])
+
+	// Go 1.6: Cannot return pointers to Go memory anymore!
+	// Instead we just keep a key into the [something] map and use that
+	// to get Go memory
+	p := C.malloc(C.size_t(size))
 
 	// We need to keep a reference to the allocation, so that the Go runtime
 	// doesn't free the memory before we are finished with it.
-	allocated[uintptr(p)] = s
+	// allocated[uintptr(p)] = s
 
 	return (*C.PyObject)(p)
 }
@@ -134,7 +141,8 @@ func goGenericFree(o unsafe.Pointer) {
 
 	// Remove the entry from allocated, to let the Go runtime reclaim the memory
 	// in the next GC run.
-	delete(allocated, uintptr(o))
+	// TODO!
+	// delete(allocated, uintptr(o))
 
 	// We need to also delete the proxy, so that the Python GC counts get
 	// updated as appropriate.

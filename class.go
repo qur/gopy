@@ -49,6 +49,8 @@ const (
 	TPFLAGS_BASETYPE = uint32(C.Py_TPFLAGS_BASETYPE)
 )
 
+var goObjMap = make(map[*C.PyObject]Object)
+
 // A Class struct instance is used to define a Python class that has been
 // implemented in Go.
 //
@@ -97,7 +99,7 @@ type Class struct {
 	New     func(*Type, *Tuple, *Dict) (Object, error)
 }
 
-var otyp = reflect.TypeOf(new(Object)).Elem()
+var otyp = reflect.TypeOf((*Object)(nil)).Elem()
 
 //export goClassCallMethod
 func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
@@ -209,8 +211,17 @@ func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 
 //export goClassObjGet
 func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
+	goobj, ok := goObjMap[(*C.PyObject)(obj)]
+	if !ok {
+		// t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
+		panic(fmt.Sprintf("TODO: not sure what to do? %v", idx))
+	}
+
+	goobjR := reflect.ValueOf(goobj)
+
 	field := getField(idx)
-	item := unsafe.Pointer(uintptr(obj) + field.Offset)
+	// item := unsafe.Pointer(uintptr(obj) + field.Offset)
+	item := unsafe.Pointer(goobjR.Pointer() + field.Offset)
 
 	var o Object
 
@@ -226,8 +237,17 @@ func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 
 //export goClassObjSet
 func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
+	goobj, ok := goObjMap[(*C.PyObject)(obj)]
+	if !ok {
+		// t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
+		panic(fmt.Sprintf("TODO: not sure what to do? %v", idx))
+	}
+
+	goobjR := reflect.ValueOf(goobj)
+
 	field := getField(idx)
-	item := unsafe.Pointer(uintptr(obj) + field.Offset)
+	// item := unsafe.Pointer(uintptr(obj) + field.Offset)
+	item := unsafe.Pointer(goobjR.Pointer() + field.Offset)
 
 	// This is the new value we are being asked to set
 	value := newObject((*C.PyObject)(obj2))
@@ -245,7 +265,7 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	}
 
 	vt := reflect.TypeOf(value)
-	ov := reflect.NewAt(field.Type, unsafe.Pointer(item)).Elem()
+	ov := reflect.NewAt(field.Type, item).Elem()
 
 	// If the value is assignable to the field, then we do it, with the same
 	// refcount dance as above.
@@ -265,8 +285,17 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 
 //export goClassNatGet
 func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
+	goobj, ok := goObjMap[(*C.PyObject)(obj)]
+	if !ok {
+		// t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
+		panic(fmt.Sprintf("TODO: not sure what to do? %v", idx))
+	}
+
+	goobjR := reflect.ValueOf(goobj)
+
 	field := getField(idx)
-	item := unsafe.Pointer(uintptr(obj) + field.Offset)
+	// item := unsafe.Pointer(uintptr(obj) + field.Offset)
+	item := unsafe.Pointer(goobjR.Pointer() + field.Offset)
 
 	switch field.Type.Kind() {
 	case reflect.Int:
@@ -280,8 +309,17 @@ func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 
 //export goClassNatSet
 func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
+	goobj, ok := goObjMap[(*C.PyObject)(obj)]
+	if !ok {
+		// t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
+		panic(fmt.Sprintf("TODO: not sure what to do? %v", idx))
+	}
+
+	goobjR := reflect.ValueOf(goobj)
+
 	field := getField(idx)
-	item := unsafe.Pointer(uintptr(obj) + field.Offset)
+	// item := unsafe.Pointer(uintptr(obj) + field.Offset)
+	item := unsafe.Pointer(goobjR.Pointer() + field.Offset)
 
 	// This is the new value we are being asked to set
 	value := newObject((*C.PyObject)(obj2))
@@ -313,19 +351,31 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 		return -1
 	}
 
-	st := reflect.TypeOf(class.Pointer).Elem()
+	goobj, ok := goObjMap[(*C.PyObject)(obj)]
+	if !ok {
+		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
+		panic(fmt.Sprintf("TODO: not sure what to do? %s", t))
+	}
 
-	for i := 0; i < st.NumField(); i++ {
-		field := st.Field(i)
-		if !field.Type.AssignableTo(otyp) {
+	st := reflect.TypeOf(class.Pointer).Elem()
+	goobjT := reflect.TypeOf(goobj)
+	if goobjT.Elem() != st {
+		panic(fmt.Sprintf("Types don't match! class:%s, val:%s", st, goobjT.Elem()))
+	}
+
+	goobjR := reflect.ValueOf(goobj)
+
+	for i := 0; i < goobjR.NumField(); i++ {
+		field := goobjR.Field(i)
+		if !field.Type().AssignableTo(otyp) {
 			continue
 		}
-		v := unsafe.Pointer(uintptr(obj) + field.Offset)
+		// v := unsafe.Pointer(uintptr(obj) + field.Offset)
 		var o Object
-		if field.Type == otyp {
-			o = *(*Object)(v)
+		if field.Type() == otyp {
+			o = field.Interface().(Object)
 		} else {
-			o = *(**AbstractObject)(v)
+			o = field.Interface().(*AbstractObject)
 		}
 		ret := C.doVisit(c(o), visit, arg)
 		if ret != 0 {
@@ -348,21 +398,33 @@ func goClassClear(obj unsafe.Pointer) int {
 		return -1
 	}
 
-	st := reflect.TypeOf(class.Pointer).Elem()
+	goobj, ok := goObjMap[(*C.PyObject)(obj)]
+	if !ok {
+		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
+		panic(fmt.Sprintf("TODO: not sure what to do? %s", t))
+	}
 
-	for i := 0; i < st.NumField(); i++ {
-		field := st.Field(i)
-		if !field.Type.AssignableTo(otyp) {
+	st := reflect.TypeOf(class.Pointer).Elem()
+	goobjT := reflect.TypeOf(goobj)
+	if goobjT.Elem() != st {
+		panic(fmt.Sprintf("Types don't match! class:%s, val:%s", st, goobjT.Elem()))
+	}
+
+	goobjR := reflect.ValueOf(goobj)
+
+	for i := 0; i < goobjR.NumField(); i++ {
+		field := goobjR.Field(i)
+		if !field.Type().AssignableTo(otyp) {
 			continue
 		}
-		v := unsafe.Pointer(uintptr(obj) + field.Offset)
-		if field.Type == otyp {
-			o := (*Object)(v)
+		// v := unsafe.Pointer(uintptr(obj) + field.Offset)
+		if field.Type() == otyp {
+			o := field.Addr().Interface().(*Object)
 			tmp := *o
 			*o = nil
 			Decref(tmp)
 		} else {
-			o := (**AbstractObject)(v)
+			o := field.Addr().Interface().(**AbstractObject)
 			tmp := *o
 			*o = nil
 			Decref(tmp)

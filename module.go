@@ -10,10 +10,7 @@ package py
 // static inline void decref(PyObject *obj) { Py_DECREF(obj); }
 import "C"
 
-import (
-	"fmt"
-	"unsafe"
-)
+import "unsafe"
 
 type Module struct {
 	AbstractObject
@@ -141,8 +138,6 @@ func (mod *Module) AddObject(name string, obj Object) error {
 
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
-
-	fmt.Printf("AddObject: [%s] = %T\n", name, obj)
 
 	ret := C.PyModule_AddObject(c(mod), cname, c(obj))
 	if ret < 0 {
