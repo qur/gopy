@@ -1,7 +1,4 @@
-*.[68]
-_obj
-_cgo*
-*.o
+_cgo_export.h
 .*.swp
 /.wrenv/
 /Python-*/
