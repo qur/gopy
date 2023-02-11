@@ -28,7 +28,7 @@ func (g *GilState) Release() {
 	}
 }
 
-// InitAndLock is a convience function.  It initializes Python, enables thread
+// InitAndLock is a convenience function.  It initializes Python, enables thread
 // support, and returns a locked Lock instance.
 func InitAndLock() *Lock {
 	return initAndLock(false)
@@ -72,6 +72,11 @@ func initAndLock(initsigs bool) *Lock {
 // thread whilst calling Python code which would invalidate the per-thread
 // state.
 //
+// A single instance of Lock is not intended to be shared, but instead
+// represents a private view of the GIL. If the Lock is locked then you have the
+// GIL and can execute Python code, if the Lock is unlocked (or unblocked) then
+// you don't have the GIL and can't execute Python code.
+//
 // Basic usage is:
 //
 //	lock = py.NewLock()
@@ -98,7 +103,7 @@ func initAndLock(initsigs bool) *Lock {
 //
 //	lock.Unlock()
 //
-// or unblock threads, which will not call runtme.UnlockOSThread() but it less
+// or unblock threads, which will not call runtime.UnlockOSThread() but it less
 // expensive, as we do not free and then recreate a thread state variable:
 //
 //	lock = py.NewLock()
@@ -115,14 +120,13 @@ func initAndLock(initsigs bool) *Lock {
 //
 //	lock.Unlock()
 type Lock struct {
-	// TODO(jp3): add mutex for go thread safety
 	gilState *GilState
 	thState  *C.PyThreadState
 }
 
 // NewLock returns a new locked Lock
 func NewLock() (lock *Lock) {
-	lock = new(Lock)
+	lock = &Lock{}
 	lock.Lock()
 	return
 }

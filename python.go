@@ -16,10 +16,20 @@ import (
 	"unsafe"
 )
 
+// Initialize initialises the Python runtime.
+//
+// You probably want InitAndLockWithSignals though, as it doesn't require the
+// caller to worry about goroutines or threads.
 func Initialize() {
 	C.Py_Initialize()
 }
 
+// InitializeEx initialises the Python runtime.
+//
+// If initsigs is true then the Python runtime will install signal handlers.
+//
+// You probably want InitAndLock or InitAndLockWithSignals though, as they
+// doesn't require the caller to worry about goroutines or threads.
 func InitializeEx(initsigs bool) {
 	if initsigs {
 		C.Py_InitializeEx(1)
