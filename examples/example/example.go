@@ -6,8 +6,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/qur/gopy/lib"
 	"os"
+
+	"qur.me/py/v3"
 )
 
 func example(args *py.Tuple) (py.Object, error) {

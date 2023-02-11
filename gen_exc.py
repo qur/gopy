@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2011 Julian Phillips.  All rights reserved.
 # Use of this source code is governed by a BSD-style
@@ -29,7 +29,7 @@ def get_ffi_flags():
     cmd = ['pkg-config', '--cflags', 'libffi']
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out, err = p.communicate()
-    return out.strip().split(' ')
+    return out.decode('utf-8').strip().split(' ')
 
 def process(inp):
     exceptions = []
@@ -45,13 +45,13 @@ def process(inp):
         if len(exc) > maxlen:
             maxlen = len(exc)
 
-    print header
+    print(header)
 
-    print 'var ('
+    print('var (')
     for exception in exceptions:
-        print '\t%s%s = newException(C.PyExc_%s)' % \
-              (exception, ' ' * (maxlen - len(exception)), exception)
-    print ')\n'
+        print('\t%s%s = newException(C.PyExc_%s)' % \
+              (exception, ' ' * (maxlen - len(exception)), exception))
+    print(')\n')
 
 def main():
     cmd = ["gcc", "-E", "-o", "-", "utils.c"] + get_ffi_flags()

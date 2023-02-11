@@ -1,0 +1,12 @@
+default = "dev"
+
+[crates.dev]
+  image = "golang:1.20"
+  env-blacklist = ["GOPATH"]
+  volumes = ["/tmp:/tmp"]
+  network = "host"
+  shell = "/bin/sh"
+  export-bin = [
+    "/usr/local/go/bin/*",
+    "/go/bin/*",
+  ]

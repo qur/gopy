@@ -9,7 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"github.com/qur/gopy/lib"
+	"qur.me/py/v3"
 )
 
 var mydir string

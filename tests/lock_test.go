@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qur/gopy/lib"
+	"qur.me/py/v3"
 )
 
 func test2() {

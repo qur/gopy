@@ -3,3 +3,4 @@ _obj
 _cgo*
 *.o
 .*.swp
+/.wrenv/
