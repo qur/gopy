@@ -84,4 +84,3 @@ var (
 	EncodingWarning           = newException(C.PyExc_EncodingWarning)
 	ResourceWarning           = newException(C.PyExc_ResourceWarning)
 )
-

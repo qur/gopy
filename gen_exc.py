@@ -61,7 +61,7 @@ def process(inp, outp):
         print('\t%s%s = newException(C.PyExc_%s)' %
               (exception, ' ' * (maxlen - len(exception)), exception),
               file=outp)
-    print(')\n', file=outp)
+    print(')', file=outp)
 
 
 def main():
