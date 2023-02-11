@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+import os
 import sys
 import re
 import subprocess
@@ -74,6 +75,7 @@ def main():
         t.start()
         p.wait()
         t.join()
+    os.remove("_cgo_export.h")
 
 
 if __name__ == "__main__":
