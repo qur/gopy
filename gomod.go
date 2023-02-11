@@ -4,17 +4,18 @@
 
 package py
 
-// #include "utils.h"
-import "C"
-
 import (
-	"fmt"
 	"sync"
 )
 
 var (
 	goModLock sync.Mutex
 	goModule  *Module
+
+	modDef = ModuleDef{
+		Name: "go",
+		Doc:  "go interface module",
+	}
 )
 
 // InitGoModules initializes (and returns) the special built-in "go" module.
@@ -26,34 +27,31 @@ var (
 // This function may be called more than once to get at the *Module, the module
 // will only be created and initialized once.
 func InitGoModule() (*Module, error) {
-	// TODO(jp3): restore this once the module code is up and running again ...
-	return nil, fmt.Errorf("func InitGoModule is not implemented")
-	// goModLock.Lock()
-	// defer goModLock.Unlock()
+	goModLock.Lock()
+	defer goModLock.Unlock()
 
-	// if goModule != nil {
-	// 	return goModule, nil
-	// }
+	if goModule != nil {
+		return goModule, nil
+	}
 
-	// goModule, err := InitModule("go", []Method{})
-	// if err != nil {
-	// 	return nil, err
-	// }
+	goModule, err := CreateModule(&modDef)
+	if err != nil {
+		return nil, err
+	}
 
-	// c, err := chanClass.Create()
-	// if err != nil {
-	// 	goModule.Decref()
-	// 	goModule = nil
-	// 	return nil, err
-	// }
+	c, err := chanClass.Create()
+	if err != nil {
+		goModule.Decref()
+		goModule = nil
+		return nil, err
+	}
 
-	// err = goModule.AddObject("Chan", c)
-	// if err != nil {
-	// 	goModule.Decref()
-	// 	goModule = nil
-	// 	c.Decref()
-	// 	return nil, err
-	// }
+	if err := goModule.AddObject("Chan", c); err != nil {
+		goModule.Decref()
+		goModule = nil
+		c.Decref()
+		return nil, err
+	}
 
-	// return goModule, nil
+	return goModule, nil
 }

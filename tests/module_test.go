@@ -1,8 +1,9 @@
 package pytesting
 
 import (
-	"qur.me/py/v3"
 	"testing"
+
+	"qur.me/py/v3"
 )
 
 func TestFunction(t *testing.T) {
@@ -13,7 +14,7 @@ func TestFunction(t *testing.T) {
 		called = true
 		return py.None, nil
 	}
-	if m, err := py.InitModule("test", []py.Method{{"test", f, ""}}); err != nil {
+	if m, err := py.InitModule("test", []py.GoMethod{{"test", f, ""}}); err != nil {
 		t.Fatal(err)
 	} else if t2, err := m.Dict().GetItemString("test"); err != nil {
 		t.Fatal(err)

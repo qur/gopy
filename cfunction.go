@@ -90,7 +90,7 @@ func (f *CFunction) Call(args *Tuple, kw *Dict) (Object, error) {
 	return newObject(ret), nil
 }
 
-type Method struct {
+type GoMethod struct {
 	Name string
 	Func interface{}
 	Doc  string

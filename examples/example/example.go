@@ -41,7 +41,7 @@ func example(args *py.Tuple) (py.Object, error) {
 
 type ExampleClass struct {
 	py.BaseObject
-	wibble int
+	wibble int64
 }
 
 func (e *ExampleClass) PyInit(args *py.Tuple, kwds *py.Dict) error {
@@ -92,8 +92,8 @@ func (e *ExampleClass) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) 
 				} else {
 					fmt.Printf("No %s?  That's sad ...\n", k)
 				}
-			case *py.Int:
-				fmt.Printf("%s is %d\n", k, value.Int())
+			case *py.Long:
+				fmt.Printf("%s is %d\n", k, value.Int64())
 			}
 		}
 	}
@@ -102,7 +102,7 @@ func (e *ExampleClass) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) 
 }
 
 func (e *ExampleClass) PyGet_wibble() (py.Object, error) {
-	i := py.NewInt(e.wibble)
+	i := py.NewLong(e.wibble)
 	if i == nil {
 		return nil, fmt.Errorf("TypeError: failed to convert wibble to Int")
 	}
@@ -110,11 +110,11 @@ func (e *ExampleClass) PyGet_wibble() (py.Object, error) {
 }
 
 func (e *ExampleClass) PySet_wibble(arg py.Object) error {
-	i, ok := arg.(*py.Int)
+	i, ok := arg.(*py.Long)
 	if !ok {
-		return fmt.Errorf("TypeError: need a *py.Int, not %T", arg)
+		return fmt.Errorf("TypeError: need a *py.Long, not %T", arg)
 	}
-	e.wibble = i.Int()
+	e.wibble = i.Int64()
 	return nil
 }
 
@@ -123,14 +123,17 @@ var exampleClass = py.Class{
 	Pointer: (*ExampleClass)(nil),
 }
 
+var modDef = py.ModuleDef{
+	Name: "example",
+	Methods: []py.GoMethod{
+		{"example", example, "example function"},
+	},
+}
+
 func main() {
 	py.Initialize()
 
-	methods := []py.Method{
-		{"example", example, "example function"},
-	}
-
-	m, err := py.InitModule("example", methods)
+	m, err := py.CreateModule(&modDef)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)

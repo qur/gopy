@@ -81,7 +81,7 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 }
 
 func setupShModule() error {
-	methods := []py.Method{
+	methods := []py.GoMethod{
 		{"tokenise", pyTokenise, "tokenise the given string"},
 		{"run", pyRun, "run the given command"},
 	}
@@ -91,7 +91,7 @@ func setupShModule() error {
 		return err
 	}
 
-	mod, err := py.InitModule("sh.__cmds__", []py.Method{})
+	mod, err := py.InitModule("sh.__cmds__", []py.GoMethod{})
 	if err != nil {
 		return err
 	}

@@ -6,16 +6,6 @@
 
 #include "_cgo_export.h"
 
-PyMethodDef *newMethodDef(void) {
-  return (PyMethodDef *)calloc(1, sizeof(PyMethodDef));
-}
-
-void set_call_noargs(PyCFunction *f) { *f = (PyCFunction)callWithoutArgs; }
-
-void set_call_args(PyCFunction *f) { *f = (PyCFunction)callWithArgs; }
-
-void set_call_keywords(PyCFunction *f) { *f = (PyCFunction)callWithKeywords; }
-
 int doParseTuple(PyObject *args, char *fmt, void *values[], int c) {
   ffi_cif cif;
   ffi_status status;
@@ -543,6 +533,17 @@ void typeFree(PyTypeObject *type, PyObject *o) { type->tp_free(o); }
 //
 // ----------------------------------
 
+// --- cfunction.go helper functions ---
+//
+PyMethodDef *newMethodDef(void) {
+  return (PyMethodDef *)calloc(1, sizeof(PyMethodDef));
+}
+void set_call_noargs(PyCFunction *f) { *f = (PyCFunction)callWithoutArgs; }
+void set_call_args(PyCFunction *f) { *f = (PyCFunction)callWithArgs; }
+void set_call_keywords(PyCFunction *f) { *f = (PyCFunction)callWithKeywords; }
+//
+// ----------------------------------
+
 // --- class.go helper functions ---
 //
 PyTypeObject *newType(void) { return calloc(1, sizeof(PyTypeObject)); }
@@ -589,6 +590,12 @@ void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n) {
 // TODO(jp3): ???
 // void __PyObject_GC_TRACK(PyObject *obj) { _PyObject_GC_TRACK(obj); }
 // void setGcRefs(PyGC_Head *g, Py_ssize_t refs) { g->gc.gc_refs = refs; }
+//
+// ----------------------------------
+
+// --- module.go helper functions ---
+//
+PyModuleDef *newModuleDef(void) { return calloc(1, sizeof(PyModuleDef)); }
 //
 // ----------------------------------
 

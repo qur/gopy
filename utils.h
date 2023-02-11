@@ -99,11 +99,6 @@ typedef struct {
   PySequenceMethods sq_meth;
 } ClassContext;
 
-extern PyMethodDef *newMethodDef(void);
-extern void set_call_noargs(PyCFunction *f);
-extern void set_call_args(PyCFunction *f);
-extern void set_call_keywords(PyCFunction *f);
-
 extern int doParseTuple(PyObject *args, char *fmt, void *values[], int c);
 extern int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt,
                             char *kwlist[], void *values[], int c);
@@ -173,6 +168,15 @@ void typeFree(PyTypeObject *type, PyObject *o);
 //
 // ----------------------------------
 
+// --- cfunction.go helper functions ---
+//
+extern PyMethodDef *newMethodDef(void);
+extern void set_call_noargs(PyCFunction *f);
+extern void set_call_args(PyCFunction *f);
+extern void set_call_keywords(PyCFunction *f);
+//
+// ----------------------------------
+
 // --- class.go helper functions ---
 //
 extern PyTypeObject *newType(void);
@@ -191,6 +195,12 @@ extern void _PyObject_INIT(PyObject *obj, PyObject *typ);
 extern void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n);
 // extern void __PyObject_GC_TRACK(PyObject *obj);
 // extern void setGcRefs(PyGC_Head *g, Py_ssize_t refs);
+//
+//  ----------------------------------
+
+// --- memory.go helper functions ---
+//
+extern PyModuleDef *newModuleDef();
 //
 //  ----------------------------------
 

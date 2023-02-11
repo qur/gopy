@@ -144,7 +144,7 @@ func newObject(obj *C.PyObject) Object {
 	case &C.PyFrame_Type:
 		return (*Frame)(o)
 	case &C.PyMethod_Type:
-		return (*MethodObj)(o)
+		return (*Method)(o)
 	case &C.PyUnicode_Type:
 		return (*Unicode)(o)
 	}

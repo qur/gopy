@@ -9,7 +9,7 @@ import "C"
 
 import "unsafe"
 
-type MethodObj struct {
+type Method struct {
 	AbstractObject
 	o C.PyMethodObject
 }
@@ -17,8 +17,8 @@ type MethodObj struct {
 // MethodType is the Type object that represents the MethodObj type.
 var MethodType = (*Type)(unsafe.Pointer(&C.PyMethod_Type))
 
-func newMethod(obj *C.PyObject) *MethodObj {
-	return (*MethodObj)(unsafe.Pointer(obj))
+func newMethod(obj *C.PyObject) *Method {
+	return (*Method)(unsafe.Pointer(obj))
 }
 
 func methodCheck(obj Object) bool {
@@ -28,7 +28,7 @@ func methodCheck(obj Object) bool {
 	return C.methodCheck(c(obj)) != 0
 }
 
-func NewMethodObj(function, self Object) (*MethodObj, error) {
+func NewMethod(function, self Object) (*Method, error) {
 	ret := C.PyMethod_New(c(function), c(self))
 	if ret == nil {
 		return nil, exception()
@@ -36,7 +36,7 @@ func NewMethodObj(function, self Object) (*MethodObj, error) {
 	return newMethod(ret), nil
 }
 
-func (m *MethodObj) Self() Object {
+func (m *Method) Self() Object {
 	ret := C.PyMethod_Self(c(m))
 	return newObject(ret)
 }

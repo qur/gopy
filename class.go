@@ -539,7 +539,7 @@ var exportable = map[reflect.Kind]bool{
 	reflect.Float64: true,
 }
 
-type goMethod struct {
+type methodSignature struct {
 	field string
 	sig   interface{}
 }
@@ -572,7 +572,7 @@ var (
 	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
 )
 
-var methodMap = map[string]goMethod{
+var methodMap = map[string]methodSignature{
 	// Standard Methods
 	"PyCall":        {"call", pyTernaryCallFunc},
 	"PyCompare":     {"compare", pyCompareFunc},
