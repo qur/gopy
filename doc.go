@@ -3,8 +3,8 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package py (qur.me/py/v3) provides access to the CPython C API.  This
-package presents an idomatic Go interface to the CPython C API described at
+Package py (qur.me/py/v3) provides access to the CPython C API.  This package
+presents an idiomatic Go interface to the CPython C API described at
 http://docs.python.org/3/c-api/index.html
 
 Instead of simply exposing the C API as-is, this package uses interfaces,
