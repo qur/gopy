@@ -4,3 +4,4 @@ _cgo*
 *.o
 .*.swp
 /.wrenv/
+/Python-*/
