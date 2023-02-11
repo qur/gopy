@@ -83,7 +83,7 @@ func (f *CFunction) Flags() (int, error) {
 }
 
 func (f *CFunction) Call(args *Tuple, kw *Dict) (Object, error) {
-	ret := C.PyCFunction_Call(c(f), c(args), c(kw))
+	ret := C.PyObject_Call(c(f), c(args), c(kw))
 	if ret == nil {
 		return nil, exception()
 	}

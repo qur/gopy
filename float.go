@@ -38,12 +38,12 @@ func NewFloat(v float64) (*Float, error) {
 }
 
 func NewFloatString(v string) (*Float, error) {
-	s, err := NewString(v)
+	s, err := NewUnicode(v)
 	if err != nil {
 		return nil, err
 	}
 	defer s.Decref()
-	ret := C.PyFloat_FromString(c(s), nil)
+	ret := C.PyFloat_FromString(c(s))
 	if ret == nil {
 		return nil, exception()
 	}

@@ -7,7 +7,10 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
+import (
+	"math"
+	"unsafe"
+)
 
 func packValues(values []interface{}) ([]unsafe.Pointer, error) {
 	cValues := make([]unsafe.Pointer, len(values))
@@ -160,7 +163,11 @@ func BuildValue(format string, values ...interface{}) (Object, error) {
 			cValues[i].value = unsafe.Pointer(&b)
 		case int:
 			iv := C.int(v)
-			cValues[i]._type = &C.ffi_type_sint
+			if math.MaxInt == math.MaxInt64 {
+				cValues[i]._type = &C.ffi_type_sint64
+			} else {
+				cValues[i]._type = &C.ffi_type_sint32
+			}
 			cValues[i].value = unsafe.Pointer(&iv)
 		case int8:
 			iv := C.int8_t(v)
@@ -180,7 +187,11 @@ func BuildValue(format string, values ...interface{}) (Object, error) {
 			cValues[i].value = unsafe.Pointer(&iv)
 		case uint:
 			iv := C.uint(v)
-			cValues[i]._type = &C.ffi_type_uint
+			if math.MaxUint == math.MaxUint64 {
+				cValues[i]._type = &C.ffi_type_uint64
+			} else {
+				cValues[i]._type = &C.ffi_type_uint32
+			}
 			cValues[i].value = unsafe.Pointer(&iv)
 		case uint8:
 			iv := C.uint8_t(v)

@@ -65,7 +65,7 @@ func Main(args []string) int {
 		defer C.free(unsafe.Pointer(argv[i]))
 	}
 
-	return int(C.Py_Main(C.int(len(argv)), &argv[0]))
+	return int(C.Py_BytesMain(C.int(len(argv)), &argv[0]))
 }
 
 // EnterRecusiveCall marks a point where a recursive Go-level call is about to

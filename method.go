@@ -28,17 +28,12 @@ func methodCheck(obj Object) bool {
 	return C.methodCheck(c(obj)) != 0
 }
 
-func NewMethodObj(function, self, class Object) (*MethodObj, error) {
-	ret := C.PyMethod_New(c(function), c(self), c(class))
+func NewMethodObj(function, self Object) (*MethodObj, error) {
+	ret := C.PyMethod_New(c(function), c(self))
 	if ret == nil {
 		return nil, exception()
 	}
 	return newMethod(ret), nil
-}
-
-func (m *MethodObj) Class() Object {
-	ret := C.PyMethod_Class(c(m))
-	return newObject(ret)
 }
 
 func (m *MethodObj) Self() Object {

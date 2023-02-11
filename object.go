@@ -119,8 +119,6 @@ func newObject(obj *C.PyObject) Object {
 		return (*Tuple)(o)
 	case &C.PyDict_Type:
 		return (*Dict)(o)
-	case &C.PyString_Type:
-		return (*String)(o)
 	case &C.PyBool_Type:
 		return newBool(obj)
 	case &C.PyLong_Type:
@@ -147,8 +145,6 @@ func newObject(obj *C.PyObject) Object {
 		return (*Frame)(o)
 	case &C.PyMethod_Type:
 		return (*MethodObj)(o)
-	case &C.PyFile_Type:
-		return (*File)(o)
 	case &C.PyUnicode_Type:
 		return (*Unicode)(o)
 	}

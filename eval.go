@@ -21,7 +21,3 @@ func GetGlobals() (Object, error) {
 	ret := C.PyEval_GetGlobals()
 	return obj2ObjErr(ret)
 }
-
-func InitThreads() {
-	C.PyEval_InitThreads()
-}

@@ -78,11 +78,11 @@ func NewErrorV(kind Object, value Object) *Error {
 }
 
 // NewError returns a new Error of the specified kind, and with the value
-// being a new String containing the string created the given format and args.
+// being a new Unicode containing the string created the given format and args.
 func NewError(kind Object, format string, args ...interface{}) *Error {
 	msg := fmt.Sprintf(format, args...)
 	Incref(kind)
-	val, _ := NewString(msg)
+	val, _ := NewUnicode(msg)
 	return &Error{kind, val, nil}
 }
 
@@ -113,7 +113,7 @@ func raise(err error) {
 		exc = c(e.Kind)
 		val = c(e.Value)
 	} else {
-		v, _ := NewString(err.Error())
+		v, _ := NewUnicode(err.Error())
 		val = c(v)
 	}
 

@@ -146,40 +146,12 @@ static PyObject *method_get(PyGoMethod *self, PyObject *obj, PyObject *type) {
 }
 
 static PyTypeObject goMethodType = {
-    PyObject_HEAD_INIT(NULL) 0, /*ob_size*/
-    "GoMethod",                 /*tp_name*/
-    sizeof(PyGoMethod),         /*tp_basicsize*/
-    0,                          /*tp_itemsize*/
-    0,                          /*tp_dealloc*/
-    0,                          /*tp_print*/
-    0,                          /*tp_getattr*/
-    0,                          /*tp_setattr*/
-    0,                          /*tp_compare*/
-    0,                          /*tp_repr*/
-    0,                          /*tp_as_number*/
-    0,                          /*tp_as_sequence*/
-    0,                          /*tp_as_mapping*/
-    0,                          /*tp_hash */
-    0,                          /*tp_call*/
-    0,                          /*tp_str*/
-    0,                          /*tp_getattro*/
-    0,                          /*tp_setattro*/
-    0,                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
-    "GoMethod objects",         /* tp_doc */
-    0,                          /* tp_traverse */
-    0,                          /* tp_clear */
-    0,                          /* tp_richcompare */
-    0,                          /* tp_weaklistoffset */
-    0,                          /* tp_iter */
-    0,                          /* tp_iternext */
-    0,                          /* tp_methods */
-    0,                          /* tp_members */
-    0,                          /* tp_getset */
-    0,                          /* tp_base */
-    0,                          /* tp_dict */
-    (descrgetfunc)method_get,   /* tp_descr_get */
-    0,                          /* tp_descr_set */
+    PyVarObject_HEAD_INIT(NULL, 0)            /*ob_size*/
+        .tp_name = "GoMethod",                /*tp_name*/
+    .tp_basicsize = sizeof(PyGoMethod),       /*tp_basicsize*/
+    .tp_flags = Py_TPFLAGS_DEFAULT,           /*tp_flags*/
+    .tp_doc = "GoMethod objects",             /* tp_doc */
+    .tp_descr_get = (descrgetfunc)method_get, /* tp_descr_get */
 };
 static int goMethodInit = 0;
 
@@ -233,47 +205,21 @@ static int objmemb_set(PyGoObjMember *self, PyObject *obj, PyObject *value) {
 }
 
 static PyObject *objmemb_doc(PyGoObjMember *self, void *closure) {
-  return PyString_FromString(self->doc);
+  return PyUnicode_FromString(self->doc);
 }
 
 static PyGetSetDef objmemb_getset[] = {{"__doc__", (getter)objmemb_doc},
                                        {NULL}};
 
 static PyTypeObject goObjMemberType = {
-    PyObject_HEAD_INIT(NULL) 0, /*ob_size*/
-    "GoObjMember",              /*tp_name*/
-    sizeof(PyGoObjMember),      /*tp_basicsize*/
-    0,                          /*tp_itemsize*/
-    0,                          /*tp_dealloc*/
-    0,                          /*tp_print*/
-    0,                          /*tp_getattr*/
-    0,                          /*tp_setattr*/
-    0,                          /*tp_compare*/
-    0,                          /*tp_repr*/
-    0,                          /*tp_as_number*/
-    0,                          /*tp_as_sequence*/
-    0,                          /*tp_as_mapping*/
-    0,                          /*tp_hash */
-    0,                          /*tp_call*/
-    0,                          /*tp_str*/
-    0,                          /*tp_getattro*/
-    0,                          /*tp_setattro*/
-    0,                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
-    "GoObjMember objects",      /* tp_doc */
-    0,                          /* tp_traverse */
-    0,                          /* tp_clear */
-    0,                          /* tp_richcompare */
-    0,                          /* tp_weaklistoffset */
-    0,                          /* tp_iter */
-    0,                          /* tp_iternext */
-    0,                          /* tp_methods */
-    0,                          /* tp_members */
-    objmemb_getset,             /* tp_getset */
-    0,                          /* tp_base */
-    0,                          /* tp_dict */
-    (descrgetfunc)objmemb_get,  /* tp_descr_get */
-    (descrsetfunc)objmemb_set,  /* tp_descr_set */
+    PyVarObject_HEAD_INIT(NULL, 0)             /*ob_size*/
+        .tp_name = "GoObjMember",              /*tp_name*/
+    .tp_basicsize = sizeof(PyGoObjMember),     /*tp_basicsize*/
+    .tp_flags = Py_TPFLAGS_DEFAULT,            /*tp_flags*/
+    .tp_doc = "GoObjMember objects",           /* tp_doc */
+    .tp_getset = objmemb_getset,               /* tp_getset */
+    .tp_descr_get = (descrgetfunc)objmemb_get, /* tp_descr_get */
+    .tp_descr_set = (descrsetfunc)objmemb_set, /* tp_descr_set */
 };
 static int goObjMemberInit = 0;
 
@@ -311,47 +257,21 @@ static int natmemb_set(PyGoNatMember *self, PyObject *obj, PyObject *value) {
 }
 
 static PyObject *natmemb_doc(PyGoNatMember *self, void *closure) {
-  return PyString_FromString(self->doc);
+  return PyUnicode_FromString(self->doc);
 }
 
 static PyGetSetDef natmemb_getset[] = {{"__doc__", (getter)natmemb_doc},
                                        {NULL}};
 
 static PyTypeObject goNatMemberType = {
-    PyObject_HEAD_INIT(NULL) 0, /*ob_size*/
-    "GoNatMember",              /*tp_name*/
-    sizeof(PyGoNatMember),      /*tp_basicsize*/
-    0,                          /*tp_itemsize*/
-    0,                          /*tp_dealloc*/
-    0,                          /*tp_print*/
-    0,                          /*tp_getattr*/
-    0,                          /*tp_setattr*/
-    0,                          /*tp_compare*/
-    0,                          /*tp_repr*/
-    0,                          /*tp_as_number*/
-    0,                          /*tp_as_sequence*/
-    0,                          /*tp_as_mapping*/
-    0,                          /*tp_hash */
-    0,                          /*tp_call*/
-    0,                          /*tp_str*/
-    0,                          /*tp_getattro*/
-    0,                          /*tp_setattro*/
-    0,                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,         /*tp_flags*/
-    "GoNatMember objects",      /* tp_doc */
-    0,                          /* tp_traverse */
-    0,                          /* tp_clear */
-    0,                          /* tp_richcompare */
-    0,                          /* tp_weaklistoffset */
-    0,                          /* tp_iter */
-    0,                          /* tp_iternext */
-    0,                          /* tp_methods */
-    0,                          /* tp_members */
-    natmemb_getset,             /* tp_getset */
-    0,                          /* tp_base */
-    0,                          /* tp_dict */
-    (descrgetfunc)natmemb_get,  /* tp_descr_get */
-    (descrsetfunc)natmemb_set,  /* tp_descr_set */
+    PyVarObject_HEAD_INIT(NULL, 0)             /*ob_size*/
+        .tp_name = "GoNatMember",              /*tp_name*/
+    .tp_basicsize = sizeof(PyGoNatMember),     /*tp_basicsize*/
+    .tp_flags = Py_TPFLAGS_DEFAULT,            /*tp_flags*/
+    .tp_doc = "GoNatMember objects",           /* tp_doc */
+    .tp_getset = natmemb_getset,               /* tp_getset */
+    .tp_descr_get = (descrgetfunc)natmemb_get, /* tp_descr_get */
+    .tp_descr_set = (descrsetfunc)natmemb_set, /* tp_descr_set */
 };
 static int goNatMemberInit = 0;
 
@@ -419,7 +339,8 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
   type->tp_free = (freefunc)goGenericFree;
 
   if (ctxt->call) type->tp_call = (ternaryfunc)goClassCall;
-  if (ctxt->compare) type->tp_compare = (cmpfunc)goClassCompare;
+  // TODO(jp3): tp_compare isn't a thing anymore
+  // if (ctxt->compare) type->tp_compare = (cmpfunc)goClassCompare;
   if (ctxt->getattr) type->tp_getattr = (getattrfunc)goClassGetAttr;
   if (ctxt->getattro) type->tp_getattro = (getattrofunc)goClassGetAttrObj;
   if (ctxt->hash) type->tp_hash = (hashfunc)goClassHash;
@@ -446,14 +367,16 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     if (ctxt->nb_add) m->nb_add = (binaryfunc)goClassNumAdd;
     if (ctxt->nb_subtract) m->nb_subtract = (binaryfunc)goClassNumSubtract;
     if (ctxt->nb_multiply) m->nb_multiply = (binaryfunc)goClassNumMultiply;
-    if (ctxt->nb_divide) m->nb_divide = (binaryfunc)goClassNumDivide;
+    // TODO(jp3): replace divide with floor and true divide
+    // if (ctxt->nb_divide) m->nb_divide = (binaryfunc)goClassNumDivide;
     if (ctxt->nb_remainder) m->nb_remainder = (binaryfunc)goClassNumRemainder;
     if (ctxt->nb_divmod) m->nb_divmod = (binaryfunc)goClassNumDivmod;
     if (ctxt->nb_power) m->nb_power = (ternaryfunc)goClassNumPower;
     if (ctxt->nb_negative) m->nb_negative = (unaryfunc)goClassNumNegative;
     if (ctxt->nb_positive) m->nb_positive = (unaryfunc)goClassNumPositive;
     if (ctxt->nb_absolute) m->nb_absolute = (unaryfunc)goClassNumAbsolute;
-    if (ctxt->nb_nonzero) m->nb_nonzero = (inquiry)goClassNumNonzero;
+    // TODO(jp3): I think this might be nb_bool now?
+    // if (ctxt->nb_nonzero) m->nb_nonzero = (inquiry)goClassNumNonzero;
     if (ctxt->nb_invert) m->nb_invert = (unaryfunc)goClassNumInvert;
     if (ctxt->nb_lshift) m->nb_lshift = (binaryfunc)goClassNumLshift;
     if (ctxt->nb_rshift) m->nb_rshift = (binaryfunc)goClassNumRshift;
@@ -461,17 +384,20 @@ void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
     if (ctxt->nb_xor) m->nb_xor = (binaryfunc)goClassNumXor;
     if (ctxt->nb_or) m->nb_or = (binaryfunc)goClassNumOr;
     if (ctxt->nb_int) m->nb_int = (unaryfunc)goClassNumInt;
-    if (ctxt->nb_long) m->nb_long = (unaryfunc)goClassNumLong;
+    // TODO(jp3): nb_long is gone now
+    // if (ctxt->nb_long) m->nb_long = (unaryfunc)goClassNumLong;
     if (ctxt->nb_float) m->nb_float = (unaryfunc)goClassNumFloat;
-    if (ctxt->nb_oct) m->nb_oct = (unaryfunc)goClassNumOct;
-    if (ctxt->nb_hex) m->nb_hex = (unaryfunc)goClassNumHex;
+    // TODO(jp3): nb_oct and nb_hex seem to be gone?
+    // if (ctxt->nb_oct) m->nb_oct = (unaryfunc)goClassNumOct;
+    // if (ctxt->nb_hex) m->nb_hex = (unaryfunc)goClassNumHex;
     if (ctxt->nb_ip_add) m->nb_inplace_add = (binaryfunc)goClassNumInplaceAdd;
     if (ctxt->nb_ip_subtract)
       m->nb_inplace_remainder = (binaryfunc)goClassNumInplaceSubtract;
     if (ctxt->nb_ip_multiply)
       m->nb_inplace_multiply = (binaryfunc)goClassNumInplaceMultiply;
-    if (ctxt->nb_ip_divide)
-      m->nb_inplace_divide = (binaryfunc)goClassNumInplaceDivide;
+    // TODO(jp3): replace divide with floor and true divide
+    // if (ctxt->nb_ip_divide)
+    //   m->nb_inplace_divide = (binaryfunc)goClassNumInplaceDivide;
     if (ctxt->nb_ip_remainder)
       m->nb_inplace_remainder = (binaryfunc)goClassNumInplaceRemainder;
     if (ctxt->nb_ip_power)
@@ -515,7 +441,8 @@ PyTypeObject *getBasePyType(PyObject *o) {
   if (PyTuple_Check(o)) return &PyTuple_Type;
   if (PyDict_Check(o)) return &PyDict_Type;
   if (PyList_Check(o)) return &PyList_Type;
-  if (PyString_Check(o)) return &PyString_Type;
+  // TODO(jp3): replace with bytes
+  // if (PyString_Check(o)) return &PyString_Type;
   if (PyBool_Check(o)) return &PyBool_Type;
   if (PyLong_Check(o)) return &PyLong_Type;
   if (PyFloat_Check(o)) return &PyFloat_Type;
@@ -529,20 +456,11 @@ PyTypeObject *getBasePyType(PyObject *o) {
   if (PyFunction_Check(o)) return &PyFunction_Type;
   if (PyFrame_Check(o)) return &PyFrame_Type;
   if (PyMethod_Check(o)) return &PyMethod_Type;
-  if (PyFile_Check(o)) return &PyFile_Type;
+  // TODO(jp3): PyFile is not a thing anymore
+  // if (PyFile_Check(o)) return &PyFile_Type;
   if (PyUnicode_Check(o)) return &PyUnicode_Type;
 
   return o->ob_type;
-}
-
-PyObject *compileFile(char *name) {
-  PyObject *f = PyFile_FromString(name, "rU");
-  if (!f) return NULL;
-  struct _node *n =
-      PyParser_SimpleParseFile(PyFile_AsFile(f), name, Py_file_input);
-  Py_DECREF(f);
-  if (!n) return NULL;
-  return (PyObject *)PyNode_Compile(n, name);
 }
 
 struct _en excName(PyObject *o) {
@@ -568,7 +486,7 @@ struct _en excName(PyObject *o) {
     return en;
   }
 
-  en.m = PyString_AsString(m);
+  en.m = PyUnicode_AsUTF8(m);
   if (en.m != NULL && !strcmp(en.m, "exceptions")) {
     en.m = NULL;
   }
@@ -599,21 +517,24 @@ int floatCheck(PyObject *o) { return PyFloat_Check(o); }
 int frozenSetCheckE(PyObject *o) { return PyFrozenSet_CheckExact(o); }
 int frozenSetCheck(PyObject *o) { return PyFrozenSet_Check(o); }
 int functionCheck(PyObject *o) { return PyFunction_Check(o); }
-int intCheck(PyObject *o) { return PyInt_Check(o); }
+// TODO(jp3): int isn't a thing anymore
+// int intCheck(PyObject *o) { return PyInt_Check(o); }
 int listCheckE(PyObject *o) { return PyList_CheckExact(o); }
 int listCheck(PyObject *o) { return PyList_Check(o); }
 int longCheck(PyObject *o) { return PyLong_Check(o); }
 int moduleCheckE(PyObject *o) { return PyModule_CheckExact(o); }
 int moduleCheck(PyObject *o) { return PyModule_Check(o); }
 int setCheck(PyObject *o) { return PySet_Check(o); }
-int stringCheck(PyObject *o) { return PyString_Check(o); }
+// TODO(jp3): replace with bytes
+// int stringCheck(PyObject *o) { return PyString_Check(o); }
 int tupleCheckE(PyObject *o) { return PyTuple_CheckExact(o); }
 int tupleCheck(PyObject *o) { return PyTuple_Check(o); }
 int typeCheckE(PyObject *o) { return PyType_CheckExact(o); }
 int typeCheck(PyObject *o) { return PyType_Check(o); }
 int frameCheck(PyObject *o) { return PyFrame_Check(o); }
 int methodCheck(PyObject *o) { return PyMethod_Check(o); }
-int fileCheck(PyObject *o) { return PyFile_Check(o); }
+// TODO(jp3): PyFile isn't a thing anymore
+// int fileCheck(PyObject *o) { return PyFile_Check(o); }
 int unicodeCheck(PyObject *o) { return PyUnicode_Check(o); }
 
 // --- abstract.go helper functions ---
@@ -665,8 +586,9 @@ void _PyObject_INIT(PyObject *obj, PyObject *typ) {
 void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n) {
   PyObject_INIT_VAR(obj, (PyTypeObject *)typ, n);
 }
-void __PyObject_GC_TRACK(PyObject *obj) { _PyObject_GC_TRACK(obj); }
-void setGcRefs(PyGC_Head *g, Py_ssize_t refs) { g->gc.gc_refs = refs; }
+// TODO(jp3): ???
+// void __PyObject_GC_TRACK(PyObject *obj) { _PyObject_GC_TRACK(obj); }
+// void setGcRefs(PyGC_Head *g, Py_ssize_t refs) { g->gc.gc_refs = refs; }
 //
 // ----------------------------------
 

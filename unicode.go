@@ -52,10 +52,11 @@ func (u *Unicode) String() string {
 	return C.GoString(ret)
 }
 
-func (u *Unicode) Size() int64 {
-	ret := C.PyUnicode_GetSize(c(u))
-	return int64(ret)
-}
+// TODO(jp3): Size is deprecated, we want to wrap PyUnicode_GET_LENGTH instead.
+// func (u *Unicode) Size() int64 {
+// 	ret := C.PyUnicode_GetSize(c(u))
+// 	return int64(ret)
+// }
 
 func (u *Unicode) EncodeString(encoding, errors string) (Object, error) {
 	var cEncoding, cErrors *C.char
@@ -121,7 +122,7 @@ func (u *Unicode) Encode(encoding, errors string) (Object, error) {
 		cErrors = C.CString(errors)
 		defer C.free(unsafe.Pointer(cErrors))
 	}
-	ret := C.PyUnicode_AsEncodedObject(c(u), cEncoding, cErrors)
+	ret := C.PyUnicode_AsEncodedString(c(u), cEncoding, cErrors)
 	return obj2ObjErr(ret)
 }
 

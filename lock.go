@@ -28,14 +28,6 @@ func (g *GilState) Release() {
 	}
 }
 
-func AcquireGil() {
-	C.PyEval_AcquireLock()
-}
-
-func ReleaseGil() {
-	C.PyEval_ReleaseLock()
-}
-
 // InitAndLock is a convience function.  It initializes Python, enables thread
 // support, and returns a locked Lock instance.
 func InitAndLock() *Lock {
@@ -60,9 +52,8 @@ func initAndLock(initsigs bool) *Lock {
 		C.Py_InitializeEx(0)
 	}
 
-	// Enable Python thread support, and then immediately release the GIL (and
-	// thus "deativate" and per-thread state associated with the current thread
-	C.PyEval_InitThreads()
+	// Immediately release the GIL (and thus "deactivate" any per-thread state
+	// associated with the current thread
 	C.PyEval_SaveThread()
 
 	// We can now unlock the current goroutine from the current OS thread, as
@@ -83,47 +74,48 @@ func initAndLock(initsigs bool) *Lock {
 //
 // Basic usage is:
 //
-//   lock = py.NewLock()
+//	lock = py.NewLock()
 //
-//   // Call Python code ...
+//	// Call Python code ...
 //
-//   lock.Unlock()
+//	lock.Unlock()
 //
 // If it appropriate to let other Python threads run (e.g. during a long
 // computation, or blocking operation), then there are two options.  Either
 // unlock:
 //
-//   lock = py.NewLock()
+//	lock = py.NewLock()
 //
-//   // Call Python code ...
+//	// Call Python code ...
 //
-//   lock.Unlock()
+//	lock.Unlock()
 //
-//   // Slow or blocking Go operation
+//	// Slow or blocking Go operation
 //
-//   lock.Lock()
+//	lock.Lock()
 //
-//   // Call Python code ...
+//	// Call Python code ...
 //
-//   lock.Unlock()
+//	lock.Unlock()
 //
 // or unblock threads, which will not call runtme.UnlockOSThread() but it less
 // expensive, as we do not free and then recreate a thread state variable:
 //
-//   lock = py.NewLock()
+//	lock = py.NewLock()
 //
-//   // Call Python code ...
+//	// Call Python code ...
 //
-//   lock.UnblockThreads()
+//	lock.UnblockThreads()
 //
-//   // Slow or blocking Go operation
+//	// Slow or blocking Go operation
 //
-//   lock.BlockThreads()
+//	lock.BlockThreads()
 //
-//   // Call Python code ...
+//	// Call Python code ...
 //
-//   lock.Unlock()
+//	lock.Unlock()
 type Lock struct {
+	// TODO(jp3): add mutex for go thread safety
 	gilState *GilState
 	thState  *C.PyThreadState
 }

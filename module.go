@@ -43,42 +43,43 @@ func Import(name string) (*Module, error) {
 	return newModule(obj), nil
 }
 
-func InitModule(name string, methods []Method) (*Module, error) {
-	cName := C.CString(name)
-	defer C.free(unsafe.Pointer(cName))
+// TODO(jp3): PyModule_Create is the new thing ...
+// func InitModule(name string, methods []Method) (*Module, error) {
+// 	cName := C.CString(name)
+// 	defer C.free(unsafe.Pointer(cName))
 
-	m := C.Py_InitModule4(cName, nil, nil, nil, C.PYTHON_API_VERSION)
-	if m == nil {
-		return nil, exception()
-	}
+// 	m := C.Py_InitModule4(cName, nil, nil, nil, C.PYTHON_API_VERSION)
+// 	if m == nil {
+// 		return nil, exception()
+// 	}
 
-	if len(methods) == 0 {
-		return newModule(m), nil
-	}
+// 	if len(methods) == 0 {
+// 		return newModule(m), nil
+// 	}
 
-	n := C.PyUnicode_FromString(cName)
-	if n == nil {
-		return nil, exception()
-	}
+// 	n := C.PyUnicode_FromString(cName)
+// 	if n == nil {
+// 		return nil, exception()
+// 	}
 
-	d := C.PyModule_GetDict(m)
-	if d == nil {
-		return nil, exception()
-	}
+// 	d := C.PyModule_GetDict(m)
+// 	if d == nil {
+// 		return nil, exception()
+// 	}
 
-	for _, method := range methods {
-		pyF, err := makeCFunction(method.Name, method.Func, method.Doc, n)
-		if err != nil {
-			return nil, err
-		}
+// 	for _, method := range methods {
+// 		pyF, err := makeCFunction(method.Name, method.Func, method.Doc, n)
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
-		if C.PyDict_SetItemString(d, C.CString(method.Name), c(pyF)) != 0 {
-			return nil, exception()
-		}
-	}
+// 		if C.PyDict_SetItemString(d, C.CString(method.Name), c(pyF)) != 0 {
+// 			return nil, exception()
+// 		}
+// 	}
 
-	return newModule(m), nil
-}
+// 	return newModule(m), nil
+// }
 
 func ExecCodeModule(name string, code Object) (*Module, error) {
 	s := C.CString(name)
@@ -119,13 +120,14 @@ func (mod *Module) Name() (string, error) {
 	return C.GoString(ret), nil
 }
 
-func (mod *Module) Filename() (string, error) {
-	ret := C.PyModule_GetFilename(c(mod))
-	if ret == nil {
-		return "", exception()
-	}
-	return C.GoString(ret), nil
-}
+// TODO(jp3): PyModule_GetFilenameObject is the new API
+// func (mod *Module) Filename() (string, error) {
+// 	ret := C.PyModule_GetFilename(c(mod))
+// 	if ret == nil {
+// 		return "", exception()
+// 	}
+// 	return C.GoString(ret), nil
+// }
 
 func (mod *Module) AddObject(name string, obj Object) error {
 	if obj == nil {

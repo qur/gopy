@@ -692,13 +692,13 @@ var typeMap = map[string]*Type{
 	"Code":   CodeType,
 	"Dict":   DictType,
 	"Float":  FloatType,
-	"Int":    IntType,
 	"List":   ListType,
 	"Long":   LongType,
 	"Module": ModuleType,
-	"String": StringType,
-	"Tuple":  TupleType,
-	"Type":   TypeType,
+	// TODO(jp3): replace with bytes
+	// "String": StringType,
+	"Tuple": TupleType,
+	"Type":  TypeType,
 }
 
 // Create creates and returns a pointer to a PyTypeObject that is the Python
@@ -783,7 +783,7 @@ func (c *Class) Create() (*Type, error) {
 
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.long(c.Flags)
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(c.Flags)
 
 	C.setClassContext(pyType, ctxt)
 

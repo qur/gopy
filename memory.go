@@ -9,14 +9,15 @@ import "C"
 
 // This file is about as unsafe as you can get ... we are playing tricks on the
 // Go runtime in here. :(
-import "unsafe"
-
-import "sync"
+import (
+	"sync"
+	"unsafe"
+)
 
 // Some sizes that we need for various calculations
 const (
-	upSize   = unsafe.Sizeof(unsafe.Pointer(nil))
-	headSize = unsafe.Sizeof(C.PyGC_Head{})
+	upSize = unsafe.Sizeof(unsafe.Pointer(nil))
+	// headSize = unsafe.Sizeof(C.PyGC_Head{})
 	baseSize = unsafe.Sizeof(C.PyObject{})
 )
 
@@ -28,41 +29,44 @@ var (
 	gcProxies = make(map[uintptr]*C.PyObject)
 )
 
-func fromGc(g *C.PyGC_Head) *C.PyObject {
-	p := unsafe.Pointer(g)
-	o := unsafe.Pointer(uintptr(p) + headSize)
-	return (*C.PyObject)(o)
-}
+// func fromGc(g *C.PyGC_Head) *C.PyObject {
+// 	p := unsafe.Pointer(g)
+// 	o := unsafe.Pointer(uintptr(p) + headSize)
+// 	return (*C.PyObject)(o)
+// }
 
 func goGcMalloc(size uintptr) *C.PyObject {
-	// first, lock memLock, and arrange for it to be unlocked on return
-	memLock.Lock()
-	defer memLock.Unlock()
+	// TODO(jp3): this needs updating ...
+	return nil
 
-	g := (*C.PyGC_Head)(unsafe.Pointer(_goMalloc(size + headSize)))
-	C.setGcRefs(g, C._PyGC_REFS_UNTRACKED)
-	p := fromGc(g)
+	// // first, lock memLock, and arrange for it to be unlocked on return
+	// memLock.Lock()
+	// defer memLock.Unlock()
 
-	// We need to move the original tracked entry to be indexed by the offset
-	// address from fromGc
-	px := uintptr(unsafe.Pointer(p))
-	gx := uintptr(unsafe.Pointer(g))
-	allocated[px] = allocated[gx]
-	delete(allocated, gx)
+	// g := (*C.PyGC_Head)(unsafe.Pointer(_goMalloc(size + headSize)))
+	// C.setGcRefs(g, C._PyGC_REFS_UNTRACKED)
+	// p := fromGc(g)
 
-	// We can't access the internals of the GC Module to manipulate the
-	// generation counts, so we have to use a proxy object instead.  We just
-	// create a bare minimum object, initialise it, and then store it away to be
-	// cleaned up later.
-	proxy := C._PyObject_GC_Malloc(C.size_t(baseSize))
-	if proxy == nil {
-		delete(allocated, px)
-		return nil
-	}
-	C._PyObject_INIT(proxy, c(BaseType))
-	gcProxies[px] = proxy
+	// // We need to move the original tracked entry to be indexed by the offset
+	// // address from fromGc
+	// px := uintptr(unsafe.Pointer(p))
+	// gx := uintptr(unsafe.Pointer(g))
+	// allocated[px] = allocated[gx]
+	// delete(allocated, gx)
 
-	return p
+	// // We can't access the internals of the GC Module to manipulate the
+	// // generation counts, so we have to use a proxy object instead.  We just
+	// // create a bare minimum object, initialise it, and then store it away to be
+	// // cleaned up later.
+	// proxy := C._PyObject_GC_Malloc(C.size_t(baseSize))
+	// if proxy == nil {
+	// 	delete(allocated, px)
+	// 	return nil
+	// }
+	// C._PyObject_INIT(proxy, c(BaseType))
+	// gcProxies[px] = proxy
+
+	// return p
 }
 
 // _goMalloc must be called with memLock already locked.
@@ -120,7 +124,8 @@ func goGenericAlloc(t unsafe.Pointer, n C.Py_ssize_t) unsafe.Pointer {
 	}
 
 	if typ.IsGc() {
-		C.__PyObject_GC_TRACK(obj)
+		// TODO(jp3): ???
+		// C.__PyObject_GC_TRACK(obj)
 	}
 
 	return unsafe.Pointer(obj)
