@@ -44,21 +44,20 @@ const (
 // This struct may have the following special methods (the equivalent Python
 // methods are also indicated):
 //
-//   PyInit(args *py.Tuple, kwds *py.Dict) os.Error              // __init__
-//   PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error) // __call__
-//   PyRepr() string                                             // __repr__
-//   PyStr() string                                              // __str__
-//   PyCompare(obj py.Object) (int, os.Error)                    // __cmp__
+//	PyInit(args *py.Tuple, kwds *py.Dict) os.Error              // __init__
+//	PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error) // __call__
+//	PyRepr() string                                             // __repr__
+//	PyStr() string                                              // __str__
+//	PyCompare(obj py.Object) (int, os.Error)                    // __cmp__
 //
 // Properties are also supported, by implementing get and set methods:
 //
-//   PyGet_XXX() (py.Object, os.Error)
-//   PySet_XXX(value py.Object) os.Error
+//	PyGet_XXX() (py.Object, os.Error)
+//	PySet_XXX(value py.Object) os.Error
 //
 // Methods on the Python class are implemented by methods with the Py_ prefix:
 //
-//   Py_XXX(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error)
-//
+//	Py_XXX(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error)
 type Class struct {
 	Name    string
 	Flags   uint32
@@ -242,7 +241,7 @@ func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
 	switch field.Type.Kind() {
 	case reflect.Int:
 		i := (*int)(item)
-		return unsafe.Pointer(C.PyInt_FromLong(C.long(*i)))
+		return unsafe.Pointer(C.PyLong_FromLong(C.long(*i)))
 	}
 
 	raise(NotImplementedError.ErrV(None))
@@ -259,7 +258,7 @@ func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 
 	switch field.Type.Kind() {
 	case reflect.Int:
-		v := int(C.PyInt_AsLong(c(value)))
+		v := int(C.PyLong_AsLong(c(value)))
 		if exceptionRaised() {
 			return -1
 		}
@@ -784,7 +783,7 @@ func (c *Class) Create() (*Type, error) {
 
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.Py_TPFLAGS_CHECKTYPES | C.long(c.Flags)
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.long(c.Flags)
 
 	C.setClassContext(pyType, ctxt)
 

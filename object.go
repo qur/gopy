@@ -123,8 +123,6 @@ func newObject(obj *C.PyObject) Object {
 		return (*String)(o)
 	case &C.PyBool_Type:
 		return newBool(obj)
-	case &C.PyInt_Type:
-		return (*Int)(o)
 	case &C.PyLong_Type:
 		return (*Long)(o)
 	case &C.PyFloat_Type:

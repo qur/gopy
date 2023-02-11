@@ -6,8 +6,8 @@
 #define _GO_PYTHON_UTILS_H_
 
 #include <ffi.h>
-#include <python2.7/Python.h>
-#include <python2.7/frameobject.h>
+#include <python3.11/Python.h>
+#include <python3.11/frameobject.h>
 
 typedef struct {
     ffi_type *type;
@@ -190,7 +190,7 @@ extern size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n);
 extern void _PyObject_INIT(PyObject *obj, PyObject *typ);
 extern void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n);
 extern void __PyObject_GC_TRACK(PyObject *obj);
-extern void setGcRefs(PyGC_Head *g, Py_ssize_t refs);
+//extern void setGcRefs(PyGC_Head *g, Py_ssize_t refs);
 //
 // ----------------------------------
 

@@ -32,7 +32,7 @@ func Import(name string) (*Module, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 
-	pyName := C.PyString_FromString(s)
+	pyName := C.PyUnicode_FromString(s)
 	defer C.decref(pyName)
 
 	obj := C.PyImport_Import(pyName)
@@ -56,7 +56,7 @@ func InitModule(name string, methods []Method) (*Module, error) {
 		return newModule(m), nil
 	}
 
-	n := C.PyString_FromString(cName)
+	n := C.PyUnicode_FromString(cName)
 	if n == nil {
 		return nil, exception()
 	}

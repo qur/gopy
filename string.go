@@ -29,7 +29,7 @@ func newString(obj *C.PyObject) *String {
 func NewString(s string) (*String, error) {
 	cs := C.CString(s)
 	defer C.free(unsafe.Pointer(cs))
-	ret := C.PyString_FromString(cs)
+	ret := C.PyUnicode_FromString(cs)
 	if ret == nil {
 		return nil, exception()
 	}
@@ -40,7 +40,7 @@ func (s *String) String() string {
 	if s == nil {
 		return "<nil>"
 	}
-	ret := C.PyString_AsString(c(s))
+	ret := C.PyUnicode_AsUTF8(c(s))
 	if ret == nil {
 		panic(exception())
 	}

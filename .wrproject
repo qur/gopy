@@ -1,7 +1,7 @@
 default = "dev"
 
 [crates.dev]
-  image = "golang:1.20"
+  image = "gopy-dev:test"
   env-blacklist = ["GOPATH"]
   volumes = ["/tmp:/tmp"]
   network = "host"

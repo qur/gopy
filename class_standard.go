@@ -191,7 +191,7 @@ func goClassRepr(obj unsafe.Pointer) unsafe.Pointer {
 	s := C.CString((*f)(obj))
 	defer C.free(unsafe.Pointer(s))
 
-	return unsafe.Pointer(C.PyString_FromString(s))
+	return unsafe.Pointer(C.PyUnicode_FromString(s))
 }
 
 //export goClassRichCmp
@@ -265,5 +265,5 @@ func goClassStr(obj unsafe.Pointer) unsafe.Pointer {
 	s := C.CString((*f)(obj))
 	defer C.free(unsafe.Pointer(s))
 
-	return unsafe.Pointer(C.PyString_FromString(s))
+	return unsafe.Pointer(C.PyUnicode_FromString(s))
 }

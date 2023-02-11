@@ -106,14 +106,14 @@ func saveFunc(f interface{}) *C.PyObject {
 	defer funcLock.Unlock()
 
 	funcs = append(funcs, f)
-	return C.PyInt_FromLong(C.long(len(funcs) - 1))
+	return C.PyLong_FromLong(C.long(len(funcs) - 1))
 }
 
 func getFunc(self unsafe.Pointer) interface{} {
 	funcLock.RLock()
 	defer funcLock.RUnlock()
 
-	idx := int(C.PyInt_AsLong((*C.PyObject)(self)))
+	idx := int(C.PyLong_AsLong((*C.PyObject)(self)))
 
 	if idx >= len(funcs) {
 		return nil

@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+import os
 import re
 import subprocess
 import threading
@@ -29,14 +30,17 @@ def get_ffi_flags():
     cmd = ['pkg-config', '--cflags', 'libffi']
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out, err = p.communicate()
-    return out.decode('utf-8').strip().split(' ')
+    args = out.decode('utf-8').strip()
+    if len(args) == 0:
+        return []
+    return args.split(' ')
 
 def process(inp):
     exceptions = []
     maxlen = 0
 
     for rawline in inp:
-        line = rawline.strip()
+        line = rawline.strip().decode('utf-8')
         excm = exc_re.match(line)
         if excm is None:
             continue
@@ -54,6 +58,7 @@ def process(inp):
     print(')\n')
 
 def main():
+    print(os.getcwd())
     cmd = ["gcc", "-E", "-o", "-", "utils.c"] + get_ffi_flags()
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     t = threading.Thread(target=process, args=(p.stdout,))

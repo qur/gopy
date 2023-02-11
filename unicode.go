@@ -45,7 +45,7 @@ func (u *Unicode) String() string {
 		panic(exception())
 	}
 	defer C.decref(s)
-	ret := C.PyString_AsString(s)
+	ret := C.PyUnicode_AsUTF8(s)
 	if ret == nil {
 		panic(exception())
 	}

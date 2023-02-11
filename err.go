@@ -27,7 +27,7 @@ func (e *Error) Error() string {
 	if en.c == nil {
 		tpyS := C.PyObject_Str(c(e.Kind))
 		defer C.decref(tpyS)
-		ts = C.GoString(C.PyString_AsString(tpyS))
+		ts = C.GoString(C.PyUnicode_AsUTF8(tpyS))
 	} else {
 		if en.m != nil {
 			ts = C.GoString(en.m) + "."
@@ -37,7 +37,7 @@ func (e *Error) Error() string {
 
 	pyS := C.PyObject_Str(c(e.Value))
 	defer C.decref(pyS)
-	s := C.GoString(C.PyString_AsString(pyS))
+	s := C.GoString(C.PyUnicode_AsUTF8(pyS))
 
 	return fmt.Sprintf("%s: %s", ts, s)
 }

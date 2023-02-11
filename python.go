@@ -49,7 +49,7 @@ func AddToPath(dir string) {
 	s := C.CString(dir)
 	defer C.free(unsafe.Pointer(s))
 
-	pDir := C.PyString_FromString(s)
+	pDir := C.PyUnicode_FromString(s)
 	if pDir == nil {
 		return
 	}
