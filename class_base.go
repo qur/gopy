@@ -11,7 +11,6 @@ type ClassObject interface {
 }
 
 type ClassBaseObject struct {
-	AbstractObject
 	base *BaseObject
 }
 
@@ -19,6 +18,30 @@ var _ ClassObject = (*ClassBaseObject)(nil)
 
 func (c *ClassBaseObject) Base() *BaseObject {
 	return c.base
+}
+
+func (c *ClassBaseObject) Type() *Type {
+	return c.base.Type()
+}
+
+func (c *ClassBaseObject) Decref() {
+	c.base.Decref()
+}
+
+func (c *ClassBaseObject) Incref() {
+	c.base.Incref()
+}
+
+func (c *ClassBaseObject) IsTrue() bool {
+	return c.base.IsTrue()
+}
+
+func (c *ClassBaseObject) Not() bool {
+	return c.base.Not()
+}
+
+func (c *ClassBaseObject) Free() {
+	c.base.Free()
 }
 
 func (c *ClassBaseObject) setBase(base *BaseObject) {
