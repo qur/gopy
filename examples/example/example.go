@@ -145,8 +145,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = m.AddObject("ExampleClass", c)
-	if err != nil {
+	if err = m.AddObject("ExampleClass", c); err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+		os.Exit(1)
+	}
+
+	if err := m.Register(); err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
 	}

@@ -10,6 +10,7 @@ import "C"
 import (
 	"fmt"
 	"log"
+	"sync"
 	"unsafe"
 )
 
@@ -118,6 +119,15 @@ func NewModule(name string) (*Module, error) {
 	return newModule(ret), nil
 }
 
+func (mod *Module) Register() error {
+	name, err := mod.Name()
+	if err != nil {
+		return err
+	}
+	addImport(name, mod)
+	return nil
+}
+
 func (mod *Module) CheckExact() bool {
 	return C.moduleCheckE(c(mod)) != 0
 }
@@ -203,8 +213,45 @@ func (mod *Module) AddStringConstant(name, value string) error {
 	return nil
 }
 
+var (
+	importLock sync.Mutex
+	importMap  = map[string]*Module{}
+)
+
+func addImport(name string, mod *Module) {
+	importLock.Lock()
+	defer importLock.Unlock()
+
+	importMap[name] = mod
+}
+
+func getImport(name string) *Module {
+	importLock.Lock()
+	defer importLock.Unlock()
+
+	return importMap[name]
+}
+
 func importerFindSpec(args *Tuple) (Object, error) {
-	log.Printf("importerFindSpec: %p", args)
+	var name string
+	var path, target Object
+	ParseTuple(args, "sO|O", &name, &path, &target)
+	log.Printf("importerFindSpec: %p %s %T %T", args, name, path, target)
+
+	if path != None {
+		// we don't support lookups with path - basically this is a variant of
+		// BuiltinImporter
+		None.Incref()
+		return None, nil
+	}
+
+	mod := getImport(name)
+	if mod == nil {
+		// we don't have the requested module
+		None.Incref()
+		return None, nil
+	}
+
 	return nil, fmt.Errorf("not implemented")
 }
 
