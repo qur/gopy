@@ -46,11 +46,7 @@ func initAndLock(initsigs bool) *Lock {
 	runtime.LockOSThread()
 
 	// Initialize the default Python interpreter
-	if initsigs {
-		C.Py_InitializeEx(1)
-	} else {
-		C.Py_InitializeEx(0)
-	}
+	InitializeEx(initsigs)
 
 	// Immediately release the GIL (and thus "deactivate" any per-thread state
 	// associated with the current thread

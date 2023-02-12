@@ -55,9 +55,13 @@ const (
 //	PyGet_XXX() (py.Object, os.Error)
 //	PySet_XXX(value py.Object) os.Error
 //
-// Methods on the Python class are implemented by methods with the Py_ prefix:
+// Instance methods on the Python class are implemented by methods on the
+// struct type with the Py_ prefix:
 //
-//	Py_XXX(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error)
+//	Py_ABC(args *py.Tuple) (py.Object, os.Error)
+//	Py_XYX(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error)
+//
+// NOTE: All of the methods referred to above should use a pointer receiver.
 type Class struct {
 	Name    string
 	Flags   uint32
@@ -477,6 +481,19 @@ func methSigMatches(got reflect.Type, _want interface{}) error {
 	return nil
 }
 
+func getPythonCallFlags(f reflect.Type) (int, error) {
+	switch {
+	case methSigMatches(f, pyUnaryFunc) == nil:
+		return C.METH_NOARGS, nil
+	case methSigMatches(f, pyBinaryCallFunc) == nil:
+		return C.METH_VARARGS, nil
+	case methSigMatches(f, pyTernaryCallFunc) == nil:
+		return C.METH_VARARGS | C.METH_KEYWORDS, nil
+	default:
+		return 0, fmt.Errorf("invalid function signature")
+	}
+}
+
 // Alloc is a convenience function, so that Go code can create a new Object
 // instance.
 func (class *Class) Alloc(n int64) (obj Object, err error) {
@@ -750,19 +767,13 @@ func (c *Class) Create() (*Type, error) {
 		parts := strings.SplitN(m.Name, "_", 2)
 		switch parts[0] {
 		case "Py":
-			switch {
-			case methSigMatches(t, pyUnaryFunc) == nil:
-				methods[parts[1]] = method{f, C.METH_NOARGS}
-			case methSigMatches(t, pyBinaryCallFunc) == nil:
-				methods[parts[1]] = method{f, C.METH_VARARGS}
-			case methSigMatches(t, pyTernaryCallFunc) == nil:
-				methods[parts[1]] = method{f, C.METH_VARARGS | C.METH_KEYWORDS}
-			default:
-				return nil, fmt.Errorf("%s: Invalid function signature", fn)
-			}
-		case "PySet":
-			err := methSigMatches(t, (func(Object) error)(nil))
+			flags, err := getPythonCallFlags(t)
 			if err != nil {
+				return nil, fmt.Errorf("%s: %s", fn, err)
+			}
+			methods[parts[1]] = method{f, flags}
+		case "PySet":
+			if err := methSigMatches(t, (func(Object) error)(nil)); err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
 			}
@@ -770,8 +781,7 @@ func (c *Class) Create() (*Type, error) {
 			p.set = f
 			props[parts[1]] = p
 		case "PyGet":
-			err := methSigMatches(t, (func() (Object, error))(nil))
-			if err != nil {
+			if err := methSigMatches(t, (func() (Object, error))(nil)); err != nil {
 				C.free(unsafe.Pointer(pyType))
 				return nil, fmt.Errorf("%s: %s", fn, err)
 			}

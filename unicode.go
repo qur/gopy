@@ -40,12 +40,7 @@ func (u *Unicode) String() string {
 	if u == nil {
 		return "<nil>"
 	}
-	s := C.PyUnicode_AsUTF8String(c(u))
-	if s == nil {
-		panic(exception())
-	}
-	defer C.decref(s)
-	ret := C.PyUnicode_AsUTF8(s)
+	ret := C.PyUnicode_AsUTF8(c(u))
 	if ret == nil {
 		panic(exception())
 	}

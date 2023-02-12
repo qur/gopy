@@ -7,7 +7,11 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
+import (
+	"fmt"
+	"log"
+	"unsafe"
+)
 
 type Module struct {
 	AbstractObject
@@ -131,6 +135,22 @@ func (mod *Module) Name() (string, error) {
 	return C.GoString(ret), nil
 }
 
+// GetAttr is a convenience wrapper that is equivalent to
+// mod.Base().GetAttr(name).
+//
+// Return value: New Reference.
+func (mod *Module) GetAttr(name Object) (Object, error) {
+	return mod.Base().GetAttr(name)
+}
+
+// GetAttrString is a convenience wrapper that is equivalent to
+// mod.Base().GetAttrString(name).
+//
+// Return value: New Reference.
+func (mod *Module) GetAttrString(name string) (Object, error) {
+	return mod.Base().GetAttrString(name)
+}
+
 // TODO(jp3): PyModule_GetFilenameObject is the new API
 // func (mod *Module) Filename() (string, error) {
 // 	ret := C.PyModule_GetFilename(c(mod))
@@ -178,6 +198,35 @@ func (mod *Module) AddStringConstant(name, value string) error {
 	ret := C.PyModule_AddStringConstant(c(mod), cname, cvalue)
 	if ret < 0 {
 		return exception()
+	}
+
+	return nil
+}
+
+func initModules() error {
+	sys, err := Import("sys")
+	if err != nil {
+		return err
+	}
+
+	metaPathObj, err := sys.GetAttrString("meta_path")
+	if err != nil {
+		return err
+	}
+
+	metaPath, ok := metaPathObj.(*List)
+	if !ok {
+		return fmt.Errorf("sys.meta_path should be list, got %T", metaPathObj)
+	}
+
+	log.Printf("sys.meta_path: %d items", metaPath.Size())
+
+	for i, obj := range metaPath.Slice() {
+		r, err := obj.Base().Repr()
+		if err != nil {
+			return err
+		}
+		log.Printf("  %d: %T %v", i, r, r)
 	}
 
 	return nil

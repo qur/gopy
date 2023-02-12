@@ -12,6 +12,7 @@ package py
 import "C"
 
 import (
+	"log"
 	"os"
 	"unsafe"
 )
@@ -21,7 +22,7 @@ import (
 // You probably want InitAndLockWithSignals though, as it doesn't require the
 // caller to worry about goroutines or threads.
 func Initialize() {
-	C.Py_Initialize()
+	InitializeEx(true)
 }
 
 // InitializeEx initialises the Python runtime.
@@ -35,6 +36,10 @@ func InitializeEx(initsigs bool) {
 		C.Py_InitializeEx(1)
 	} else {
 		C.Py_InitializeEx(0)
+	}
+
+	if err := initModules(); err != nil {
+		log.Printf("failed to init modules: %s", err)
 	}
 }
 
