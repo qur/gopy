@@ -40,7 +40,7 @@ func example(args *py.Tuple) (py.Object, error) {
 }
 
 type ExampleClass struct {
-	py.BaseObject
+	py.ClassBaseObject
 	wibble int64
 }
 

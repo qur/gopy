@@ -442,23 +442,19 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 
 	// allocate the Python proxy object
-	pyObj, err := t.Alloc(0)
-	if err != nil {
-		raise(err)
+	pyObj := unsafe.Pointer(C.typeAlloc(c(t), C.Py_ssize_t(0)))
+	if pyObj == nil {
 		return nil
 	}
 
 	// finalise the setup of the go object
-	goObj.setBase(pyObj.Base())
+	goObj.setBase((*BaseObject)(pyObj))
 	registerClassObject(pyObj, goObj)
 
-	// Pointer to new object, ready to return
-	ret := unsafe.Pointer(c(pyObj))
-
 	// register class context against new object
-	setClassContext(ret, pyType)
+	setClassContext(pyObj, pyType)
 
-	return ret
+	return pyObj
 }
 
 type prop struct {

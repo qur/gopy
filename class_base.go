@@ -30,11 +30,11 @@ var (
 	classObjMap  = map[unsafe.Pointer]ClassObject{}
 )
 
-func registerClassObject(pyObj Object, goObj ClassObject) {
+func registerClassObject(pyObj unsafe.Pointer, goObj ClassObject) {
 	classObjLock.Lock()
 	defer classObjLock.Unlock()
 
-	classObjMap[unsafe.Pointer(c(pyObj))] = goObj
+	classObjMap[pyObj] = goObj
 }
 
 func getClassObject(pyObj unsafe.Pointer) ClassObject {

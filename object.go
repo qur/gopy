@@ -8,7 +8,6 @@ package py
 import "C"
 
 import (
-	"reflect"
 	"sync"
 	"unsafe"
 )
@@ -77,12 +76,6 @@ func getType(pyType *C.PyTypeObject) (*Class, bool) {
 	return class, ok
 }
 
-func obj2Class(c *Class, obj *C.PyObject) (Object, bool) {
-	vp := reflect.NewAt(reflect.TypeOf(c.Pointer), unsafe.Pointer(&obj))
-	o, ok := vp.Elem().Interface().(Object)
-	return o, ok
-}
-
 func newObject(obj *C.PyObject) Object {
 	if obj == nil {
 		return nil
@@ -93,23 +86,9 @@ func newObject(obj *C.PyObject) Object {
 		return None
 	}
 
-	pyType := (*C.PyTypeObject)(obj.ob_type)
-	class, ok := getType(pyType)
-	if ok {
-		ret, ok := obj2Class(class, obj)
-		if ok {
-			return ret
-		}
-	}
-	for pyType.tp_base != nil {
-		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
-		class, ok := getType(pyType)
-		if ok {
-			ret, ok := obj2Class(class, obj)
-			if ok {
-				return ret
-			}
-		}
+	cObj := getClassObject(o)
+	if cObj != nil {
+		return cObj
 	}
 
 	switch C.getBasePyType(obj) {
