@@ -119,8 +119,8 @@ func (e *ExampleClass) PySet_wibble(arg py.Object) error {
 }
 
 var exampleClass = py.Class{
-	Name:    "example.ExampleClass",
-	Pointer: (*ExampleClass)(nil),
+	Name:   "example.ExampleClass",
+	Object: (*ExampleClass)(nil),
 }
 
 var modDef = py.ModuleDef{

@@ -98,7 +98,7 @@ func (c *Chan) Chan() chan Object {
 }
 
 var chanClass = Class{
-	Name:    "go.Chan",
-	Pointer: (*Chan)(nil),
-	New:     newChan,
+	Name:   "go.Chan",
+	Object: (*Chan)(nil),
+	New:    newChan,
 }

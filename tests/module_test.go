@@ -51,8 +51,8 @@ func (e *ExampleClass) PyStr() string {
 }
 
 var exampleClass = py.Class{
-	Name:    "test.test",
-	Pointer: &ExampleClass{},
+	Name:   "test.test",
+	Object: &ExampleClass{},
 }
 
 func TestMethod(t *testing.T) {

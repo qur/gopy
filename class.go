@@ -31,12 +31,12 @@ const (
 //
 // Doc is currently unused.
 //
-// Type holds a Pointer to the Type instance for this class, this is filled in
+// Type holds a pointer to the Type instance for this class, this is filled in
 // by calling Create().
 //
-// Pointer should be set to a pointer of the struct type that will represent an
+// Object should be set to a pointer of the struct type that will represent an
 // instance of the Python class.  This struct must contain an embedded
-// py.ClassBaseObject.  The easiest ways to set Pointer are either to use a
+// py.ClassBaseObject.  The easiest ways to set Object are either to use a
 // struct literal (i.e. &MyClass{}), or to cast nil (i.e. (*MyClass)(nil)), if
 // the struct is large then the latter method is more efficient (as an instance
 // of the struct is not created).
@@ -62,13 +62,16 @@ const (
 //	Py_XYX(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error)
 //
 // NOTE: All of the methods referred to above should use a pointer receiver.
+//
+// Static defines static methods for the Python class.
 type Class struct {
-	Name    string
-	Flags   uint32
-	Doc     string
-	Type    *Type
-	Pointer ClassObject
-	New     func(*Class, *Tuple, *Dict) (ClassObject, error)
+	Name   string
+	Flags  uint32
+	Doc    string
+	Type   *Type
+	Object ClassObject
+	Static map[string]any
+	New    func(*Class, *Tuple, *Dict) (ClassObject, error)
 }
 
 func (c *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
@@ -78,7 +81,7 @@ func (c *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 	}
 
 	// no New provided, so we need to create an instance of the correct type
-	t := reflect.TypeOf(c.Pointer).Elem()
+	t := reflect.TypeOf(c.Object).Elem()
 	v := reflect.New(t)
 	return v.Interface().(ClassObject), nil
 }
@@ -318,7 +321,7 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 		return -1
 	}
 
-	st := reflect.TypeOf(class.Pointer).Elem()
+	st := reflect.TypeOf(class.Object).Elem()
 
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)
@@ -353,7 +356,7 @@ func goClassClear(obj unsafe.Pointer) int {
 		return -1
 	}
 
-	st := reflect.TypeOf(class.Pointer).Elem()
+	st := reflect.TypeOf(class.Object).Elem()
 
 	for i := 0; i < st.NumField(); i++ {
 		field := st.Field(i)
@@ -745,11 +748,11 @@ func (c *Class) Create() (*Type, error) {
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(c.Flags)
 
-	if c.Pointer == nil {
-		c.Pointer = &ClassBaseObject{}
+	if c.Object == nil {
+		c.Object = &ClassBaseObject{}
 	}
 
-	typ := reflect.TypeOf(c.Pointer)
+	typ := reflect.TypeOf(c.Object)
 	btyp := typ.Elem()
 
 	if btyp.NumField() == 0 {
