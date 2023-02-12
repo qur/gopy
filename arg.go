@@ -17,33 +17,33 @@ func packValues(values []interface{}) ([]unsafe.Pointer, error) {
 	for i, value := range values {
 		switch v := value.(type) {
 		case *string:
-			cValues[i] = unsafe.Pointer(new(*C.char))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((*C.char)(nil)))))
 		case *Object:
-			cValues[i] = unsafe.Pointer(new(*C.PyObject))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((*C.PyObject)(nil)))))
 		case *int:
-			cValues[i] = unsafe.Pointer(new(C.int))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int)(0)))))
 		case *int8:
-			cValues[i] = unsafe.Pointer(new(C.int8_t))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int8_t)(0)))))
 		case *int16:
-			cValues[i] = unsafe.Pointer(new(C.int16_t))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int16_t)(0)))))
 		case *int32:
-			cValues[i] = unsafe.Pointer(new(C.int32_t))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int32_t)(0)))))
 		case *int64:
-			cValues[i] = unsafe.Pointer(new(C.int64_t))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int64_t)(0)))))
 		case *uint:
-			cValues[i] = unsafe.Pointer(new(C.uint))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint)(0)))))
 		case *uint8:
-			cValues[i] = unsafe.Pointer(new(C.uint8_t))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint8_t)(0)))))
 		case *uint16:
-			cValues[i] = unsafe.Pointer(new(C.uint16_t))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint16_t)(0)))))
 		case *uint32:
-			cValues[i] = unsafe.Pointer(new(C.uint32_t))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint32_t)(0)))))
 		case *uint64:
-			cValues[i] = unsafe.Pointer(new(C.uint64_t))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint64_t)(0)))))
 		case *float32:
-			cValues[i] = unsafe.Pointer(new(C.float))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.float)(0)))))
 		case *float64:
-			cValues[i] = unsafe.Pointer(new(C.double))
+			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.double)(0)))))
 		default:
 			return nil, TypeError.Err("Unsupported type: %T", v)
 		}
@@ -52,6 +52,11 @@ func packValues(values []interface{}) ([]unsafe.Pointer, error) {
 }
 
 func unpackValues(cValues []unsafe.Pointer, values []interface{}) error {
+	defer func() {
+		for _, v := range cValues {
+			C.free(v)
+		}
+	}()
 	for i, value := range values {
 		switch v := value.(type) {
 		case *string:
