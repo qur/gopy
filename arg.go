@@ -12,41 +12,49 @@ import (
 	"unsafe"
 )
 
+func calloc(v interface{}) unsafe.Pointer {
+	switch v.(type) {
+	case *string:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((*C.char)(nil))))
+	case *Object:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((*C.PyObject)(nil))))
+	case *int:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.int)(0))))
+	case *int8:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.int8_t)(0))))
+	case *int16:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.int16_t)(0))))
+	case *int32:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.int32_t)(0))))
+	case *int64:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.int64_t)(0))))
+	case *uint:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.uint)(0))))
+	case *uint8:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.uint8_t)(0))))
+	case *uint16:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.uint16_t)(0))))
+	case *uint32:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.uint32_t)(0))))
+	case *uint64:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.uint64_t)(0))))
+	case *float32:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.float)(0))))
+	case *float64:
+		return C.calloc(1, C.size_t(unsafe.Sizeof((C.double)(0))))
+	default:
+		return nil
+	}
+}
+
 func packValues(values []interface{}) ([]unsafe.Pointer, error) {
 	cValues := make([]unsafe.Pointer, len(values))
 	for i, value := range values {
-		switch v := value.(type) {
-		case *string:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((*C.char)(nil)))))
-		case *Object:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((*C.PyObject)(nil)))))
-		case *int:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int)(0)))))
-		case *int8:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int8_t)(0)))))
-		case *int16:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int16_t)(0)))))
-		case *int32:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int32_t)(0)))))
-		case *int64:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.int64_t)(0)))))
-		case *uint:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint)(0)))))
-		case *uint8:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint8_t)(0)))))
-		case *uint16:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint16_t)(0)))))
-		case *uint32:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint32_t)(0)))))
-		case *uint64:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.uint64_t)(0)))))
-		case *float32:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.float)(0)))))
-		case *float64:
-			cValues[i] = unsafe.Pointer(C.calloc(1, C.size_t(unsafe.Sizeof((C.double)(0)))))
-		default:
-			return nil, TypeError.Err("Unsupported type: %T", v)
+		p := calloc(value)
+		if p == nil {
+			return nil, TypeError.Err("Unsupported type: %T", value)
 		}
+		cValues[i] = p
 	}
 	return cValues, nil
 }
@@ -160,68 +168,83 @@ func BuildValue(format string, values ...interface{}) (Object, error) {
 		case string:
 			s := C.CString(v)
 			defer C.free(unsafe.Pointer(s))
+			p := (**C.char)(calloc(&v))
+			*p = s
 			cValues[i]._type = &C.ffi_type_pointer
-			cValues[i].value = unsafe.Pointer(&s)
+			cValues[i].value = unsafe.Pointer(p)
 		case Object:
-			b := v.Base()
+			p := (**C.PyObject)(calloc(&v))
+			*p = c(v)
 			cValues[i]._type = &C.ffi_type_pointer
-			cValues[i].value = unsafe.Pointer(&b)
+			cValues[i].value = unsafe.Pointer(p)
 		case int:
-			iv := C.int(v)
+			p := (*C.int)(calloc(&v))
+			*p = C.int(v)
 			if math.MaxInt == math.MaxInt64 {
 				cValues[i]._type = &C.ffi_type_sint64
 			} else {
 				cValues[i]._type = &C.ffi_type_sint32
 			}
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case int8:
-			iv := C.int8_t(v)
+			p := (*C.int8_t)(calloc(&v))
+			*p = C.int8_t(v)
 			cValues[i]._type = &C.ffi_type_sint8
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case int16:
-			iv := C.int16_t(v)
+			p := (*C.int16_t)(calloc(&v))
+			*p = C.int16_t(v)
 			cValues[i]._type = &C.ffi_type_sint16
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case int32:
-			iv := C.int32_t(v)
+			p := (*C.int32_t)(calloc(&v))
+			*p = C.int32_t(v)
 			cValues[i]._type = &C.ffi_type_sint32
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case int64:
-			iv := C.int64_t(v)
+			p := (*C.int64_t)(calloc(&v))
+			*p = C.int64_t(v)
 			cValues[i]._type = &C.ffi_type_sint64
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case uint:
-			iv := C.uint(v)
+			p := (*C.uint)(calloc(&v))
+			*p = C.uint(v)
 			if math.MaxUint == math.MaxUint64 {
 				cValues[i]._type = &C.ffi_type_uint64
 			} else {
 				cValues[i]._type = &C.ffi_type_uint32
 			}
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case uint8:
-			iv := C.uint8_t(v)
+			p := (*C.uint8_t)(calloc(&v))
+			*p = C.uint8_t(v)
 			cValues[i]._type = &C.ffi_type_uint8
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case uint16:
-			iv := C.uint16_t(v)
+			p := (*C.uint16_t)(calloc(&v))
+			*p = C.uint16_t(v)
 			cValues[i]._type = &C.ffi_type_uint16
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case uint32:
-			iv := C.uint32_t(v)
+			p := (*C.uint32_t)(calloc(&v))
+			*p = C.uint32_t(v)
 			cValues[i]._type = &C.ffi_type_uint32
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case uint64:
-			iv := C.uint64_t(v)
+			p := (*C.uint64_t)(calloc(&v))
+			*p = C.uint64_t(v)
 			cValues[i]._type = &C.ffi_type_uint64
-			cValues[i].value = unsafe.Pointer(&iv)
+			cValues[i].value = unsafe.Pointer(p)
 		case float32:
-			fv := C.float(v)
+			p := (*C.float)(calloc(&v))
+			*p = C.float(v)
 			cValues[i]._type = &C.ffi_type_float
-			cValues[i].value = unsafe.Pointer(&fv)
+			cValues[i].value = unsafe.Pointer(p)
 		case float64:
-			fv := C.double(v)
+			p := (*C.double)(calloc(&v))
+			*p = C.double(v)
 			cValues[i]._type = &C.ffi_type_double
-			cValues[i].value = unsafe.Pointer(&fv)
+			cValues[i].value = unsafe.Pointer(p)
 		default:
 			return nil, TypeError.Err("Unsupported type: %T", v)
 		}

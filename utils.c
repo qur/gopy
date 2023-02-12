@@ -79,6 +79,12 @@ int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt, char *kwlist[],
   return (int)result;
 }
 
+static void freeValues(ArgValue values[], int c) {
+  for (int i = 0; i < c; i++) {
+    free(values[i].value);
+  }
+}
+
 PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
   ffi_cif cif;
   ffi_status status;
@@ -87,11 +93,13 @@ PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
 
   ffi_type **arg_types = calloc(c + 1, sizeof(ffi_type *));
   if (arg_types == NULL) {
+    freeValues(values, c);
     return PyErr_NoMemory();
   }
 
   void **arg_values = calloc(c + 1, sizeof(void *));
   if (arg_values == NULL) {
+    freeValues(values, c);
     return PyErr_NoMemory();
   }
 
@@ -105,6 +113,7 @@ PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
 
   if (status != FFI_OK) {
     PyErr_Format(PyExc_TypeError, "ffi_prep_cif failed: %d", status);
+    freeValues(values, c);
     return NULL;
   }
 
@@ -117,6 +126,7 @@ PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
 
   free(arg_types);
   free(arg_values);
+  freeValues(values, c);
 
   return result;
 }
