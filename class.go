@@ -36,10 +36,10 @@ const (
 //
 // Pointer should be set to a pointer of the struct type that will represent an
 // instance of the Python class.  This struct must contain an embedded
-// py.BaseObject as its first member.  The easiest ways to set Pointer are
-// either to use a struct literal (i.e. &MyClass{}), or to cast nil (i.e.
-// (*MyClass)(nil)), if the struct is large then the latter method is more
-// efficient (as an instance of the struct is not created).
+// py.ClassBaseObject.  The easiest ways to set Pointer are either to use a
+// struct literal (i.e. &MyClass{}), or to cast nil (i.e. (*MyClass)(nil)), if
+// the struct is large then the latter method is more efficient (as an instance
+// of the struct is not created).
 //
 // This struct may have the following special methods (the equivalent Python
 // methods are also indicated):
@@ -67,24 +67,51 @@ type Class struct {
 	Flags   uint32
 	Doc     string
 	Type    *Type
-	Pointer interface{}
-	New     func(*Type, *Tuple, *Dict) (Object, error)
+	Pointer ClassObject
+	New     func(*Class, *Tuple, *Dict) (ClassObject, error)
+}
+
+func (c *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
+	// simple case, a New method has been provided
+	if c.New != nil {
+		return c.New(c, args, kwds)
+	}
+
+	// no New provided, so we need to create an instance of the correct type
+	t := reflect.TypeOf(c.Pointer).Elem()
+	v := reflect.New(t)
+	return v.Interface().(ClassObject), nil
 }
 
 var otyp = reflect.TypeOf(new(Object)).Elem()
 
-//export goClassCallMethod
-func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
-	// Unpack context and self pointer from obj
+func getMethodAndObject(obj unsafe.Pointer) (unsafe.Pointer, ClassObject, error) {
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
 
+	o := getClassObject(pyobj)
+	if o == nil {
+		return nil, nil, fmt.Errorf("unknown object")
+	}
+
+	return m, o, nil
+}
+
+//export goClassCallMethod
+func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
+	// Unpack context and self pointer from obj
+	m, o, err := getMethodAndObject(obj)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(p unsafe.Pointer) (Object, error))(unsafe.Pointer(&m))
+	f := (*func(p ClassObject) (Object, error))(unsafe.Pointer(&m))
 
-	ret, err := (*f)(pyobj)
+	ret, err := (*f)(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -96,9 +123,11 @@ func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 //export goClassCallMethodArgs
 func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
-	t := (*C.PyObject)(obj)
-	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+	m, o, err := getMethodAndObject(obj)
+	if err != nil {
+		raise(err)
+		return nil
+	}
 
 	// Get args ready to use, by turning it into a pointer of the appropriate
 	// type
@@ -106,9 +135,9 @@ func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(p unsafe.Pointer, a *Tuple) (Object, error))(unsafe.Pointer(&m))
+	f := (*func(o ClassObject, a *Tuple) (Object, error))(unsafe.Pointer(&m))
 
-	ret, err := (*f)(pyobj, a)
+	ret, err := (*f)(o, a)
 	if err != nil {
 		raise(err)
 		return nil
@@ -120,9 +149,11 @@ func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 //export goClassCallMethodKwds
 func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
-	t := (*C.PyObject)(obj)
-	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+	m, o, err := getMethodAndObject(obj)
+	if err != nil {
+		raise(err)
+		return nil
+	}
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
@@ -131,9 +162,9 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(p unsafe.Pointer, a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
+	f := (*func(o ClassObject, a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
 
-	ret, err := (*f)(pyobj, a, k)
+	ret, err := (*f)(o, a, k)
 	if err != nil {
 		raise(err)
 		return nil
@@ -165,7 +196,7 @@ func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 
 //export goClassGetProp
 func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
-	// Unpack set function from closure
+	// Unpack get function from closure
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
 
@@ -383,12 +414,10 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	pyType := (*C.PyTypeObject)(typ)
 
 	class, _ := getType(pyType)
-	subClass := false
 
 	for class == nil && pyType.tp_base != nil {
 		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
 		class, _ = getType(pyType)
-		subClass = true
 	}
 
 	if class == nil {
@@ -397,39 +426,34 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 		return nil
 	}
 
-	if subClass {
-		// Python forces tp_alloc/tp_free to be PyType_GenericAlloc based for
-		// subclasses created in Python (i.e. using class XXX (...)), but
-		// we need them to be goGenericAlloc based for anything derived from a
-		// Go base class
-		C.overrideGenericAlloc((*C.PyTypeObject)(typ))
-	}
-
-	var obj Object
-	var err error
-
 	// Get typ ready to use by turning into *Type
 	t := newType((*C.PyObject)(typ))
 
-	if class.New != nil {
-		// Get args and kwds ready to use, by turning them into pointers of the
-		// appropriate type
-		a := newTuple((*C.PyObject)(args))
-		k := newDict((*C.PyObject)(kwds))
+	// Get args and kwds ready to use, by turning them into pointers of the
+	// appropriate type
+	a := newTuple((*C.PyObject)(args))
+	k := newDict((*C.PyObject)(kwds))
 
-		obj, err = class.New(t, a, k)
-	} else {
-		// Create a new Python instance
-		obj, err = t.Alloc(0)
-	}
-
+	// allocate the go object
+	goObj, err := class.newObject(a, k)
 	if err != nil {
 		raise(err)
 		return nil
 	}
 
+	// allocate the Python proxy object
+	pyObj, err := t.Alloc(0)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	// finalise the setup of the go object
+	goObj.setBase(pyObj.Base())
+	registerClassObject(pyObj, goObj)
+
 	// Pointer to new object, ready to return
-	ret := unsafe.Pointer(c(obj))
+	ret := unsafe.Pointer(c(pyObj))
 
 	// register class context against new object
 	setClassContext(ret, pyType)
@@ -726,7 +750,7 @@ func (c *Class) Create() (*Type, error) {
 	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(c.Flags)
 
 	if c.Pointer == nil {
-		c.Pointer = (*BaseObject)(nil)
+		c.Pointer = &ClassBaseObject{}
 	}
 
 	typ := reflect.TypeOf(c.Pointer)
@@ -734,16 +758,6 @@ func (c *Class) Create() (*Type, error) {
 
 	if btyp.NumField() == 0 {
 		return nil, fmt.Errorf("%s does not embed an Object", btyp.Name())
-	}
-
-	firstName := btyp.Field(0).Name
-	if firstName != "BaseObject" && btyp.Name() != "BaseObject" {
-		baseType := typeMap[firstName]
-		if baseType == nil {
-			C.free(unsafe.Pointer(pyType))
-			return nil, fmt.Errorf("%s embeds %s as first member, which is not a supported \"base class\"", btyp.Name(), firstName)
-		}
-		pyType.tp_base = (*C.struct__typeobject)(unsafe.Pointer(baseType))
 	}
 
 	// Get a new context structure
@@ -797,7 +811,7 @@ func (c *Class) Create() (*Type, error) {
 		}
 	}
 
-	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
+	pyType.tp_basicsize = C.Py_ssize_t(unsafe.Sizeof(C.PyObject{}))
 
 	C.setClassContext(pyType, ctxt)
 

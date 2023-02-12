@@ -98,9 +98,11 @@ func goClassDealloc(obj unsafe.Pointer) {
 		f := (*func(unsafe.Pointer))(unsafe.Pointer(&ctxt.dealloc))
 
 		(*f)(obj)
-	} else {
-		(*AbstractObject)(obj).Free()
 	}
+
+	// we always want Python to _actually_ free the object, any registered hook
+	// should just be tidying things up on the Go side.
+	(*AbstractObject)(obj).Free()
 }
 
 //export goClassHash

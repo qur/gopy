@@ -313,20 +313,11 @@ void enableClassGc(PyTypeObject *type) {
   type->tp_clear = (inquiry)goClassClear;
 }
 
-void overrideGenericAlloc(PyTypeObject *type) {
-  if (type->tp_alloc == PyType_GenericAlloc) {
-    type->tp_alloc = (allocfunc)goGenericAlloc;
-    type->tp_free = (freefunc)goGenericFree;
-  }
-}
-
 void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
   ctxt->zero = NULL;
 
   type->tp_new = (newfunc)goClassNew;
-  type->tp_alloc = (allocfunc)goGenericAlloc;
   type->tp_dealloc = (destructor)goClassDealloc;
-  type->tp_free = (freefunc)goGenericFree;
 
   if (ctxt->call) type->tp_call = (ternaryfunc)goClassCall;
   // TODO(jp3): tp_compare isn't a thing anymore

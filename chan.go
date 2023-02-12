@@ -10,32 +10,21 @@ import "C"
 // Chan is a Python object that wraps a Go channel (specifically a "chan
 // Object").
 type Chan struct {
-	BaseObject
+	ClassBaseObject
 	c chan Object
 }
 
-func newChan(t *Type, args *Tuple, kw *Dict) (Object, error) {
-	obj, err := t.Alloc(0)
-	if err != nil {
-		return nil, err
-	}
-
-	self, ok := obj.(*Chan)
-	if !ok {
-		defer obj.Decref()
-		return nil, TypeError.Err("Alloc returned wrong type: %T", obj)
-	}
-
+func newChan(c *Class, args *Tuple, kw *Dict) (ClassObject, error) {
 	var buffer int
-
-	err = ParseTuple(args, "i", &buffer)
-	if err != nil {
+	if err := ParseTuple(args, "i", &buffer); err != nil {
 		return nil, err
 	}
 
-	self.c = make(chan Object, buffer)
+	ch := &Chan{
+		c: make(chan Object, buffer),
+	}
 
-	return self, nil
+	return ch, nil
 }
 
 // NewChan returns a new Chan object, with the channel created using "make(chan
@@ -64,13 +53,6 @@ func NewChan(buffer int) (*Chan, error) {
 	self.c = make(chan Object, buffer)
 
 	return self, nil
-}
-
-// PyDealloc is the deallocator for a Chan instance, it is used internally -
-// c.Decref() should be used as normal.
-func (c *Chan) PyDealloc() {
-	c.c = nil
-	c.Free()
 }
 
 // Py_put provides a c.put() method when this object is used in Python.
@@ -105,11 +87,11 @@ func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, error) {
 // Chan returns the channel inside the Chan object.  This is how Go code can get
 // at the channel to communicate with Python code.
 //
-// When sending values, a reference count will be "stollen" - i.e. the reference
+// When sending values, a reference count will be "stolen" - i.e. the reference
 // count should be incremented if you want to continue to hold a reference after
 // the send.
 //
-// When receiveing values, you get a new reference - i.e. the reference count
+// When receiving values, you get a new reference - i.e. the reference count
 // should be decremented when you have finished with the value.
 func (c *Chan) Chan() chan Object {
 	return c.c

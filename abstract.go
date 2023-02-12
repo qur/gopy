@@ -85,8 +85,14 @@ func (obj *AbstractObject) Not() bool {
 func (obj *AbstractObject) Free() {
 	o := c(obj)
 
-	// Make sure this instance isn't registered anymore
+	// This can happen if a PyDealloc method on a ClassObject calls Free
+	if o == nil {
+		return
+	}
+
+	// Make sure this instance isn't registered any more
 	clearClassContext(unsafe.Pointer(o))
+	clearClassObject(unsafe.Pointer(o))
 
 	// Call Python free function
 	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
