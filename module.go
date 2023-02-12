@@ -265,7 +265,17 @@ func importerFindSpec(args *Tuple) (Object, error) {
 
 	log.Printf("SFL: %p %T", sfl, sfl)
 
-	return sfl.Base().CallFunction("sOO", name, mod, importOrigin)
+	sflArgs, err := BuildValue("sO", name, mod)
+	if err != nil {
+		return nil, err
+	}
+
+	sflKwds, err := BuildValue("{sO}", "origin", importOrigin)
+	if err != nil {
+		return nil, err
+	}
+
+	return sfl.Base().Call(sflArgs.(*Tuple), sflKwds.(*Dict))
 }
 
 // importerExecModule starts the setup of a module.
