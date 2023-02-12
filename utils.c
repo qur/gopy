@@ -139,10 +139,12 @@ typedef struct {
 static PyObject *method_get(PyGoMethod *self, PyObject *obj, PyObject *type) {
   PyObject *cap = PyCapsule_New(self->func, NULL, NULL);
   PyObject *o;
-  if (obj == NULL) {
-    o = PyTuple_Pack(1, cap);
-  } else {
+  if (self->meth.ml_flags & METH_CLASS) {
+    o = PyTuple_Pack(2, type, cap);
+  } else if (obj != NULL) {
     o = PyTuple_Pack(2, obj, cap);
+  } else {
+    o = PyTuple_Pack(1, cap);
   };
   PyObject *ret = PyCFunction_New(&self->meth, o);
   Py_DECREF(o);
@@ -192,6 +194,15 @@ PyObject *newMethod(char *name, void *func, int flags) {
         break;
       case METH_STATIC | METH_VARARGS | METH_KEYWORDS:
         self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodKwds;
+        break;
+      case METH_CLASS | METH_NOARGS:
+        self->meth.ml_meth = (PyCFunction)goClassCallClassMethod;
+        break;
+      case METH_CLASS | METH_VARARGS:
+        self->meth.ml_meth = (PyCFunction)goClassCallClassMethodArgs;
+        break;
+      case METH_CLASS | METH_VARARGS | METH_KEYWORDS:
+        self->meth.ml_meth = (PyCFunction)goClassCallClassMethodKwds;
         break;
       default:
         fprintf(stderr, "Invalid method flags: %x\n", flags);

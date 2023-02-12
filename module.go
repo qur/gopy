@@ -233,7 +233,7 @@ func getImport(name string) *Module {
 	return importMap[name]
 }
 
-func importerFindSpec(args *Tuple) (Object, error) {
+func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 	var name string
 	var path, target Object
 	ParseTuple(args, "sO|O", &name, &path, &target)
@@ -265,7 +265,7 @@ func importerFindSpec(args *Tuple) (Object, error) {
 
 	log.Printf("SFL: %p %T", sfl, sfl)
 
-	sflArgs, err := BuildValue("sO", name, mod)
+	sflArgs, err := BuildValue("sO", name, cls)
 	if err != nil {
 		return nil, err
 	}
@@ -344,9 +344,11 @@ func importerExecModule(args *Tuple) (Object, error) {
 var importer = Class{
 	Name: "GoImporter",
 	Static: map[string]any{
-		"find_spec":     importerFindSpec,
 		"create_module": importerCreateModule,
 		"exec_module":   importerExecModule,
+	},
+	Class: map[string]any{
+		"find_spec": importerFindSpec,
 	},
 }
 
