@@ -288,10 +288,9 @@ func initModules() error {
 		log.Printf("  %d: %T %v", i, r, r)
 	}
 
-	imp, err := importer.Create()
-	if err != nil {
+	if err := importer.Create(); err != nil {
 		return err
 	}
 
-	return metaPath.Insert(0, imp)
+	return metaPath.Insert(0, &importer)
 }

@@ -138,12 +138,11 @@ func main() {
 		log.Fatalf("ERROR: %s", err)
 	}
 
-	c, err := exampleClass.Create()
-	if err != nil {
+	if err := exampleClass.Create(); err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
 
-	if err = m.AddObject("ExampleClass", c); err != nil {
+	if err = m.AddObject("ExampleClass", &exampleClass); err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
 

@@ -107,6 +107,10 @@ func newObject(obj *C.PyObject) Object {
 	case &C.PyModule_Type:
 		return (*Module)(o)
 	case &C.PyType_Type:
+		class, ok := getType((*C.PyTypeObject)(o))
+		if ok {
+			return class
+		}
 		return (*Type)(o)
 	case &C.PyCode_Type:
 		return (*Code)(o)

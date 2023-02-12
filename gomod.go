@@ -39,17 +39,15 @@ func InitGoModule() (*Module, error) {
 		return nil, err
 	}
 
-	c, err := chanClass.Create()
-	if err != nil {
+	if err := chanClass.Create(); err != nil {
 		goModule.Decref()
 		goModule = nil
 		return nil, err
 	}
 
-	if err := goModule.AddObject("Chan", c); err != nil {
+	if err := goModule.AddObject("Chan", &chanClass); err != nil {
 		goModule.Decref()
 		goModule = nil
-		c.Decref()
 		return nil, err
 	}
 

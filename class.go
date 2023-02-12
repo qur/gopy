@@ -31,8 +31,9 @@ const (
 //
 // Doc is currently unused.
 //
-// Type holds a pointer to the Type instance for this class, this is filled in
-// by calling Create().
+// Once Create has been called, then Class is a valid Object that maps to the
+// Python type instance for this class. Calling RawType will return the same
+// Python instance as a Type.
 //
 // Object should be set to a pointer of the struct type that will represent an
 // instance of the Python class.  This struct must contain an embedded
@@ -68,10 +69,42 @@ type Class struct {
 	Name   string
 	Flags  uint32
 	Doc    string
-	Type   *Type
 	Object ClassObject
 	Static map[string]any
 	New    func(*Class, *Tuple, *Dict) (ClassObject, error)
+	base   *Type
+}
+
+func (c *Class) Base() *BaseObject {
+	return c.base.Base()
+}
+
+func (c *Class) Type() *Type {
+	return c.base.Type()
+}
+
+func (c *Class) RawType() *Type {
+	return c.base
+}
+
+func (c *Class) Decref() {
+	c.base.Decref()
+}
+
+func (c *Class) Incref() {
+	c.base.Incref()
+}
+
+func (c *Class) IsTrue() bool {
+	return c.base.IsTrue()
+}
+
+func (c *Class) Not() bool {
+	return c.base.Not()
+}
+
+func (c *Class) Free() {
+	c.base.Free()
 }
 
 func (c *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
@@ -628,11 +661,11 @@ func getStaticCallFlags(f reflect.Type) (int, error) {
 // Alloc is a convenience function, so that Go code can create a new Object
 // instance.
 func (class *Class) Alloc(n int64) (obj Object, err error) {
-	obj, err = class.Type.Alloc(n)
+	obj, err = class.base.Alloc(n)
 
 	// Since we are creating this object for Go code, this is probably the only
 	// opportunity we will get to register this object instance.
-	pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.Type)))
+	pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.base)))
 	setClassContext(unsafe.Pointer(c(obj)), pyType)
 
 	return
@@ -858,7 +891,7 @@ var typeMap = map[string]*Type{
 
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
-func (c *Class) Create() (*Type, error) {
+func (c *Class) Create() error {
 	pyType := C.newType()
 	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(c.Flags)
@@ -871,7 +904,7 @@ func (c *Class) Create() (*Type, error) {
 	btyp := typ.Elem()
 
 	if btyp.NumField() == 0 {
-		return nil, fmt.Errorf("%s does not embed an Object", btyp.Name())
+		return fmt.Errorf("%s does not embed an Object", btyp.Name())
 	}
 
 	// Get a new context structure
@@ -893,7 +926,7 @@ func (c *Class) Create() (*Type, error) {
 			err := methSigMatches(t, meth.sig)
 			if err != nil {
 				C.free(unsafe.Pointer(pyType))
-				return nil, fmt.Errorf("%s: %s", fn, err)
+				return fmt.Errorf("%s: %s", fn, err)
 			}
 			ctxtSet(ctxt, meth.field, f)
 			continue
@@ -903,13 +936,13 @@ func (c *Class) Create() (*Type, error) {
 		case "Py":
 			flags, err := getPythonCallFlags(t)
 			if err != nil {
-				return nil, fmt.Errorf("%s: %s", fn, err)
+				return fmt.Errorf("%s: %s", fn, err)
 			}
 			methods[parts[1]] = method{f, flags}
 		case "PySet":
 			if err := methSigMatches(t, (func(Object) error)(nil)); err != nil {
 				C.free(unsafe.Pointer(pyType))
-				return nil, fmt.Errorf("%s: %s", fn, err)
+				return fmt.Errorf("%s: %s", fn, err)
 			}
 			p := props[parts[1]]
 			p.set = f
@@ -917,7 +950,7 @@ func (c *Class) Create() (*Type, error) {
 		case "PyGet":
 			if err := methSigMatches(t, (func() (Object, error))(nil)); err != nil {
 				C.free(unsafe.Pointer(pyType))
-				return nil, fmt.Errorf("%s: %s", fn, err)
+				return fmt.Errorf("%s: %s", fn, err)
 			}
 			p := props[parts[1]]
 			p.get = f
@@ -930,7 +963,7 @@ func (c *Class) Create() (*Type, error) {
 		t := f.Type()
 		flags, err := getStaticCallFlags(t)
 		if err != nil {
-			return nil, fmt.Errorf("static %s: %s", name, err)
+			return fmt.Errorf("static %s: %s", name, err)
 		}
 		methods[name] = method{funcAsPointer(f), flags | C.METH_STATIC}
 	}
@@ -943,7 +976,7 @@ func (c *Class) Create() (*Type, error) {
 		C.free(unsafe.Pointer(ctxt))
 		C.free(unsafe.Pointer(pyType.tp_name))
 		C.free(unsafe.Pointer(pyType))
-		return nil, exception()
+		return exception()
 	}
 
 	C.storeContext(pyType, ctxt)
@@ -981,7 +1014,7 @@ func (c *Class) Create() (*Type, error) {
 			C.free(unsafe.Pointer(ctxt))
 			C.free(unsafe.Pointer(pyType.tp_name))
 			C.free(unsafe.Pointer(pyType))
-			return nil, fmt.Errorf("Cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
+			return fmt.Errorf("Cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 		}
 		s := C.CString(pyname)
 		defer C.free(unsafe.Pointer(s))
@@ -989,9 +1022,9 @@ func (c *Class) Create() (*Type, error) {
 		C.setTypeAttr(pyType, s, C.newNatMember(registerField(field), d))
 	}
 
-	c.Type = newType((*C.PyObject)(unsafe.Pointer(pyType)))
+	c.base = newType((*C.PyObject)(unsafe.Pointer(pyType)))
 
 	registerType(pyType, c)
 
-	return c.Type, nil
+	return nil
 }
