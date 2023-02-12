@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"qur.me/py/v3"
@@ -31,7 +32,6 @@ func example(args *py.Tuple) (py.Object, error) {
 	for i, v := range l.Slice() {
 		fmt.Printf("l[%d]: %v\n", i, v)
 	}
-	py.None.Incref()
 	ret, err := py.BuildValue("siO", s, i, l)
 	if err != nil {
 		return nil, err
@@ -39,32 +39,32 @@ func example(args *py.Tuple) (py.Object, error) {
 	return ret, nil
 }
 
-type ExampleClass struct {
+type Example struct {
 	py.ClassBaseObject
 	wibble int64
 }
 
-func (e *ExampleClass) PyInit(args *py.Tuple, kwds *py.Dict) error {
+func (e *Example) PyInit(args *py.Tuple, kwds *py.Dict) error {
 	fmt.Printf("ExampleClass.PyInit: args=%v, kwds=%v\n", args, kwds)
 	return nil
 }
 
-func (e *ExampleClass) PyRepr() string {
+func (e *Example) PyRepr() string {
 	return fmt.Sprintf("<example.ExampleClass wibble=%d>", e.wibble)
 }
 
-func (e *ExampleClass) PyStr() string {
+func (e *Example) PyStr() string {
 	return fmt.Sprintf("example.ExampleClass(wibble=%d)", e.wibble)
 }
 
-func (e *ExampleClass) PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
+func (e *Example) PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	fmt.Printf("ExampleClass.PyCall(args=%v, kwds=%v)\n", args, kwds)
 	py.None.Incref()
 	return py.None, nil
 }
 
-func (e *ExampleClass) PyCompare(obj py.Object) (int, error) {
-	o, ok := obj.(*ExampleClass)
+func (e *Example) PyCompare(obj py.Object) (int, error) {
+	o, ok := obj.(*Example)
 	if !ok {
 		return 0, fmt.Errorf("TypeError: not a example.ExampleClass instance")
 	}
@@ -76,7 +76,7 @@ func (e *ExampleClass) PyCompare(obj py.Object) (int, error) {
 	return 0, nil
 }
 
-func (e *ExampleClass) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
+func (e *Example) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	fmt.Printf("ExampleClass.Bar: %v %v %v\n", e, args, kwds)
 	if kwds != nil {
 		m, err := kwds.MapString()
@@ -101,7 +101,7 @@ func (e *ExampleClass) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) 
 	return py.None, nil
 }
 
-func (e *ExampleClass) PyGet_wibble() (py.Object, error) {
+func (e *Example) PyGet_wibble() (py.Object, error) {
 	i := py.NewLong(e.wibble)
 	if i == nil {
 		return nil, fmt.Errorf("TypeError: failed to convert wibble to Int")
@@ -109,7 +109,7 @@ func (e *ExampleClass) PyGet_wibble() (py.Object, error) {
 	return i, nil
 }
 
-func (e *ExampleClass) PySet_wibble(arg py.Object) error {
+func (e *Example) PySet_wibble(arg py.Object) error {
 	i, ok := arg.(*py.Long)
 	if !ok {
 		return fmt.Errorf("TypeError: need a *py.Long, not %T", arg)
@@ -120,7 +120,7 @@ func (e *ExampleClass) PySet_wibble(arg py.Object) error {
 
 var exampleClass = py.Class{
 	Name:   "example.ExampleClass",
-	Object: (*ExampleClass)(nil),
+	Object: (*Example)(nil),
 }
 
 var modDef = py.ModuleDef{
@@ -135,24 +135,20 @@ func main() {
 
 	m, err := py.CreateModule(&modDef)
 	if err != nil {
-		fmt.Printf("ERROR: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("ERROR: %s", err)
 	}
 
 	c, err := exampleClass.Create()
 	if err != nil {
-		fmt.Printf("ERROR: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("ERROR: %s", err)
 	}
 
 	if err = m.AddObject("ExampleClass", c); err != nil {
-		fmt.Printf("ERROR: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("ERROR: %s", err)
 	}
 
 	if err := m.Register(); err != nil {
-		fmt.Printf("ERROR: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("ERROR: %s", err)
 	}
 
 	py.Main(os.Args)
