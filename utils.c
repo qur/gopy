@@ -169,6 +169,15 @@ PyObject *newMethod(char *name, void *func, int flags) {
       case METH_VARARGS | METH_KEYWORDS:
         self->meth.ml_meth = (PyCFunction)goClassCallMethodKwds;
         break;
+      case METH_STATIC | METH_NOARGS:
+        self->meth.ml_meth = (PyCFunction)goClassCallStaticMethod;
+        break;
+      case METH_STATIC | METH_VARARGS:
+        self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodArgs;
+        break;
+      case METH_STATIC | METH_VARARGS | METH_KEYWORDS:
+        self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodKwds;
+        break;
       default:
         fprintf(stderr, "Invalid method flags: %x\n", flags);
         return NULL;

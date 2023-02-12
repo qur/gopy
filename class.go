@@ -176,6 +176,75 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
+func getStaticMethod(obj unsafe.Pointer) unsafe.Pointer {
+	t := (*C.PyObject)(obj)
+	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+	return m
+}
+
+//export goClassCallStaticMethod
+func goClassCallStaticMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
+	// Unpack function from obj
+	m := getStaticMethod(obj)
+
+	// Now call the actual static method by pulling the method out of the
+	// reflect.Type object stored in the context
+	f := (*func() (Object, error))(unsafe.Pointer(&m))
+
+	ret, err := (*f)()
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassCallStaticMethodArgs
+func goClassCallStaticMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
+	// Unpack function from obj
+	m := getStaticMethod(obj)
+
+	// Get args ready to use, by turning it into a pointer of the appropriate
+	// type
+	a := newTuple((*C.PyObject)(args))
+
+	// Now call the actual static method by pulling the method out of the
+	// reflect.Type object stored in the context
+	f := (*func(a *Tuple) (Object, error))(unsafe.Pointer(&m))
+
+	ret, err := (*f)(a)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassCallStaticMethodKwds
+func goClassCallStaticMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+	// Unpack function from obj
+	m := getStaticMethod(obj)
+
+	// Get args and kwds ready to use, by turning them into pointers of the
+	// appropriate type
+	a := newTuple((*C.PyObject)(args))
+	k := newDict((*C.PyObject)(kwds))
+
+	// Now call the actual static method by pulling the method out of the
+	// reflect.Type object stored in the context
+	f := (*func(a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
+
+	ret, err := (*f)(a, k)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
 //export goClassSetProp
 func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	// Unpack set function from closure
@@ -727,6 +796,13 @@ func methodAsPointer(m reflect.Method) unsafe.Pointer {
 	return unsafe.Pointer(ifp)
 }
 
+func funcAsPointer(v reflect.Value) unsafe.Pointer {
+	fp := unsafe.Pointer(v.Pointer())
+	ifp := &fp
+	indirections = append(indirections, ifp)
+	return unsafe.Pointer(ifp)
+}
+
 var typeMap = map[string]*Type{
 	"Bool":   BoolType,
 	"Code":   CodeType,
@@ -808,6 +884,16 @@ func (c *Class) Create() (*Type, error) {
 			p.get = f
 			props[parts[1]] = p
 		}
+	}
+
+	for name, fn := range c.Static {
+		f := reflect.ValueOf(fn)
+		t := f.Type()
+		flags, err := getPythonCallFlags(t)
+		if err != nil {
+			return nil, fmt.Errorf("static %s: %s", name, err)
+		}
+		methods[name] = method{funcAsPointer(f), flags | C.METH_STATIC}
 	}
 
 	pyType.tp_basicsize = C.Py_ssize_t(unsafe.Sizeof(C.PyObject{}))
