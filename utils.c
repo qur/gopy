@@ -127,22 +127,16 @@ typedef struct {
 } PyGoMethod;
 
 static PyObject *method_get(PyGoMethod *self, PyObject *obj, PyObject *type) {
-  printf("method_get: %s self=%p obj=%p type=%p\n", self->meth.ml_name, self,
-         obj, type);
   PyObject *cap = PyCapsule_New(self->func, NULL, NULL);
-  printf("method_get: cap=%p\n", cap);
   PyObject *o;
   if (obj == NULL) {
     o = PyTuple_Pack(1, cap);
   } else {
     o = PyTuple_Pack(2, obj, cap);
   };
-  printf("method_get: o=%p\n", o);
   PyObject *ret = PyCFunction_New(&self->meth, o);
-  printf("method_get: ret=%p\n", ret);
   Py_DECREF(o);
   Py_DECREF(cap);
-  printf("method_get: return\n");
   return ret;
 }
 

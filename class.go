@@ -9,7 +9,6 @@ import "C"
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"sync"
@@ -185,8 +184,6 @@ func getStaticMethod(obj unsafe.Pointer) unsafe.Pointer {
 
 //export goClassCallStaticMethod
 func goClassCallStaticMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
-	log.Printf("STATIC CALL NO ARGS: %p %p", obj, unused)
-
 	// Unpack function from obj
 	m := getStaticMethod(obj)
 
@@ -205,8 +202,6 @@ func goClassCallStaticMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 
 //export goClassCallStaticMethodArgs
 func goClassCallStaticMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
-	log.Printf("STATIC CALL ARGS: %p %p", obj, args)
-
 	// Unpack function from obj
 	m := getStaticMethod(obj)
 
@@ -229,8 +224,6 @@ func goClassCallStaticMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 
 //export goClassCallStaticMethodKwds
 func goClassCallStaticMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
-	log.Printf("STATIC CALL KWDS: %p %p", obj, args)
-
 	// Unpack function from obj
 	m := getStaticMethod(obj)
 
@@ -581,7 +574,6 @@ func methSigMatches(got reflect.Type, _want interface{}) error {
 }
 
 func getPythonCallFlags(f reflect.Type) (int, error) {
-	log.Printf("GET FLAGS: %T", reflect.New(f).Interface())
 	switch {
 	case methSigMatches(f, pyUnaryFunc) == nil:
 		return C.METH_NOARGS, nil
@@ -621,7 +613,6 @@ func funcSigMatches(got reflect.Type, _want interface{}) error {
 }
 
 func getStaticCallFlags(f reflect.Type) (int, error) {
-	log.Printf("GET STATIC FLAGS: %T", reflect.New(f).Interface())
 	switch {
 	case funcSigMatches(f, pyUnaryFunc) == nil:
 		return C.METH_NOARGS, nil
@@ -934,8 +925,6 @@ func (c *Class) Create() (*Type, error) {
 		}
 	}
 
-	log.Printf("CLASS: setup %d static methods", len(c.Static))
-
 	for name, fn := range c.Static {
 		f := reflect.ValueOf(fn)
 		t := f.Type()
@@ -943,7 +932,6 @@ func (c *Class) Create() (*Type, error) {
 		if err != nil {
 			return nil, fmt.Errorf("static %s: %s", name, err)
 		}
-		log.Printf("STATIC: %s %d", name, flags)
 		methods[name] = method{funcAsPointer(f), flags | C.METH_STATIC}
 	}
 
@@ -1004,8 +992,6 @@ func (c *Class) Create() (*Type, error) {
 	c.Type = newType((*C.PyObject)(unsafe.Pointer(pyType)))
 
 	registerType(pyType, c)
-
-	log.Printf("CREATE DONE")
 
 	return c.Type, nil
 }
