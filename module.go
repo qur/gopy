@@ -253,7 +253,19 @@ func importerFindSpec(args *Tuple) (Object, error) {
 		return None, nil
 	}
 
-	return nil, fmt.Errorf("not implemented")
+	util, err := Import("importlib.util")
+	if err != nil {
+		return nil, err
+	}
+
+	sfl, err := util.GetAttrString("spec_from_loader")
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("SFL: %p %T", sfl, sfl)
+
+	return sfl.Base().CallFunction("sOO", name, mod, importOrigin)
 }
 
 // importerExecModule starts the setup of a module.
