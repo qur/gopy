@@ -203,6 +203,10 @@ func (mod *Module) AddStringConstant(name, value string) error {
 	return nil
 }
 
+var importer = Class{
+	Name: "GoImporter",
+}
+
 func initModules() error {
 	sys, err := Import("sys")
 	if err != nil {
@@ -229,5 +233,10 @@ func initModules() error {
 		log.Printf("  %d: %T %v", i, r, r)
 	}
 
-	return nil
+	imp, err := importer.Create()
+	if err != nil {
+		return err
+	}
+
+	return metaPath.Insert(0, imp)
 }

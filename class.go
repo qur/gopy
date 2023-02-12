@@ -721,6 +721,14 @@ var typeMap = map[string]*Type{
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
 func (c *Class) Create() (*Type, error) {
+	pyType := C.newType()
+	pyType.tp_name = C.CString(c.Name)
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(c.Flags)
+
+	if c.Pointer == nil {
+		c.Pointer = (*BaseObject)(nil)
+	}
+
 	typ := reflect.TypeOf(c.Pointer)
 	btyp := typ.Elem()
 
@@ -728,10 +736,8 @@ func (c *Class) Create() (*Type, error) {
 		return nil, fmt.Errorf("%s does not embed an Object", btyp.Name())
 	}
 
-	pyType := C.newType()
-
 	firstName := btyp.Field(0).Name
-	if firstName != "BaseObject" {
+	if firstName != "BaseObject" && btyp.Name() != "BaseObject" {
 		baseType := typeMap[firstName]
 		if baseType == nil {
 			C.free(unsafe.Pointer(pyType))
@@ -791,9 +797,7 @@ func (c *Class) Create() (*Type, error) {
 		}
 	}
 
-	pyType.tp_name = C.CString(c.Name)
 	pyType.tp_basicsize = C.Py_ssize_t(typ.Elem().Size())
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(c.Flags)
 
 	C.setClassContext(pyType, ctxt)
 
