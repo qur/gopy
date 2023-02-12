@@ -47,6 +47,14 @@ func (u *Unicode) String() string {
 	return C.GoString(ret)
 }
 
+func (u *Unicode) AsString() (string, error) {
+	ret := C.PyUnicode_AsUTF8(c(u))
+	if ret == nil {
+		return "", exception()
+	}
+	return C.GoString(ret), nil
+}
+
 // TODO(jp3): Size is deprecated, we want to wrap PyUnicode_GET_LENGTH instead.
 // func (u *Unicode) Size() int64 {
 // 	ret := C.PyUnicode_GetSize(c(u))

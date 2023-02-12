@@ -214,8 +214,9 @@ func (mod *Module) AddStringConstant(name, value string) error {
 }
 
 var (
-	importLock sync.Mutex
-	importMap  = map[string]*Module{}
+	importLock   sync.Mutex
+	importMap    = map[string]*Module{}
+	importOrigin *Unicode
 )
 
 func addImport(name string, mod *Module) {
@@ -255,14 +256,85 @@ func importerFindSpec(args *Tuple) (Object, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
+// importerExecModule starts the setup of a module.
+//
+// Shamelessly copied from _imp_create_builtin and create_builtin from import.c.
+func importerCreateModule(args *Tuple) (Object, error) {
+	var spec Object
+	ParseTuple(args, "O", &spec)
+	log.Printf("importerCreateModule: %p %T", args, spec)
+
+	nameObj, err := spec.Base().GetAttrString("name")
+	if err != nil {
+		return nil, err
+	}
+
+	name, err := nameObj.(*Unicode).AsString()
+	if err != nil {
+		return nil, err
+	}
+
+	mod := getImport(name)
+	if mod == nil {
+		// we don't have the requested module
+		None.Incref()
+		return None, nil
+	}
+
+	return mod, nil
+}
+
+// importerExecModule completes the setup of a module.
+//
+// Shamelessly copied from exec_builtin_or_dynamic from import.c.
+func importerExecModule(args *Tuple) (Object, error) {
+	var mod Object
+	ParseTuple(args, "O", &mod)
+	log.Printf("importerExecModule: %p %T", args, mod)
+
+	if _, ok := mod.(*Module); !ok {
+		// not actually a module, ignore it
+		None.Incref()
+		return None, nil
+	}
+
+	def := C.PyModule_GetDef(c(mod))
+	if def == nil {
+		None.Incref()
+		return None, nil
+	}
+
+	state := C.PyModule_GetState(c(mod))
+	if state != nil {
+		// already initialised
+		None.Incref()
+		return None, nil
+	}
+
+	if C.PyModule_ExecDef(c(mod), def) < 0 {
+		return nil, exception()
+	}
+
+	None.Incref()
+	return None, nil
+}
+
 var importer = Class{
 	Name: "GoImporter",
 	Static: map[string]any{
-		"find_spec": importerFindSpec,
+		"find_spec":     importerFindSpec,
+		"create_module": importerCreateModule,
+		"exec_module":   importerExecModule,
 	},
 }
 
 func initModules() error {
+	origin, err := NewUnicode("gopy")
+	if err != nil {
+		return err
+	}
+	importOrigin = origin
+
 	sys, err := Import("sys")
 	if err != nil {
 		return err
