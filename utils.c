@@ -127,11 +127,22 @@ typedef struct {
 } PyGoMethod;
 
 static PyObject *method_get(PyGoMethod *self, PyObject *obj, PyObject *type) {
+  printf("method_get: %s self=%p obj=%p type=%p\n", self->meth.ml_name, self,
+         obj, type);
   PyObject *cap = PyCapsule_New(self->func, NULL, NULL);
-  PyObject *o = PyTuple_Pack(2, obj, cap);
+  printf("method_get: cap=%p\n", cap);
+  PyObject *o;
+  if (obj == NULL) {
+    o = PyTuple_Pack(1, cap);
+  } else {
+    o = PyTuple_Pack(2, obj, cap);
+  };
+  printf("method_get: o=%p\n", o);
   PyObject *ret = PyCFunction_New(&self->meth, o);
+  printf("method_get: ret=%p\n", ret);
   Py_DECREF(o);
   Py_DECREF(cap);
+  printf("method_get: return\n");
   return ret;
 }
 
@@ -182,7 +193,10 @@ PyObject *newMethod(char *name, void *func, int flags) {
         fprintf(stderr, "Invalid method flags: %x\n", flags);
         return NULL;
     }
-    self->meth.ml_flags = flags;
+    // For static methods, don't tell Python, otherwise it will call the Go
+    // function with NULL instead of the context we need to retrieve the
+    // function to call.
+    self->meth.ml_flags = flags & ~METH_STATIC;
     self->meth.ml_doc = "";
   }
 

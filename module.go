@@ -203,8 +203,16 @@ func (mod *Module) AddStringConstant(name, value string) error {
 	return nil
 }
 
+func importerFindSpec(args *Tuple) (Object, error) {
+	log.Printf("importerFindSpec: %p", args)
+	return nil, fmt.Errorf("not implemented")
+}
+
 var importer = Class{
 	Name: "GoImporter",
+	Static: map[string]any{
+		"find_spec": importerFindSpec,
+	},
 }
 
 func initModules() error {
