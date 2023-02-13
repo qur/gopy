@@ -7,7 +7,9 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 //export goClassCall
 func goClassCall(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
@@ -124,21 +126,22 @@ func goClassHash(obj unsafe.Pointer) C.long {
 	return C.long(ret)
 }
 
+type tpInit interface {
+	PyInit(*Tuple, *Dict) error
+}
+
 //export goClassInit
 func goClassInit(obj, args, kwds unsafe.Pointer) int {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, *Tuple, *Dict) error)(unsafe.Pointer(&ctxt.init))
+	// Turn obj into the ClassObject instead of the proxy, and it should
+	// implement tpInit.
+	co := newObject((*C.PyObject)(obj)).(tpInit)
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
 	a := newTuple((*C.PyObject)(args))
 	k := newDict((*C.PyObject)(kwds))
 
-	err := (*f)(obj, a, k)
-	if err != nil {
+	if err := co.PyInit(a, k); err != nil {
 		raise(err)
 		return -1
 	}
@@ -182,15 +185,17 @@ func goClassIterNext(obj unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
+type tpRepr interface {
+	PyRepr() string
+}
+
 //export goClassRepr
 func goClassRepr(obj unsafe.Pointer) unsafe.Pointer {
-	// Get the class context
-	ctxt := getClassContext(obj)
+	// Turn obj into the ClassObject instead of the proxy, and it should
+	// implement tpRepr.
+	co := newObject((*C.PyObject)(obj)).(tpRepr)
 
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer) string)(unsafe.Pointer(&ctxt.repr))
-
-	s := C.CString((*f)(obj))
+	s := C.CString(co.PyRepr())
 	defer C.free(unsafe.Pointer(s))
 
 	return unsafe.Pointer(C.PyUnicode_FromString(s))

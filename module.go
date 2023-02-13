@@ -9,7 +9,6 @@ import "C"
 
 import (
 	"fmt"
-	"log"
 	"sync"
 	"unsafe"
 )
@@ -237,17 +236,15 @@ func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 	var name string
 	var path, target Object
 	ParseTuple(args, "sO|O", &name, &path, &target)
-	log.Printf("importerFindSpec: %p %s %T %T", args, name, path, target)
 
 	if path != None {
 		// we don't support lookups with path - basically this is a variant of
-		// BuiltinImporter
+		// BuiltinImporter, so we copy the behaviour
 		None.Incref()
 		return None, nil
 	}
 
-	mod := getImport(name)
-	if mod == nil {
+	if getImport(name) == nil {
 		// we don't have the requested module
 		None.Incref()
 		return None, nil
@@ -262,8 +259,6 @@ func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("SFL: %p %T", sfl, sfl)
 
 	sflArgs, err := BuildValue("sO", name, cls)
 	if err != nil {
@@ -284,7 +279,6 @@ func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 func importerCreateModule(args *Tuple) (Object, error) {
 	var spec Object
 	ParseTuple(args, "O", &spec)
-	log.Printf("importerCreateModule: %p %T", args, spec)
 
 	nameObj, err := spec.Base().GetAttrString("name")
 	if err != nil {
@@ -312,7 +306,6 @@ func importerCreateModule(args *Tuple) (Object, error) {
 func importerExecModule(args *Tuple) (Object, error) {
 	var mod Object
 	ParseTuple(args, "O", &mod)
-	log.Printf("importerExecModule: %p %T", args, mod)
 
 	if _, ok := mod.(*Module); !ok {
 		// not actually a module, ignore it
@@ -372,16 +365,6 @@ func initModules() error {
 	metaPath, ok := metaPathObj.(*List)
 	if !ok {
 		return fmt.Errorf("sys.meta_path should be list, got %T", metaPathObj)
-	}
-
-	log.Printf("sys.meta_path: %d items", metaPath.Size())
-
-	for i, obj := range metaPath.Slice() {
-		r, err := obj.Base().Repr()
-		if err != nil {
-			return err
-		}
-		log.Printf("  %d: %T %v", i, r, r)
 	}
 
 	if err := importer.Create(); err != nil {

@@ -9,6 +9,7 @@ import "C"
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"sync"
@@ -376,13 +377,16 @@ func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
 
+	// Turn obj into the ClassObject instead of the proxy
+	co := newObject((*C.PyObject)(obj)).(ClassObject)
+
 	// Turn arg into something usable
 	a := newObject((*C.PyObject)(arg))
 
 	// Turn the function into something we can call
-	f := (*func(p unsafe.Pointer, a Object) error)(unsafe.Pointer(&m))
+	f := (*func(p ClassObject, a Object) error)(unsafe.Pointer(&m))
 
-	err := (*f)(obj, a)
+	err := (*f)(co, a)
 	if err != nil {
 		raise(err)
 		return -1
@@ -397,10 +401,13 @@ func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	t := (*C.PyObject)(closure)
 	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
 
-	// Turn the function into something we can call
-	f := (*func(p unsafe.Pointer) (Object, error))(unsafe.Pointer(&m))
+	// Turn obj into the ClassObject instead of the proxy
+	co := newObject((*C.PyObject)(obj)).(ClassObject)
 
-	ret, err := (*f)(obj)
+	// Turn the function into something we can call
+	f := (*func(p ClassObject) (Object, error))(unsafe.Pointer(&m))
+
+	ret, err := (*f)(co)
 	if err != nil {
 		raise(err)
 		return nil
@@ -435,7 +442,7 @@ func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
 	value := newObject((*C.PyObject)(obj2))
 
 	// Special case for Object fields, we don't need reflect for these.  We have
-	// to be careful with refcounts, as decref could invoke desctructor code
+	// to be careful with refcounts, as decref could invoke destructor code
 	// etc.
 	if field.Type == otyp {
 		o := (*Object)(item)
@@ -637,6 +644,8 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 		raise(err)
 		return nil
 	}
+
+	log.Printf("NEW OBJECT: %p %T", goObj, goObj)
 
 	// allocate the Python proxy object
 	pyObj := unsafe.Pointer(C.typeAlloc(c(t), C.Py_ssize_t(0)))

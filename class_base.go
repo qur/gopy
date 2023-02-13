@@ -1,6 +1,7 @@
 package py
 
 import (
+	"log"
 	"sync"
 	"unsafe"
 )
@@ -57,6 +58,8 @@ func registerClassObject(pyObj unsafe.Pointer, goObj ClassObject) {
 	classObjLock.Lock()
 	defer classObjLock.Unlock()
 
+	log.Printf("REGISTER CLASS OBJ: %p -> %p", pyObj, goObj)
+
 	classObjMap[pyObj] = goObj
 }
 
@@ -71,12 +74,14 @@ func clearClassObject(pyObj unsafe.Pointer) {
 	classObjLock.Lock()
 	defer classObjLock.Unlock()
 
-	c := classObjMap[pyObj]
+	goObj := classObjMap[pyObj]
 
-	if c == nil {
+	log.Printf("CLEAR CLASS OBJ: %p -> %p", pyObj, goObj)
+
+	if goObj == nil {
 		return
 	}
 
 	delete(classObjMap, pyObj)
-	c.setBase(nil)
+	goObj.setBase(nil)
 }

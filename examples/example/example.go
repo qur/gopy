@@ -45,12 +45,12 @@ type Example struct {
 }
 
 func (e *Example) PyInit(args *py.Tuple, kwds *py.Dict) error {
-	fmt.Printf("ExampleClass.PyInit: args=%v, kwds=%v\n", args, kwds)
+	fmt.Printf("ExampleClass.PyInit: e=%p args=%v, kwds=%v\n", e, args, kwds)
 	return nil
 }
 
 func (e *Example) PyRepr() string {
-	return fmt.Sprintf("<example.ExampleClass wibble=%d>", e.wibble)
+	return fmt.Sprintf("<example.ExampleClass self=%p wibble=%d>", e, e.wibble)
 }
 
 func (e *Example) PyStr() string {
