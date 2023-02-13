@@ -150,9 +150,9 @@ func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(p ClassObject) (Object, error))(unsafe.Pointer(&m))
+	f := (*func(p unsafe.Pointer) (Object, error))(unsafe.Pointer(&m))
 
-	ret, err := (*f)(o)
+	ret, err := (*f)(reflect.ValueOf(o).UnsafePointer())
 	if err != nil {
 		raise(err)
 		return nil
@@ -176,9 +176,9 @@ func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(o ClassObject, a *Tuple) (Object, error))(unsafe.Pointer(&m))
+	f := (*func(o unsafe.Pointer, a *Tuple) (Object, error))(unsafe.Pointer(&m))
 
-	ret, err := (*f)(o, a)
+	ret, err := (*f)(reflect.ValueOf(o).UnsafePointer(), a)
 	if err != nil {
 		raise(err)
 		return nil
@@ -203,9 +203,9 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(o ClassObject, a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
+	f := (*func(o unsafe.Pointer, a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
 
-	ret, err := (*f)(o, a, k)
+	ret, err := (*f)(reflect.ValueOf(o).UnsafePointer(), a, k)
 	if err != nil {
 		raise(err)
 		return nil
