@@ -823,6 +823,21 @@ var exportable = map[reflect.Kind]bool{
 	reflect.Float64: true,
 }
 
+var slotMap = map[C.uint64_t]reflect.Type{
+	C.CLASS_HAS_TP_REPR: reflect.TypeOf((*tpRepr)(nil)).Elem(),
+	// C.CLASS_HAS_TP_HASH:        reflect.TypeOf((*tpHash)(nil)).Elem(),
+	C.CLASS_HAS_TP_CALL: reflect.TypeOf((*tpCall)(nil)).Elem(),
+	// C.CLASS_HAS_TP_STR:         reflect.TypeOf((*tpStr)(nil)).Elem(),
+	// C.CLASS_HAS_TP_GETATTRO:    reflect.TypeOf((*tpGetAttr)(nil)).Elem(),
+	// C.CLASS_HAS_TP_SETATTRO:    reflect.TypeOf((*tpSetAttr)(nil)).Elem(),
+	// C.CLASS_HAS_TP_RICHCOMPARE: reflect.TypeOf((*tpRichCompare)(nil)).Elem(),
+	// C.CLASS_HAS_TP_ITER:        reflect.TypeOf((*tpIter)(nil)).Elem(),
+	// C.CLASS_HAS_TP_ITERNEXT:    reflect.TypeOf((*tpIterNext)(nil)).Elem(),
+	// C.CLASS_HAS_TP_DESCR_GET:   reflect.TypeOf((*tpDescrGet)(nil)).Elem(),
+	// C.CLASS_HAS_TP_DESCR_SET:   reflect.TypeOf((*tpDescrSet)(nil)).Elem(),
+	C.CLASS_HAS_TP_INIT: reflect.TypeOf((*tpInit)(nil)).Elem(),
+}
+
 type methodSignature struct {
 	field string
 	sig   interface{}
@@ -1015,6 +1030,16 @@ func (c *Class) Create() error {
 
 	methods := make(map[string]method)
 	props := make(map[string]prop)
+
+	slotFlags := C.uint64_t(0)
+
+	for flag, slot := range slotMap {
+		if typ.Implements(slot) {
+			slotFlags |= flag
+		}
+	}
+
+	log.Printf("SLOT FLAGS: %016x", slotFlags)
 
 	for i := 0; i < typ.NumMethod(); i++ {
 		m := typ.Method(i)
