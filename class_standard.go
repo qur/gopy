@@ -11,20 +11,22 @@ import (
 	"unsafe"
 )
 
+type tpCall interface {
+	PyCall(*Tuple, *Dict) (Object, error)
+}
+
 //export goClassCall
 func goClassCall(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
-	// Get the class context
-	ctxt := getClassContext(obj)
-
-	// Turn the function into something we can call
-	f := (*func(unsafe.Pointer, *Tuple, *Dict) (Object, error))(unsafe.Pointer(&ctxt.call))
+	// Turn obj into the ClassObject instead of the proxy, and it should
+	// implement tpCall.
+	co := newObject((*C.PyObject)(obj)).(tpCall)
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
 	a := newTuple((*C.PyObject)(args))
 	k := newDict((*C.PyObject)(kwds))
 
-	ret, err := (*f)(obj, a, k)
+	ret, err := co.PyCall(a, k)
 	if err != nil {
 		raise(err)
 		return nil
