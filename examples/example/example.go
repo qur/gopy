@@ -58,7 +58,7 @@ func (e *Example) PyStr() string {
 }
 
 func (e *Example) PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
-	fmt.Printf("ExampleClass.PyCall(args=%v, kwds=%v)\n", args, kwds)
+	fmt.Printf("ExampleClass.PyCall(self=%p, args=%v, kwds=%v)\n", e, args, kwds)
 	py.None.Incref()
 	return py.None, nil
 }
