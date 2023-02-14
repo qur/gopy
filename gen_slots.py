@@ -18,30 +18,30 @@ slots = [
     ("tp_hash", "hashfunc", "PyHash", "() (uint32, error)"),
     ("tp_call", "ternaryfunc", "PyCall", "(*Tuple, *Dict) (Object, error)"),
     ("tp_str", "reprfunc", "PyStr", "() string"),
-    ("tp_getattro", "getattrofunc", "", ""),
-    ("tp_setattro", "setattrofunc", "", ""),
-    ("tp_richcompare", "richcmpfunc", "", ""),
-    ("tp_iter", "getiterfunc", "", ""),
-    ("tp_iternext", "iternextfunc", "", ""),
+    ("tp_getattro", "getattrofunc", "PyGetAttr", ""),
+    ("tp_setattro", "setattrofunc", "PySetAttr", ""),
+    ("tp_richcompare", "richcmpfunc", "PyRichCompare", ""),
+    ("tp_iter", "getiterfunc", "PyIter", "() (Object, error)"),
+    ("tp_iternext", "iternextfunc", "PyIterNext", "() (Object, error)"),
     ("tp_descr_get", "descrgetfunc", "", ""),
     ("tp_descr_set", "descrsetfunc", "", ""),
     ("tp_init", "initproc", "PyInit", "(*Tuple, *Dict) error"),
 
     # Async Slots
-    ("am_await", "unaryfunc", "", ""),
-    ("am_aiter", "unaryfunc", "", ""),
-    ("am_anext", "unaryfunc", "", ""),
+    ("am_await", "unaryfunc", "PyAwait", "() (Object, error)"),
+    ("am_aiter", "unaryfunc", "PyAsyncIter", "() (Object, error)"),
+    ("am_anext", "unaryfunc", "PyAsyncNext", "() (Object, error)"),
     ("am_send", "sendfunc", "", ""),
 
     # Number Slots
 
     # Mapping Slots
-    ("mp_length", "lenfunc", "", ""),
+    ("mp_length", "lenfunc", "PyMappingLen", "() int"),
     ("mp_subscript", "binaryfunc", "", ""),
     ("mp_ass_subscript", "objobjargproc", "", ""),
 
     # Sequence Slots
-    ("sq_length", "lenfunc", "", ""),
+    ("sq_length", "lenfunc", "PyLen", "() int"),
     ("sq_concat", "binaryfunc", "", ""),
     ("sq_repeat", "ssizeargfunc", "", ""),
     ("sq_item", "ssizeargfunc", "", ""),
@@ -56,13 +56,45 @@ slots = [
 ]
 
 callbacks = {
-    "reprfunc": (
+    "() string": (
         "(obj unsafe.Pointer) unsafe.Pointer",
         [
             '	s := C.CString(co.%(fn)s())',
             '	defer C.free(unsafe.Pointer(s))',
             '',
             '	return unsafe.Pointer(C.PyUnicode_FromString(s))',
+        ],
+    ),
+    "() int": (
+        "(obj unsafe.Pointer) C.Py_ssize_t",
+        [
+            '	return C.Py_ssize_t(co.%(fn)s())',
+        ],
+    ),
+    "() (Object, error)": (
+        "(obj unsafe.Pointer) unsafe.Pointer",
+        [
+            '	ret, err := co.%(fn)s()',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
+        ],
+    ),
+    "(*Tuple, *Dict) error": (
+        "(obj, args, kwds unsafe.Pointer) unsafe.Pointer",
+        [
+            '	a := newTuple((*C.PyObject)(args))',
+            '	k := newDict((*C.PyObject)(kwds))',
+            '	ret, err := co.%(fn)s(a, k)',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
         ],
     ),
 }
@@ -200,8 +232,8 @@ def write_interfaces(f):
 def write_callbacks(f):
     print("// ===============================================================", file=f)
     print("", file=f)
-    for (slot, pySig, fn, _) in slots:
-        (cbSig, body) = callbacks.get(pySig, (None, []))
+    for (slot, _, fn, goSig) in slots:
+        (cbSig, body) = callbacks.get(goSig, (None, []))
         if cbSig is None:
             continue
         print(f'//export goClassSlot_{slot}', file=f)
