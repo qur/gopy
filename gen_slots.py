@@ -9,51 +9,63 @@ methods = {
     "nb": ("number", "PyNumberMethods"),
     "mp": ("mapping", "PyMappingMethods"),
     "sq": ("sequence", "PySequenceMethods"),
-    "bf": ("buffer", "PyBufferMethods"),
+    "bf": ("buffer", "PyBufferProcs"),
 }
 
 slots = [
     # Standard Slots
-    ("tp_repr", "reprfunc", ""),
-    ("tp_hash", "hashfunc", ""),
-    ("tp_call", "terneryfunc", ""),
-    ("tp_str", "reprfunc", ""),
-    ("tp_getattro", "getattrofunc", ""),
-    ("tp_setattro", "setattrofunc", ""),
-    ("tp_richcompare", "richcmpfunc", ""),
-    ("tp_iter", "getiterfunc", ""),
-    ("tp_iternext", "iternextfunc", ""),
-    ("tp_descr_get", "descrgetfunc", ""),
-    ("tp_descr_set", "descrsetfunc", ""),
-    ("tp_init", "initproc", ""),
+    ("tp_repr", "reprfunc", "PyRepr", "() string"),
+    ("tp_hash", "hashfunc", "PyHash", "() (uint32, error)"),
+    ("tp_call", "ternaryfunc", "PyCall", "(*Tuple, *Dict) (Object, error)"),
+    ("tp_str", "reprfunc", "PyStr", "() string"),
+    ("tp_getattro", "getattrofunc", "", ""),
+    ("tp_setattro", "setattrofunc", "", ""),
+    ("tp_richcompare", "richcmpfunc", "", ""),
+    ("tp_iter", "getiterfunc", "", ""),
+    ("tp_iternext", "iternextfunc", "", ""),
+    ("tp_descr_get", "descrgetfunc", "", ""),
+    ("tp_descr_set", "descrsetfunc", "", ""),
+    ("tp_init", "initproc", "PyInit", "(*Tuple, *Dict) error"),
 
     # Async Slots
-    ("am_await", "unaryfunc", ""),
-    ("am_aiter", "unaryfunc", ""),
-    ("am_anext", "unaryfunc", ""),
-    ("am_send", "sendfunc", ""),
+    ("am_await", "unaryfunc", "", ""),
+    ("am_aiter", "unaryfunc", "", ""),
+    ("am_anext", "unaryfunc", "", ""),
+    ("am_send", "sendfunc", "", ""),
 
     # Number Slots
 
     # Mapping Slots
-    ("mp_length", "lenfunc", ""),
-    ("mp_subscript", "binaryfunc", ""),
-    ("mp_ass_subscript", "objobjargproc", ""),
+    ("mp_length", "lenfunc", "", ""),
+    ("mp_subscript", "binaryfunc", "", ""),
+    ("mp_ass_subscript", "objobjargproc", "", ""),
 
     # Sequence Slots
-    ("sq_length", "lenfunc", ""),
-    ("sq_concat", "binaryfunc", ""),
-    ("sq_repeat", "ssizeargfunc", ""),
-    ("sq_item", "ssizeargfunc", ""),
-    ("sq_ass_item", "ssizeobjargproc", ""),
-    ("sq_contains", "objobjproc", ""),
-    ("sq_inplace_concat", "binaryfunc", ""),
-    ("sq_inplace_repeat", "ssizeargfunc", ""),
+    ("sq_length", "lenfunc", "", ""),
+    ("sq_concat", "binaryfunc", "", ""),
+    ("sq_repeat", "ssizeargfunc", "", ""),
+    ("sq_item", "ssizeargfunc", "", ""),
+    ("sq_ass_item", "ssizeobjargproc", "", ""),
+    ("sq_contains", "objobjproc", "", ""),
+    ("sq_inplace_concat", "binaryfunc", "", ""),
+    ("sq_inplace_repeat", "ssizeargfunc", "", ""),
 
     # Buffer Slots
-    ("bf_getbuffer", "", ""),
-    ("bf_releasebuffer", "", ""),
+    ("bf_getbuffer", "getbufferproc", "", ""),
+    ("bf_releasebuffer", "releasebufferproc", "", ""),
 ]
+
+callbacks = {
+    "reprfunc": (
+        "(obj unsafe.Pointer) unsafe.Pointer",
+        [
+            '	s := C.CString(co.%(fn)s())',
+            '	defer C.free(unsafe.Pointer(s))',
+            '',
+            '	return unsafe.Pointer(C.PyUnicode_FromString(s))',
+        ],
+    ),
+}
 
 
 def write_h_header(f):
@@ -77,7 +89,7 @@ def write_constants(f):
     group = 0
     current_prefix = "tp"
     flag = 1
-    for (slot, _, _) in slots:
+    for (slot, _, _, _) in slots:
         prefix = slot.split("_")[0]
         if prefix != current_prefix:
             print(
@@ -120,6 +132,13 @@ def write_extern_setSlots(f):
     print("// ===============================================================", file=f)
 
 
+def write_c_header(f):
+    print('#include "utils.h"', file=f)
+    print('', file=f)
+    print('#include "_cgo_export.h"', file=f)
+    print('', file=f)
+
+
 def write_setSlots(f):
     print("// ===============================================================", file=f)
     print("", file=f)
@@ -134,7 +153,7 @@ def write_setSlots(f):
     print("  {", file=f)
     print("    PyTypeObject *m = type;", file=f)
     current_prefix = "tp"
-    for (slot, pySig, _) in slots:
+    for (slot, pySig, _, _) in slots:
         prefix = slot.split("_")[0]
         if prefix != current_prefix:
             print("  }", file=f)
@@ -146,7 +165,7 @@ def write_setSlots(f):
                 print(f"    type->tp_as_{method_set} = m;", file=f)
             current_prefix = prefix
         print(
-            f"    if (slotFlags & CLASS_HAS_{slot.upper()}) m->{slot} = ({pySig})goClassSlot_{slot}", file=f)
+            f"    if (slotFlags & CLASS_HAS_{slot.upper()}) m->{slot} = ({pySig})goClassSlot_{slot};", file=f)
     print("  }", file=f)
     print("", file=f)
     print("  return ctxt;", file=f)
@@ -155,8 +174,63 @@ def write_setSlots(f):
     print("// ===============================================================", file=f)
 
 
+def write_go_header(f):
+    print('package py', file=f)
+    print('', file=f)
+    print('// #include "utils.h"', file=f)
+    print('import "C"', file=f)
+    print('', file=f)
+    print('import (', file=f)
+    print('	"reflect"', file=f)
+    print(')', file=f)
+    print('', file=f)
+
+
+def write_interfaces(f):
+    print("// ===============================================================", file=f)
+    print("", file=f)
+    for (slot, _, fn, goSig) in slots:
+        print(f"type {slot} interface {{", file=f)
+        print(f"	{fn}{goSig}", file=f)
+        print("}", file=f)
+    print("", file=f)
+    print("// ===============================================================", file=f)
+
+
+def write_callbacks(f):
+    print("// ===============================================================", file=f)
+    print("", file=f)
+    for (slot, pySig, fn, _) in slots:
+        (cbSig, body) = callbacks.get(pySig, (None, []))
+        if cbSig is None:
+            continue
+        print(f'//export goClassSlot_{slot}', file=f)
+        print(
+            f'func goClassSlot_{slot}{cbSig} {{', file=f)
+        print(f'	co := newObject((*C.PyObject)(obj)).({slot})', file=f)
+        print('', file=f)
+        for line in body:
+            print(line % {'fn': fn}, file=f)
+        print('}', file=f)
+    print("", file=f)
+    print("// ===============================================================", file=f)
+
+
+def write_slotMap(f):
+    print("// ===============================================================", file=f)
+    print("", file=f)
+    print("var slotMap = map[C.uint64_t]reflect.Type{", file=f)
+    for (slot, _, _, _) in slots:
+        print(
+            f"	C.CLASS_HAS_{slot.upper()}: reflect.TypeOf((*{slot})(nil)).Elem(),", file=f)
+    print("}", file=f)
+    print("", file=f)
+    print("// ===============================================================", file=f)
+
+
 def main():
     with open("slots.c", "w", encoding='utf-8') as output:
+        write_c_header(output)
         write_setSlots(output)
 
     with open("slots.h", "w", encoding='utf-8') as output:
@@ -165,6 +239,14 @@ def main():
         write_ClassContext(output)
         write_extern_setSlots(output)
         write_h_footer(output)
+
+    with open("slots.go", "w", encoding='utf-8') as output:
+        write_go_header(output)
+        write_interfaces(output)
+        write_callbacks(output)
+        write_slotMap(output)
+
+    output = sys.stdout
 
 
 if __name__ == "__main__":
