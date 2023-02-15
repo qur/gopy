@@ -12,20 +12,19 @@ import (
 func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 	// Unpack set function from closure
 	t := (*C.PyObject)(closure)
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(t, 1)))
 
 	// Turn obj into the ClassObject instead of the proxy
 	co := newObject((*C.PyObject)(obj)).(ClassObject)
-	v := reflect.ValueOf(co)
+	m := reflect.ValueOf(co).Method(idx).Interface()
 
 	// Turn arg into something usable
 	a := newObject((*C.PyObject)(arg))
 
 	// Turn the function into something we can call
-	f := (*func(p unsafe.Pointer, a Object) error)(unsafe.Pointer(&m))
+	f := m.(func(Object) error)
 
-	err := (*f)(v.UnsafePointer(), a)
-	if err != nil {
+	if err := f(a); err != nil {
 		raise(err)
 		return -1
 	}
@@ -37,16 +36,16 @@ func goClassSetProp(obj, arg, closure unsafe.Pointer) int {
 func goClassGetProp(obj, closure unsafe.Pointer) unsafe.Pointer {
 	// Unpack get function from closure
 	t := (*C.PyObject)(closure)
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
+	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(t, 0)))
 
 	// Turn obj into the ClassObject instead of the proxy
 	co := newObject((*C.PyObject)(obj)).(ClassObject)
-	v := reflect.ValueOf(co)
+	m := reflect.ValueOf(co).Method(idx).Interface()
 
 	// Turn the function into something we can call
-	f := (*func(p unsafe.Pointer) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func() (Object, error))
 
-	ret, err := (*f)(v.UnsafePointer())
+	ret, err := f()
 	if err != nil {
 		raise(err)
 		return nil

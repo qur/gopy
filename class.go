@@ -356,8 +356,8 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 }
 
 type prop struct {
-	get unsafe.Pointer
-	set unsafe.Pointer
+	get Object
+	set Object
 }
 
 type method struct {
@@ -552,26 +552,6 @@ var (
 	indirections = make([]*unsafe.Pointer, 0, 100)
 )
 
-func methodAsPointer(m reflect.Method) unsafe.Pointer {
-	// Go 1.0 uses direct function calls, Go 1.1 uses indirect function calls
-	// (so that contextual data for closures can be held).  Figure out which
-	// this is, and set directFnCall as appropriate.
-	if directFnCall == nil {
-		m := unsafe.Pointer(reflect.ValueOf(methodAsPointer).Pointer())
-		f := (*func(reflect.Method) unsafe.Pointer)(unsafe.Pointer(&m))
-		direct := fmt.Sprintf("%v", m) == fmt.Sprintf("%v", *f)
-		directFnCall = &direct
-	}
-
-	fp := unsafe.Pointer(m.Func.Pointer())
-	if *directFnCall {
-		return fp
-	}
-	ifp := &fp
-	indirections = append(indirections, ifp)
-	return unsafe.Pointer(ifp)
-}
-
 func funcAsPointer(v reflect.Value) unsafe.Pointer {
 	fp := unsafe.Pointer(v.Pointer())
 	ifp := &fp
@@ -628,7 +608,6 @@ func (cls *Class) Create() error {
 			continue
 		}
 		t := m.Func.Type()
-		f := methodAsPointer(m)
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
 		parts := strings.SplitN(m.Name, "_", 2)
 		switch parts[0] {
@@ -644,7 +623,7 @@ func (cls *Class) Create() error {
 				return fmt.Errorf("%s: %s", fn, err)
 			}
 			p := props[parts[1]]
-			p.set = f
+			p.set = NewLong(int64(i))
 			props[parts[1]] = p
 		case "PyGet":
 			if err := methSigMatches(t, (func() (Object, error))(nil)); err != nil {
@@ -652,7 +631,7 @@ func (cls *Class) Create() error {
 				return fmt.Errorf("%s: %s", fn, err)
 			}
 			p := props[parts[1]]
-			p.get = f
+			p.get = NewLong(int64(i))
 			props[parts[1]] = p
 		}
 	}
@@ -705,7 +684,7 @@ func (cls *Class) Create() error {
 
 	for name, prop := range props {
 		s := C.CString(name)
-		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, prop.get, prop.set))
+		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, c(prop.get), c(prop.set)))
 	}
 
 	for i := 0; i < btyp.NumField(); i++ {

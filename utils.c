@@ -318,7 +318,8 @@ PyObject *newNatMember(int idx, char *doc) {
   return (PyObject *)self;
 }
 
-PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
+PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,
+                      PyObject *set) {
   PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
 
   if (gsp == NULL) return NULL;
@@ -331,12 +332,12 @@ PyObject *newProperty(PyTypeObject *type, char *name, void *get, void *set) {
 
   if (get != NULL) {
     gsp->get = (getter)goClassGetProp;
-    PyTuple_SetItem(gsp->closure, 0, PyCapsule_New(get, NULL, NULL));
+    PyTuple_SetItem(gsp->closure, 0, get);
   }
 
   if (set != NULL) {
     gsp->set = (setter)goClassSetProp;
-    PyTuple_SetItem(gsp->closure, 1, PyCapsule_New(set, NULL, NULL));
+    PyTuple_SetItem(gsp->closure, 1, set);
   }
 
   return PyDescr_NewGetSet(type, gsp);

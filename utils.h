@@ -95,8 +95,8 @@ extern int doVisit(PyObject *o, void *v, void *a);
 extern PyObject *newMethod(char *name, PyObject *func, int flags);
 extern PyObject *newObjMember(int idx, char *doc);
 extern PyObject *newNatMember(int idx, char *doc);
-extern PyObject *newProperty(PyTypeObject *type, char *name, void *get,
-                             void *set);
+extern PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,
+                             PyObject *set);
 //
 // ----------------------------------
 
