@@ -254,7 +254,7 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 
 	// finalise the setup of the go object
-	goObj.setBaseAndClass((*BaseObject)(pyObj), class)
+	goObj.setBase((*BaseObject)(pyObj))
 	registerClassObject(pyObj, goObj)
 
 	return pyObj
