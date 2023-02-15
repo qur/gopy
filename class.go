@@ -436,20 +436,6 @@ var (
 	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
 )
 
-var typeMap = map[string]*Type{
-	"Bool":   BoolType,
-	"Code":   CodeType,
-	"Dict":   DictType,
-	"Float":  FloatType,
-	"List":   ListType,
-	"Long":   LongType,
-	"Module": ModuleType,
-	// TODO(jp3): replace with bytes
-	// "String": StringType,
-	"Tuple": TupleType,
-	"Type":  TypeType,
-}
-
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
 func (cls *Class) Create() error {
