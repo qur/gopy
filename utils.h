@@ -21,12 +21,6 @@ extern int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt,
                             char *kwlist[], void *values[], int c);
 extern PyObject *doBuildValue(char *fmt, ArgValue values[], int c);
 
-extern PyObject *newMethod(char *name, void *func, int flags);
-extern PyObject *newObjMember(int idx, char *doc);
-extern PyObject *newNatMember(int idx, char *doc);
-extern PyObject *newProperty(PyTypeObject *type, char *name, void *get,
-                             void *set);
-
 extern void enableClassGc(PyTypeObject *type);
 
 extern PyTypeObject *getBasePyType(PyObject *o);
@@ -98,6 +92,11 @@ extern int typeReady(PyTypeObject *o);
 extern void storeContext(PyTypeObject *t, ClassContext *c);
 extern int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o);
 extern int doVisit(PyObject *o, void *v, void *a);
+extern PyObject *newMethod(char *name, PyObject *func, int flags);
+extern PyObject *newObjMember(int idx, char *doc);
+extern PyObject *newNatMember(int idx, char *doc);
+extern PyObject *newProperty(PyTypeObject *type, char *name, void *get,
+                             void *set);
 //
 // ----------------------------------
 

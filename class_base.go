@@ -7,11 +7,13 @@ import (
 
 type ClassObject interface {
 	Object
-	setBase(base *BaseObject)
+	setBaseAndClass(base *BaseObject, class *Class)
+	getClass() *Class
 }
 
 type ClassBaseObject struct {
-	base *BaseObject
+	base  *BaseObject
+	class *Class
 }
 
 var _ ClassObject = (*ClassBaseObject)(nil)
@@ -44,8 +46,13 @@ func (c *ClassBaseObject) Free() {
 	c.base.Free()
 }
 
-func (c *ClassBaseObject) setBase(base *BaseObject) {
+func (c *ClassBaseObject) setBaseAndClass(base *BaseObject, class *Class) {
 	c.base = base
+	c.class = class
+}
+
+func (c *ClassBaseObject) getClass() *Class {
+	return c.class
 }
 
 var (
@@ -78,5 +85,5 @@ func clearClassObject(pyObj unsafe.Pointer) {
 	}
 
 	delete(classObjMap, pyObj)
-	goObj.setBase(nil)
+	goObj.setBaseAndClass(nil, nil)
 }

@@ -132,23 +132,19 @@ PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
 }
 
 typedef struct {
-  PyObject_HEAD void *func;
+  PyObject_HEAD PyObject *func;
   PyMethodDef meth;
 } PyGoMethod;
 
 static PyObject *method_get(PyGoMethod *self, PyObject *obj, PyObject *type) {
-  PyObject *cap = PyCapsule_New(self->func, NULL, NULL);
   PyObject *o;
-  if (self->meth.ml_flags & METH_CLASS) {
-    o = PyTuple_Pack(2, type, cap);
-  } else if (obj != NULL) {
-    o = PyTuple_Pack(2, obj, cap);
+  if ((self->meth.ml_flags & METH_CLASS) || obj == NULL) {
+    o = PyTuple_Pack(2, type, self->func);
   } else {
-    o = PyTuple_Pack(1, cap);
+    o = PyTuple_Pack(2, obj, self->func);
   };
   PyObject *ret = PyCFunction_New(&self->meth, o);
   Py_DECREF(o);
-  Py_DECREF(cap);
   return ret;
 }
 
@@ -162,7 +158,7 @@ static PyTypeObject goMethodType = {
 };
 static int goMethodInit = 0;
 
-PyObject *newMethod(char *name, void *func, int flags) {
+PyObject *newMethod(char *name, PyObject *func, int flags) {
   PyGoMethod *self;
 
   if (!goMethodInit) {

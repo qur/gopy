@@ -125,33 +125,31 @@ func (c *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 
 var otyp = reflect.TypeOf(new(Object)).Elem()
 
-func getMethodAndObject(obj unsafe.Pointer) (unsafe.Pointer, ClassObject, error) {
+func getMethod(obj unsafe.Pointer) (any, error) {
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
+	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(t, 1)))
 
 	o := getClassObject(pyobj)
 	if o == nil {
-		return nil, nil, fmt.Errorf("unknown object")
+		return nil, fmt.Errorf("unknown object")
 	}
 
-	return m, o, nil
+	return reflect.ValueOf(o).Method(idx).Interface(), nil
 }
 
 //export goClassCallMethod
 func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
-	m, o, err := getMethodAndObject(obj)
+	m, err := getMethod(obj)
 	if err != nil {
 		raise(err)
 		return nil
 	}
 
-	// Now call the actual struct method by pulling the method out of the
-	// reflect.Type object stored in the context
-	f := (*func(p unsafe.Pointer) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func() (Object, error))
 
-	ret, err := (*f)(reflect.ValueOf(o).UnsafePointer())
+	ret, err := f()
 	if err != nil {
 		raise(err)
 		return nil
@@ -163,7 +161,7 @@ func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 //export goClassCallMethodArgs
 func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
-	m, o, err := getMethodAndObject(obj)
+	m, err := getMethod(obj)
 	if err != nil {
 		raise(err)
 		return nil
@@ -173,11 +171,9 @@ func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 	// type
 	a := newTuple((*C.PyObject)(args))
 
-	// Now call the actual struct method by pulling the method out of the
-	// reflect.Type object stored in the context
-	f := (*func(o unsafe.Pointer, a *Tuple) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func(*Tuple) (Object, error))
 
-	ret, err := (*f)(reflect.ValueOf(o).UnsafePointer(), a)
+	ret, err := f(a)
 	if err != nil {
 		raise(err)
 		return nil
@@ -189,7 +185,7 @@ func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 //export goClassCallMethodKwds
 func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Unpack context and self pointer from obj
-	m, o, err := getMethodAndObject(obj)
+	m, err := getMethod(obj)
 	if err != nil {
 		raise(err)
 		return nil
@@ -200,11 +196,9 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	a := newTuple((*C.PyObject)(args))
 	k := newDict((*C.PyObject)(kwds))
 
-	// Now call the actual struct method by pulling the method out of the
-	// reflect.Type object stored in the context
-	f := (*func(o unsafe.Pointer, a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func(*Tuple, *Dict) (Object, error))
 
-	ret, err := (*f)(reflect.ValueOf(o).UnsafePointer(), a, k)
+	ret, err := f(a, k)
 	if err != nil {
 		raise(err)
 		return nil
@@ -213,10 +207,11 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
-func getStaticMethod(obj unsafe.Pointer) unsafe.Pointer {
+func getStaticMethod(obj unsafe.Pointer) any {
 	t := (*C.PyObject)(obj)
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 0), nil)
-	return m
+	c, _ := getType((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(t, 0))))
+	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(t, 1)))
+	return c.Static[name]
 }
 
 //export goClassCallStaticMethod
@@ -226,9 +221,9 @@ func goClassCallStaticMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual static method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func() (Object, error))(unsafe.Pointer(&m))
+	f := m.(func() (Object, error))
 
-	ret, err := (*f)()
+	ret, err := f()
 	if err != nil {
 		raise(err)
 		return nil
@@ -248,9 +243,9 @@ func goClassCallStaticMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual static method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(a *Tuple) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func(a *Tuple) (Object, error))
 
-	ret, err := (*f)(a)
+	ret, err := f(a)
 	if err != nil {
 		raise(err)
 		return nil
@@ -271,9 +266,9 @@ func goClassCallStaticMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer 
 
 	// Now call the actual static method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func(a *Tuple, k *Dict) (Object, error))
 
-	ret, err := (*f)(a, k)
+	ret, err := f(a, k)
 	if err != nil {
 		raise(err)
 		return nil
@@ -282,17 +277,17 @@ func goClassCallStaticMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer 
 	return unsafe.Pointer(c(ret))
 }
 
-func getMethodAndClass(obj unsafe.Pointer) (unsafe.Pointer, *Class, error) {
+func getMethodAndClass(obj unsafe.Pointer) (any, *Class, error) {
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
-	m := C.PyCapsule_GetPointer(C.PyTuple_GetItem(t, 1), nil)
 
 	c, _ := getType((*C.PyTypeObject)(pyobj))
 	if c == nil {
 		return nil, nil, fmt.Errorf("unknown class")
 	}
 
-	return m, c, nil
+	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(t, 1)))
+	return c.Class[name], c, nil
 }
 
 //export goClassCallClassMethod
@@ -306,9 +301,9 @@ func goClassCallClassMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(p *Class) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func(p *Class) (Object, error))
 
-	ret, err := (*f)(o)
+	ret, err := f(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -332,9 +327,9 @@ func goClassCallClassMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(o *Class, a *Tuple) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func(o *Class, a *Tuple) (Object, error))
 
-	ret, err := (*f)(o, a)
+	ret, err := f(o, a)
 	if err != nil {
 		raise(err)
 		return nil
@@ -359,9 +354,9 @@ func goClassCallClassMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
-	f := (*func(o *Class, a *Tuple, k *Dict) (Object, error))(unsafe.Pointer(&m))
+	f := m.(func(o *Class, a *Tuple, k *Dict) (Object, error))
 
-	ret, err := (*f)(o, a, k)
+	ret, err := f(o, a, k)
 	if err != nil {
 		raise(err)
 		return nil
@@ -641,7 +636,7 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 
 	// finalise the setup of the go object
-	goObj.setBase((*BaseObject)(pyObj))
+	goObj.setBaseAndClass((*BaseObject)(pyObj), class)
 	registerClassObject(pyObj, goObj)
 
 	return pyObj
@@ -653,8 +648,8 @@ type prop struct {
 }
 
 type method struct {
-	f     unsafe.Pointer
-	flags int
+	f     Object
+	flags C.int
 }
 
 func methSigMatches(got reflect.Type, _want interface{}) error {
@@ -691,7 +686,7 @@ func methSigMatches(got reflect.Type, _want interface{}) error {
 	return nil
 }
 
-func getPythonCallFlags(f reflect.Type) (int, error) {
+func getPythonCallFlags(f reflect.Type) (C.int, error) {
 	switch {
 	case methSigMatches(f, pyUnaryFunc) == nil:
 		return C.METH_NOARGS, nil
@@ -730,7 +725,7 @@ func funcSigMatches(got reflect.Type, _want interface{}) error {
 	return nil
 }
 
-func getStaticCallFlags(f reflect.Type) (int, error) {
+func getStaticCallFlags(f reflect.Type) (C.int, error) {
 	switch {
 	case funcSigMatches(f, pyUnaryFunc) == nil:
 		return C.METH_NOARGS, nil
@@ -887,16 +882,16 @@ var typeMap = map[string]*Type{
 
 // Create creates and returns a pointer to a PyTypeObject that is the Python
 // representation of the class that has been implemented in Go.
-func (c *Class) Create() error {
+func (cls *Class) Create() error {
 	pyType := C.newType()
-	pyType.tp_name = C.CString(c.Name)
-	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(c.Flags)
+	pyType.tp_name = C.CString(cls.Name)
+	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(cls.Flags)
 
-	if c.Object == nil {
-		c.Object = &ClassBaseObject{}
+	if cls.Object == nil {
+		cls.Object = &ClassBaseObject{}
 	}
 
-	typ := reflect.TypeOf(c.Object)
+	typ := reflect.TypeOf(cls.Object)
 	btyp := typ.Elem()
 
 	if btyp.NumField() == 0 {
@@ -929,7 +924,7 @@ func (c *Class) Create() error {
 			if err != nil {
 				return fmt.Errorf("%s: %s", fn, err)
 			}
-			methods[parts[1]] = method{f, flags}
+			methods[parts[1]] = method{NewLong(int64(i)), flags}
 		case "PySet":
 			if err := methSigMatches(t, (func(Object) error)(nil)); err != nil {
 				C.free(unsafe.Pointer(pyType))
@@ -949,24 +944,32 @@ func (c *Class) Create() error {
 		}
 	}
 
-	for name, fn := range c.Static {
+	for name, fn := range cls.Static {
 		f := reflect.ValueOf(fn)
 		t := f.Type()
 		flags, err := getStaticCallFlags(t)
 		if err != nil {
 			return fmt.Errorf("static %s: %s", name, err)
 		}
-		methods[name] = method{funcAsPointer(f), flags | C.METH_STATIC}
+		key, err := NewUnicode(name)
+		if err != nil {
+			return fmt.Errorf("static %s: %s", name, err)
+		}
+		methods[name] = method{key, flags | C.METH_STATIC}
 	}
 
-	for name, fn := range c.Class {
+	for name, fn := range cls.Class {
 		f := reflect.ValueOf(fn)
 		t := f.Type()
 		flags, err := getPythonCallFlags(t)
 		if err != nil {
-			return fmt.Errorf("static %s: %s", name, err)
+			return fmt.Errorf("class %s: %s", name, err)
 		}
-		methods[name] = method{funcAsPointer(f), flags | C.METH_CLASS}
+		key, err := NewUnicode(name)
+		if err != nil {
+			return fmt.Errorf("class %s: %s", name, err)
+		}
+		methods[name] = method{key, flags | C.METH_CLASS}
 	}
 
 	pyType.tp_basicsize = C.Py_ssize_t(unsafe.Sizeof(C.PyObject{}))
@@ -984,7 +987,7 @@ func (c *Class) Create() error {
 
 	for name, method := range methods {
 		s := C.CString(name)
-		C.setTypeAttr(pyType, s, C.newMethod(s, method.f, C.int(method.flags)))
+		C.setTypeAttr(pyType, s, C.newMethod(s, c(method.f), C.int(method.flags)))
 	}
 
 	for name, prop := range props {
@@ -1023,9 +1026,9 @@ func (c *Class) Create() error {
 		C.setTypeAttr(pyType, s, C.newNatMember(registerField(field), d))
 	}
 
-	c.base = newType((*C.PyObject)(unsafe.Pointer(pyType)))
+	cls.base = newType((*C.PyObject)(unsafe.Pointer(pyType)))
 
-	registerType(pyType, c)
+	registerType(pyType, cls)
 
 	return nil
 }
