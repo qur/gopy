@@ -406,6 +406,12 @@ def write_slotMap(f):
 
 
 def main():
+    if len(slots) > 64:
+        print("TOO MANY SLOTS!", file=sys.stderr)
+        print(
+            f"Can only fit 64 slots in a uint64_t, we have {len(slots)}", file=sys.stderr)
+        sys.exit(1)
+
     with open("class_slots.c", "w", encoding='utf-8') as output:
         write_c_header(output)
         write_setSlots(output)
