@@ -67,6 +67,13 @@ const (
 //
 // Class defines class methods for the Python class. In Go these will be
 // functions that take a *Class as the first argument.
+//
+// New is an optional constructor for the instance type. The type returned
+// should match that of Object. If New is not provided then a new instance of
+// Object's type will be created.
+//
+// User is not used by the library code. It can be used to store state for the
+// class methods, etc.
 type Class struct {
 	Name   string
 	Flags  uint32
@@ -75,6 +82,7 @@ type Class struct {
 	Static map[string]any
 	Class  map[string]any
 	New    func(*Class, *Tuple, *Dict) (ClassObject, error)
+	User   any
 	base   *Type
 }
 
