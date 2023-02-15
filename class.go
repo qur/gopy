@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"sync"
 	"unsafe"
 )
 
@@ -124,100 +123,6 @@ func (c *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 }
 
 var otyp = reflect.TypeOf(new(Object)).Elem()
-
-//export goClassObjGet
-func goClassObjGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
-	field := getField(idx)
-	item := unsafe.Pointer(uintptr(obj) + field.Offset)
-
-	var o Object
-
-	if field.Type == otyp {
-		o = *(*Object)(item)
-	} else {
-		o = reflect.NewAt(field.Type, item).Elem().Interface().(Object)
-	}
-
-	o.Incref()
-	return unsafe.Pointer(c(o))
-}
-
-//export goClassObjSet
-func goClassObjSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
-	field := getField(idx)
-	item := unsafe.Pointer(uintptr(obj) + field.Offset)
-
-	// This is the new value we are being asked to set
-	value := newObject((*C.PyObject)(obj2))
-
-	// Special case for Object fields, we don't need reflect for these.  We have
-	// to be careful with refcounts, as decref could invoke destructor code
-	// etc.
-	if field.Type == otyp {
-		o := (*Object)(item)
-		tmp := *o
-		Incref(value)
-		*o = value
-		Decref(tmp)
-		return 0
-	}
-
-	vt := reflect.TypeOf(value)
-	ov := reflect.NewAt(field.Type, unsafe.Pointer(item)).Elem()
-
-	// If the value is assignable to the field, then we do it, with the same
-	// refcount dance as above.
-	if vt.AssignableTo(field.Type) {
-		tmp := ov.Interface().(Object)
-		Incref(value)
-		ov.Set(reflect.ValueOf(value))
-		Decref(tmp)
-		return 0
-	}
-
-	// The given value wasn't assignable to the field - raise an error
-	tn := ov.Type().Elem().Name()
-	raise(TypeError.Err("Cannot assign '%T' to '*%v'", value, tn))
-	return -1
-}
-
-//export goClassNatGet
-func goClassNatGet(obj unsafe.Pointer, idx int) unsafe.Pointer {
-	field := getField(idx)
-	item := unsafe.Pointer(uintptr(obj) + field.Offset)
-
-	switch field.Type.Kind() {
-	case reflect.Int:
-		i := (*int)(item)
-		return unsafe.Pointer(C.PyLong_FromLong(C.long(*i)))
-	}
-
-	raise(NotImplementedError.ErrV(None))
-	return nil
-}
-
-//export goClassNatSet
-func goClassNatSet(obj unsafe.Pointer, idx int, obj2 unsafe.Pointer) int {
-	field := getField(idx)
-	item := unsafe.Pointer(uintptr(obj) + field.Offset)
-
-	// This is the new value we are being asked to set
-	value := newObject((*C.PyObject)(obj2))
-
-	switch field.Type.Kind() {
-	case reflect.Int:
-		v := int(C.PyLong_AsLong(c(value)))
-		if exceptionRaised() {
-			return -1
-		}
-		i := (*int)(item)
-		*i = v
-		return 0
-	}
-
-	raise(NotImplementedError.ErrV(None))
-	return -1
-}
 
 //export goClassTraverse
 func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
@@ -473,30 +378,6 @@ func Clear(obj Object) error {
 	return nil
 }
 
-var (
-	fieldLock sync.RWMutex
-	fields    []reflect.StructField
-)
-
-func registerField(field reflect.StructField) C.int {
-	fieldLock.Lock()
-	defer fieldLock.Unlock()
-
-	fields = append(fields, field)
-	return C.int(len(fields) - 1)
-}
-
-func getField(idx int) reflect.StructField {
-	fieldLock.RLock()
-	defer fieldLock.RUnlock()
-
-	if idx >= len(fields) {
-		panic("Request for unregistered field!")
-	}
-
-	return fields[idx]
-}
-
 var exportable = map[reflect.Kind]bool{
 	reflect.Bool:    true,
 	reflect.Int:     true,
@@ -546,18 +427,6 @@ var (
 	pySetAttrFunc     = (func(string, Object) error)(nil)
 	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
 )
-
-var (
-	directFnCall = (*bool)(nil)
-	indirections = make([]*unsafe.Pointer, 0, 100)
-)
-
-func funcAsPointer(v reflect.Value) unsafe.Pointer {
-	fp := unsafe.Pointer(v.Pointer())
-	ifp := &fp
-	indirections = append(indirections, ifp)
-	return unsafe.Pointer(ifp)
-}
 
 var typeMap = map[string]*Type{
 	"Bool":   BoolType,
@@ -689,8 +558,8 @@ func (cls *Class) Create() error {
 
 	for i := 0; i < btyp.NumField(); i++ {
 		field := btyp.Field(i)
-		pyname := field.Tag.Get("Py")
-		pydoc := field.Tag.Get("PyDoc")
+		pyname := field.Tag.Get("py")
+		pydoc := field.Tag.Get("pyDoc")
 		if pyname == "" && pydoc == "" {
 			continue
 		}
@@ -703,7 +572,7 @@ func (cls *Class) Create() error {
 			s := C.CString(pyname)
 			defer C.free(unsafe.Pointer(s))
 			d := C.CString(pydoc)
-			C.setTypeAttr(pyType, s, C.newObjMember(registerField(field), d))
+			C.setTypeAttr(pyType, s, C.newObjMember(c(NewLong(int64(i))), d))
 			continue
 		}
 		if !exportable[field.Type.Kind()] {
@@ -715,7 +584,7 @@ func (cls *Class) Create() error {
 		s := C.CString(pyname)
 		defer C.free(unsafe.Pointer(s))
 		d := C.CString(pydoc)
-		C.setTypeAttr(pyType, s, C.newNatMember(registerField(field), d))
+		C.setTypeAttr(pyType, s, C.newNatMember(c(NewLong(int64(i))), d))
 	}
 
 	cls.base = newType((*C.PyObject)(unsafe.Pointer(pyType)))

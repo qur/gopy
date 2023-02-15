@@ -93,8 +93,8 @@ extern void storeContext(PyTypeObject *t, ClassContext *c);
 extern int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o);
 extern int doVisit(PyObject *o, void *v, void *a);
 extern PyObject *newMethod(char *name, PyObject *func, int flags);
-extern PyObject *newObjMember(int idx, char *doc);
-extern PyObject *newNatMember(int idx, char *doc);
+extern PyObject *newObjMember(PyObject *idx, char *doc);
+extern PyObject *newNatMember(PyObject *idx, char *doc);
 extern PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,
                              PyObject *set);
 //

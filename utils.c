@@ -216,7 +216,7 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
 
 typedef struct {
   PyObject_HEAD char *doc;
-  int field;
+  PyObject *field;
 } PyGoObjMember;
 
 static PyObject *objmemb_get(PyGoObjMember *self, PyObject *obj,
@@ -247,7 +247,7 @@ static PyTypeObject goObjMemberType = {
 };
 static int goObjMemberInit = 0;
 
-PyObject *newObjMember(int idx, char *doc) {
+PyObject *newObjMember(PyObject *idx, char *doc) {
   PyGoObjMember *self;
 
   if (!goObjMemberInit) {
@@ -268,7 +268,7 @@ PyObject *newObjMember(int idx, char *doc) {
 
 typedef struct {
   PyObject_HEAD char *doc;
-  int field;
+  PyObject *field;
 } PyGoNatMember;
 
 static PyObject *natmemb_get(PyGoNatMember *self, PyObject *obj,
@@ -299,7 +299,7 @@ static PyTypeObject goNatMemberType = {
 };
 static int goNatMemberInit = 0;
 
-PyObject *newNatMember(int idx, char *doc) {
+PyObject *newNatMember(PyObject *idx, char *doc) {
   PyGoNatMember *self;
 
   if (!goNatMemberInit) {
