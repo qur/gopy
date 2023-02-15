@@ -91,7 +91,6 @@ func (obj *AbstractObject) Free() {
 	}
 
 	// Make sure this instance isn't registered any more
-	clearClassContext(unsafe.Pointer(o))
 	clearClassObject(unsafe.Pointer(o))
 
 	// Call Python free function

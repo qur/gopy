@@ -9,7 +9,6 @@ import "C"
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"sync"
@@ -602,37 +601,6 @@ func goClassDealloc(obj unsafe.Pointer) {
 	(*AbstractObject)(obj).Free()
 }
 
-var (
-	ctxtLock sync.RWMutex
-	contexts = map[uintptr]*C.ClassContext{}
-)
-
-func setClassContext(obj unsafe.Pointer, pyType *C.PyTypeObject) {
-	ctxtLock.Lock()
-	defer ctxtLock.Unlock()
-
-	ctxt := (*C.ClassContext)(unsafe.Pointer(pyType.tp_methods))
-	contexts[uintptr(obj)] = ctxt
-}
-
-func clearClassContext(obj unsafe.Pointer) {
-	ctxtLock.Lock()
-	defer ctxtLock.Unlock()
-
-	delete(contexts, uintptr(obj))
-}
-
-func getClassContext(obj unsafe.Pointer) *C.ClassContext {
-	ctxtLock.RLock()
-	defer ctxtLock.RUnlock()
-
-	ctxt := contexts[uintptr(obj)]
-	if ctxt == nil {
-		panic("Asked for context of unregistered object!")
-	}
-	return ctxt
-}
-
 //export goClassNew
 func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
@@ -666,8 +634,6 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 		return nil
 	}
 
-	log.Printf("NEW OBJECT: %p %T", goObj, goObj)
-
 	// allocate the Python proxy object
 	pyObj := unsafe.Pointer(C.typeAlloc(c(t), C.Py_ssize_t(0)))
 	if pyObj == nil {
@@ -677,9 +643,6 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// finalise the setup of the go object
 	goObj.setBase((*BaseObject)(pyObj))
 	registerClassObject(pyObj, goObj)
-
-	// register class context against new object
-	setClassContext(pyObj, pyType)
 
 	return pyObj
 }
@@ -783,14 +746,15 @@ func getStaticCallFlags(f reflect.Type) (int, error) {
 // Alloc is a convenience function, so that Go code can create a new Object
 // instance.
 func (class *Class) Alloc(n int64) (obj Object, err error) {
-	obj, err = class.base.Alloc(n)
+	return nil, fmt.Errorf("TODO(jp3): how should Class.Alloc be working now?")
+	// obj, err = class.base.Alloc(n)
 
-	// Since we are creating this object for Go code, this is probably the only
-	// opportunity we will get to register this object instance.
-	pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.base)))
-	setClassContext(unsafe.Pointer(c(obj)), pyType)
+	// // Since we are creating this object for Go code, this is probably the only
+	// // opportunity we will get to register this object instance.
+	// pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.base)))
+	// setClassContext(unsafe.Pointer(c(obj)), pyType)
 
-	return
+	// return
 }
 
 func Clear(obj Object) error {
@@ -875,23 +839,6 @@ var (
 	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
 )
 
-func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
-	t := reflect.TypeOf(ctxt).Elem()
-	f, ok := t.FieldByName(name)
-	if !ok {
-		panic("Tried to set a non-existant context field")
-	}
-	base := uintptr(unsafe.Pointer(ctxt))
-	*(*unsafe.Pointer)(unsafe.Pointer(base + f.Offset)) = fn
-	parts := strings.Split(name, "_")
-	if len(parts) > 1 {
-		hf, ok := t.FieldByName("has_" + parts[0])
-		if ok {
-			*(*int)(unsafe.Pointer(base + hf.Offset)) = 1
-		}
-	}
-}
-
 var (
 	directFnCall = (*bool)(nil)
 	indirections = make([]*unsafe.Pointer, 0, 100)
@@ -966,8 +913,6 @@ func (c *Class) Create() error {
 			slotFlags |= flag
 		}
 	}
-
-	log.Printf("SLOT FLAGS: %016x", slotFlags)
 
 	for i := 0; i < typ.NumMethod(); i++ {
 		m := typ.Method(i)
