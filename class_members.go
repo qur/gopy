@@ -17,7 +17,7 @@ func getField(obj, arg unsafe.Pointer) (reflect.Value, error) {
 
 	idx := int(C.PyLong_AsLong((*C.PyObject)(arg)))
 
-	return reflect.ValueOf(o).Field(idx), nil
+	return reflect.ValueOf(o).Elem().Field(idx), nil
 }
 
 //export goClassNatGet
@@ -70,6 +70,11 @@ func goClassObjGet(obj, idx unsafe.Pointer) *C.PyObject {
 		return nil
 	}
 
+	if f.IsNil() {
+		None.Incref()
+		return c(None)
+	}
+
 	o := f.Interface().(Object)
 	o.Incref()
 	return c(o)
@@ -93,8 +98,15 @@ func goClassObjSet(obj, idx, obj2 unsafe.Pointer) int {
 		return -1
 	}
 
-	// If the value is assignable to the field, then we do it. We have to be
-	// careful with refcounts, as decref could invoke destructor code etc.
+	// If f is nil, then assignment is simple.
+	if f.IsNil() {
+		Incref(value)
+		f.Set(v)
+		return 0
+	}
+
+	// If f is not nil, then we have to be careful with refcounts, as decref
+	// could invoke destructor code etc.
 	tmp := f.Interface().(Object)
 	Incref(value)
 	f.Set(v)

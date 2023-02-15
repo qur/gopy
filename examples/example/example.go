@@ -42,6 +42,9 @@ func example(args *py.Tuple) (py.Object, error) {
 type Example struct {
 	py.ClassBaseObject
 	wibble int64
+	Foo    int       `py:"foo"`
+	X      py.Object `py:"x"`
+	Y      *py.Tuple `py:"y"`
 }
 
 func (e *Example) PyInit(args *py.Tuple, kwds *py.Dict) error {
