@@ -351,109 +351,6 @@ void enableClassGc(PyTypeObject *type) {
   type->tp_clear = (inquiry)goClassClear;
 }
 
-void setClassContext(PyTypeObject *type, ClassContext *ctxt) {
-  ctxt->zero = NULL;
-
-  type->tp_new = (newfunc)goClassNew;
-  type->tp_dealloc = (destructor)goClassDealloc;
-
-  if (ctxt->call) type->tp_call = (ternaryfunc)goClassCall;
-  // TODO(jp3): tp_compare isn't a thing anymore
-  // if (ctxt->compare) type->tp_compare = (cmpfunc)goClassCompare;
-  if (ctxt->getattr) type->tp_getattr = (getattrfunc)goClassGetAttr;
-  if (ctxt->getattro) type->tp_getattro = (getattrofunc)goClassGetAttrObj;
-  if (ctxt->hash) type->tp_hash = (hashfunc)goClassHash;
-  if (ctxt->init) type->tp_init = (initproc)goClassInit;
-  if (ctxt->iter) type->tp_iter = (getiterfunc)goClassIter;
-  if (ctxt->iternext) type->tp_iternext = (iternextfunc)goClassIterNext;
-  if (ctxt->repr) type->tp_repr = (reprfunc)goClassRepr;
-  if (ctxt->richcmp) type->tp_richcompare = (richcmpfunc)goClassRichCmp;
-  if (ctxt->setattr) type->tp_setattr = (setattrfunc)goClassSetAttr;
-  if (ctxt->setattro) type->tp_setattro = (setattrofunc)goClassSetAttrObj;
-  if (ctxt->str) type->tp_str = (reprfunc)goClassStr;
-
-  if (ctxt->has_mp) {
-    PyMappingMethods *m = &ctxt->mp_meth;
-    type->tp_as_mapping = m;
-    if (ctxt->mp_len) m->mp_length = (lenfunc)goClassMapLen;
-    if (ctxt->mp_get) m->mp_subscript = (binaryfunc)goClassMapGet;
-    if (ctxt->mp_set) m->mp_ass_subscript = (objobjargproc)goClassMapSet;
-  }
-
-  if (ctxt->has_nb) {
-    PyNumberMethods *m = &ctxt->nb_meth;
-    type->tp_as_number = m;
-    if (ctxt->nb_add) m->nb_add = (binaryfunc)goClassNumAdd;
-    if (ctxt->nb_subtract) m->nb_subtract = (binaryfunc)goClassNumSubtract;
-    if (ctxt->nb_multiply) m->nb_multiply = (binaryfunc)goClassNumMultiply;
-    // TODO(jp3): replace divide with floor and true divide
-    // if (ctxt->nb_divide) m->nb_divide = (binaryfunc)goClassNumDivide;
-    if (ctxt->nb_remainder) m->nb_remainder = (binaryfunc)goClassNumRemainder;
-    if (ctxt->nb_divmod) m->nb_divmod = (binaryfunc)goClassNumDivmod;
-    if (ctxt->nb_power) m->nb_power = (ternaryfunc)goClassNumPower;
-    if (ctxt->nb_negative) m->nb_negative = (unaryfunc)goClassNumNegative;
-    if (ctxt->nb_positive) m->nb_positive = (unaryfunc)goClassNumPositive;
-    if (ctxt->nb_absolute) m->nb_absolute = (unaryfunc)goClassNumAbsolute;
-    // TODO(jp3): I think this might be nb_bool now?
-    // if (ctxt->nb_nonzero) m->nb_nonzero = (inquiry)goClassNumNonzero;
-    if (ctxt->nb_invert) m->nb_invert = (unaryfunc)goClassNumInvert;
-    if (ctxt->nb_lshift) m->nb_lshift = (binaryfunc)goClassNumLshift;
-    if (ctxt->nb_rshift) m->nb_rshift = (binaryfunc)goClassNumRshift;
-    if (ctxt->nb_and) m->nb_and = (binaryfunc)goClassNumAnd;
-    if (ctxt->nb_xor) m->nb_xor = (binaryfunc)goClassNumXor;
-    if (ctxt->nb_or) m->nb_or = (binaryfunc)goClassNumOr;
-    if (ctxt->nb_int) m->nb_int = (unaryfunc)goClassNumInt;
-    // TODO(jp3): nb_long is gone now
-    // if (ctxt->nb_long) m->nb_long = (unaryfunc)goClassNumLong;
-    if (ctxt->nb_float) m->nb_float = (unaryfunc)goClassNumFloat;
-    // TODO(jp3): nb_oct and nb_hex seem to be gone?
-    // if (ctxt->nb_oct) m->nb_oct = (unaryfunc)goClassNumOct;
-    // if (ctxt->nb_hex) m->nb_hex = (unaryfunc)goClassNumHex;
-    if (ctxt->nb_ip_add) m->nb_inplace_add = (binaryfunc)goClassNumInplaceAdd;
-    if (ctxt->nb_ip_subtract)
-      m->nb_inplace_remainder = (binaryfunc)goClassNumInplaceSubtract;
-    if (ctxt->nb_ip_multiply)
-      m->nb_inplace_multiply = (binaryfunc)goClassNumInplaceMultiply;
-    // TODO(jp3): replace divide with floor and true divide
-    // if (ctxt->nb_ip_divide)
-    //   m->nb_inplace_divide = (binaryfunc)goClassNumInplaceDivide;
-    if (ctxt->nb_ip_remainder)
-      m->nb_inplace_remainder = (binaryfunc)goClassNumInplaceRemainder;
-    if (ctxt->nb_ip_power)
-      m->nb_inplace_power = (ternaryfunc)goClassNumInplacePower;
-    if (ctxt->nb_ip_lshift)
-      m->nb_inplace_lshift = (binaryfunc)goClassNumInplaceLshift;
-    if (ctxt->nb_ip_rshift)
-      m->nb_inplace_rshift = (binaryfunc)goClassNumInplaceRshift;
-    if (ctxt->nb_ip_and) m->nb_inplace_and = (binaryfunc)goClassNumInplaceAnd;
-    if (ctxt->nb_ip_xor) m->nb_inplace_xor = (binaryfunc)goClassNumInplaceXor;
-    if (ctxt->nb_ip_or) m->nb_inplace_or = (binaryfunc)goClassNumInplaceOr;
-    if (ctxt->nb_floordiv)
-      m->nb_floor_divide = (binaryfunc)goClassNumFloorDivide;
-    if (ctxt->nb_truediv) m->nb_true_divide = (binaryfunc)goClassNumTrueDivide;
-    if (ctxt->nb_ip_floordiv)
-      m->nb_inplace_floor_divide = (binaryfunc)goClassNumInplaceFloorDivide;
-    if (ctxt->nb_ip_truediv)
-      m->nb_inplace_true_divide = (binaryfunc)goClassNumInplaceTrueDivide;
-    if (ctxt->nb_index) m->nb_index = (unaryfunc)goClassNumIndex;
-  }
-
-  if (ctxt->has_sq) {
-    PySequenceMethods *m = &ctxt->sq_meth;
-    type->tp_as_sequence = m;
-    if (ctxt->sq_length) m->sq_length = (lenfunc)goClassSeqLength;
-    if (ctxt->sq_concat) m->sq_concat = (binaryfunc)goClassSeqConcat;
-    if (ctxt->sq_repeat) m->sq_repeat = (ssizeargfunc)goClassSeqRepeat;
-    if (ctxt->sq_get) m->sq_item = (ssizeargfunc)goClassSeqGetItem;
-    if (ctxt->sq_set) m->sq_ass_item = (ssizeobjargproc)goClassSeqSetItem;
-    if (ctxt->sq_contains) m->sq_contains = (objobjproc)goClassSeqContains;
-    if (ctxt->sq_ip_concat)
-      m->sq_inplace_concat = (binaryfunc)goClassSeqIpConcat;
-    if (ctxt->sq_ip_repeat)
-      m->sq_inplace_repeat = (ssizeargfunc)goClassSeqIpRepeat;
-  }
-}
-
 PyTypeObject *getBasePyType(PyObject *o) {
   if (o == NULL) return NULL;
 
@@ -585,14 +482,11 @@ int typeReady(PyTypeObject *o) {
   }
   return PyType_Ready(o);
 }
-ClassContext *newContext(void) {
-  // We don't use tp_methods, and it is read when calling PyType_Ready
-  // - so we use it to hide a classContext struct.  The classContext
-  // starts with a NULL pointer just in case, so it looks like an
-  // empty methods list if Python does try to process it.
-  return calloc(1, sizeof(ClassContext));
-}
 void storeContext(PyTypeObject *t, ClassContext *c) {
+  // We don't use tp_methods, and it is only read when calling PyType_Ready, so
+  // we use it to hide a ClassContext struct.  The ClassContext starts with a
+  // NULL pointer just in case, so it looks like an empty methods list if Python
+  // does try to process it.
   t->tp_methods = (void *)c;
 }
 int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {

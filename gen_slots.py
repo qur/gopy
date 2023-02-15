@@ -18,41 +18,45 @@ slots = [
     ("tp_hash", "hashfunc", "PyHash", "() (uint32, error)"),
     ("tp_call", "ternaryfunc", "PyCall", "(*Tuple, *Dict) (Object, error)"),
     ("tp_str", "reprfunc", "PyStr", "() string"),
-    ("tp_getattro", "getattrofunc", "PyGetAttr", ""),
-    ("tp_setattro", "setattrofunc", "PySetAttr", ""),
-    ("tp_richcompare", "richcmpfunc", "PyRichCompare", ""),
+    ("tp_getattro", "getattrofunc", "PyGetAttr", "(Object) (Object, error)"),
+    ("tp_setattro", "setattrofunc", "PySetAttr", "(Object, Object) error"),
+    #    ("tp_richcompare", "richcmpfunc", "PyRichCompare", ""),
     ("tp_iter", "getiterfunc", "PyIter", "() (Object, error)"),
     ("tp_iternext", "iternextfunc", "PyIterNext", "() (Object, error)"),
-    ("tp_descr_get", "descrgetfunc", "", ""),
-    ("tp_descr_set", "descrsetfunc", "", ""),
+    ("tp_descr_get", "descrgetfunc", "PyDescrGet",
+     "(Object, Object) (Object, error)"),
+    ("tp_descr_set", "descrsetfunc", "PyDescrSet", "(Object, Object) error"),
     ("tp_init", "initproc", "PyInit", "(*Tuple, *Dict) error"),
 
     # Async Slots
     ("am_await", "unaryfunc", "PyAwait", "() (Object, error)"),
     ("am_aiter", "unaryfunc", "PyAsyncIter", "() (Object, error)"),
     ("am_anext", "unaryfunc", "PyAsyncNext", "() (Object, error)"),
-    ("am_send", "sendfunc", "", ""),
+    #    ("am_send", "sendfunc", "", ""),
 
     # Number Slots
 
     # Mapping Slots
     ("mp_length", "lenfunc", "PyMappingLen", "() int"),
-    ("mp_subscript", "binaryfunc", "", ""),
-    ("mp_ass_subscript", "objobjargproc", "", ""),
+    ("mp_subscript", "binaryfunc", "PySubscript", "(Object) (Object, error)"),
+    ("mp_ass_subscript", "objobjargproc",
+     "PyAssSubscript", "(Object, Object) error"),
 
     # Sequence Slots
     ("sq_length", "lenfunc", "PyLen", "() int"),
-    ("sq_concat", "binaryfunc", "", ""),
-    ("sq_repeat", "ssizeargfunc", "", ""),
-    ("sq_item", "ssizeargfunc", "", ""),
-    ("sq_ass_item", "ssizeobjargproc", "", ""),
-    ("sq_contains", "objobjproc", "", ""),
-    ("sq_inplace_concat", "binaryfunc", "", ""),
-    ("sq_inplace_repeat", "ssizeargfunc", "", ""),
+    ("sq_concat", "binaryfunc", "PyConcat", "(Object) (Object, error)"),
+    ("sq_repeat", "ssizeargfunc", "PyRepeat", "(Object, int) (Object, error)"),
+    ("sq_item", "ssizeargfunc", "PyItem", "(Object, int) (Object, error)"),
+    ("sq_ass_item", "ssizeobjargproc", "PyAssItem", "(Object, int, Object) error"),
+    ("sq_contains", "objobjproc", "PyContains", "(Object) (bool, error)"),
+    ("sq_inplace_concat", "binaryfunc",
+     "PyInplaceConcat", "(Object) (Object, error)"),
+    ("sq_inplace_repeat", "ssizeargfunc",
+     "PyInplaceRepeat", "(Object, int) (Object, error)"),
 
     # Buffer Slots
-    ("bf_getbuffer", "getbufferproc", "", ""),
-    ("bf_releasebuffer", "releasebufferproc", "", ""),
+    ("bf_getbuffer", "getbufferproc", "PyGetBuffer", "(Object, int) error"),
+    ("bf_releasebuffer", "releasebufferproc", "PyReleaseBuffer", "(Object)"),
 ]
 
 callbacks = {
@@ -83,7 +87,123 @@ callbacks = {
             '	return unsafe.Pointer(c(ret))',
         ],
     ),
+    "() (uint32, error)": (
+        "(obj unsafe.Pointer) C.long",
+        [
+            '	ret, err := co.%(fn)s()',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return -1',
+            '	} else if C.long(ret) == -1 {',
+            '		return -2',
+            '	}',
+            '',
+            '	return C.long(ret)',
+        ],
+    ),
+    "(Object)": (
+        "(obj, arg unsafe.Pointer)",
+        [
+            '	o := newObject((*C.PyObject)(arg))',
+            '	co.%(fn)s(o)',
+        ],
+    ),
+    "(Object) (Object, error)": (
+        "(obj, arg unsafe.Pointer) unsafe.Pointer",
+        [
+            '	o := newObject((*C.PyObject)(arg))',
+            '	ret, err := co.%(fn)s(o)',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
+        ],
+    ),
+    "(Object) (bool, error)": (
+        "(obj, arg unsafe.Pointer) int",
+        [
+            '	o := newObject((*C.PyObject)(arg))',
+            '	ret, err := co.%(fn)s(o)',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return -1',
+            '	}',
+            '',
+            '	if ret {',
+            '		return 1',
+            '	}',
+            '',
+            '	return 0',
+        ],
+    ),
+    "(Object, int) error": (
+        "(obj, arg1 unsafe.Pointer, arg2 C.int) int",
+        [
+            '	o := newObject((*C.PyObject)(arg1))',
+            '	if err := co.%(fn)s(o, int(arg2)); err != nil {',
+            '		raise(err)',
+            '		return -1',
+            '	}',
+            '',
+            '	return 0',
+        ],
+    ),
+    "(Object, int) (Object, error)": (
+        "(obj, arg1 unsafe.Pointer, arg2 C.Py_ssize_t) unsafe.Pointer",
+        [
+            '	o := newObject((*C.PyObject)(arg1))',
+            '	ret, err := co.%(fn)s(o, int(arg2))',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
+        ],
+    ),
+    "(Object, Object) (Object, error)": (
+        "(obj, arg1, arg2 unsafe.Pointer) unsafe.Pointer",
+        [
+            '	o1 := newObject((*C.PyObject)(arg1))',
+            '	o2 := newObject((*C.PyObject)(arg2))',
+            '	ret, err := co.%(fn)s(o1, o2)',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
+        ],
+    ),
+    "(Object, Object) error": (
+        "(obj, arg1, arg2 unsafe.Pointer) int",
+        [
+            '	o1 := newObject((*C.PyObject)(arg1))',
+            '	o2 := newObject((*C.PyObject)(arg2))',
+            '	if err := co.%(fn)s(o1, o2); err != nil {',
+            '		raise(err)',
+            '		return -1',
+            '	}',
+            '',
+            '	return 0',
+        ],
+    ),
     "(*Tuple, *Dict) error": (
+        "(obj, args, kwds unsafe.Pointer) int",
+        [
+            '	a := newTuple((*C.PyObject)(args))',
+            '	k := newDict((*C.PyObject)(kwds))',
+            '	if err := co.%(fn)s(a, k); err != nil {',
+            '		raise(err)',
+            '		return -1',
+            '	}',
+            '',
+            '	return 0',
+        ],
+    ),
+    "(*Tuple, *Dict) (Object, error)": (
         "(obj, args, kwds unsafe.Pointer) unsafe.Pointer",
         [
             '	a := newTuple((*C.PyObject)(args))',
@@ -97,14 +217,27 @@ callbacks = {
             '	return unsafe.Pointer(c(ret))',
         ],
     ),
+    "(Object, int, Object) error": (
+        "(obj, arg1 unsafe.Pointer, arg2 C.Py_ssize_t, arg3 unsafe.Pointer) C.int",
+        [
+            '	o1 := newObject((*C.PyObject)(arg1))',
+            '	o3 := newObject((*C.PyObject)(arg1))',
+            '	if err := co.%(fn)s(o1, int(arg2), o3); err != nil {',
+            '		raise(err)',
+            '		return -1',
+            '	}',
+            '',
+            '	return 0',
+        ],
+    ),
 }
 
 
 def write_h_header(f):
     print("// Code generated by gen_slots.py. DO NOT EDIT.", file=f)
     print("", file=f)
-    print("#ifndef _GO_PYTHON_SLOTS_H_", file=f)
-    print("#define _GO_PYTHON_SLOTS_H_", file=f)
+    print("#ifndef _GO_PYTHON_CLASS_SLOTS_H_", file=f)
+    print("#define _GO_PYTHON_CLASS_SLOTS_H_", file=f)
     print("", file=f)
     print("#include <ffi.h>", file=f)
     print("#include <python3.11/Python.h>", file=f)
@@ -114,7 +247,7 @@ def write_h_header(f):
 
 def write_h_footer(f):
     print("", file=f)
-    print("#endif /* _GO_PYTHON_SLOTS_H */", file=f)
+    print("#endif /* _GO_PYTHON_CLASS_SLOTS_H */", file=f)
 
 
 def write_constants(f):
@@ -213,6 +346,11 @@ def write_setSlots(f):
 def write_go_header(f):
     print('// Code generated by gen_slots.py. DO NOT EDIT.', file=f)
     print('', file=f)
+    print('// This file is automatically generated.  To regenerate:', file=f)
+    print('//   go generate ./...', file=f)
+    print('', file=f)
+    print('//go:generate ./gen_slots.py', file=f)
+    print('', file=f)
     print('package py', file=f)
     print('', file=f)
     print('// #include "utils.h"', file=f)
@@ -220,6 +358,7 @@ def write_go_header(f):
     print('', file=f)
     print('import (', file=f)
     print('	"reflect"', file=f)
+    print('	"unsafe"', file=f)
     print(')', file=f)
     print('', file=f)
 
@@ -267,18 +406,18 @@ def write_slotMap(f):
 
 
 def main():
-    with open("slots.c", "w", encoding='utf-8') as output:
+    with open("class_slots.c", "w", encoding='utf-8') as output:
         write_c_header(output)
         write_setSlots(output)
 
-    with open("slots.h", "w", encoding='utf-8') as output:
+    with open("class_slots.h", "w", encoding='utf-8') as output:
         write_h_header(output)
         write_constants(output)
         write_ClassContext(output)
         write_extern_setSlots(output)
         write_h_footer(output)
 
-    with open("slots.go", "w", encoding='utf-8') as output:
+    with open("class_slots.go", "w", encoding='utf-8') as output:
         write_go_header(output)
         write_interfaces(output)
         write_callbacks(output)

@@ -583,6 +583,25 @@ func goClassClear(obj unsafe.Pointer) int {
 	return 0
 }
 
+type tpDealloc interface {
+	PyDealloc()
+}
+
+//export goClassDealloc
+func goClassDealloc(obj unsafe.Pointer) {
+	// Turn obj into the ClassObject instead of the proxy.
+	co := newObject((*C.PyObject)(obj)).(ClassObject)
+
+	// If co implements tpDealloc then call the PyDealloc method
+	if dealloc, ok := co.(tpDealloc); ok {
+		dealloc.PyDealloc()
+	}
+
+	// we always want Python to _actually_ free the object, any registered hook
+	// should just be tidying things up on the Go side.
+	(*AbstractObject)(obj).Free()
+}
+
 var (
 	ctxtLock sync.RWMutex
 	contexts = map[uintptr]*C.ClassContext{}
@@ -823,21 +842,6 @@ var exportable = map[reflect.Kind]bool{
 	reflect.Float64: true,
 }
 
-var slotMap = map[C.uint64_t]reflect.Type{
-	C.CLASS_HAS_TP_REPR: reflect.TypeOf((*tpRepr)(nil)).Elem(),
-	// C.CLASS_HAS_TP_HASH:        reflect.TypeOf((*tpHash)(nil)).Elem(),
-	C.CLASS_HAS_TP_CALL: reflect.TypeOf((*tpCall)(nil)).Elem(),
-	// C.CLASS_HAS_TP_STR:         reflect.TypeOf((*tpStr)(nil)).Elem(),
-	// C.CLASS_HAS_TP_GETATTRO:    reflect.TypeOf((*tpGetAttr)(nil)).Elem(),
-	// C.CLASS_HAS_TP_SETATTRO:    reflect.TypeOf((*tpSetAttr)(nil)).Elem(),
-	// C.CLASS_HAS_TP_RICHCOMPARE: reflect.TypeOf((*tpRichCompare)(nil)).Elem(),
-	// C.CLASS_HAS_TP_ITER:        reflect.TypeOf((*tpIter)(nil)).Elem(),
-	// C.CLASS_HAS_TP_ITERNEXT:    reflect.TypeOf((*tpIterNext)(nil)).Elem(),
-	// C.CLASS_HAS_TP_DESCR_GET:   reflect.TypeOf((*tpDescrGet)(nil)).Elem(),
-	// C.CLASS_HAS_TP_DESCR_SET:   reflect.TypeOf((*tpDescrSet)(nil)).Elem(),
-	C.CLASS_HAS_TP_INIT: reflect.TypeOf((*tpInit)(nil)).Elem(),
-}
-
 type methodSignature struct {
 	field string
 	sig   interface{}
@@ -870,79 +874,6 @@ var (
 	pySetAttrFunc     = (func(string, Object) error)(nil)
 	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
 )
-
-var methodMap = map[string]methodSignature{
-	// Standard Methods
-	"PyCall":        {"call", pyTernaryCallFunc},
-	"PyCompare":     {"compare", pyCompareFunc},
-	"PyDealloc":     {"dealloc", pyVoidFunc},
-	"PyGetAttr":     {"getattr", pyGetAttrFunc},
-	"PyGetAttrObj":  {"getattro", pyGetAttrObjFunc},
-	"PyHash":        {"hash", pyHashFunc},
-	"PyInit":        {"init", pyInitFunc},
-	"PyIter":        {"iter", pyUnaryFunc},
-	"PyIterNext":    {"iternext", pyUnaryFunc},
-	"PyRepr":        {"repr", pyReprFunc},
-	"PyRichCompare": {"richcmp", pyRichCmpFunc},
-	"PySetAttr":     {"setattr", pySetAttrFunc},
-	"PySetAttrObj":  {"setattro", pySetAttrObjFunc},
-	"PyStr":         {"str", pyReprFunc},
-
-	// Mapping Protocol
-	"PyMapLen": {"mp_len", pyLenFunc},
-	"PyMapGet": {"mp_get", pyBinaryFunc},
-	"PyMapSet": {"mp_set", pyObjObjArgFunc},
-
-	// Number Protocol
-	"PyNumAdd":         {"nb_add", pyBinaryFunc},
-	"PyNumSubtract":    {"nb_subtract", pyBinaryFunc},
-	"PyNumMultiply":    {"nb_multiply", pyBinaryFunc},
-	"PyNumDivide":      {"nb_divide", pyBinaryFunc},
-	"PyNumRemainder":   {"nb_remainder", pyBinaryFunc},
-	"PyNumDivmod":      {"nb_divmod", pyBinaryFunc},
-	"PyNumPower":       {"nb_power", pyTernaryFunc},
-	"PyNumNegative":    {"nb_negative", pyUnaryFunc},
-	"PyNumPositive":    {"nb_positive", pyUnaryFunc},
-	"PyNumAbsolute":    {"nb_absolute", pyUnaryFunc},
-	"PyNumNonzero":     {"nb_nonzero", pyInquiryFunc},
-	"PyNumInvert":      {"nb_invert", pyUnaryFunc},
-	"PyNumLshift":      {"nb_lshift", pyBinaryFunc},
-	"PyNumRshift":      {"nb_rshift", pyBinaryFunc},
-	"PyNumAnd":         {"nb_and", pyBinaryFunc},
-	"PyNumXor":         {"nb_xor", pyBinaryFunc},
-	"PyNumOr":          {"nb_or", pyBinaryFunc},
-	"PyNumInt":         {"nb_int", pyUnaryFunc},
-	"PyNumLong":        {"nb_long", pyUnaryFunc},
-	"PyNumFloat":       {"nb_float", pyUnaryFunc},
-	"PyNumOct":         {"nb_oct", pyUnaryFunc},
-	"PyNumHex":         {"nb_hex", pyUnaryFunc},
-	"PyNumIpAdd":       {"nb_ip_add", pyBinaryFunc},
-	"PyNumIpSubtract":  {"nb_ip_subtract", pyBinaryFunc},
-	"PyNumIpMultiply":  {"nb_ip_multiply", pyBinaryFunc},
-	"PyNumIpDivide":    {"nb_ip_divide", pyBinaryFunc},
-	"PyNumIpRemainder": {"nb_ip_remainder", pyBinaryFunc},
-	"PyNumIpPower":     {"nb_ip_power", pyTernaryFunc},
-	"PyNumIpLshift":    {"nb_ip_lshift", pyBinaryFunc},
-	"PyNumIpRshift":    {"nb_ip_rshift", pyBinaryFunc},
-	"PyNumIpAnd":       {"nb_ip_and", pyBinaryFunc},
-	"PyNumIpXor":       {"nb_ip_xor", pyBinaryFunc},
-	"PyNumIpOr":        {"nb_ip_or", pyBinaryFunc},
-	"PyNumFloorDiv":    {"nb_floordiv", pyBinaryFunc},
-	"PyNumTrueDiv":     {"nb_truediv", pyBinaryFunc},
-	"PyNumIpFloorDiv":  {"nb_ip_floordiv", pyBinaryFunc},
-	"PyNumIpTrueDiv":   {"nb_ip_truediv", pyBinaryFunc},
-	"PyNumIndex":       {"nb_index", pyUnaryFunc},
-
-	// Sequence Protocol
-	"PySeqLen":      {"sq_length", pyLenFunc},
-	"PySeqConcat":   {"sq_concat", pyBinaryFunc},
-	"PySeqRepeat":   {"sq_repeat", pySsizeArgFunc},
-	"PySeqGet":      {"sq_get", pySsizeArgFunc},
-	"PySeqSet":      {"sq_set", pySsizeObjArgFunc},
-	"PySeqContains": {"sq_contains", pyObjObjFunc},
-	"PySeqIpConcat": {"sq_ip_concat", pyBinaryFunc},
-	"PySeqIpRepeat": {"sq_ip_repeat", pySsizeArgFunc},
-}
 
 func ctxtSet(ctxt *C.ClassContext, name string, fn unsafe.Pointer) {
 	t := reflect.TypeOf(ctxt).Elem()
@@ -1025,9 +956,6 @@ func (c *Class) Create() error {
 		return fmt.Errorf("%s does not embed an Object", btyp.Name())
 	}
 
-	// Get a new context structure
-	ctxt := C.newContext()
-
 	methods := make(map[string]method)
 	props := make(map[string]prop)
 
@@ -1049,16 +977,6 @@ func (c *Class) Create() error {
 		t := m.Func.Type()
 		f := methodAsPointer(m)
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
-		meth, ok := methodMap[m.Name]
-		if ok {
-			err := methSigMatches(t, meth.sig)
-			if err != nil {
-				C.free(unsafe.Pointer(pyType))
-				return fmt.Errorf("%s: %s", fn, err)
-			}
-			ctxtSet(ctxt, meth.field, f)
-			continue
-		}
 		parts := strings.SplitN(m.Name, "_", 2)
 		switch parts[0] {
 		case "Py":
@@ -1108,7 +1026,7 @@ func (c *Class) Create() error {
 
 	pyType.tp_basicsize = C.Py_ssize_t(unsafe.Sizeof(C.PyObject{}))
 
-	C.setClassContext(pyType, ctxt)
+	ctxt := C.setSlots(pyType, slotFlags)
 
 	if C.typeReady(pyType) < 0 {
 		C.free(unsafe.Pointer(ctxt))
