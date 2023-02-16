@@ -566,7 +566,7 @@ func (cls *Class) Create() error {
 			s := C.CString(pyname)
 			defer C.free(unsafe.Pointer(s))
 			d := C.CString(pydoc)
-			C.setTypeAttr(pyType, s, C.newObjMember(c(NewLong(int64(i))), d))
+			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), d))
 			continue
 		}
 		if !exportable[field.Type.Kind()] {
@@ -578,7 +578,7 @@ func (cls *Class) Create() error {
 		s := C.CString(pyname)
 		defer C.free(unsafe.Pointer(s))
 		d := C.CString(pydoc)
-		C.setTypeAttr(pyType, s, C.newNatMember(c(NewLong(int64(i))), d))
+		C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d))
 	}
 
 	cls.base = newType((*C.PyObject)(unsafe.Pointer(pyType)))

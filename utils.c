@@ -214,108 +214,34 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
   return (PyObject *)self;
 }
 
-typedef struct {
-  PyObject_HEAD char *doc;
-  PyObject *field;
-} PyGoObjMember;
+PyObject *newObjMember(PyTypeObject *type, char *name, PyObject *idx,
+                       char *doc) {
+  PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
 
-static PyObject *objmemb_get(PyGoObjMember *self, PyObject *obj,
-                             PyObject *type) {
-  return goClassObjGet(obj, self->field);
+  if (gsp == NULL) return NULL;
+
+  gsp->name = name;
+  gsp->get = (getter)goClassObjGet;
+  gsp->set = (setter)goClassObjSet;
+  gsp->doc = doc;
+  gsp->closure = idx;
+
+  return PyDescr_NewGetSet(type, gsp);
 }
 
-static int objmemb_set(PyGoObjMember *self, PyObject *obj, PyObject *value) {
-  return goClassObjSet(obj, self->field, value);
-}
+PyObject *newNatMember(PyTypeObject *type, char *name, PyObject *idx,
+                       char *doc) {
+  PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
 
-static PyObject *objmemb_doc(PyGoObjMember *self, void *closure) {
-  return PyUnicode_FromString(self->doc);
-}
+  if (gsp == NULL) return NULL;
 
-static PyGetSetDef objmemb_getset[] = {{"__doc__", (getter)objmemb_doc},
-                                       {NULL}};
+  gsp->name = name;
+  gsp->get = (getter)goClassNatGet;
+  gsp->set = (setter)goClassNatSet;
+  gsp->doc = doc;
+  gsp->closure = idx;
 
-static PyTypeObject goObjMemberType = {
-    PyVarObject_HEAD_INIT(NULL, 0)             /*ob_size*/
-        .tp_name = "GoObjMember",              /*tp_name*/
-    .tp_basicsize = sizeof(PyGoObjMember),     /*tp_basicsize*/
-    .tp_flags = Py_TPFLAGS_DEFAULT,            /*tp_flags*/
-    .tp_doc = "GoObjMember objects",           /* tp_doc */
-    .tp_getset = objmemb_getset,               /* tp_getset */
-    .tp_descr_get = (descrgetfunc)objmemb_get, /* tp_descr_get */
-    .tp_descr_set = (descrsetfunc)objmemb_set, /* tp_descr_set */
-};
-static int goObjMemberInit = 0;
-
-PyObject *newObjMember(PyObject *idx, char *doc) {
-  PyGoObjMember *self;
-
-  if (!goObjMemberInit) {
-    goObjMemberType.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&goObjMemberType) < 0) return NULL;
-    goObjMemberInit = 1;
-  }
-
-  self = (PyGoObjMember *)goObjMemberType.tp_alloc(&goObjMemberType, 0);
-
-  if (self != NULL) {
-    self->doc = doc;
-    self->field = idx;
-  }
-
-  return (PyObject *)self;
-}
-
-typedef struct {
-  PyObject_HEAD char *doc;
-  PyObject *field;
-} PyGoNatMember;
-
-static PyObject *natmemb_get(PyGoNatMember *self, PyObject *obj,
-                             PyObject *type) {
-  return goClassNatGet(obj, self->field);
-}
-
-static int natmemb_set(PyGoNatMember *self, PyObject *obj, PyObject *value) {
-  return goClassNatSet(obj, self->field, value);
-}
-
-static PyObject *natmemb_doc(PyGoNatMember *self, void *closure) {
-  return PyUnicode_FromString(self->doc);
-}
-
-static PyGetSetDef natmemb_getset[] = {{"__doc__", (getter)natmemb_doc},
-                                       {NULL}};
-
-static PyTypeObject goNatMemberType = {
-    PyVarObject_HEAD_INIT(NULL, 0)             /*ob_size*/
-        .tp_name = "GoNatMember",              /*tp_name*/
-    .tp_basicsize = sizeof(PyGoNatMember),     /*tp_basicsize*/
-    .tp_flags = Py_TPFLAGS_DEFAULT,            /*tp_flags*/
-    .tp_doc = "GoNatMember objects",           /* tp_doc */
-    .tp_getset = natmemb_getset,               /* tp_getset */
-    .tp_descr_get = (descrgetfunc)natmemb_get, /* tp_descr_get */
-    .tp_descr_set = (descrsetfunc)natmemb_set, /* tp_descr_set */
-};
-static int goNatMemberInit = 0;
-
-PyObject *newNatMember(PyObject *idx, char *doc) {
-  PyGoNatMember *self;
-
-  if (!goNatMemberInit) {
-    goNatMemberType.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&goNatMemberType) < 0) return NULL;
-    goNatMemberInit = 1;
-  }
-
-  self = (PyGoNatMember *)goNatMemberType.tp_alloc(&goNatMemberType, 0);
-
-  if (self != NULL) {
-    self->doc = doc;
-    self->field = idx;
-  }
-
-  return (PyObject *)self;
+  return PyDescr_NewGetSet(type, gsp);
 }
 
 PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,

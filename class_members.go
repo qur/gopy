@@ -38,7 +38,7 @@ func goClassNatGet(obj, idx unsafe.Pointer) *C.PyObject {
 }
 
 //export goClassNatSet
-func goClassNatSet(obj, idx, obj2 unsafe.Pointer) int {
+func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
 	f, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
@@ -81,7 +81,7 @@ func goClassObjGet(obj, idx unsafe.Pointer) *C.PyObject {
 }
 
 //export goClassObjSet
-func goClassObjSet(obj, idx, obj2 unsafe.Pointer) int {
+func goClassObjSet(obj, obj2, idx unsafe.Pointer) int {
 	f, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
