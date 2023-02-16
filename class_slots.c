@@ -36,6 +36,46 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
     if (slotFlags & CLASS_HAS_AM_ANEXT) m->am_anext = (unaryfunc)goClassSlot_am_anext;
   }
 
+  if (slotFlags & CLASS_HAS_NB) {
+    PyNumberMethods *m = &ctxt->nb_meth;
+    type->tp_as_number = m;
+    if (slotFlags & CLASS_HAS_NB_ADD) m->nb_add = (binaryfunc)goClassSlot_nb_add;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_ADD) m->nb_inplace_add = (binaryfunc)goClassSlot_nb_inplace_add;
+    if (slotFlags & CLASS_HAS_NB_SUBTRACT) m->nb_subtract = (binaryfunc)goClassSlot_nb_subtract;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_SUBTRACT) m->nb_inplace_subtract = (binaryfunc)goClassSlot_nb_inplace_subtract;
+    if (slotFlags & CLASS_HAS_NB_MULTIPLY) m->nb_multiply = (binaryfunc)goClassSlot_nb_multiply;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_MULTIPLY) m->nb_inplace_multiply = (binaryfunc)goClassSlot_nb_inplace_multiply;
+    if (slotFlags & CLASS_HAS_NB_REMAINDER) m->nb_remainder = (binaryfunc)goClassSlot_nb_remainder;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_REMAINDER) m->nb_inplace_remainder = (binaryfunc)goClassSlot_nb_inplace_remainder;
+    if (slotFlags & CLASS_HAS_NB_DIVMOD) m->nb_divmod = (binaryfunc)goClassSlot_nb_divmod;
+    if (slotFlags & CLASS_HAS_NB_POWER) m->nb_power = (ternaryfunc)goClassSlot_nb_power;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_POWER) m->nb_inplace_power = (ternaryfunc)goClassSlot_nb_inplace_power;
+    if (slotFlags & CLASS_HAS_NB_NEGATIVE) m->nb_negative = (unaryfunc)goClassSlot_nb_negative;
+    if (slotFlags & CLASS_HAS_NB_POSITIVE) m->nb_positive = (unaryfunc)goClassSlot_nb_positive;
+    if (slotFlags & CLASS_HAS_NB_ABSOLUTE) m->nb_absolute = (unaryfunc)goClassSlot_nb_absolute;
+    if (slotFlags & CLASS_HAS_NB_BOOL) m->nb_bool = (inquiry)goClassSlot_nb_bool;
+    if (slotFlags & CLASS_HAS_NB_INVERT) m->nb_invert = (unaryfunc)goClassSlot_nb_invert;
+    if (slotFlags & CLASS_HAS_NB_LSHIFT) m->nb_lshift = (binaryfunc)goClassSlot_nb_lshift;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_LSHIFT) m->nb_inplace_lshift = (binaryfunc)goClassSlot_nb_inplace_lshift;
+    if (slotFlags & CLASS_HAS_NB_RSHIFT) m->nb_rshift = (binaryfunc)goClassSlot_nb_rshift;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_RSHIFT) m->nb_inplace_rshift = (binaryfunc)goClassSlot_nb_inplace_rshift;
+    if (slotFlags & CLASS_HAS_NB_AND) m->nb_and = (binaryfunc)goClassSlot_nb_and;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_AND) m->nb_inplace_and = (binaryfunc)goClassSlot_nb_inplace_and;
+    if (slotFlags & CLASS_HAS_NB_XOR) m->nb_xor = (binaryfunc)goClassSlot_nb_xor;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_XOR) m->nb_inplace_xor = (binaryfunc)goClassSlot_nb_inplace_xor;
+    if (slotFlags & CLASS_HAS_NB_OR) m->nb_or = (binaryfunc)goClassSlot_nb_or;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_OR) m->nb_inplace_or = (binaryfunc)goClassSlot_nb_inplace_or;
+    if (slotFlags & CLASS_HAS_NB_INT) m->nb_int = (unaryfunc)goClassSlot_nb_int;
+    if (slotFlags & CLASS_HAS_NB_FLOAT) m->nb_float = (unaryfunc)goClassSlot_nb_float;
+    if (slotFlags & CLASS_HAS_NB_FLOOR_DIVIDE) m->nb_floor_divide = (binaryfunc)goClassSlot_nb_floor_divide;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_FLOOR_DIVIDE) m->nb_inplace_floor_divide = (binaryfunc)goClassSlot_nb_inplace_floor_divide;
+    if (slotFlags & CLASS_HAS_NB_TRUE_DIVIDE) m->nb_true_divide = (binaryfunc)goClassSlot_nb_true_divide;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_TRUE_DIVIDE) m->nb_inplace_true_divide = (binaryfunc)goClassSlot_nb_inplace_true_divide;
+    if (slotFlags & CLASS_HAS_NB_INDEX) m->nb_index = (unaryfunc)goClassSlot_nb_index;
+    if (slotFlags & CLASS_HAS_NB_MATRIX_MULTIPLY) m->nb_matrix_multiply = (binaryfunc)goClassSlot_nb_matrix_multiply;
+    if (slotFlags & CLASS_HAS_NB_INPLACE_MATRIX_MULTIPLY) m->nb_inplace_matrix_multiply = (binaryfunc)goClassSlot_nb_inplace_matrix_multiply;
+  }
+
   if (slotFlags & CLASS_HAS_MP) {
     PyMappingMethods *m = &ctxt->mp_meth;
     type->tp_as_mapping = m;

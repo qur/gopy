@@ -20,7 +20,7 @@ slots = [
     ("tp_str", "reprfunc", "PyStr", "() string"),
     ("tp_getattro", "getattrofunc", "PyGetAttr", "(Object) (Object, error)"),
     ("tp_setattro", "setattrofunc", "PySetAttr", "(Object, Object) error"),
-    #    ("tp_richcompare", "richcmpfunc", "PyRichCompare", ""),
+    #    TODO(jp3): ("tp_richcompare", "richcmpfunc", "PyRichCompare", ""),
     ("tp_iter", "getiterfunc", "PyIter", "() (Object, error)"),
     ("tp_iternext", "iternextfunc", "PyIterNext", "() (Object, error)"),
     ("tp_descr_get", "descrgetfunc", "PyDescrGet",
@@ -32,9 +32,54 @@ slots = [
     ("am_await", "unaryfunc", "PyAwait", "() (Object, error)"),
     ("am_aiter", "unaryfunc", "PyAsyncIter", "() (Object, error)"),
     ("am_anext", "unaryfunc", "PyAsyncNext", "() (Object, error)"),
-    #    ("am_send", "sendfunc", "", ""),
+    #    TODO(jp3): ("am_send", "sendfunc", "", ""),
 
     # Number Slots
+    ("nb_add", "binaryfunc", "PyAdd", "(Object) (Object, error)"),
+    ("nb_inplace_add", "binaryfunc", "PyInplaceAdd", "(Object) (Object, error)"),
+    ("nb_subtract", "binaryfunc", "PySubtract", "(Object) (Object, error)"),
+    ("nb_inplace_subtract", "binaryfunc",
+     "PyInplaceSubtract", "(Object) (Object, error)"),
+    ("nb_multiply", "binaryfunc", "PyMultiply", "(Object) (Object, error)"),
+    ("nb_inplace_multiply", "binaryfunc",
+     "PyInplaceMultiply", "(Object) (Object, error)"),
+    ("nb_remainder", "binaryfunc", "PyRemainder", "(Object) (Object, error)"),
+    ("nb_inplace_remainder", "binaryfunc",
+     "PyInplaceRemainder", "(Object) (Object, error)"),
+    ("nb_divmod", "binaryfunc", "PyDivmod", "(Object) (Object, error)"),
+    ("nb_power", "ternaryfunc", "PyPower", "(Object, Object) (Object, error)"),
+    ("nb_inplace_power", "ternaryfunc", "PyInplacePower",
+     "(Object, Object) (Object, error)"),
+    ("nb_negative", "unaryfunc", "PyNegative", "() (Object, error)"),
+    ("nb_positive", "unaryfunc", "PyPositive", "() (Object, error)"),
+    ("nb_absolute", "unaryfunc", "PyAbsolute", "() (Object, error)"),
+    ("nb_bool", "inquiry", "PyBool", "() (bool, error)"),
+    ("nb_invert", "unaryfunc", "PyInvert", "() (Object, error)"),
+    ("nb_lshift", "binaryfunc", "PyLShift", "(Object) (Object, error)"),
+    ("nb_inplace_lshift", "binaryfunc",
+     "PyInplaceLShift", "(Object) (Object, error)"),
+    ("nb_rshift", "binaryfunc", "PyRShift", "(Object) (Object, error)"),
+    ("nb_inplace_rshift", "binaryfunc",
+     "PyInplaceRShift", "(Object) (Object, error)"),
+    ("nb_and", "binaryfunc", "PyAnd", "(Object) (Object, error)"),
+    ("nb_inplace_and", "binaryfunc", "PyInplaceAnd", "(Object) (Object, error)"),
+    ("nb_xor", "binaryfunc", "PyXor", "(Object) (Object, error)"),
+    ("nb_inplace_xor", "binaryfunc", "PyInplaceXor", "(Object) (Object, error)"),
+    ("nb_or", "binaryfunc", "PyOr", "(Object) (Object, error)"),
+    ("nb_inplace_or", "binaryfunc", "PyInplaceOr", "(Object) (Object, error)"),
+    ("nb_int", "unaryfunc", "PyInt", "() (Object, error)"),
+    ("nb_float", "unaryfunc", "PyFloat", "() (Object, error)"),
+    ("nb_floor_divide", "binaryfunc", "PyFloorDivide", "(Object) (Object, error)"),
+    ("nb_inplace_floor_divide", "binaryfunc",
+     "PyInplaceFloorDivide", "(Object) (Object, error)"),
+    ("nb_true_divide", "binaryfunc", "PyTrueDivide", "(Object) (Object, error)"),
+    ("nb_inplace_true_divide", "binaryfunc",
+     "PyInplaceTrueDivide", "(Object) (Object, error)"),
+    ("nb_index", "unaryfunc", "PyIndex", "() (Object, error)"),
+    ("nb_matrix_multiply", "binaryfunc",
+     "PyMatrixMultiply", "(Object) (Object, error)"),
+    ("nb_inplace_matrix_multiply", "binaryfunc",
+     "PyInplaceMatrixMultiply", "(Object) (Object, error)"),
 
     # Mapping Slots
     ("mp_length", "lenfunc", "PyMappingLen", "() int"),
@@ -73,6 +118,22 @@ callbacks = {
         "(obj unsafe.Pointer) C.Py_ssize_t",
         [
             '	return C.Py_ssize_t(co.%(fn)s())',
+        ],
+    ),
+    "() (bool, error)": (
+        "(obj unsafe.Pointer) int",
+        [
+            '	ret, err := co.%(fn)s()',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return -1',
+            '	}',
+            '',
+            '	if ret {',
+            '		return 1',
+            '	}',
+            '',
+            '	return 0',
         ],
     ),
     "() (Object, error)": (
@@ -380,6 +441,7 @@ def write_callbacks(f):
     for (slot, _, fn, goSig) in slots:
         (cbSig, body) = callbacks.get(goSig, (None, []))
         if cbSig is None:
+            print(f"WARNING: unknown callback signature: {goSig}")
             continue
         print(f'//export goClassSlot_{slot}', file=f)
         print(
