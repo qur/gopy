@@ -9,7 +9,7 @@ import (
 )
 
 func example(args *py.Tuple) (py.Object, error) {
-	fmt.Printf("example.example\n")
+	fmt.Printf("extension.example\n")
 	var s string
 	var i int
 	var o py.Object
@@ -49,11 +49,11 @@ func (e *Example) PyInit(args *py.Tuple, kwds *py.Dict) error {
 }
 
 func (e *Example) PyRepr() string {
-	return fmt.Sprintf("<example.ExampleClass self=%p wibble=%d>", e, e.wibble)
+	return fmt.Sprintf("<extension.ExampleClass self=%p wibble=%d>", e, e.wibble)
 }
 
 func (e *Example) PyStr() string {
-	return fmt.Sprintf("example.ExampleClass(wibble=%d)", e.wibble)
+	return fmt.Sprintf("extension.ExampleClass(wibble=%d)", e.wibble)
 }
 
 func (e *Example) PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
@@ -118,7 +118,7 @@ func (e *Example) PySet_wibble(arg py.Object) error {
 }
 
 var exampleClass = py.Class{
-	Name:   "example.ExampleClass",
+	Name:   "extension.ExampleClass",
 	Object: (*Example)(nil),
 }
 
