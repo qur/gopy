@@ -18,7 +18,13 @@ is `foo, ok := obj.(*Foo)` to give a couple of examples.
 What versions of Python are supported?
 --------------------------------------
 
-Currently, only Python 2.7 is supported.  Though I do hope to add support for
-other versions in the future.
+This codebase only supports a single version of Python at a time, currently this
+is version 3.11 (note that this only applies to Major.Minor, not the patch
+version). For a different version of Python a different branch is needed.
 
-Note: Python 2.6 support is currently available on the python2.6 branch.
+Python Extensions
+-----------------
+
+Building extensions is supported using the c-shared buildmode. Some boilerplate
+code is needed to meet the Python C API - this can be generated using the
+gen_extension command in this repository.

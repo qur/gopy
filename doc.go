@@ -1,7 +1,3 @@
-// Copyright 2011 Julian Phillips.  All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 /*
 Package py (qur.me/py/v3) provides access to the CPython C API.  This package
 presents an idiomatic Go interface to the CPython C API described at
@@ -17,7 +13,7 @@ Embedding Python is fully supported, with the ability to initialise the
 interpreter, enable threading support, manipulate the GIL and call Python API
 functions to manipulate Python objects.
 
-In addition to providing the ability to use the API to call into Python calling
+In addition to providing the ability to use the API to call into Python, calling
 from Python back into Go is also supported.  New types can be implemented in Go
 and exposed into Python.
 
@@ -29,10 +25,8 @@ objects over a Go channel.
 
 # Python Extensions
 
-Currently there is experimental support for creating CPython extensions in Go on
-the ext branch.  This uses gccgo, as there is not currently any support for
-creating shared libraries in the gc toolchain.
-
-More information about this can be found at http://gopy.qur.me/extensions
+Building extensions is supported using the c-shared buildmode. Some boilerplate
+code is needed to meet the Python C API - this can be generated using the
+gen_extension command in this repository.
 */
 package py

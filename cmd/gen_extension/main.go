@@ -50,6 +50,13 @@ things that are required for this to work:
     "initExtension() (*Module, error)" (the name can be changed using the -func
     command line option, though the signature should stay the same).
 
+To build the extension use the c-shared buildmode:
+
+  go build -buildmode=c-shared -o <extension-name>.so <path-to-code>
+
+The normal Go requirements for building a shared library apply, which means that
+you must have exactly one main package (containing an empty main function).
+
 Options:
 `
 
