@@ -12,6 +12,7 @@ RUN apt-get update && \
       libffi-dev && \
     curl -o /tmp/python.tar.xz https://www.python.org/ftp/python/3.11.2/Python-3.11.2.tar.xz && \
     cd /tmp && tar -xvf python.tar.xz && cd Python-3.11.2 && \
-    ./configure --enable-optimizations && \
+    ./configure --enable-optimizations --enable-shared && \
     make install && \
+    ldconfig && \
     rm -rf /var/lib/apt/lists/*

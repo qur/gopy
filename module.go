@@ -373,3 +373,13 @@ func initModules() error {
 
 	return metaPath.Insert(0, &importer)
 }
+
+func InitExtension(f func() (*Module, error)) *BaseObject {
+	ret, err := f()
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return ret.Base()
+}

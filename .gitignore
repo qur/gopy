@@ -2,3 +2,5 @@ _cgo_export.h
 .*.swp
 /.wrenv/
 /Python-*/
+/extension.so
+/extension.h
