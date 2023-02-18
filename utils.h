@@ -10,6 +10,7 @@
 #include <python3.11/frameobject.h>
 
 #include "class_slots.h"
+#include "types.h"
 
 typedef struct {
   ffi_type *type;
@@ -22,8 +23,6 @@ extern int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt,
 extern PyObject *doBuildValue(char *fmt, ArgValue values[], int c);
 
 extern void enableClassGc(PyTypeObject *type);
-
-extern PyTypeObject *getBasePyType(PyObject *o);
 
 struct _en {
   const char *m;
@@ -41,34 +40,6 @@ extern void xdecref(PyObject *o);
 
 extern void *pyTrue(void);
 extern void *pyFalse(void);
-
-extern int boolCheck(PyObject *o);
-extern int bytesCheck(PyObject *o);
-extern int cFunctionCheck(PyObject *o);
-extern int codeCheck(PyObject *o);
-extern int complexCheck(PyObject *o);
-extern int dictCheckE(PyObject *o);
-extern int dictCheck(PyObject *o);
-extern int exceptionCheck(PyObject *o);
-extern int floatCheck(PyObject *o);
-extern int frozenSetCheckE(PyObject *o);
-extern int frozenSetCheck(PyObject *o);
-extern int functionCheck(PyObject *o);
-// extern int intCheck(PyObject *o);
-extern int listCheckE(PyObject *o);
-extern int listCheck(PyObject *o);
-extern int longCheck(PyObject *o);
-extern int moduleCheckE(PyObject *o);
-extern int moduleCheck(PyObject *o);
-extern int setCheck(PyObject *o);
-extern int tupleCheckE(PyObject *o);
-extern int tupleCheck(PyObject *o);
-extern int typeCheckE(PyObject *o);
-extern int typeCheck(PyObject *o);
-extern int frameCheck(PyObject *o);
-extern int methodCheck(PyObject *o);
-// extern int fileCheck(PyObject *o);
-extern int unicodeCheck(PyObject *o);
 
 // --- abstract.go helper functions ---
 //

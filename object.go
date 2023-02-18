@@ -91,51 +91,18 @@ func newObject(obj *C.PyObject) Object {
 		return cObj
 	}
 
-	switch C.getBasePyType(obj) {
-	case &C.PyList_Type:
-		return (*List)(o)
-	case &C.PyTuple_Type:
-		return (*Tuple)(o)
-	case &C.PyDict_Type:
-		return (*Dict)(o)
-	case &C.PyBool_Type:
-		return newBool(obj)
-	case &C.PyBytes_Type:
-		return (*Bytes)(o)
-	case &C.PyLong_Type:
-		return (*Long)(o)
-	case &C.PyFloat_Type:
-		return (*Float)(o)
-	case &C.PyModule_Type:
-		return (*Module)(o)
-	case &C.PyType_Type:
-		class, ok := getType((*C.PyTypeObject)(o))
-		if ok {
-			return class
-		}
-		return (*Type)(o)
-	case &C.PyCode_Type:
-		return (*Code)(o)
-	case &C.PyCFunction_Type:
-		return (*CFunction)(o)
-	case &C.PyComplex_Type:
-		return (*Complex)(o)
-	case &C.PyFrozenSet_Type:
-		return (*FrozenSet)(o)
-	case &C.PySet_Type:
-		return (*Set)(o)
-	case &C.PyFunction_Type:
-		return (*Function)(o)
-	case &C.PyFrame_Type:
-		return (*Frame)(o)
-	case &C.PyMethod_Type:
-		return (*Method)(o)
-	case &C.PyUnicode_Type:
-		return (*Unicode)(o)
+	class, ok := getType((*C.PyTypeObject)(o))
+	if ok {
+		return class
 	}
 
-	if C.exceptionCheck(obj) != 0 {
+	if C.exceptionClassCheck(obj) != 0 {
 		return newException(obj)
+	}
+
+	natObj := getNativeType(obj)
+	if natObj != nil {
+		return natObj
 	}
 
 	return newBaseObject(obj)

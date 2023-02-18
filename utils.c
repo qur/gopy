@@ -274,33 +274,6 @@ void enableClassGc(PyTypeObject *type) {
   type->tp_clear = (inquiry)goClassClear;
 }
 
-PyTypeObject *getBasePyType(PyObject *o) {
-  if (o == NULL) return NULL;
-
-  if (PyTuple_Check(o)) return &PyTuple_Type;
-  if (PyDict_Check(o)) return &PyDict_Type;
-  if (PyList_Check(o)) return &PyList_Type;
-  if (PyBytes_Check(o)) return &PyBytes_Type;
-  if (PyBool_Check(o)) return &PyBool_Type;
-  if (PyLong_Check(o)) return &PyLong_Type;
-  if (PyFloat_Check(o)) return &PyFloat_Type;
-  if (PyModule_Check(o)) return &PyModule_Type;
-  if (PyType_Check(o)) return &PyType_Type;
-  if (PyCode_Check(o)) return &PyCode_Type;
-  if (PyCFunction_Check(o)) return &PyCFunction_Type;
-  if (PyComplex_Check(o)) return &PyComplex_Type;
-  if (PyFrozenSet_Check(o)) return &PyFrozenSet_Type;
-  if (PySet_Check(o)) return &PySet_Type;
-  if (PyFunction_Check(o)) return &PyFunction_Type;
-  if (PyFrame_Check(o)) return &PyFrame_Type;
-  if (PyMethod_Check(o)) return &PyMethod_Type;
-  // TODO(jp3): PyFile is not a thing anymore
-  // if (PyFile_Check(o)) return &PyFile_Type;
-  if (PyUnicode_Check(o)) return &PyUnicode_Type;
-
-  return o->ob_type;
-}
-
 struct _en excName(PyObject *o) {
   struct _en en = {NULL, NULL};
 
@@ -343,38 +316,6 @@ void xdecref(PyObject *o) { Py_XDECREF(o); }
 
 void *pyTrue(void) { return Py_True; }
 void *pyFalse(void) { return Py_False; }
-
-int boolCheck(PyObject *o) { return PyBool_Check(o); }
-int bytesCheck(PyObject *o) { return PyBytes_Check(o); }
-int cFunctionCheck(PyObject *o) { return PyCFunction_Check(o); }
-int codeCheck(PyObject *o) { return PyCode_Check(o); }
-int complexCheck(PyObject *o) { return PyComplex_Check(o); }
-int dictCheckE(PyObject *o) { return PyDict_CheckExact(o); }
-int dictCheck(PyObject *o) { return PyDict_Check(o); }
-int exceptionCheck(PyObject *o) { return PyExceptionClass_Check(o); }
-int floatCheck(PyObject *o) { return PyFloat_Check(o); }
-int frozenSetCheckE(PyObject *o) { return PyFrozenSet_CheckExact(o); }
-int frozenSetCheck(PyObject *o) { return PyFrozenSet_Check(o); }
-int functionCheck(PyObject *o) { return PyFunction_Check(o); }
-// TODO(jp3): int isn't a thing anymore
-// int intCheck(PyObject *o) { return PyInt_Check(o); }
-int listCheckE(PyObject *o) { return PyList_CheckExact(o); }
-int listCheck(PyObject *o) { return PyList_Check(o); }
-int longCheck(PyObject *o) { return PyLong_Check(o); }
-int moduleCheckE(PyObject *o) { return PyModule_CheckExact(o); }
-int moduleCheck(PyObject *o) { return PyModule_Check(o); }
-int setCheck(PyObject *o) { return PySet_Check(o); }
-// TODO(jp3): replace with bytes
-// int stringCheck(PyObject *o) { return PyString_Check(o); }
-int tupleCheckE(PyObject *o) { return PyTuple_CheckExact(o); }
-int tupleCheck(PyObject *o) { return PyTuple_Check(o); }
-int typeCheckE(PyObject *o) { return PyType_CheckExact(o); }
-int typeCheck(PyObject *o) { return PyType_Check(o); }
-int frameCheck(PyObject *o) { return PyFrame_Check(o); }
-int methodCheck(PyObject *o) { return PyMethod_Check(o); }
-// TODO(jp3): PyFile isn't a thing anymore
-// int fileCheck(PyObject *o) { return PyFile_Check(o); }
-int unicodeCheck(PyObject *o) { return PyUnicode_Check(o); }
 
 // --- abstract.go helper functions ---
 //
