@@ -43,6 +43,7 @@ extern void *pyTrue(void);
 extern void *pyFalse(void);
 
 extern int boolCheck(PyObject *o);
+extern int bytesCheck(PyObject *o);
 extern int cFunctionCheck(PyObject *o);
 extern int codeCheck(PyObject *o);
 extern int complexCheck(PyObject *o);
@@ -60,7 +61,6 @@ extern int longCheck(PyObject *o);
 extern int moduleCheckE(PyObject *o);
 extern int moduleCheck(PyObject *o);
 extern int setCheck(PyObject *o);
-// extern int stringCheck(PyObject *o);
 extern int tupleCheckE(PyObject *o);
 extern int tupleCheck(PyObject *o);
 extern int typeCheckE(PyObject *o);

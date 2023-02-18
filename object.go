@@ -100,6 +100,8 @@ func newObject(obj *C.PyObject) Object {
 		return (*Dict)(o)
 	case &C.PyBool_Type:
 		return newBool(obj)
+	case &C.PyBytes_Type:
+		return (*Bytes)(o)
 	case &C.PyLong_Type:
 		return (*Long)(o)
 	case &C.PyFloat_Type:

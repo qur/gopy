@@ -280,8 +280,7 @@ PyTypeObject *getBasePyType(PyObject *o) {
   if (PyTuple_Check(o)) return &PyTuple_Type;
   if (PyDict_Check(o)) return &PyDict_Type;
   if (PyList_Check(o)) return &PyList_Type;
-  // TODO(jp3): replace with bytes
-  // if (PyString_Check(o)) return &PyString_Type;
+  if (PyBytes_Check(o)) return &PyBytes_Type;
   if (PyBool_Check(o)) return &PyBool_Type;
   if (PyLong_Check(o)) return &PyLong_Type;
   if (PyFloat_Check(o)) return &PyFloat_Type;
@@ -346,6 +345,7 @@ void *pyTrue(void) { return Py_True; }
 void *pyFalse(void) { return Py_False; }
 
 int boolCheck(PyObject *o) { return PyBool_Check(o); }
+int bytesCheck(PyObject *o) { return PyBytes_Check(o); }
 int cFunctionCheck(PyObject *o) { return PyCFunction_Check(o); }
 int codeCheck(PyObject *o) { return PyCode_Check(o); }
 int complexCheck(PyObject *o) { return PyComplex_Check(o); }
