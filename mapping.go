@@ -9,10 +9,10 @@ import "C"
 
 import "unsafe"
 
-// MappingProtocol is a 0-sized type that can be embedded in concrete types
+// mappingProtocol is a 0-sized type that can be embedded in concrete types
 // after the AbstractObject to provide access to the suite of methods that
 // Python calls the "Mapping Protocol".
-type MappingProtocol struct{}
+type mappingProtocol struct{}
 
 // Mapping is an interface that defines the Python "Mapping Protocol".
 type Mapping interface {
@@ -31,15 +31,15 @@ type Mapping interface {
 }
 
 // mapping is a concrete realisation of the Mapping Protocol.  A type that
-// implements the "Mapping Protocol" but doesn't embed MappingProtocol can be
-// turned into a Mapping by calling AsMapping.
+// implements the "Mapping Protocol" but doesn't implement Mapping can be turned
+// into a Mapping by calling AsMapping.
 type mapping struct {
-	AbstractObject
-	MappingProtocol
+	abstractObject
+	mappingProtocol
 	o C.PyObject
 }
 
-func cmp(m *MappingProtocol) *C.PyObject {
+func cmp(m *mappingProtocol) *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(m))
 }
 
@@ -56,63 +56,63 @@ func AsMapping(obj Object) Mapping {
 	return (*mapping)(unsafe.Pointer(obj.Base()))
 }
 
-func (m *MappingProtocol) Size() (int64, error) {
+func (m *mappingProtocol) Size() (int64, error) {
 	ret := C.PyMapping_Size(cmp(m))
 	return ssize_t2Int64Err(ret)
 }
 
-func (m *MappingProtocol) Length() (int64, error) {
+func (m *mappingProtocol) Length() (int64, error) {
 	ret := C.PyMapping_Length(cmp(m))
 	return ssize_t2Int64Err(ret)
 }
 
-func (m *MappingProtocol) DelItemString(key string) error {
+func (m *mappingProtocol) DelItemString(key string) error {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyObject_DelItemString(cmp(m), cKey)
 	return int2Err(ret)
 }
 
-func (m *MappingProtocol) DelItem(key Object) error {
+func (m *mappingProtocol) DelItem(key Object) error {
 	ret := C.PyObject_DelItem(cmp(m), c(key))
 	return int2Err(ret)
 }
 
-func (m *MappingProtocol) HasKeyString(key string) bool {
+func (m *mappingProtocol) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(cmp(m), cKey)
 	return ret > 0
 }
 
-func (m *MappingProtocol) HasKey(key Object) bool {
+func (m *mappingProtocol) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(cmp(m), c(key))
 	return ret > 0
 }
 
-func (m *MappingProtocol) Keys() (Object, error) {
+func (m *mappingProtocol) Keys() (Object, error) {
 	ret := C.PyMapping_Keys_(cmp(m))
 	return obj2ObjErr(ret)
 }
 
-func (m *MappingProtocol) Values() (Object, error) {
+func (m *mappingProtocol) Values() (Object, error) {
 	ret := C.PyMapping_Values_(cmp(m))
 	return obj2ObjErr(ret)
 }
 
-func (m *MappingProtocol) Items() (Object, error) {
+func (m *mappingProtocol) Items() (Object, error) {
 	ret := C.PyMapping_Items_(cmp(m))
 	return obj2ObjErr(ret)
 }
 
-func (m *MappingProtocol) GetItemString(key string) (Object, error) {
+func (m *mappingProtocol) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_GetItemString(cmp(m), cKey)
 	return obj2ObjErr(ret)
 }
 
-func (m *MappingProtocol) SetItemString(key string, v Object) error {
+func (m *mappingProtocol) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_SetItemString(cmp(m), cKey, c(v))

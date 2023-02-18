@@ -13,8 +13,8 @@ import (
 )
 
 type Tuple struct {
-	AbstractObject
-	SequenceProtocol
+	abstractObject
+	sequenceProtocol
 	o C.PyTupleObject
 }
 

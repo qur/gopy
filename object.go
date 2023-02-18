@@ -41,7 +41,7 @@ var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
 // NoneObject is the type of the None value.  The only value of this type is
 // None.
 type NoneObject struct {
-	AbstractObject
+	abstractObject
 }
 
 func (n *NoneObject) String() string {

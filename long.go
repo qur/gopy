@@ -13,8 +13,8 @@ import (
 )
 
 type Long struct {
-	AbstractObject
-	NumberProtocol
+	abstractObject
+	numberProtocol
 	o C.PyLongObject
 }
 

@@ -16,8 +16,8 @@ import (
 // interface, List pointers also have a number of methods defined - representing
 // the PyList_XXX functions from the Python C API.
 type List struct {
-	AbstractObject
-	SequenceProtocol
+	abstractObject
+	sequenceProtocol
 	o C.PyListObject
 }
 

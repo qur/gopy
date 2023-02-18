@@ -156,7 +156,7 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 		if field.Type == otyp {
 			o = *(*Object)(v)
 		} else {
-			o = *(**AbstractObject)(v)
+			o = *(**abstractObject)(v)
 		}
 		ret := C.doVisit(c(o), visit, arg)
 		if ret != 0 {
@@ -193,7 +193,7 @@ func goClassClear(obj unsafe.Pointer) int {
 			*o = nil
 			Decref(tmp)
 		} else {
-			o := (**AbstractObject)(v)
+			o := (**abstractObject)(v)
 			tmp := *o
 			*o = nil
 			Decref(tmp)
@@ -219,7 +219,7 @@ func goClassDealloc(obj unsafe.Pointer) {
 
 	// we always want Python to _actually_ free the object, any registered hook
 	// should just be tidying things up on the Go side.
-	(*AbstractObject)(obj).Free()
+	(*abstractObject)(obj).Free()
 }
 
 //export goClassNew

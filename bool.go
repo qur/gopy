@@ -16,7 +16,7 @@ import (
 // possible values for a Bool, True and False.  Every True value refers to the
 // same instance, and every False value refers to the same value.
 type Bool struct {
-	AbstractObject
+	abstractObject
 	o C.PyLongObject
 }
 

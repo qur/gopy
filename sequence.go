@@ -9,10 +9,10 @@ import "C"
 
 import "unsafe"
 
-// SequenceProtocol is a 0-sized type that can be embedded in concrete types
+// sequenceProtocol is a 0-sized type that can be embedded in concrete types
 // after the AbstractObject to provide access to the suite of methods that
 // Python calls the "Sequence Protocol".
-type SequenceProtocol struct{}
+type sequenceProtocol struct{}
 
 // Sequence is an interface that defines the Python "Sequence Protocol".
 type Sequence interface {
@@ -37,15 +37,15 @@ type Sequence interface {
 }
 
 // sequence is a concrete realisation of the Sequence Protocol.  A type that
-// implements the "Sequence Protocol" but doesn't embed SequenceProtocol can be
+// implements the "Sequence Protocol" but doesn't implement Sequence can be
 // turned into a Sequence by calling AsSequence.
 type sequence struct {
-	AbstractObject
-	SequenceProtocol
+	abstractObject
+	sequenceProtocol
 	o C.PyObject
 }
 
-func csp(s *SequenceProtocol) *C.PyObject {
+func csp(s *sequenceProtocol) *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(s))
 }
 
@@ -62,87 +62,87 @@ func AsSequence(obj Object) Sequence {
 	return (*sequence)(unsafe.Pointer(obj.Base()))
 }
 
-func (s *SequenceProtocol) Size() (int64, error) {
+func (s *sequenceProtocol) Size() (int64, error) {
 	ret := C.PySequence_Size(csp(s))
 	return ssize_t2Int64Err(ret)
 }
 
-func (s *SequenceProtocol) Length() (int64, error) {
+func (s *sequenceProtocol) Length() (int64, error) {
 	ret := C.PySequence_Length(csp(s))
 	return ssize_t2Int64Err(ret)
 }
 
-func (s *SequenceProtocol) Concat(obj Object) (Object, error) {
+func (s *sequenceProtocol) Concat(obj Object) (Object, error) {
 	ret := C.PySequence_Concat(csp(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceProtocol) Repeat(count int64) (Object, error) {
+func (s *sequenceProtocol) Repeat(count int64) (Object, error) {
 	ret := C.PySequence_Repeat(csp(s), C.Py_ssize_t(count))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceProtocol) InPlaceConcat(obj Object) (Object, error) {
+func (s *sequenceProtocol) InPlaceConcat(obj Object) (Object, error) {
 	ret := C.PySequence_InPlaceConcat(csp(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceProtocol) InPlaceRepeat(count int64) (Object, error) {
+func (s *sequenceProtocol) InPlaceRepeat(count int64) (Object, error) {
 	ret := C.PySequence_InPlaceRepeat(csp(s), C.Py_ssize_t(count))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceProtocol) GetItem(i int64) (Object, error) {
+func (s *sequenceProtocol) GetItem(i int64) (Object, error) {
 	ret := C.PySequence_GetItem(csp(s), C.Py_ssize_t(i))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceProtocol) GetSlice(i1, i2 int64) (Object, error) {
+func (s *sequenceProtocol) GetSlice(i1, i2 int64) (Object, error) {
 	ret := C.PySequence_GetSlice(csp(s), C.Py_ssize_t(i1), C.Py_ssize_t(i2))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceProtocol) SetItem(i int64, v Object) error {
+func (s *sequenceProtocol) SetItem(i int64, v Object) error {
 	ret := C.PySequence_SetItem(csp(s), C.Py_ssize_t(i), c(v))
 	return int2Err(ret)
 }
 
-func (s *SequenceProtocol) DelItem(i int64) error {
+func (s *sequenceProtocol) DelItem(i int64) error {
 	ret := C.PySequence_DelItem(csp(s), C.Py_ssize_t(i))
 	return int2Err(ret)
 }
 
-func (s *SequenceProtocol) SetSlice(i1, i2 int64, v Object) error {
+func (s *sequenceProtocol) SetSlice(i1, i2 int64, v Object) error {
 	ret := C.PySequence_SetSlice(csp(s), C.Py_ssize_t(i1), C.Py_ssize_t(i2), c(v))
 	return int2Err(ret)
 }
 
-func (s *SequenceProtocol) DelSlice(i1, i2 int64) error {
+func (s *sequenceProtocol) DelSlice(i1, i2 int64) error {
 	ret := C.PySequence_DelSlice(csp(s), C.Py_ssize_t(i1), C.Py_ssize_t(i2))
 	return int2Err(ret)
 }
 
-func (s *SequenceProtocol) Count(value Object) (int64, error) {
+func (s *sequenceProtocol) Count(value Object) (int64, error) {
 	ret := C.PySequence_Count(csp(s), c(value))
 	return ssize_t2Int64Err(ret)
 }
 
-func (s *SequenceProtocol) Contains(value Object) (bool, error) {
+func (s *sequenceProtocol) Contains(value Object) (bool, error) {
 	ret := C.PySequence_Contains(csp(s), c(value))
 	return int2BoolErr(ret)
 }
 
-func (s *SequenceProtocol) Index(value Object) (int64, error) {
+func (s *sequenceProtocol) Index(value Object) (int64, error) {
 	ret := C.PySequence_Index(csp(s), c(value))
 	return ssize_t2Int64Err(ret)
 }
 
-func (s *SequenceProtocol) List() (Object, error) {
+func (s *sequenceProtocol) List() (Object, error) {
 	ret := C.PySequence_List(csp(s))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceProtocol) Tuple() (Object, error) {
+func (s *sequenceProtocol) Tuple() (Object, error) {
 	ret := C.PySequence_Tuple(csp(s))
 	return obj2ObjErr(ret)
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type ExceptionClass struct {
-	AbstractObject
+	abstractObject
 	o C.PyBaseExceptionObject
 }
 

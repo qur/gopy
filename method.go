@@ -10,7 +10,7 @@ import "C"
 import "unsafe"
 
 type Method struct {
-	AbstractObject
+	abstractObject
 	o C.PyMethodObject
 }
 

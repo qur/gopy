@@ -10,8 +10,8 @@ import "C"
 import "unsafe"
 
 type Unicode struct {
-	AbstractObject
-	SequenceProtocol
+	abstractObject
+	sequenceProtocol
 	o C.PyUnicodeObject
 }
 

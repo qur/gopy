@@ -14,7 +14,7 @@ import (
 )
 
 type Module struct {
-	AbstractObject
+	abstractObject
 	o C.PyObject
 }
 

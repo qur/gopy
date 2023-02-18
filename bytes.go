@@ -9,7 +9,7 @@ import (
 )
 
 type Bytes struct {
-	AbstractObject
+	abstractObject
 	o C.PyBytesObject
 }
 

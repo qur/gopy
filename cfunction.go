@@ -13,7 +13,7 @@ import (
 )
 
 type CFunction struct {
-	AbstractObject
+	abstractObject
 	o C.PyCFunctionObject
 }
 

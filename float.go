@@ -13,8 +13,8 @@ import (
 )
 
 type Float struct {
-	AbstractObject
-	NumberProtocol
+	abstractObject
+	numberProtocol
 	o C.PyFloatObject
 }
 

@@ -12,7 +12,7 @@ import "unsafe"
 // *Function represents a Python function.  In Python this is a function created
 // using the "def" statement.
 type Function struct {
-	AbstractObject
+	abstractObject
 	o C.PyFunctionObject
 }
 

@@ -16,7 +16,7 @@ import "unsafe"
 // underlying Python object as "o").  This allows the Python functions that
 // accept any type of object to be defined as methods on *BaseObject.
 type BaseObject struct {
-	AbstractObject
+	abstractObject
 	o C.PyObject
 }
 

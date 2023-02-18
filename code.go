@@ -13,7 +13,7 @@ import (
 )
 
 type Code struct {
-	AbstractObject
+	abstractObject
 	o C.PyCodeObject
 }
 

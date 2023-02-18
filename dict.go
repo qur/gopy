@@ -13,11 +13,11 @@ import (
 )
 
 // *Dict represents a Python dictionary.  In addition to satisfying the Object
-// interface, Dict pointers also have a number of methods defined - representing
-// the PyDict_XXX functions from the Python C API.
+// and Mapping interfaces, Dict pointers also have a number of methods defined -
+// representing the PyDict_XXX functions from the Python C API.
 type Dict struct {
-	AbstractObject
-	MappingProtocol
+	abstractObject
+	mappingProtocol
 	o C.PyDictObject
 }
 

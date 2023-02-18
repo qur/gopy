@@ -13,8 +13,8 @@ import (
 )
 
 type Complex struct {
-	AbstractObject
-	NumberProtocol
+	abstractObject
+	numberProtocol
 	o C.PyComplexObject
 }
 

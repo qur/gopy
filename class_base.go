@@ -10,6 +10,8 @@ type ClassObject interface {
 	setBase(base *BaseObject)
 }
 
+// ClassBaseObject should be embedded into structs that want to implement
+// ClassObject to be the instance type of a Class.
 type ClassBaseObject struct {
 	base *BaseObject
 }

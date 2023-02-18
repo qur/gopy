@@ -13,7 +13,7 @@ import "unsafe"
 // interface, Set pointers also have a number of methods defined - representing
 // the PySet_XXX functions from the Python C API.
 type Set struct {
-	AbstractObject
+	abstractObject
 	o C.PySetObject
 }
 

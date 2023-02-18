@@ -12,7 +12,7 @@ import (
 )
 
 type Frame struct {
-	AbstractObject
+	abstractObject
 	o C.PyFrameObject
 }
 
