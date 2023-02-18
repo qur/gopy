@@ -37,14 +37,31 @@ func NewBytes(b []byte) *Bytes {
 // NOTE: This function returns a reference to the internal buffer of the Bytes
 // object, and MUST NOT be changed.
 func (b *Bytes) Bytes() []byte {
-	var (
-		data   *C.char
-		length C.Py_ssize_t
-	)
-	if C.PyBytes_AsStringAndSize(c(b), &data, &length) < 0 {
+	// we use PyBytes_AsString because PyBytes_AsStringAndSize throws a hissy
+	// fit about embedded NULs, and we don't care, that's fine in []byte.
+	data := C.PyBytes_AsString(c(b))
+	if data == nil {
+		// this should only happen if b fails PyBytes_Check, which shouldn't be
+		// possible.
+		return nil
+	}
+	length := C.PyBytes_Size(c(b))
+	if length < 0 {
+		// Again, this should only happen if b fails PyBytes_Check, which
+		// shouldn't be possible.
 		return nil
 	}
 	return unsafe.Slice((*byte)(unsafe.Pointer(data)), int(length))
+}
+
+func (b *Bytes) Size() int {
+	ret := C.PyBytes_Size(c(b))
+	if ret < 0 {
+		// this should only happen if b fails PyBytes_Check, which shouldn't be
+		// possible.
+		return 0
+	}
+	return int(ret)
 }
 
 func (b *Bytes) String() string {
