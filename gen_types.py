@@ -142,13 +142,14 @@ def write_go_header(f):
     print('', file=f)
 
 
-def write_get_native_type(f, checks, types):
+def write_get_native_type(f, checks, types, objects):
     print("// ===============================================================", file=f)
     print("", file=f)
     print('func getNativeType(obj *C.PyObject) Object {', file=f)
     print('	switch C.getBasePyType(obj) {', file=f)
     for type in sorted(types):
-        if type not in checks:
+        # Bool, FrozenSet and Module are manually generated, we want to include them
+        if (type not in checks or type not in objects) and type not in ["Bool", "FrozenSet", "Module"]:
             continue
         print(f"	case &C.Py{ type }_Type:", file=f)
         print(f"		return new{ type }(obj)", file=f)
@@ -213,7 +214,7 @@ def main():
 
     with open('types.go', 'w', encoding='utf-8') as output:
         write_go_header(output)
-        write_get_native_type(output, checks, types)
+        write_get_native_type(output, checks, types, objects)
 
     with open('cmd/gen_types/types.go', 'w', encoding='utf-8') as output:
         write_cmd_go_header(output)

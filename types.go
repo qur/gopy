@@ -24,8 +24,6 @@ func getNativeType(obj *C.PyObject) Object {
 		return newCFunction(obj)
 	case &C.PyCMethod_Type:
 		return newCMethod(obj)
-	case &C.PyCallIter_Type:
-		return newCallIter(obj)
 	case &C.PyCell_Type:
 		return newCell(obj)
 	case &C.PyCode_Type:
@@ -34,12 +32,8 @@ func getNativeType(obj *C.PyObject) Object {
 		return newComplex(obj)
 	case &C.PyDict_Type:
 		return newDict(obj)
-	case &C.PyDictItems_Type:
-		return newDictItems(obj)
 	case &C.PyDictKeys_Type:
 		return newDictKeys(obj)
-	case &C.PyDictValues_Type:
-		return newDictValues(obj)
 	case &C.PyFloat_Type:
 		return newFloat(obj)
 	case &C.PyFrame_Type:
@@ -64,18 +58,10 @@ func getNativeType(obj *C.PyObject) Object {
 		return newModule(obj)
 	case &C.PyODict_Type:
 		return newODict(obj)
-	case &C.PyPickleBuffer_Type:
-		return newPickleBuffer(obj)
-	case &C.PyRange_Type:
-		return newRange(obj)
-	case &C.PySeqIter_Type:
-		return newSeqIter(obj)
 	case &C.PySet_Type:
 		return newSet(obj)
 	case &C.PySlice_Type:
 		return newSlice(obj)
-	case &C.PyTraceBack_Type:
-		return newTraceBack(obj)
 	case &C.PyTuple_Type:
 		return newTuple(obj)
 	case &C.PyType_Type:
