@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Function represents objects of the FunctionType (or PyFunctionType
+// in the Python API) type.
 type Function struct {
 	abstractObject
 	o C.PyFunctionObject
@@ -30,27 +32,24 @@ func newFunction(obj *C.PyObject) *Function {
 
 
 
-
-
-
-
 /*
-ob_base = true
-tp_basicsize = true
-tp_call = true
-tp_clear = true
-tp_dealloc = true
-tp_descr_get = true
-tp_dictoffset = true
-tp_doc = true
-tp_flags = true
-tp_getset = true
-tp_members = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_traverse = true
-tp_vectorcall_offset = true
-tp_weaklistoffset = true
+set fields:
+  ob_base
+  tp_basicsize
+  tp_call
+  tp_clear
+  tp_dealloc
+  tp_descr_get
+  tp_dictoffset
+  tp_doc
+  tp_flags
+  tp_getset
+  tp_members
+  tp_name
+  tp_new
+  tp_repr
+  tp_traverse
+  tp_vectorcall_offset
+  tp_weaklistoffset
 */
 

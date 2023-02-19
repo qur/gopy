@@ -9,6 +9,10 @@ import (
 	"unsafe"
 )
 
+// Dict represents objects of the DictType (or PyDictType
+// in the Python API) type.
+//
+// This type implements the Mapping protocol.
 type Dict struct {
 	abstractObject
 	o C.PyDictObject
@@ -34,6 +38,10 @@ func (d *Dict) Size() int {
 		return 0
 	}
 	return int(ret)
+}
+
+func (d *Dict) AsMapping() *MappingMethods {
+	return (*MappingMethods)(unsafe.Pointer(d.Base()))
 }
 
 func (d *Dict) GetItemString(key string) (Object, error) {
@@ -74,34 +82,37 @@ func (d *Dict) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
+
+
 /*
-mp_ass_subscript = true
-mp_length = true
-mp_subscript = true
-nb_inplace_or = true
-nb_or = true
-ob_base = true
-sq_contains = true
-tp_alloc = true
-tp_as_mapping = true
-tp_as_number = true
-tp_as_sequence = true
-tp_basicsize = true
-tp_clear = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_free = true
-tp_getattro = true
-tp_hash = true
-tp_init = true
-tp_iter = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
-tp_vectorcall = true
+set fields:
+  mp_ass_subscript
+  mp_length
+  mp_subscript
+  nb_inplace_or
+  nb_or
+  ob_base
+  sq_contains
+  tp_alloc
+  tp_as_mapping
+  tp_as_number
+  tp_as_sequence
+  tp_basicsize
+  tp_clear
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_free
+  tp_getattro
+  tp_hash
+  tp_init
+  tp_iter
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_traverse
+  tp_vectorcall
 */
 

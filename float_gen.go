@@ -9,6 +9,10 @@ import (
 	"unsafe"
 )
 
+// Float represents objects of the FloatType (or PyFloatType
+// in the Python API) type.
+//
+// This type implements the Number protocol.
 type Float struct {
 	abstractObject
 	o C.PyFloatObject
@@ -28,41 +32,42 @@ func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
 }
 
-
-
-
+func (f *Float) AsNumber() *NumberMethods {
+	return (*NumberMethods)(unsafe.Pointer(f.Base()))
+}
 
 
 
 /*
-nb_absolute = true
-nb_add = true
-nb_bool = true
-nb_divmod = true
-nb_float = true
-nb_floor_divide = true
-nb_int = true
-nb_multiply = true
-nb_negative = true
-nb_positive = true
-nb_power = true
-nb_remainder = true
-nb_subtract = true
-nb_true_divide = true
-ob_base = true
-tp_as_number = true
-tp_basicsize = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_getattro = true
-tp_getset = true
-tp_hash = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_vectorcall = true
+set fields:
+  nb_absolute
+  nb_add
+  nb_bool
+  nb_divmod
+  nb_float
+  nb_floor_divide
+  nb_int
+  nb_multiply
+  nb_negative
+  nb_positive
+  nb_power
+  nb_remainder
+  nb_subtract
+  nb_true_divide
+  ob_base
+  tp_as_number
+  tp_basicsize
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_getattro
+  tp_getset
+  tp_hash
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_vectorcall
 */
 

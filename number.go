@@ -7,79 +7,41 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
-
-// numberProtocol is a 0-sized type that can be embedded in concrete types after
-// the AbstractObject to provide access to the suite of methods that Python
-// calls the "Number Protocol".
-type numberProtocol struct{}
-
-// Number is an interface that defines the Python "Number Protocol".
+// Number is an interface that is implemented by types that implement the
+// Python "Number Protocol".
 type Number interface {
 	Object
-	Add(obj Object) (Object, error)
-	Subtract(obj Object) (Object, error)
-	Multiply(obj Object) (Object, error)
-	FloorDivide(obj Object) (Object, error)
-	TrueDivide(obj Object) (Object, error)
-	Remainder(obj Object) (Object, error)
-	Divmod(obj Object) (Object, error)
-	Power(obj1, obj2 Object) (Object, error)
-	Negative() (Object, error)
-	Positive() (Object, error)
-	Absolute() (Object, error)
-	Invert() (Object, error)
-	Lshift(obj Object) (Object, error)
-	Rshift(obj Object) (Object, error)
-	And(obj Object) (Object, error)
-	Xor(obj Object) (Object, error)
-	Or(obj Object) (Object, error)
-	InPlaceAdd(obj Object) (Object, error)
-	InPlaceSubtract(obj Object) (Object, error)
-	InPlaceMultiply(obj Object) (Object, error)
-	InPlaceFloorDivide(obj Object) (Object, error)
-	InPlaceTrueDivide(obj Object) (Object, error)
-	InPlaceRemainder(obj Object) (Object, error)
-	InPlacePower(obj1, obj2 Object) (Object, error)
-	InPlaceLshift(obj Object) (Object, error)
-	InPlaceRshift(obj Object) (Object, error)
-	InPlaceAnd(obj Object) (Object, error)
-	InPlaceXor(obj Object) (Object, error)
-	InPlaceOr(obj Object) (Object, error)
+	AsNumber() *NumberMethods
 }
 
-// number is a concrete realisation of the Number Protocol.  A type that
-// implements the "Number Protocol" but doesn't implement Number can be turned
-// into a Number by calling AsNumber.
-type number struct {
+// NumberMethods is a concrete realisation of the full set of Number Protocol
+// methods.  A type that implements the "Number Protocol" can be turned into a
+// NumberMethods instance using AsNumber.
+//
+// Note that the methods not already implemented on the type itself may return
+// an error, as not all methods are implemented by all types that support the
+// protocol.
+type NumberMethods struct {
 	abstractObject
-	numberProtocol
 	o C.PyObject
 }
 
-func cnp(n *numberProtocol) *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(n))
-}
-
-// AsNumber returns a struct pointer that satisfies the Number interface.  It
-// will refer to the same underlying object as obj.  If obj doesn't implement
-// the "Number Protocol", then nil is returned.
-func AsNumber(obj Object) Number {
-	if C.PyNumber_Check(c(obj)) != 1 {
-		return nil
-	}
+// AsNumber returns a NumberMethods instance that refers to the same
+// underlying Python object as obj. If obj doesn't implement the "Number
+// Protocol" (i.e. the Number interface), then nil is returned.
+func AsNumber(obj Object) *NumberMethods {
 	if n, ok := obj.(Number); ok {
-		return n
+		return n.AsNumber()
 	}
-	return (*number)(unsafe.Pointer(obj.Base()))
+	return nil
 }
 
 // Add returns the result of adding n and obj.  The equivalent Python is "n +
 // obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Add(obj Object) (Object, error) {
-	ret := C.PyNumber_Add(cnp(n), c(obj))
+func (n *NumberMethods) Add(obj Object) (Object, error) {
+	ret := C.PyNumber_Add(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -87,8 +49,8 @@ func (n *numberProtocol) Add(obj Object) (Object, error) {
 // is "n - obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Subtract(obj Object) (Object, error) {
-	ret := C.PyNumber_Subtract(cnp(n), c(obj))
+func (n *NumberMethods) Subtract(obj Object) (Object, error) {
+	ret := C.PyNumber_Subtract(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -96,8 +58,8 @@ func (n *numberProtocol) Subtract(obj Object) (Object, error) {
 // is "n * obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Multiply(obj Object) (Object, error) {
-	ret := C.PyNumber_Multiply(cnp(n), c(obj))
+func (n *NumberMethods) Multiply(obj Object) (Object, error) {
+	ret := C.PyNumber_Multiply(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -105,8 +67,8 @@ func (n *numberProtocol) Multiply(obj Object) (Object, error) {
 // "n // obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) FloorDivide(obj Object) (Object, error) {
-	ret := C.PyNumber_FloorDivide(cnp(n), c(obj))
+func (n *NumberMethods) FloorDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_FloorDivide(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -115,8 +77,8 @@ func (n *numberProtocol) FloorDivide(obj Object) (Object, error) {
 // point numbers. The equivalent Python is "n / obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) TrueDivide(obj Object) (Object, error) {
-	ret := C.PyNumber_TrueDivide(cnp(n), c(obj))
+func (n *NumberMethods) TrueDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_TrueDivide(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -124,56 +86,56 @@ func (n *numberProtocol) TrueDivide(obj Object) (Object, error) {
 // is "n % obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Remainder(obj Object) (Object, error) {
-	ret := C.PyNumber_Remainder(cnp(n), c(obj))
+func (n *NumberMethods) Remainder(obj Object) (Object, error) {
+	ret := C.PyNumber_Remainder(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
 // Divmod returns the result of the Python "divmod(n, obj)".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Divmod(obj Object) (Object, error) {
-	ret := C.PyNumber_Divmod(cnp(n), c(obj))
+func (n *NumberMethods) Divmod(obj Object) (Object, error) {
+	ret := C.PyNumber_Divmod(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
 // Power returns the result of the Python "pow(n, obj1, obj2)".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Power(obj1, obj2 Object) (Object, error) {
-	ret := C.PyNumber_Power(cnp(n), c(obj1), c(obj2))
+func (n *NumberMethods) Power(obj1, obj2 Object) (Object, error) {
+	ret := C.PyNumber_Power(c(n), c(obj1), c(obj2))
 	return obj2ObjErr(ret)
 }
 
 // Negative returns the negation of n.  The equivalent Python is "-n".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Negative() (Object, error) {
-	ret := C.PyNumber_Negative(cnp(n))
+func (n *NumberMethods) Negative() (Object, error) {
+	ret := C.PyNumber_Negative(c(n))
 	return obj2ObjErr(ret)
 }
 
 // Positive returns the positive of n.  The equivalent Python is "+n".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Positive() (Object, error) {
-	ret := C.PyNumber_Positive(cnp(n))
+func (n *NumberMethods) Positive() (Object, error) {
+	ret := C.PyNumber_Positive(c(n))
 	return obj2ObjErr(ret)
 }
 
 // Absolute returns the absolute value of n.  The equivalent Python is "abs(n)".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Absolute() (Object, error) {
-	ret := C.PyNumber_Absolute(cnp(n))
+func (n *NumberMethods) Absolute() (Object, error) {
+	ret := C.PyNumber_Absolute(c(n))
 	return obj2ObjErr(ret)
 }
 
 // Invert returns the bitwise negation of n.  The equivalent Python is "-n".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Invert() (Object, error) {
-	ret := C.PyNumber_Invert(cnp(n))
+func (n *NumberMethods) Invert() (Object, error) {
+	ret := C.PyNumber_Invert(c(n))
 	return obj2ObjErr(ret)
 }
 
@@ -181,8 +143,8 @@ func (n *numberProtocol) Invert() (Object, error) {
 // is "n << obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Lshift(obj Object) (Object, error) {
-	ret := C.PyNumber_Lshift(cnp(n), c(obj))
+func (n *NumberMethods) Lshift(obj Object) (Object, error) {
+	ret := C.PyNumber_Lshift(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -190,8 +152,8 @@ func (n *numberProtocol) Lshift(obj Object) (Object, error) {
 // is "n << obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Rshift(obj Object) (Object, error) {
-	ret := C.PyNumber_Rshift(cnp(n), c(obj))
+func (n *NumberMethods) Rshift(obj Object) (Object, error) {
+	ret := C.PyNumber_Rshift(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -199,8 +161,8 @@ func (n *numberProtocol) Rshift(obj Object) (Object, error) {
 // obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) And(obj Object) (Object, error) {
-	ret := C.PyNumber_And(cnp(n), c(obj))
+func (n *NumberMethods) And(obj Object) (Object, error) {
+	ret := C.PyNumber_And(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -208,16 +170,16 @@ func (n *numberProtocol) And(obj Object) (Object, error) {
 // obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Xor(obj Object) (Object, error) {
-	ret := C.PyNumber_Xor(cnp(n), c(obj))
+func (n *NumberMethods) Xor(obj Object) (Object, error) {
+	ret := C.PyNumber_Xor(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
 // Or returns the bitwise or of n and obj.  The equivalent Python is "n | obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) Or(obj Object) (Object, error) {
-	ret := C.PyNumber_Or(cnp(n), c(obj))
+func (n *NumberMethods) Or(obj Object) (Object, error) {
+	ret := C.PyNumber_Or(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -225,8 +187,8 @@ func (n *numberProtocol) Or(obj Object) (Object, error) {
 // supported by n.  The equivalent Python is "n += obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceAdd(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceAdd(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceAdd(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceAdd(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -234,8 +196,8 @@ func (n *numberProtocol) InPlaceAdd(obj Object) (Object, error) {
 // in place if supported by n.  The equivalent Python is "n -= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceSubtract(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceSubtract(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceSubtract(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceSubtract(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -243,8 +205,8 @@ func (n *numberProtocol) InPlaceSubtract(obj Object) (Object, error) {
 // place if supported by n.  The equivalent Python is "n *= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceMultiply(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceMultiply(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceMultiply(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceMultiply(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -252,8 +214,8 @@ func (n *numberProtocol) InPlaceMultiply(obj Object) (Object, error) {
 // place if supported by n. The equivalent Python is "n //= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceFloorDivide(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceFloorDivide(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceFloorDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceFloorDivide(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -263,8 +225,8 @@ func (n *numberProtocol) InPlaceFloorDivide(obj Object) (Object, error) {
 // done in place if supported by n. The equivalent Python is "n /= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceTrueDivide(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceTrueDivide(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceTrueDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceTrueDivide(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -272,8 +234,8 @@ func (n *numberProtocol) InPlaceTrueDivide(obj Object) (Object, error) {
 // place if supported by n.  The equivalent Python is "n %= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceRemainder(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceRemainder(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceRemainder(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceRemainder(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -283,8 +245,8 @@ func (n *numberProtocol) InPlaceRemainder(obj Object) (Object, error) {
 // Python.
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlacePower(obj1, obj2 Object) (Object, error) {
-	ret := C.PyNumber_InPlacePower(cnp(n), c(obj1), c(obj2))
+func (n *NumberMethods) InPlacePower(obj1, obj2 Object) (Object, error) {
+	ret := C.PyNumber_InPlacePower(c(n), c(obj1), c(obj2))
 	return obj2ObjErr(ret)
 }
 
@@ -292,8 +254,8 @@ func (n *numberProtocol) InPlacePower(obj1, obj2 Object) (Object, error) {
 // place if supported by n.  The equivalent Python is "n <<= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceLshift(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceLshift(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceLshift(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceLshift(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -301,8 +263,8 @@ func (n *numberProtocol) InPlaceLshift(obj Object) (Object, error) {
 // place if supported by n.  The equivalent Python is "n >>= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceRshift(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceRshift(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceRshift(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceRshift(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -310,8 +272,8 @@ func (n *numberProtocol) InPlaceRshift(obj Object) (Object, error) {
 // supported by n.  The equivalent Python is "n &= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceAnd(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceAnd(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceAnd(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceAnd(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -319,8 +281,8 @@ func (n *numberProtocol) InPlaceAnd(obj Object) (Object, error) {
 // supported by n.  The equivalent Python is "n ^= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceXor(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceXor(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceXor(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceXor(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
@@ -328,8 +290,8 @@ func (n *numberProtocol) InPlaceXor(obj Object) (Object, error) {
 // supported by n.  The equivalent Python is "n |= obj".
 //
 // Return value: New Reference.
-func (n *numberProtocol) InPlaceOr(obj Object) (Object, error) {
-	ret := C.PyNumber_InPlaceOr(cnp(n), c(obj))
+func (n *NumberMethods) InPlaceOr(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceOr(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 

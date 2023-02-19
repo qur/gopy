@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// InstanceMethod represents objects of the InstanceMethodType (or PyInstanceMethodType
+// in the Python API) type.
 type InstanceMethod struct {
 	abstractObject
 	o C.PyInstanceMethodObject
@@ -30,26 +32,23 @@ func newInstanceMethod(obj *C.PyObject) *InstanceMethod {
 
 
 
-
-
-
-
 /*
-ob_base = true
-tp_basicsize = true
-tp_call = true
-tp_dealloc = true
-tp_descr_get = true
-tp_doc = true
-tp_flags = true
-tp_getattro = true
-tp_getset = true
-tp_members = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_setattro = true
-tp_traverse = true
+set fields:
+  ob_base
+  tp_basicsize
+  tp_call
+  tp_dealloc
+  tp_descr_get
+  tp_doc
+  tp_flags
+  tp_getattro
+  tp_getset
+  tp_members
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_setattro
+  tp_traverse
 */
 

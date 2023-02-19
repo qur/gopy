@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Frame represents objects of the FrameType (or PyFrameType
+// in the Python API) type.
 type Frame struct {
 	abstractObject
 	o C.PyFrameObject
@@ -30,24 +32,21 @@ func newFrame(obj *C.PyObject) *Frame {
 
 
 
-
-
-
-
 /*
-ob_base = true
-tp_basicsize = true
-tp_clear = true
-tp_dealloc = true
-tp_flags = true
-tp_getattro = true
-tp_getset = true
-tp_itemsize = true
-tp_members = true
-tp_methods = true
-tp_name = true
-tp_repr = true
-tp_setattro = true
-tp_traverse = true
+set fields:
+  ob_base
+  tp_basicsize
+  tp_clear
+  tp_dealloc
+  tp_flags
+  tp_getattro
+  tp_getset
+  tp_itemsize
+  tp_members
+  tp_methods
+  tp_name
+  tp_repr
+  tp_setattro
+  tp_traverse
 */
 

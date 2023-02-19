@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// DictKeys represents objects of the DictKeysType (or PyDictKeysType
+// in the Python API) type.
 type DictKeys struct {
 	abstractObject
 	o C.PyDictKeysObject
@@ -38,28 +40,27 @@ func (d *DictKeys) Size() int {
 
 
 
-
-
 /*
-nb_and = true
-nb_or = true
-nb_subtract = true
-nb_xor = true
-ob_base = true
-sq_contains = true
-sq_length = true
-tp_as_number = true
-tp_as_sequence = true
-tp_basicsize = true
-tp_dealloc = true
-tp_flags = true
-tp_getattro = true
-tp_getset = true
-tp_iter = true
-tp_methods = true
-tp_name = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
+set fields:
+  nb_and
+  nb_or
+  nb_subtract
+  nb_xor
+  ob_base
+  sq_contains
+  sq_length
+  tp_as_number
+  tp_as_sequence
+  tp_basicsize
+  tp_dealloc
+  tp_flags
+  tp_getattro
+  tp_getset
+  tp_iter
+  tp_methods
+  tp_name
+  tp_repr
+  tp_richcompare
+  tp_traverse
 */
 

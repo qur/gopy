@@ -9,112 +9,94 @@ import "C"
 
 import "unsafe"
 
-// mappingProtocol is a 0-sized type that can be embedded in concrete types
-// after the AbstractObject to provide access to the suite of methods that
-// Python calls the "Mapping Protocol".
-type mappingProtocol struct{}
-
-// Mapping is an interface that defines the Python "Mapping Protocol".
+// Mapping is an interface that is implemented by types that implement the
+// Python "Mapping Protocol".
 type Mapping interface {
 	Object
-	Size() (int64, error)
-	Length() (int64, error)
-	DelItemString(key string) error
-	DelItem(key Object) error
-	HasKeyString(key string) bool
-	HasKey(key Object) bool
-	Keys() (Object, error)
-	Values() (Object, error)
-	Items() (Object, error)
-	GetItemString(key string) (Object, error)
-	SetItemString(key string, v Object) error
+	AsMapping() *MappingMethods
 }
 
-// mapping is a concrete realisation of the Mapping Protocol.  A type that
-// implements the "Mapping Protocol" but doesn't implement Mapping can be turned
-// into a Mapping by calling AsMapping.
-type mapping struct {
+// MappingMethods is a concrete realisation of the full set of Mapping Protocol
+// methods.  A type that implements the "Mapping Protocol" can be turned into a
+// MappingMethods instance using AsMapping.
+//
+// Note that the methods not already implemented on the type itself may return
+// an error, as not all methods are implemented by all types that support the
+// protocol.
+type MappingMethods struct {
 	abstractObject
-	mappingProtocol
 	o C.PyObject
 }
 
-func cmp(m *mappingProtocol) *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(m))
-}
-
-// AsMapping returns a struct pointer that satisfies the Mapping interface.
-// It will refer to the same underlying object as obj.  If obj doesn't implement
-// the "Mapping Protocol", then nil is returned.
-func AsMapping(obj Object) Mapping {
-	if C.PyMapping_Check(c(obj)) != 1 {
-		return nil
-	}
+// AsMapping returns a MappingMethods instance that refers to the same
+// underlying Python object as obj. If obj doesn't implement the "Mapping
+// Protocol" (i.e. the Mapping interface), then nil is returned.
+func AsMapping(obj Object) *MappingMethods {
 	if n, ok := obj.(Mapping); ok {
-		return n
+		return n.AsMapping()
 	}
-	return (*mapping)(unsafe.Pointer(obj.Base()))
+	return nil
 }
 
-func (m *mappingProtocol) Size() (int64, error) {
-	ret := C.PyMapping_Size(cmp(m))
+func (m *MappingMethods) Size() (int64, error) {
+	ret := C.PyMapping_Size(c(m))
 	return ssize_t2Int64Err(ret)
 }
 
-func (m *mappingProtocol) Length() (int64, error) {
-	ret := C.PyMapping_Length(cmp(m))
+func (m *MappingMethods) Length() (int64, error) {
+	ret := C.PyMapping_Length(c(m))
 	return ssize_t2Int64Err(ret)
 }
 
-func (m *mappingProtocol) DelItemString(key string) error {
+func (m *MappingMethods) DelItemString(key string) error {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
-	ret := C.PyObject_DelItemString(cmp(m), cKey)
+	ret := C.PyObject_DelItemString(c(m), cKey)
 	return int2Err(ret)
 }
 
-func (m *mappingProtocol) DelItem(key Object) error {
-	ret := C.PyObject_DelItem(cmp(m), c(key))
+func (m *MappingMethods) DelItem(key Object) error {
+	ret := C.PyObject_DelItem(c(m), c(key))
 	return int2Err(ret)
 }
 
-func (m *mappingProtocol) HasKeyString(key string) bool {
+func (m *MappingMethods) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
-	ret := C.PyMapping_HasKeyString(cmp(m), cKey)
+	ret := C.PyMapping_HasKeyString(c(m), cKey)
 	return ret > 0
 }
 
-func (m *mappingProtocol) HasKey(key Object) bool {
-	ret := C.PyMapping_HasKey(cmp(m), c(key))
+func (m *MappingMethods) HasKey(key Object) bool {
+	ret := C.PyMapping_HasKey(c(m), c(key))
 	return ret > 0
 }
 
-func (m *mappingProtocol) Keys() (Object, error) {
-	ret := C.PyMapping_Keys_(cmp(m))
+func (m *MappingMethods) Keys() (Object, error) {
+	ret := C.PyMapping_Keys_(c(m))
 	return obj2ObjErr(ret)
 }
 
-func (m *mappingProtocol) Values() (Object, error) {
-	ret := C.PyMapping_Values_(cmp(m))
+func (m *MappingMethods) Values() (Object, error) {
+	ret := C.PyMapping_Values_(c(m))
 	return obj2ObjErr(ret)
 }
 
-func (m *mappingProtocol) Items() (Object, error) {
-	ret := C.PyMapping_Items_(cmp(m))
+func (m *MappingMethods) Items() (Object, error) {
+	ret := C.PyMapping_Items_(c(m))
 	return obj2ObjErr(ret)
 }
 
-func (m *mappingProtocol) GetItemString(key string) (Object, error) {
+func (m *MappingMethods) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
-	ret := C.PyMapping_GetItemString(cmp(m), cKey)
+	ret := C.PyMapping_GetItemString(c(m), cKey)
 	return obj2ObjErr(ret)
 }
 
-func (m *mappingProtocol) SetItemString(key string, v Object) error {
+func (m *MappingMethods) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
-	ret := C.PyMapping_SetItemString(cmp(m), cKey, c(v))
+	ret := C.PyMapping_SetItemString(c(m), cKey, c(v))
 	return int2Err(ret)
 }

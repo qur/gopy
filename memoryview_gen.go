@@ -9,6 +9,12 @@ import (
 	"unsafe"
 )
 
+// MemoryView represents objects of the MemoryViewType (or PyMemoryViewType
+// in the Python API) type.
+//
+// This type implements the Mapping protocol.
+//
+// This type implements the Sequence protocol.
 type MemoryView struct {
 	abstractObject
 	o C.PyMemoryViewObject
@@ -34,6 +40,10 @@ func (m *MemoryView) Size() int {
 		return 0
 	}
 	return int(ret)
+}
+
+func (m *MemoryView) AsMapping() *MappingMethods {
+	return (*MappingMethods)(unsafe.Pointer(m.Base()))
 }
 
 func (m *MemoryView) GetItemString(key string) (Object, error) {
@@ -74,34 +84,41 @@ func (m *MemoryView) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
+func (m *MemoryView) AsSequence() *SequenceMethods {
+	return (*SequenceMethods)(unsafe.Pointer(m.Base()))
+}
+
+
+
 /*
-bf_getbuffer = true
-bf_releasebuffer = true
-mp_ass_subscript = true
-mp_length = true
-mp_subscript = true
-ob_base = true
-sq_item = true
-sq_length = true
-tp_as_buffer = true
-tp_as_mapping = true
-tp_as_sequence = true
-tp_basicsize = true
-tp_clear = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_getattro = true
-tp_getset = true
-tp_hash = true
-tp_itemsize = true
-tp_iter = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
-tp_weaklistoffset = true
+set fields:
+  bf_getbuffer
+  bf_releasebuffer
+  mp_ass_subscript
+  mp_length
+  mp_subscript
+  ob_base
+  sq_item
+  sq_length
+  tp_as_buffer
+  tp_as_mapping
+  tp_as_sequence
+  tp_basicsize
+  tp_clear
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_getattro
+  tp_getset
+  tp_hash
+  tp_itemsize
+  tp_iter
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_traverse
+  tp_weaklistoffset
 */
 

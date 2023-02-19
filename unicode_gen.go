@@ -9,6 +9,12 @@ import (
 	"unsafe"
 )
 
+// Unicode represents objects of the UnicodeType (or PyUnicodeType
+// in the Python API) type.
+//
+// This type implements the Mapping protocol.
+//
+// This type implements the Sequence protocol.
 type Unicode struct {
 	abstractObject
 	o C.PyUnicodeObject
@@ -36,6 +42,10 @@ func (u *Unicode) Size() int {
 	return int(ret)
 }
 
+func (u *Unicode) AsMapping() *MappingMethods {
+	return (*MappingMethods)(unsafe.Pointer(u.Base()))
+}
+
 func (u *Unicode) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
@@ -55,34 +65,39 @@ func (u *Unicode) HasKeyString(key string) bool {
 	return ret > 0
 }
 
+func (u *Unicode) AsSequence() *SequenceMethods {
+	return (*SequenceMethods)(unsafe.Pointer(u.Base()))
+}
+
 
 
 /*
-mp_length = true
-mp_subscript = true
-nb_remainder = true
-ob_base = true
-sq_concat = true
-sq_contains = true
-sq_item = true
-sq_length = true
-sq_repeat = true
-tp_as_mapping = true
-tp_as_number = true
-tp_as_sequence = true
-tp_basicsize = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_free = true
-tp_getattro = true
-tp_hash = true
-tp_iter = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_str = true
+set fields:
+  mp_length
+  mp_subscript
+  nb_remainder
+  ob_base
+  sq_concat
+  sq_contains
+  sq_item
+  sq_length
+  sq_repeat
+  tp_as_mapping
+  tp_as_number
+  tp_as_sequence
+  tp_basicsize
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_free
+  tp_getattro
+  tp_hash
+  tp_iter
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_str
 */
 

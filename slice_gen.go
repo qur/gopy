@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Slice represents objects of the SliceType (or PySliceType
+// in the Python API) type.
 type Slice struct {
 	abstractObject
 	o C.PySliceObject
@@ -30,24 +32,21 @@ func newSlice(obj *C.PyObject) *Slice {
 
 
 
-
-
-
-
 /*
-ob_base = true
-tp_basicsize = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_getattro = true
-tp_hash = true
-tp_members = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
+set fields:
+  ob_base
+  tp_basicsize
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_getattro
+  tp_hash
+  tp_members
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_traverse
 */
 

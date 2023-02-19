@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Code represents objects of the CodeType (or PyCodeType
+// in the Python API) type.
 type Code struct {
 	abstractObject
 	o C.PyCodeObject
@@ -30,25 +32,22 @@ func newCode(obj *C.PyObject) *Code {
 
 
 
-
-
-
-
 /*
-ob_base = true
-tp_basicsize = true
-tp_dealloc = true
-tp_doc = true
-tp_getattro = true
-tp_getset = true
-tp_hash = true
-tp_itemsize = true
-tp_members = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_weaklistoffset = true
+set fields:
+  ob_base
+  tp_basicsize
+  tp_dealloc
+  tp_doc
+  tp_getattro
+  tp_getset
+  tp_hash
+  tp_itemsize
+  tp_members
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_weaklistoffset
 */
 

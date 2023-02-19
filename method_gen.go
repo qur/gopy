@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Method represents objects of the MethodType (or PyMethodType
+// in the Python API) type.
 type Method struct {
 	abstractObject
 	o C.PyMethodObject
@@ -30,29 +32,26 @@ func newMethod(obj *C.PyObject) *Method {
 
 
 
-
-
-
-
 /*
-ob_base = true
-tp_basicsize = true
-tp_call = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_getattro = true
-tp_getset = true
-tp_hash = true
-tp_members = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_setattro = true
-tp_traverse = true
-tp_vectorcall_offset = true
-tp_weaklistoffset = true
+set fields:
+  ob_base
+  tp_basicsize
+  tp_call
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_getattro
+  tp_getset
+  tp_hash
+  tp_members
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_setattro
+  tp_traverse
+  tp_vectorcall_offset
+  tp_weaklistoffset
 */
 

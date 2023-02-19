@@ -9,6 +9,10 @@ import (
 	"unsafe"
 )
 
+// Long represents objects of the LongType (or PyLongType
+// in the Python API) type.
+//
+// This type implements the Number protocol.
 type Long struct {
 	abstractObject
 	o C.PyLongObject
@@ -28,48 +32,49 @@ func newLong(obj *C.PyObject) *Long {
 	return (*Long)(unsafe.Pointer(obj))
 }
 
-
-
-
+func (l *Long) AsNumber() *NumberMethods {
+	return (*NumberMethods)(unsafe.Pointer(l.Base()))
+}
 
 
 
 /*
-nb_absolute = true
-nb_add = true
-nb_and = true
-nb_bool = true
-nb_divmod = true
-nb_float = true
-nb_floor_divide = true
-nb_index = true
-nb_int = true
-nb_invert = true
-nb_lshift = true
-nb_multiply = true
-nb_negative = true
-nb_or = true
-nb_positive = true
-nb_power = true
-nb_remainder = true
-nb_rshift = true
-nb_subtract = true
-nb_true_divide = true
-nb_xor = true
-ob_base = true
-tp_as_number = true
-tp_basicsize = true
-tp_doc = true
-tp_flags = true
-tp_free = true
-tp_getattro = true
-tp_getset = true
-tp_hash = true
-tp_itemsize = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
+set fields:
+  nb_absolute
+  nb_add
+  nb_and
+  nb_bool
+  nb_divmod
+  nb_float
+  nb_floor_divide
+  nb_index
+  nb_int
+  nb_invert
+  nb_lshift
+  nb_multiply
+  nb_negative
+  nb_or
+  nb_positive
+  nb_power
+  nb_remainder
+  nb_rshift
+  nb_subtract
+  nb_true_divide
+  nb_xor
+  ob_base
+  tp_as_number
+  tp_basicsize
+  tp_doc
+  tp_flags
+  tp_free
+  tp_getattro
+  tp_getset
+  tp_hash
+  tp_itemsize
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
 */
 

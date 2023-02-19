@@ -9,6 +9,12 @@ import (
 	"unsafe"
 )
 
+// Tuple represents objects of the TupleType (or PyTupleType
+// in the Python API) type.
+//
+// This type implements the Mapping protocol.
+//
+// This type implements the Sequence protocol.
 type Tuple struct {
 	abstractObject
 	o C.PyTupleObject
@@ -36,6 +42,10 @@ func (t *Tuple) Size() int {
 	return int(ret)
 }
 
+func (t *Tuple) AsMapping() *MappingMethods {
+	return (*MappingMethods)(unsafe.Pointer(t.Base()))
+}
+
 func (t *Tuple) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
@@ -55,34 +65,39 @@ func (t *Tuple) HasKeyString(key string) bool {
 	return ret > 0
 }
 
+func (t *Tuple) AsSequence() *SequenceMethods {
+	return (*SequenceMethods)(unsafe.Pointer(t.Base()))
+}
+
 
 
 /*
-mp_length = true
-mp_subscript = true
-ob_base = true
-sq_concat = true
-sq_contains = true
-sq_item = true
-sq_length = true
-sq_repeat = true
-tp_as_mapping = true
-tp_as_sequence = true
-tp_basicsize = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_free = true
-tp_getattro = true
-tp_hash = true
-tp_itemsize = true
-tp_iter = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
-tp_vectorcall = true
+set fields:
+  mp_length
+  mp_subscript
+  ob_base
+  sq_concat
+  sq_contains
+  sq_item
+  sq_length
+  sq_repeat
+  tp_as_mapping
+  tp_as_sequence
+  tp_basicsize
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_free
+  tp_getattro
+  tp_hash
+  tp_itemsize
+  tp_iter
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_traverse
+  tp_vectorcall
 */
 

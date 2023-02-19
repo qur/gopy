@@ -9,6 +9,12 @@ import (
 	"unsafe"
 )
 
+// List represents objects of the ListType (or PyListType
+// in the Python API) type.
+//
+// This type implements the Mapping protocol.
+//
+// This type implements the Sequence protocol.
 type List struct {
 	abstractObject
 	o C.PyListObject
@@ -34,6 +40,10 @@ func (l *List) Size() int {
 		return 0
 	}
 	return int(ret)
+}
+
+func (l *List) AsMapping() *MappingMethods {
+	return (*MappingMethods)(unsafe.Pointer(l.Base()))
 }
 
 func (l *List) GetItemString(key string) (Object, error) {
@@ -74,38 +84,45 @@ func (l *List) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
+func (l *List) AsSequence() *SequenceMethods {
+	return (*SequenceMethods)(unsafe.Pointer(l.Base()))
+}
+
+
+
 /*
-mp_ass_subscript = true
-mp_length = true
-mp_subscript = true
-ob_base = true
-sq_ass_item = true
-sq_concat = true
-sq_contains = true
-sq_inplace_concat = true
-sq_inplace_repeat = true
-sq_item = true
-sq_length = true
-sq_repeat = true
-tp_alloc = true
-tp_as_mapping = true
-tp_as_sequence = true
-tp_basicsize = true
-tp_clear = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_free = true
-tp_getattro = true
-tp_hash = true
-tp_init = true
-tp_iter = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
-tp_vectorcall = true
+set fields:
+  mp_ass_subscript
+  mp_length
+  mp_subscript
+  ob_base
+  sq_ass_item
+  sq_concat
+  sq_contains
+  sq_inplace_concat
+  sq_inplace_repeat
+  sq_item
+  sq_length
+  sq_repeat
+  tp_alloc
+  tp_as_mapping
+  tp_as_sequence
+  tp_basicsize
+  tp_clear
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_free
+  tp_getattro
+  tp_hash
+  tp_init
+  tp_iter
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_traverse
+  tp_vectorcall
 */
 

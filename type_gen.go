@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Type represents objects of the TypeType (or PyTypeType
+// in the Python API) type.
 type Type struct {
 	abstractObject
 	o C.PyTypeObject
@@ -30,36 +32,33 @@ func newType(obj *C.PyObject) *Type {
 
 
 
-
-
-
-
 /*
-nb_or = true
-ob_base = true
-tp_as_number = true
-tp_basicsize = true
-tp_call = true
-tp_clear = true
-tp_dealloc = true
-tp_dictoffset = true
-tp_doc = true
-tp_flags = true
-tp_free = true
-tp_getattro = true
-tp_getset = true
-tp_init = true
-tp_is_gc = true
-tp_itemsize = true
-tp_members = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_setattro = true
-tp_traverse = true
-tp_vectorcall = true
-tp_vectorcall_offset = true
-tp_weaklistoffset = true
+set fields:
+  nb_or
+  ob_base
+  tp_as_number
+  tp_basicsize
+  tp_call
+  tp_clear
+  tp_dealloc
+  tp_dictoffset
+  tp_doc
+  tp_flags
+  tp_free
+  tp_getattro
+  tp_getset
+  tp_init
+  tp_is_gc
+  tp_itemsize
+  tp_members
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_setattro
+  tp_traverse
+  tp_vectorcall
+  tp_vectorcall_offset
+  tp_weaklistoffset
 */
 

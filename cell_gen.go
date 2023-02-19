@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Cell represents objects of the CellType (or PyCellType
+// in the Python API) type.
 type Cell struct {
 	abstractObject
 	o C.PyCellObject
@@ -30,23 +32,20 @@ func newCell(obj *C.PyObject) *Cell {
 
 
 
-
-
-
-
 /*
-ob_base = true
-tp_basicsize = true
-tp_clear = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_getattro = true
-tp_getset = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
+set fields:
+  ob_base
+  tp_basicsize
+  tp_clear
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_getattro
+  tp_getset
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_traverse
 */
 

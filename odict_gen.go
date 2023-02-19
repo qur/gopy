@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// ODict represents objects of the ODictType (or PyODictType
+// in the Python API) type.
 type ODict struct {
 	abstractObject
 	o C.PyODictObject
@@ -27,10 +29,6 @@ func oDictCheck(obj Object) bool {
 func newODict(obj *C.PyObject) *ODict {
 	return (*ODict)(unsafe.Pointer(obj))
 }
-
-
-
-
 
 func (o *ODict) DelItem(key Object) error {
 	ret := C.PyObject_DelItem(c(o), c(key))
@@ -51,29 +49,32 @@ func (o *ODict) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
+
+
 /*
-mp_ass_subscript = true
-nb_inplace_or = true
-nb_or = true
-ob_base = true
-tp_alloc = true
-tp_as_mapping = true
-tp_as_number = true
-tp_base = true
-tp_basicsize = true
-tp_clear = true
-tp_dealloc = true
-tp_dictoffset = true
-tp_doc = true
-tp_flags = true
-tp_getset = true
-tp_init = true
-tp_iter = true
-tp_methods = true
-tp_name = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
-tp_weaklistoffset = true
+set fields:
+  mp_ass_subscript
+  nb_inplace_or
+  nb_or
+  ob_base
+  tp_alloc
+  tp_as_mapping
+  tp_as_number
+  tp_base
+  tp_basicsize
+  tp_clear
+  tp_dealloc
+  tp_dictoffset
+  tp_doc
+  tp_flags
+  tp_getset
+  tp_init
+  tp_iter
+  tp_methods
+  tp_name
+  tp_repr
+  tp_richcompare
+  tp_traverse
+  tp_weaklistoffset
 */
 

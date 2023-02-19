@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// CMethod represents objects of the CMethodType (or PyCMethodType
+// in the Python API) type.
 type CMethod struct {
 	abstractObject
 	o C.PyCMethodObject
@@ -30,14 +32,11 @@ func newCMethod(obj *C.PyObject) *CMethod {
 
 
 
-
-
-
-
 /*
-ob_base = true
-tp_base = true
-tp_basicsize = true
-tp_name = true
+set fields:
+  ob_base
+  tp_base
+  tp_basicsize
+  tp_name
 */
 

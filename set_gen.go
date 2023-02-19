@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Set represents objects of the SetType (or PySetType
+// in the Python API) type.
 type Set struct {
 	abstractObject
 	o C.PySetObject
@@ -38,40 +40,39 @@ func (s *Set) Size() int {
 
 
 
-
-
 /*
-nb_and = true
-nb_inplace_and = true
-nb_inplace_or = true
-nb_inplace_subtract = true
-nb_inplace_xor = true
-nb_or = true
-nb_subtract = true
-nb_xor = true
-ob_base = true
-sq_contains = true
-sq_length = true
-tp_alloc = true
-tp_as_number = true
-tp_as_sequence = true
-tp_basicsize = true
-tp_clear = true
-tp_dealloc = true
-tp_doc = true
-tp_flags = true
-tp_free = true
-tp_getattro = true
-tp_hash = true
-tp_init = true
-tp_iter = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
-tp_traverse = true
-tp_vectorcall = true
-tp_weaklistoffset = true
+set fields:
+  nb_and
+  nb_inplace_and
+  nb_inplace_or
+  nb_inplace_subtract
+  nb_inplace_xor
+  nb_or
+  nb_subtract
+  nb_xor
+  ob_base
+  sq_contains
+  sq_length
+  tp_alloc
+  tp_as_number
+  tp_as_sequence
+  tp_basicsize
+  tp_clear
+  tp_dealloc
+  tp_doc
+  tp_flags
+  tp_free
+  tp_getattro
+  tp_hash
+  tp_init
+  tp_iter
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
+  tp_traverse
+  tp_vectorcall
+  tp_weaklistoffset
 */
 

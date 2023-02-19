@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// Gen represents objects of the GenType (or PyGenType
+// in the Python API) type.
 type Gen struct {
 	abstractObject
 	o C.PyGenObject
@@ -30,28 +32,25 @@ func newGen(obj *C.PyObject) *Gen {
 
 
 
-
-
-
-
 /*
-am_send = true
-ob_base = true
-tp_as_async = true
-tp_basicsize = true
-tp_dealloc = true
-tp_finalize = true
-tp_flags = true
-tp_getattro = true
-tp_getset = true
-tp_itemsize = true
-tp_iter = true
-tp_iternext = true
-tp_members = true
-tp_methods = true
-tp_name = true
-tp_repr = true
-tp_traverse = true
-tp_weaklistoffset = true
+set fields:
+  am_send
+  ob_base
+  tp_as_async
+  tp_basicsize
+  tp_dealloc
+  tp_finalize
+  tp_flags
+  tp_getattro
+  tp_getset
+  tp_itemsize
+  tp_iter
+  tp_iternext
+  tp_members
+  tp_methods
+  tp_name
+  tp_repr
+  tp_traverse
+  tp_weaklistoffset
 */
 

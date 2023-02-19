@@ -9,6 +9,10 @@ import (
 	"unsafe"
 )
 
+// Complex represents objects of the ComplexType (or PyComplexType
+// in the Python API) type.
+//
+// This type implements the Number protocol.
 type Complex struct {
 	abstractObject
 	o C.PyComplexObject
@@ -28,36 +32,37 @@ func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
 }
 
-
-
-
+func (c *Complex) AsNumber() *NumberMethods {
+	return (*NumberMethods)(unsafe.Pointer(c.Base()))
+}
 
 
 
 /*
-nb_absolute = true
-nb_add = true
-nb_bool = true
-nb_multiply = true
-nb_negative = true
-nb_positive = true
-nb_power = true
-nb_subtract = true
-nb_true_divide = true
-ob_base = true
-tp_alloc = true
-tp_as_number = true
-tp_basicsize = true
-tp_doc = true
-tp_flags = true
-tp_free = true
-tp_getattro = true
-tp_hash = true
-tp_members = true
-tp_methods = true
-tp_name = true
-tp_new = true
-tp_repr = true
-tp_richcompare = true
+set fields:
+  nb_absolute
+  nb_add
+  nb_bool
+  nb_multiply
+  nb_negative
+  nb_positive
+  nb_power
+  nb_subtract
+  nb_true_divide
+  ob_base
+  tp_alloc
+  tp_as_number
+  tp_basicsize
+  tp_doc
+  tp_flags
+  tp_free
+  tp_getattro
+  tp_hash
+  tp_members
+  tp_methods
+  tp_name
+  tp_new
+  tp_repr
+  tp_richcompare
 */
 
