@@ -135,20 +135,20 @@ func (n *NumberMethods) Invert() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// Lshift returns the result of left shifting n by obj.  The equivalent Python
+// LShift returns the result of left shifting n by obj.  The equivalent Python
 // is "n << obj".
 //
 // Return value: New Reference.
-func (n *NumberMethods) Lshift(obj Object) (Object, error) {
+func (n *NumberMethods) LShift(obj Object) (Object, error) {
 	ret := C.PyNumber_Lshift(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
-// Rshift returns the result of right shifting n by obj.  The equivalent Python
+// RShift returns the result of right shifting n by obj.  The equivalent Python
 // is "n << obj".
 //
 // Return value: New Reference.
-func (n *NumberMethods) Rshift(obj Object) (Object, error) {
+func (n *NumberMethods) RShift(obj Object) (Object, error) {
 	ret := C.PyNumber_Rshift(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
