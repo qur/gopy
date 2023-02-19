@@ -102,10 +102,10 @@ func (u *Unicode) Encode(encoding, errors string) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (left *Unicode) Concat(right Object) (Object, error) {
-	ret := C.PyUnicode_Concat(c(left), c(right))
-	return obj2ObjErr(ret)
-}
+// func (left *Unicode) Concat(right Object) (Object, error) {
+// 	ret := C.PyUnicode_Concat(c(left), c(right))
+// 	return obj2ObjErr(ret)
+// }
 
 func (u *Unicode) Split(sep Object, maxsplit int64) (Object, error) {
 	ret := C.PyUnicode_Split(c(u), c(sep), C.Py_ssize_t(maxsplit))
@@ -151,7 +151,7 @@ func (u *Unicode) Find(substr Object, start, end int64, direction int) (int64, b
 	return 0, false, exception()
 }
 
-func (u *Unicode) Count(substr Object, start, end int64) (int64, error) {
+func (u *Unicode) CountInRange(substr Object, start, end int64) (int64, error) {
 	ret := C.PyUnicode_Count(c(u), c(substr), C.Py_ssize_t(start), C.Py_ssize_t(end))
 	return ssize_t2Int64Err(ret)
 }
@@ -179,7 +179,7 @@ func (u *Unicode) Format(args *Tuple) (*Unicode, error) {
 	return newUnicode(ret), nil
 }
 
-func (u *Unicode) Contains(element Object) (bool, error) {
-	ret := C.PyUnicode_Contains(c(u), c(element))
-	return int2BoolErr(ret)
-}
+// func (u *Unicode) Contains(element Object) (bool, error) {
+// 	ret := C.PyUnicode_Contains(c(u), c(element))
+// 	return int2BoolErr(ret)
+// }

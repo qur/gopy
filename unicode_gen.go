@@ -77,6 +77,32 @@ func (u *Unicode) GetIndex(idx int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (u *Unicode) Count(obj Object) (int, error) {
+	ret := C.PySequence_Count(c(u), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (u *Unicode) Index(obj Object) (int, error) {
+	ret := C.PySequence_Index(c(u), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (u *Unicode) List() (*List, error) {
+	ret := C.PySequence_List(c(u))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newList(ret), nil
+}
+
+func (u *Unicode) Tuple() (*Tuple, error) {
+	ret := C.PySequence_Tuple(c(u))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newTuple(ret), nil
+}
+
 func (u *Unicode) Concat(obj Object) (Object, error) {
 	ret := C.PySequence_Concat(c(u), c(obj))
 	return obj2ObjErr(ret)
@@ -87,10 +113,14 @@ func (u *Unicode) Repeat(count int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (u *Unicode) Contains(obj Object) bool {
+func (u *Unicode) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c(u), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
+}
+
+func (u *Unicode) GetSlice(start, end int) (Object, error) {
+	ret := C.PySequence_GetSlice(c(u), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return obj2ObjErr(ret)
 }
 
 

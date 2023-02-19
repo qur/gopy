@@ -32,14 +32,9 @@ func AsSequence(obj Object) *SequenceMethods {
 	return nil
 }
 
-func (s *SequenceMethods) Size() (int64, error) {
+func (s *SequenceMethods) Size() (int, error) {
 	ret := C.PySequence_Size(c(s))
-	return ssize_t2Int64Err(ret)
-}
-
-func (s *SequenceMethods) Length() (int64, error) {
-	ret := C.PySequence_Length(c(s))
-	return ssize_t2Int64Err(ret)
+	return ssize_t2IntErr(ret)
 }
 
 func (s *SequenceMethods) Concat(obj Object) (Object, error) {
@@ -47,7 +42,7 @@ func (s *SequenceMethods) Concat(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceMethods) Repeat(count int64) (Object, error) {
+func (s *SequenceMethods) Repeat(count int) (Object, error) {
 	ret := C.PySequence_Repeat(c(s), C.Py_ssize_t(count))
 	return obj2ObjErr(ret)
 }
@@ -57,44 +52,44 @@ func (s *SequenceMethods) InPlaceConcat(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceMethods) InPlaceRepeat(count int64) (Object, error) {
+func (s *SequenceMethods) InPlaceRepeat(count int) (Object, error) {
 	ret := C.PySequence_InPlaceRepeat(c(s), C.Py_ssize_t(count))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceMethods) GetItem(i int64) (Object, error) {
+func (s *SequenceMethods) GetItem(i int) (Object, error) {
 	ret := C.PySequence_GetItem(c(s), C.Py_ssize_t(i))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceMethods) GetSlice(i1, i2 int64) (Object, error) {
+func (s *SequenceMethods) GetSlice(i1, i2 int) (Object, error) {
 	ret := C.PySequence_GetSlice(c(s), C.Py_ssize_t(i1), C.Py_ssize_t(i2))
 	return obj2ObjErr(ret)
 }
 
-func (s *SequenceMethods) SetItem(i int64, v Object) error {
+func (s *SequenceMethods) SetItem(i int, v Object) error {
 	ret := C.PySequence_SetItem(c(s), C.Py_ssize_t(i), c(v))
 	return int2Err(ret)
 }
 
-func (s *SequenceMethods) DelItem(i int64) error {
+func (s *SequenceMethods) DelItem(i int) error {
 	ret := C.PySequence_DelItem(c(s), C.Py_ssize_t(i))
 	return int2Err(ret)
 }
 
-func (s *SequenceMethods) SetSlice(i1, i2 int64, v Object) error {
+func (s *SequenceMethods) SetSlice(i1, i2 int, v Object) error {
 	ret := C.PySequence_SetSlice(c(s), C.Py_ssize_t(i1), C.Py_ssize_t(i2), c(v))
 	return int2Err(ret)
 }
 
-func (s *SequenceMethods) DelSlice(i1, i2 int64) error {
+func (s *SequenceMethods) DelSlice(i1, i2 int) error {
 	ret := C.PySequence_DelSlice(c(s), C.Py_ssize_t(i1), C.Py_ssize_t(i2))
 	return int2Err(ret)
 }
 
-func (s *SequenceMethods) Count(value Object) (int64, error) {
+func (s *SequenceMethods) Count(value Object) (int, error) {
 	ret := C.PySequence_Count(c(s), c(value))
-	return ssize_t2Int64Err(ret)
+	return ssize_t2IntErr(ret)
 }
 
 func (s *SequenceMethods) Contains(value Object) (bool, error) {
@@ -102,17 +97,23 @@ func (s *SequenceMethods) Contains(value Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (s *SequenceMethods) Index(value Object) (int64, error) {
+func (s *SequenceMethods) Index(value Object) (int, error) {
 	ret := C.PySequence_Index(c(s), c(value))
-	return ssize_t2Int64Err(ret)
+	return ssize_t2IntErr(ret)
 }
 
-func (s *SequenceMethods) List() (Object, error) {
+func (s *SequenceMethods) List() (*List, error) {
 	ret := C.PySequence_List(c(s))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newList(ret), nil
 }
 
-func (s *SequenceMethods) Tuple() (Object, error) {
+func (s *SequenceMethods) Tuple() (*Tuple, error) {
 	ret := C.PySequence_Tuple(c(s))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newTuple(ret), nil
 }

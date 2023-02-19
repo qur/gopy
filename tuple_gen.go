@@ -77,6 +77,24 @@ func (t *Tuple) GetIndex(idx int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (t *Tuple) Count(obj Object) (int, error) {
+	ret := C.PySequence_Count(c(t), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (t *Tuple) Index(obj Object) (int, error) {
+	ret := C.PySequence_Index(c(t), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (t *Tuple) List() (*List, error) {
+	ret := C.PySequence_List(c(t))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newList(ret), nil
+}
+
 func (t *Tuple) Concat(obj Object) (Object, error) {
 	ret := C.PySequence_Concat(c(t), c(obj))
 	return obj2ObjErr(ret)
@@ -87,10 +105,14 @@ func (t *Tuple) Repeat(count int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (t *Tuple) Contains(obj Object) bool {
+func (t *Tuple) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c(t), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
+}
+
+func (t *Tuple) GetSlice(start, end int) (Object, error) {
+	ret := C.PySequence_GetSlice(c(t), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return obj2ObjErr(ret)
 }
 
 

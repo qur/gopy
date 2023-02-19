@@ -43,10 +43,10 @@ func (d *Dict) Clear() {
 
 // Contains Returns true if the dictionary contains the given key.  This is
 // equivalent to the Python expression "key in d".
-func (d *Dict) Contains(key Object) (bool, error) {
-	ret := C.PyDict_Contains(c(d), c(key))
-	return int2BoolErr(ret)
-}
+// func (d *Dict) Contains(key Object) (bool, error) {
+// 	ret := C.PyDict_Contains(c(d), c(key))
+// 	return int2BoolErr(ret)
+// }
 
 // Copy returns a new dictionary that contains the same key-values pairs as d.
 //

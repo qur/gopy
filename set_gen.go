@@ -39,10 +39,9 @@ func (s *Set) Size() int {
 	return int(ret)
 }
 
-func (s *Set) Contains(obj Object) bool {
+func (s *Set) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c(s), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
 }
 
 

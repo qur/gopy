@@ -74,23 +74,23 @@ func (t *Tuple) CheckExact() bool {
 	return int(ret) != 0
 }
 
-func (t *Tuple) GetItem(pos int) (Object, error) {
-	ret := C.PyTuple_GetItem(c(t), C.Py_ssize_t(pos))
-	return obj2ObjErr(ret)
-}
+// func (t *Tuple) GetItem(pos int) (Object, error) {
+// 	ret := C.PyTuple_GetItem(c(t), C.Py_ssize_t(pos))
+// 	return obj2ObjErr(ret)
+// }
 
-func (t *Tuple) GetSlice(low, high int) (*Tuple, error) {
-	ret := C.PyTuple_GetSlice(c(t), C.Py_ssize_t(low), C.Py_ssize_t(high))
-	if ret == nil {
-		return nil, exception()
-	}
-	return newTuple(ret), nil
-}
+// func (t *Tuple) GetSlice(low, high int) (*Tuple, error) {
+// 	ret := C.PyTuple_GetSlice(c(t), C.Py_ssize_t(low), C.Py_ssize_t(high))
+// 	if ret == nil {
+// 		return nil, exception()
+// 	}
+// 	return newTuple(ret), nil
+// }
 
-func (t *Tuple) SetItem(pos int, obj Object) error {
-	ret := C.PyTuple_SetItem(c(t), C.Py_ssize_t(pos), c(obj))
-	return int2Err(ret)
-}
+// func (t *Tuple) SetItem(pos int, obj Object) error {
+// 	ret := C.PyTuple_SetItem(c(t), C.Py_ssize_t(pos), c(obj))
+// 	return int2Err(ret)
+// }
 
 // _PyTuple_Resize
 
@@ -100,7 +100,7 @@ func (t *Tuple) Slice() []Object {
 	l := t.Size()
 	s := make([]Object, l)
 	for i := 0; i < l; i++ {
-		o, err := t.GetItem(i)
+		o, err := t.GetIndex(i)
 		if err != nil {
 			panic(err)
 		}

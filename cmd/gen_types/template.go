@@ -118,6 +118,38 @@ func ({{ .name }} *{{ .type }}) GetIndex(idx int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func ({{ .name }} *{{ .type }}) Count(obj Object) (int, error) {
+	ret := C.PySequence_Count(c({{ .name }}), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func ({{ .name }} *{{ .type }}) Index(obj Object) (int, error) {
+	ret := C.PySequence_Index(c({{ .name }}), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+{{ end }}
+
+{{- if and .funcs.sq_item (ne .type "List") -}}
+func ({{ .name }} *{{ .type }}) List() (*List, error) {
+	ret := C.PySequence_List(c({{ .name }}))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newList(ret), nil
+}
+
+{{ end }}
+
+{{- if and .funcs.sq_item (ne .type "Tuple") -}}
+func ({{ .name }} *{{ .type }}) Tuple() (*Tuple, error) {
+	ret := C.PySequence_Tuple(c({{ .name }}))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newTuple(ret), nil
+}
+
 {{ end }}
 
 {{- if .funcs.sq_ass_item -}}
@@ -166,10 +198,30 @@ func ({{ .name }} *{{ .type }}) InPlaceRepeat(count int) (Object, error) {
 {{ end }}
 
 {{- if .funcs.sq_contains -}}
-func ({{ .name }} *{{ .type }}) Contains(obj Object) bool {
+func ({{ .name }} *{{ .type }}) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c({{ .name }}), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
+}
+
+{{ end }}
+
+{{- if and .funcs.sq_item .funcs.mp_subscript -}}
+func ({{ .name }} *{{ .type }}) GetSlice(start, end int) (Object, error) {
+	ret := C.PySequence_GetSlice(c({{ .name }}), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if and .funcs.sq_item .funcs.mp_ass_subscript -}}
+func ({{ .name }} *{{ .type }}) SetSlice(start, end int, obj Object) error {
+	ret := C.PySequence_SetSlice(c({{ .name }}), C.Py_ssize_t(start), C.Py_ssize_t(end), c(obj))
+	return int2Err(ret)
+}
+
+func ({{ .name }} *{{ .type }}) DelSlice(start, end int) error {
+	ret := C.PySequence_DelSlice(c({{ .name }}), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return int2Err(ret)
 }
 
 {{ end }}

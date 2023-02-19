@@ -77,6 +77,32 @@ func (b *Bytes) GetIndex(idx int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (b *Bytes) Count(obj Object) (int, error) {
+	ret := C.PySequence_Count(c(b), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (b *Bytes) Index(obj Object) (int, error) {
+	ret := C.PySequence_Index(c(b), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (b *Bytes) List() (*List, error) {
+	ret := C.PySequence_List(c(b))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newList(ret), nil
+}
+
+func (b *Bytes) Tuple() (*Tuple, error) {
+	ret := C.PySequence_Tuple(c(b))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newTuple(ret), nil
+}
+
 func (b *Bytes) Concat(obj Object) (Object, error) {
 	ret := C.PySequence_Concat(c(b), c(obj))
 	return obj2ObjErr(ret)
@@ -87,10 +113,14 @@ func (b *Bytes) Repeat(count int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (b *Bytes) Contains(obj Object) bool {
+func (b *Bytes) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c(b), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
+}
+
+func (b *Bytes) GetSlice(start, end int) (Object, error) {
+	ret := C.PySequence_GetSlice(c(b), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return obj2ObjErr(ret)
 }
 
 

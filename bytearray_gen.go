@@ -96,6 +96,32 @@ func (b *ByteArray) GetIndex(idx int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (b *ByteArray) Count(obj Object) (int, error) {
+	ret := C.PySequence_Count(c(b), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (b *ByteArray) Index(obj Object) (int, error) {
+	ret := C.PySequence_Index(c(b), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (b *ByteArray) List() (*List, error) {
+	ret := C.PySequence_List(c(b))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newList(ret), nil
+}
+
+func (b *ByteArray) Tuple() (*Tuple, error) {
+	ret := C.PySequence_Tuple(c(b))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newTuple(ret), nil
+}
+
 func (b *ByteArray) SetIndex(idx int, obj Object) error {
 	ret := C.PySequence_SetItem(c(b), C.Py_ssize_t(idx), c(obj))
 	return int2Err(ret)
@@ -126,10 +152,24 @@ func (b *ByteArray) InPlaceRepeat(count int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (b *ByteArray) Contains(obj Object) bool {
+func (b *ByteArray) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c(b), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
+}
+
+func (b *ByteArray) GetSlice(start, end int) (Object, error) {
+	ret := C.PySequence_GetSlice(c(b), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return obj2ObjErr(ret)
+}
+
+func (b *ByteArray) SetSlice(start, end int, obj Object) error {
+	ret := C.PySequence_SetSlice(c(b), C.Py_ssize_t(start), C.Py_ssize_t(end), c(obj))
+	return int2Err(ret)
+}
+
+func (b *ByteArray) DelSlice(start, end int) error {
+	ret := C.PySequence_DelSlice(c(b), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return int2Err(ret)
 }
 
 

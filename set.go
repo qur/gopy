@@ -54,10 +54,10 @@ func (f *FrozenSet) CheckExact() bool {
 // Contains returns true if the set "s" contains the Object "key".  "key" must
 // be hashable, otherwise a TypeError is returned.  This is equivalent to the
 // Python "key in s".
-func (s *Set) Contains(key Object) (bool, error) {
-	ret := C.PySet_Contains(c(s), c(key))
-	return int2BoolErr(ret)
-}
+// func (s *Set) Contains(key Object) (bool, error) {
+// 	ret := C.PySet_Contains(c(s), c(key))
+// 	return int2BoolErr(ret)
+// }
 
 // Add adds "key" to the set "s".  "key" must be hashable, otherwise a TypeError
 // is returned.

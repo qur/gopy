@@ -39,10 +39,9 @@ func (d *DictKeys) Size() int {
 	return int(ret)
 }
 
-func (d *DictKeys) Contains(obj Object) bool {
+func (d *DictKeys) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c(d), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
 }
 
 

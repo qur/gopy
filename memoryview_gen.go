@@ -96,6 +96,47 @@ func (m *MemoryView) GetIndex(idx int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (m *MemoryView) Count(obj Object) (int, error) {
+	ret := C.PySequence_Count(c(m), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (m *MemoryView) Index(obj Object) (int, error) {
+	ret := C.PySequence_Index(c(m), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (m *MemoryView) List() (*List, error) {
+	ret := C.PySequence_List(c(m))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newList(ret), nil
+}
+
+func (m *MemoryView) Tuple() (*Tuple, error) {
+	ret := C.PySequence_Tuple(c(m))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newTuple(ret), nil
+}
+
+func (m *MemoryView) GetSlice(start, end int) (Object, error) {
+	ret := C.PySequence_GetSlice(c(m), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return obj2ObjErr(ret)
+}
+
+func (m *MemoryView) SetSlice(start, end int, obj Object) error {
+	ret := C.PySequence_SetSlice(c(m), C.Py_ssize_t(start), C.Py_ssize_t(end), c(obj))
+	return int2Err(ret)
+}
+
+func (m *MemoryView) DelSlice(start, end int) error {
+	ret := C.PySequence_DelSlice(c(m), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return int2Err(ret)
+}
+
 
 
 /*

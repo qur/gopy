@@ -96,6 +96,24 @@ func (l *List) GetIndex(idx int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (l *List) Count(obj Object) (int, error) {
+	ret := C.PySequence_Count(c(l), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (l *List) Index(obj Object) (int, error) {
+	ret := C.PySequence_Index(c(l), c(obj))
+	return ssize_t2IntErr(ret)
+}
+
+func (l *List) Tuple() (*Tuple, error) {
+	ret := C.PySequence_Tuple(c(l))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newTuple(ret), nil
+}
+
 func (l *List) SetIndex(idx int, obj Object) error {
 	ret := C.PySequence_SetItem(c(l), C.Py_ssize_t(idx), c(obj))
 	return int2Err(ret)
@@ -126,10 +144,24 @@ func (l *List) InPlaceRepeat(count int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (l *List) Contains(obj Object) bool {
+func (l *List) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c(l), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
+}
+
+func (l *List) GetSlice(start, end int) (Object, error) {
+	ret := C.PySequence_GetSlice(c(l), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return obj2ObjErr(ret)
+}
+
+func (l *List) SetSlice(start, end int, obj Object) error {
+	ret := C.PySequence_SetSlice(c(l), C.Py_ssize_t(start), C.Py_ssize_t(end), c(obj))
+	return int2Err(ret)
+}
+
+func (l *List) DelSlice(start, end int) error {
+	ret := C.PySequence_DelSlice(c(l), C.Py_ssize_t(start), C.Py_ssize_t(end))
+	return int2Err(ret)
 }
 
 

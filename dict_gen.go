@@ -85,10 +85,9 @@ func (d *Dict) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
-func (d *Dict) Contains(obj Object) bool {
+func (d *Dict) Contains(obj Object) (bool, error) {
 	ret := C.PySequence_Contains(c(d), c(obj))
-	clearErr();
-	return ret > 0
+	return int2BoolErr(ret)
 }
 
 
