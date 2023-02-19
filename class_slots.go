@@ -61,25 +61,25 @@ type nb_add interface {
 	PyAdd(Object) (Object, error)
 }
 type nb_inplace_add interface {
-	PyInplaceAdd(Object) (Object, error)
+	PyInPlaceAdd(Object) (Object, error)
 }
 type nb_subtract interface {
 	PySubtract(Object) (Object, error)
 }
 type nb_inplace_subtract interface {
-	PyInplaceSubtract(Object) (Object, error)
+	PyInPlaceSubtract(Object) (Object, error)
 }
 type nb_multiply interface {
 	PyMultiply(Object) (Object, error)
 }
 type nb_inplace_multiply interface {
-	PyInplaceMultiply(Object) (Object, error)
+	PyInPlaceMultiply(Object) (Object, error)
 }
 type nb_remainder interface {
 	PyRemainder(Object) (Object, error)
 }
 type nb_inplace_remainder interface {
-	PyInplaceRemainder(Object) (Object, error)
+	PyInPlaceRemainder(Object) (Object, error)
 }
 type nb_divmod interface {
 	PyDivmod(Object) (Object, error)
@@ -88,7 +88,7 @@ type nb_power interface {
 	PyPower(Object, Object) (Object, error)
 }
 type nb_inplace_power interface {
-	PyInplacePower(Object, Object) (Object, error)
+	PyInPlacePower(Object, Object) (Object, error)
 }
 type nb_negative interface {
 	PyNegative() (Object, error)
@@ -109,31 +109,31 @@ type nb_lshift interface {
 	PyLShift(Object) (Object, error)
 }
 type nb_inplace_lshift interface {
-	PyInplaceLShift(Object) (Object, error)
+	PyInPlaceLShift(Object) (Object, error)
 }
 type nb_rshift interface {
 	PyRShift(Object) (Object, error)
 }
 type nb_inplace_rshift interface {
-	PyInplaceRShift(Object) (Object, error)
+	PyInPlaceRShift(Object) (Object, error)
 }
 type nb_and interface {
 	PyAnd(Object) (Object, error)
 }
 type nb_inplace_and interface {
-	PyInplaceAnd(Object) (Object, error)
+	PyInPlaceAnd(Object) (Object, error)
 }
 type nb_xor interface {
 	PyXor(Object) (Object, error)
 }
 type nb_inplace_xor interface {
-	PyInplaceXor(Object) (Object, error)
+	PyInPlaceXor(Object) (Object, error)
 }
 type nb_or interface {
 	PyOr(Object) (Object, error)
 }
 type nb_inplace_or interface {
-	PyInplaceOr(Object) (Object, error)
+	PyInPlaceOr(Object) (Object, error)
 }
 type nb_int interface {
 	PyInt() (Object, error)
@@ -145,13 +145,13 @@ type nb_floor_divide interface {
 	PyFloorDivide(Object) (Object, error)
 }
 type nb_inplace_floor_divide interface {
-	PyInplaceFloorDivide(Object) (Object, error)
+	PyInPlaceFloorDivide(Object) (Object, error)
 }
 type nb_true_divide interface {
 	PyTrueDivide(Object) (Object, error)
 }
 type nb_inplace_true_divide interface {
-	PyInplaceTrueDivide(Object) (Object, error)
+	PyInPlaceTrueDivide(Object) (Object, error)
 }
 type nb_index interface {
 	PyIndex() (Object, error)
@@ -160,7 +160,7 @@ type nb_matrix_multiply interface {
 	PyMatrixMultiply(Object) (Object, error)
 }
 type nb_inplace_matrix_multiply interface {
-	PyInplaceMatrixMultiply(Object) (Object, error)
+	PyInPlaceMatrixMultiply(Object) (Object, error)
 }
 type mp_length interface {
 	PyMappingLen() int
@@ -190,10 +190,10 @@ type sq_contains interface {
 	PyContains(Object) (bool, error)
 }
 type sq_inplace_concat interface {
-	PyInplaceConcat(Object) (Object, error)
+	PyInPlaceConcat(Object) (Object, error)
 }
 type sq_inplace_repeat interface {
-	PyInplaceRepeat(Object, int) (Object, error)
+	PyInPlaceRepeat(Object, int) (Object, error)
 }
 type bf_getbuffer interface {
 	PyGetBuffer(Object, int) error
@@ -395,7 +395,7 @@ func goClassSlot_nb_inplace_add(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_add)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceAdd(o)
+	ret, err := co.PyInPlaceAdd(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -421,7 +421,7 @@ func goClassSlot_nb_inplace_subtract(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_subtract)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceSubtract(o)
+	ret, err := co.PyInPlaceSubtract(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -447,7 +447,7 @@ func goClassSlot_nb_inplace_multiply(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_multiply)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceMultiply(o)
+	ret, err := co.PyInPlaceMultiply(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -473,7 +473,7 @@ func goClassSlot_nb_inplace_remainder(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_remainder)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceRemainder(o)
+	ret, err := co.PyInPlaceRemainder(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -514,7 +514,7 @@ func goClassSlot_nb_inplace_power(obj, arg1, arg2 unsafe.Pointer) unsafe.Pointer
 
 	o1 := newObject((*C.PyObject)(arg1))
 	o2 := newObject((*C.PyObject)(arg2))
-	ret, err := co.PyInplacePower(o1, o2)
+	ret, err := co.PyInPlacePower(o1, o2)
 	if err != nil {
 		raise(err)
 		return nil
@@ -604,7 +604,7 @@ func goClassSlot_nb_inplace_lshift(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_lshift)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceLShift(o)
+	ret, err := co.PyInPlaceLShift(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -630,7 +630,7 @@ func goClassSlot_nb_inplace_rshift(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_rshift)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceRShift(o)
+	ret, err := co.PyInPlaceRShift(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -656,7 +656,7 @@ func goClassSlot_nb_inplace_and(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_and)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceAnd(o)
+	ret, err := co.PyInPlaceAnd(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -682,7 +682,7 @@ func goClassSlot_nb_inplace_xor(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_xor)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceXor(o)
+	ret, err := co.PyInPlaceXor(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -708,7 +708,7 @@ func goClassSlot_nb_inplace_or(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_or)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceOr(o)
+	ret, err := co.PyInPlaceOr(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -758,7 +758,7 @@ func goClassSlot_nb_inplace_floor_divide(obj, arg unsafe.Pointer) unsafe.Pointer
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_floor_divide)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceFloorDivide(o)
+	ret, err := co.PyInPlaceFloorDivide(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -784,7 +784,7 @@ func goClassSlot_nb_inplace_true_divide(obj, arg unsafe.Pointer) unsafe.Pointer 
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_true_divide)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceTrueDivide(o)
+	ret, err := co.PyInPlaceTrueDivide(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -822,7 +822,7 @@ func goClassSlot_nb_inplace_matrix_multiply(obj, arg unsafe.Pointer) unsafe.Poin
 	co := newObject((*C.PyObject)(obj)).(nb_inplace_matrix_multiply)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceMatrixMultiply(o)
+	ret, err := co.PyInPlaceMatrixMultiply(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -942,7 +942,7 @@ func goClassSlot_sq_inplace_concat(obj, arg unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(sq_inplace_concat)
 
 	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInplaceConcat(o)
+	ret, err := co.PyInPlaceConcat(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -955,7 +955,7 @@ func goClassSlot_sq_inplace_repeat(obj, arg1 unsafe.Pointer, arg2 C.Py_ssize_t) 
 	co := newObject((*C.PyObject)(obj)).(sq_inplace_repeat)
 
 	o := newObject((*C.PyObject)(arg1))
-	ret, err := co.PyInplaceRepeat(o, int(arg2))
+	ret, err := co.PyInPlaceRepeat(o, int(arg2))
 	if err != nil {
 		raise(err)
 		return nil
