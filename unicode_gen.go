@@ -37,6 +37,7 @@ func newUnicode(obj *C.PyObject) *Unicode {
 func (u *Unicode) Size() int {
 	ret := C.PyObject_Size(c(u))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
@@ -55,6 +56,7 @@ func (u *Unicode) GetItemString(key string) (Object, error) {
 
 func (u *Unicode) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(c(u), c(key))
+	clearErr();
 	return ret > 0
 }
 
@@ -62,11 +64,33 @@ func (u *Unicode) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(c(u), cKey)
+	clearErr();
 	return ret > 0
 }
 
 func (u *Unicode) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(u.Base()))
+}
+
+func (u *Unicode) GetIndex(idx int) (Object, error) {
+	ret := C.PySequence_GetItem(c(u), C.Py_ssize_t(idx))
+	return obj2ObjErr(ret)
+}
+
+func (u *Unicode) Concat(obj Object) (Object, error) {
+	ret := C.PySequence_Concat(c(u), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (u *Unicode) Repeat(count int) (Object, error) {
+	ret := C.PySequence_Repeat(c(u), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+func (u *Unicode) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c(u), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 

@@ -33,9 +33,16 @@ func newDictKeys(obj *C.PyObject) *DictKeys {
 func (d *DictKeys) Size() int {
 	ret := C.PyObject_Size(c(d))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
+}
+
+func (d *DictKeys) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c(d), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 

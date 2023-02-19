@@ -35,6 +35,7 @@ func newDict(obj *C.PyObject) *Dict {
 func (d *Dict) Size() int {
 	ret := C.PyObject_Size(c(d))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
@@ -53,6 +54,7 @@ func (d *Dict) GetItemString(key string) (Object, error) {
 
 func (d *Dict) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(c(d), c(key))
+	clearErr();
 	return ret > 0
 }
 
@@ -60,6 +62,7 @@ func (d *Dict) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(c(d), cKey)
+	clearErr();
 	return ret > 0
 }
 
@@ -80,6 +83,12 @@ func (d *Dict) SetItemString(key string, v Object) error {
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_SetItemString(c(d), cKey, c(v))
 	return int2Err(ret)
+}
+
+func (d *Dict) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c(d), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 

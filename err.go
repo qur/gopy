@@ -116,6 +116,10 @@ func raise(err error) {
 	C.PyErr_SetObject(exc, val)
 }
 
+func clearErr() {
+	C.PyErr_Clear()
+}
+
 func int2Err(i C.int) error {
 	if i < 0 {
 		return exception()
@@ -135,6 +139,13 @@ func ssize_t2Int64Err(s C.Py_ssize_t) (int64, error) {
 		return 0, exception()
 	}
 	return int64(s), nil
+}
+
+func ssize_t2IntErr(s C.Py_ssize_t) (int, error) {
+	if s < 0 {
+		return 0, exception()
+	}
+	return int(s), nil
 }
 
 func obj2ObjErr(obj *C.PyObject) (Object, error) {

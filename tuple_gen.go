@@ -37,6 +37,7 @@ func newTuple(obj *C.PyObject) *Tuple {
 func (t *Tuple) Size() int {
 	ret := C.PyObject_Size(c(t))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
@@ -55,6 +56,7 @@ func (t *Tuple) GetItemString(key string) (Object, error) {
 
 func (t *Tuple) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(c(t), c(key))
+	clearErr();
 	return ret > 0
 }
 
@@ -62,11 +64,33 @@ func (t *Tuple) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(c(t), cKey)
+	clearErr();
 	return ret > 0
 }
 
 func (t *Tuple) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(t.Base()))
+}
+
+func (t *Tuple) GetIndex(idx int) (Object, error) {
+	ret := C.PySequence_GetItem(c(t), C.Py_ssize_t(idx))
+	return obj2ObjErr(ret)
+}
+
+func (t *Tuple) Concat(obj Object) (Object, error) {
+	ret := C.PySequence_Concat(c(t), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (t *Tuple) Repeat(count int) (Object, error) {
+	ret := C.PySequence_Repeat(c(t), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+func (t *Tuple) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c(t), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 

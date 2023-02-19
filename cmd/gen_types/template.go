@@ -47,6 +47,7 @@ func new{{ .type }}(obj *C.PyObject) *{{ .type }} {
 func ({{ .name }} *{{ .type }}) Size() int {
 	ret := C.PyObject_Size(c({{ .name }}))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
@@ -68,6 +69,7 @@ func ({{ .name }} *{{ .type }}) GetItemString(key string) (Object, error) {
 
 func ({{ .name }} *{{ .type }}) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(c({{ .name }}), c(key))
+	clearErr();
 	return ret > 0
 }
 
@@ -75,17 +77,21 @@ func ({{ .name }} *{{ .type }}) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(c({{ .name }}), cKey)
+	clearErr();
 	return ret > 0
 }
 
 {{ end }}
 
-{{- if .funcs.mp_ass_subscript -}}
+{{- if or .funcs.mp_ass_subscript .funcs.sq_ass_item -}}
 func ({{ .name }} *{{ .type }}) DelItem(key Object) error {
 	ret := C.PyObject_DelItem(c({{ .name }}), c(key))
 	return int2Err(ret)
 }
 
+{{ end }}
+
+{{- if .funcs.mp_ass_subscript -}}
 func ({{ .name }} *{{ .type }}) DelItemString(key string) error {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
@@ -105,6 +111,65 @@ func ({{ .name }} *{{ .type }}) SetItemString(key string, v Object) error {
 {{- if .funcs.sq_item -}}
 func ({{ .name }} *{{ .type }}) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer({{ .name }}.Base()))
+}
+
+func ({{ .name }} *{{ .type }}) GetIndex(idx int) (Object, error) {
+	ret := C.PySequence_GetItem(c({{ .name }}), C.Py_ssize_t(idx))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.sq_ass_item -}}
+func ({{ .name }} *{{ .type }}) SetIndex(idx int, obj Object) error {
+	ret := C.PySequence_SetItem(c({{ .name }}), C.Py_ssize_t(idx), c(obj))
+	return int2Err(ret)
+}
+
+func ({{ .name }} *{{ .type }}) DelIndex(idx int) error {
+	ret := C.PySequence_DelItem(c({{ .name }}), C.Py_ssize_t(idx))
+	return int2Err(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.sq_concat -}}
+func ({{ .name }} *{{ .type }}) Concat(obj Object) (Object, error) {
+	ret := C.PySequence_Concat(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.sq_inplace_concat -}}
+func ({{ .name }} *{{ .type }}) InPlaceConcat(obj Object) (Object, error) {
+	ret := C.PySequence_InPlaceConcat(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.sq_repeat -}}
+func ({{ .name }} *{{ .type }}) Repeat(count int) (Object, error) {
+	ret := C.PySequence_Repeat(c({{ .name }}), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.sq_inplace_repeat -}}
+func ({{ .name }} *{{ .type }}) InPlaceRepeat(count int) (Object, error) {
+	ret := C.PySequence_InPlaceRepeat(c({{ .name }}), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.sq_contains -}}
+func ({{ .name }} *{{ .type }}) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c({{ .name }}), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 {{ end }}

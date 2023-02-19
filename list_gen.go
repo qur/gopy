@@ -37,6 +37,7 @@ func newList(obj *C.PyObject) *List {
 func (l *List) Size() int {
 	ret := C.PyObject_Size(c(l))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
@@ -55,6 +56,7 @@ func (l *List) GetItemString(key string) (Object, error) {
 
 func (l *List) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(c(l), c(key))
+	clearErr();
 	return ret > 0
 }
 
@@ -62,6 +64,7 @@ func (l *List) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(c(l), cKey)
+	clearErr();
 	return ret > 0
 }
 
@@ -86,6 +89,47 @@ func (l *List) SetItemString(key string, v Object) error {
 
 func (l *List) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(l.Base()))
+}
+
+func (l *List) GetIndex(idx int) (Object, error) {
+	ret := C.PySequence_GetItem(c(l), C.Py_ssize_t(idx))
+	return obj2ObjErr(ret)
+}
+
+func (l *List) SetIndex(idx int, obj Object) error {
+	ret := C.PySequence_SetItem(c(l), C.Py_ssize_t(idx), c(obj))
+	return int2Err(ret)
+}
+
+func (l *List) DelIndex(idx int) error {
+	ret := C.PySequence_DelItem(c(l), C.Py_ssize_t(idx))
+	return int2Err(ret)
+}
+
+func (l *List) Concat(obj Object) (Object, error) {
+	ret := C.PySequence_Concat(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *List) InPlaceConcat(obj Object) (Object, error) {
+	ret := C.PySequence_InPlaceConcat(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *List) Repeat(count int) (Object, error) {
+	ret := C.PySequence_Repeat(c(l), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+func (l *List) InPlaceRepeat(count int) (Object, error) {
+	ret := C.PySequence_InPlaceRepeat(c(l), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+func (l *List) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c(l), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 

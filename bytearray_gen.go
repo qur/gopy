@@ -37,6 +37,7 @@ func newByteArray(obj *C.PyObject) *ByteArray {
 func (b *ByteArray) Size() int {
 	ret := C.PyObject_Size(c(b))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
@@ -55,6 +56,7 @@ func (b *ByteArray) GetItemString(key string) (Object, error) {
 
 func (b *ByteArray) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(c(b), c(key))
+	clearErr();
 	return ret > 0
 }
 
@@ -62,6 +64,7 @@ func (b *ByteArray) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(c(b), cKey)
+	clearErr();
 	return ret > 0
 }
 
@@ -86,6 +89,47 @@ func (b *ByteArray) SetItemString(key string, v Object) error {
 
 func (b *ByteArray) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(b.Base()))
+}
+
+func (b *ByteArray) GetIndex(idx int) (Object, error) {
+	ret := C.PySequence_GetItem(c(b), C.Py_ssize_t(idx))
+	return obj2ObjErr(ret)
+}
+
+func (b *ByteArray) SetIndex(idx int, obj Object) error {
+	ret := C.PySequence_SetItem(c(b), C.Py_ssize_t(idx), c(obj))
+	return int2Err(ret)
+}
+
+func (b *ByteArray) DelIndex(idx int) error {
+	ret := C.PySequence_DelItem(c(b), C.Py_ssize_t(idx))
+	return int2Err(ret)
+}
+
+func (b *ByteArray) Concat(obj Object) (Object, error) {
+	ret := C.PySequence_Concat(c(b), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (b *ByteArray) InPlaceConcat(obj Object) (Object, error) {
+	ret := C.PySequence_InPlaceConcat(c(b), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (b *ByteArray) Repeat(count int) (Object, error) {
+	ret := C.PySequence_Repeat(c(b), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+func (b *ByteArray) InPlaceRepeat(count int) (Object, error) {
+	ret := C.PySequence_InPlaceRepeat(c(b), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+func (b *ByteArray) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c(b), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 

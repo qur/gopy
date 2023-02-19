@@ -37,6 +37,7 @@ func newMemoryView(obj *C.PyObject) *MemoryView {
 func (m *MemoryView) Size() int {
 	ret := C.PyObject_Size(c(m))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
@@ -55,6 +56,7 @@ func (m *MemoryView) GetItemString(key string) (Object, error) {
 
 func (m *MemoryView) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(c(m), c(key))
+	clearErr();
 	return ret > 0
 }
 
@@ -62,6 +64,7 @@ func (m *MemoryView) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(c(m), cKey)
+	clearErr();
 	return ret > 0
 }
 
@@ -86,6 +89,11 @@ func (m *MemoryView) SetItemString(key string, v Object) error {
 
 func (m *MemoryView) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(m.Base()))
+}
+
+func (m *MemoryView) GetIndex(idx int) (Object, error) {
+	ret := C.PySequence_GetItem(c(m), C.Py_ssize_t(idx))
+	return obj2ObjErr(ret)
 }
 
 

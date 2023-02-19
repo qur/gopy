@@ -33,9 +33,16 @@ func newSet(obj *C.PyObject) *Set {
 func (s *Set) Size() int {
 	ret := C.PyObject_Size(c(s))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
+}
+
+func (s *Set) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c(s), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 

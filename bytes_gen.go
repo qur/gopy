@@ -37,6 +37,7 @@ func newBytes(obj *C.PyObject) *Bytes {
 func (b *Bytes) Size() int {
 	ret := C.PyObject_Size(c(b))
 	if ret < 0 {
+		clearErr();
 		return 0
 	}
 	return int(ret)
@@ -55,6 +56,7 @@ func (b *Bytes) GetItemString(key string) (Object, error) {
 
 func (b *Bytes) HasKey(key Object) bool {
 	ret := C.PyMapping_HasKey(c(b), c(key))
+	clearErr();
 	return ret > 0
 }
 
@@ -62,11 +64,33 @@ func (b *Bytes) HasKeyString(key string) bool {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	ret := C.PyMapping_HasKeyString(c(b), cKey)
+	clearErr();
 	return ret > 0
 }
 
 func (b *Bytes) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(b.Base()))
+}
+
+func (b *Bytes) GetIndex(idx int) (Object, error) {
+	ret := C.PySequence_GetItem(c(b), C.Py_ssize_t(idx))
+	return obj2ObjErr(ret)
+}
+
+func (b *Bytes) Concat(obj Object) (Object, error) {
+	ret := C.PySequence_Concat(c(b), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (b *Bytes) Repeat(count int) (Object, error) {
+	ret := C.PySequence_Repeat(c(b), C.Py_ssize_t(count))
+	return obj2ObjErr(ret)
+}
+
+func (b *Bytes) Contains(obj Object) bool {
+	ret := C.PySequence_Contains(c(b), c(obj))
+	clearErr();
+	return ret > 0
 }
 
 
