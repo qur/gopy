@@ -34,14 +34,9 @@ func AsMapping(obj Object) *MappingMethods {
 	return nil
 }
 
-func (m *MappingMethods) Size() (int64, error) {
+func (m *MappingMethods) Size() (int, error) {
 	ret := C.PyMapping_Size(c(m))
-	return ssize_t2Int64Err(ret)
-}
-
-func (m *MappingMethods) Length() (int64, error) {
-	ret := C.PyMapping_Length(c(m))
-	return ssize_t2Int64Err(ret)
+	return ssize_t2IntErr(ret)
 }
 
 func (m *MappingMethods) DelItemString(key string) error {
