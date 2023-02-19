@@ -7,27 +7,6 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
-
-type Type struct {
-	abstractObject
-	o C.PyTypeObject
-}
-
-// TypeType is the Type object that represents the Type type.
-var TypeType = (*Type)(unsafe.Pointer(&C.PyType_Type))
-
-func typeCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.typeCheck(c(obj)) != 0
-}
-
-func newType(obj *C.PyObject) *Type {
-	return (*Type)(unsafe.Pointer(obj))
-}
-
 func (t *Type) Alloc(n int64) (Object, error) {
 	ret := C.typeAlloc(c(t), C.Py_ssize_t(n))
 	return obj2ObjErr(ret)

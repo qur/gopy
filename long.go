@@ -9,28 +9,7 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
-
-type Long struct {
-	abstractObject
-	numberProtocol
-	o C.PyLongObject
-}
-
-// LongType is the Type object that represents the Long type.
-var LongType = (*Type)(unsafe.Pointer(&C.PyLong_Type))
-
-func longCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.longCheck(c(obj)) != 0
-}
-
-func newLong(obj *C.PyObject) *Long {
-	return (*Long)(unsafe.Pointer(obj))
-}
 
 func NewLong(i int64) *Long {
 	return newLong(C.PyLong_FromLongLong(C.longlong(i)))

@@ -9,25 +9,7 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
-
-type Complex struct {
-	abstractObject
-	numberProtocol
-	o C.PyComplexObject
-}
-
-// ComplexType is the Type object that represents the Complex type.
-var ComplexType = (*Type)(unsafe.Pointer(&C.PyComplex_Type))
-
-func complexCheck(obj Object) bool {
-	return C.complexCheck(c(obj)) != 0
-}
-
-func newComplex(obj *C.PyObject) *Complex {
-	return (*Complex)(unsafe.Pointer(obj))
-}
 
 func NewComplex(v complex128) (*Complex, error) {
 	ret := C.PyComplex_FromDoubles(C.double(real(v)), C.double(imag(v)))

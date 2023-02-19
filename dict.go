@@ -9,31 +9,7 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
-
-// *Dict represents a Python dictionary.  In addition to satisfying the Object
-// and Mapping interfaces, Dict pointers also have a number of methods defined -
-// representing the PyDict_XXX functions from the Python C API.
-type Dict struct {
-	abstractObject
-	mappingProtocol
-	o C.PyDictObject
-}
-
-// DictType is the Type object that represents the Dict type.
-var DictType = (*Type)(unsafe.Pointer(&C.PyDict_Type))
-
-func dictCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.dictCheck(c(obj)) != 0
-}
-
-func newDict(obj *C.PyObject) *Dict {
-	return (*Dict)(unsafe.Pointer(obj))
-}
 
 // NewDict creates a new empty dictionary.
 //
@@ -94,28 +70,28 @@ func (d *Dict) SetItem(key, val Object) error {
 // SetItemString inserts "val" into dictionary d with the key "key" (or rather,
 // with a *String with the value of "key" will be used as the key).  If "key" is
 // not hashable, then a TypeError will be returned.
-func (d *Dict) SetItemString(key string, val Object) error {
-	s := C.CString(key)
-	defer C.free(unsafe.Pointer(s))
-	ret := C.PyDict_SetItemString(c(d), s, c(val))
-	return int2Err(ret)
-}
+// func (d *Dict) SetItemString(key string, val Object) error {
+// 	s := C.CString(key)
+// 	defer C.free(unsafe.Pointer(s))
+// 	ret := C.PyDict_SetItemString(c(d), s, c(val))
+// 	return int2Err(ret)
+// }
 
 // DelItem removes the entry with the key of "key" from the dictionary d.  If
 // "key" is not hashable, a TypeError is returned.
-func (d *Dict) DelItem(key Object) error {
-	ret := C.PyDict_DelItem(c(d), c(key))
-	return int2Err(ret)
-}
+// func (d *Dict) DelItem(key Object) error {
+// 	ret := C.PyDict_DelItem(c(d), c(key))
+// 	return int2Err(ret)
+// }
 
 // DelItem removes the entry with the key of "key" (or rather, with a *String
 // with the value of "key" as the key) from the dictionary d.
-func (d *Dict) DelItemString(key string) error {
-	s := C.CString(key)
-	defer C.free(unsafe.Pointer(s))
-	ret := C.PyDict_DelItemString(c(d), s)
-	return int2Err(ret)
-}
+// func (d *Dict) DelItemString(key string) error {
+// 	s := C.CString(key)
+// 	defer C.free(unsafe.Pointer(s))
+// 	ret := C.PyDict_DelItemString(c(d), s)
+// 	return int2Err(ret)
+// }
 
 // GetItem returns the Object from dictionary d which has the key "key".  If
 // there is no such Object, then nil is returned (without an error).
@@ -131,12 +107,12 @@ func (d *Dict) GetItem(key Object) (Object, error) {
 // there is no such Object, then nil is returned (without an error).
 //
 // Return value: Borrowed Reference.
-func (d *Dict) GetItemString(key string) (Object, error) {
-	s := C.CString(key)
-	defer C.free(unsafe.Pointer(s))
-	ret := C.PyDict_GetItemString(c(d), s)
-	return obj2ObjErr(ret)
-}
+// func (d *Dict) GetItemString(key string) (Object, error) {
+// 	s := C.CString(key)
+// 	defer C.free(unsafe.Pointer(s))
+// 	ret := C.PyDict_GetItemString(c(d), s)
+// 	return obj2ObjErr(ret)
+// }
 
 // Items returns a *List containing all the items from the dictionary d, as with
 // the Python "d.items()".
@@ -167,13 +143,13 @@ func (d *Dict) Values() (*List, error) {
 
 // Size returns the number of items in the dictionary d.  This is equivalent to
 // the Python "len(d)".
-func (d *Dict) Size() int64 {
-	ret := C.PyDict_Size(c(d))
-	if ret < 0 {
-		panic(exception())
-	}
-	return int64(ret)
-}
+// func (d *Dict) Size() int64 {
+// 	ret := C.PyDict_Size(c(d))
+// 	if ret < 0 {
+// 		panic(exception())
+// 	}
+// 	return int64(ret)
+// }
 
 // PyDict_Next
 

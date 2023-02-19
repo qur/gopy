@@ -10,7 +10,6 @@ package py
 import "C"
 
 import (
-	"fmt"
 	"unsafe"
 )
 

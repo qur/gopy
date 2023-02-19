@@ -7,29 +7,6 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
-
-// *Function represents a Python function.  In Python this is a function created
-// using the "def" statement.
-type Function struct {
-	abstractObject
-	o C.PyFunctionObject
-}
-
-// FunctionType is the Type object that represents the Function type.
-var FunctionType = (*Type)(unsafe.Pointer(&C.PyFunction_Type))
-
-func newFunction(obj *C.PyObject) *Function {
-	return (*Function)(unsafe.Pointer(obj))
-}
-
-func functionCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.functionCheck(c(obj)) != 0
-}
-
 // NewFunction returns a new Function object that is associated with the given
 // "code" and "globals".  "globals" must be a dictionary, and it should hold the
 // global variables for the function.

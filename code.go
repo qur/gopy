@@ -12,18 +12,6 @@ import (
 	"unsafe"
 )
 
-type Code struct {
-	abstractObject
-	o C.PyCodeObject
-}
-
-// CodeType is the Type object that represents the Code type.
-var CodeType = (*Type)(unsafe.Pointer(&C.PyCode_Type))
-
-func newCode(obj *C.PyObject) *Code {
-	return (*Code)(unsafe.Pointer(obj))
-}
-
 func CompileFile(name string) (*Code, error) {
 	// TODO(jp3): this should now be parsing the file directly, and then using
 	// Py_CompileString(s, filename, C.Py_file_input)
@@ -35,13 +23,6 @@ func CompileFile(name string) (*Code, error) {
 	// }
 	// return newCode(ret), nil
 	return nil, fmt.Errorf("func CompileFile not implemented")
-}
-
-func codeCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.codeCheck(c(obj)) != 0
 }
 
 func (code *Code) Eval(globals, locals Object) (Object, error) {

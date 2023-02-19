@@ -12,26 +12,6 @@ import (
 	"unsafe"
 )
 
-type Tuple struct {
-	abstractObject
-	sequenceProtocol
-	o C.PyTupleObject
-}
-
-// TupleType is the Type object that represents the Tuple type.
-var TupleType = (*Type)(unsafe.Pointer(&C.PyTuple_Type))
-
-func tupleCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.tupleCheck(c(obj)) != 0
-}
-
-func newTuple(obj *C.PyObject) *Tuple {
-	return (*Tuple)(unsafe.Pointer(obj))
-}
-
 func buildTuple(format string, args ...interface{}) (*Tuple, error) {
 	if format == "" {
 		return NewTuple(0)
@@ -52,7 +32,7 @@ func buildTuple(format string, args ...interface{}) (*Tuple, error) {
 // code, until the entries have all been set.
 //
 // Return value: New Reference.
-func NewTuple(size int64) (*Tuple, error) {
+func NewTuple(size int) (*Tuple, error) {
 	ret := C.PyTuple_New(C.Py_ssize_t(size))
 	if ret == nil {
 		return nil, exception()
@@ -101,20 +81,12 @@ func (t *Tuple) CheckExact() bool {
 	return false
 }
 
-func (t *Tuple) Size() int64 {
-	ret := C.PyTuple_Size(c(t))
-	if ret < 0 {
-		panic(exception())
-	}
-	return int64(ret)
-}
-
-func (t *Tuple) GetItem(pos int64) (Object, error) {
+func (t *Tuple) GetItem(pos int) (Object, error) {
 	ret := C.PyTuple_GetItem(c(t), C.Py_ssize_t(pos))
 	return obj2ObjErr(ret)
 }
 
-func (t *Tuple) GetSlice(low, high int64) (*Tuple, error) {
+func (t *Tuple) GetSlice(low, high int) (*Tuple, error) {
 	ret := C.PyTuple_GetSlice(c(t), C.Py_ssize_t(low), C.Py_ssize_t(high))
 	if ret == nil {
 		return nil, exception()
@@ -122,7 +94,7 @@ func (t *Tuple) GetSlice(low, high int64) (*Tuple, error) {
 	return newTuple(ret), nil
 }
 
-func (t *Tuple) SetItem(pos int64, obj Object) error {
+func (t *Tuple) SetItem(pos int, obj Object) error {
 	ret := C.PyTuple_SetItem(c(t), C.Py_ssize_t(pos), c(obj))
 	return int2Err(ret)
 }
@@ -134,7 +106,7 @@ func (t *Tuple) SetItem(pos int64, obj Object) error {
 func (t *Tuple) Slice() []Object {
 	l := t.Size()
 	s := make([]Object, l)
-	for i := int64(0); i < l; i++ {
+	for i := 0; i < l; i++ {
 		o, err := t.GetItem(i)
 		if err != nil {
 			panic(err)

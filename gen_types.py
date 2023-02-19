@@ -2,14 +2,19 @@
 
 import os
 import re
+import subprocess
 import sys
 
 include_re = re.compile('^\s*#\s*include\s+"(?P<name>[^"]+)"\s*$')
 
 check_re = re.compile(
     '(?:[^_A-Za-z0-9]|^)Py(?P<name>[A-Za-z0-9]+?)_Check(?:[^_A-Za-z0-9]|$)')
-check_exact_re = re.compile('Py(?P<name>[A-Za-z0-9]+?)_CheckExact')
-type_re = re.compile('Py(?P<name>[A-Za-z0-9]+?)_Type')
+check_exact_re = re.compile(
+    '(?:[^_A-Za-z0-9]|^)Py(?P<name>[A-Za-z0-9]+?)_CheckExact(?:[^_A-Za-z0-9]|$)')
+type_re = re.compile(
+    '(?:[^_A-Za-z0-9]|^)Py(?P<name>[A-Za-z0-9]+?)_Type(?:[^_A-Za-z0-9]|$)')
+object_re = re.compile(
+    '(?:[^_A-Za-z0-9]|^)Py(?P<name>[A-Za-z0-9]+?)Object(?:[^_A-Za-z0-9]|$)')
 
 
 def get_includes(root: str, files: set) -> set:
@@ -28,12 +33,13 @@ def get_includes(root: str, files: set) -> set:
     return files
 
 
-def process(path, checks, exact_checks, types):
+def process(path, checks, exact_checks, types, objects):
     with open(path, 'r', encoding='utf-8') as input:
         for line in input:
             checks.update(check_re.findall(line))
             exact_checks.update(check_exact_re.findall(line))
             types.update(type_re.findall(line))
+            objects.update(object_re.findall(line))
 
 
 def write_h_header(f):
@@ -168,13 +174,12 @@ def write_cmd_go_header(f):
     print('', file=f)
 
 
-def write_type_table(f, checks, types):
+def write_type_table(f, checks, types, objects):
     print("// ===============================================================", file=f)
     print("", file=f)
     print('var types = map[string]any{', file=f)
     for type in sorted(types):
-        # Bool needs special handling, so ignore it
-        if type not in checks or type == "Bool":
+        if type not in checks or type not in objects:
             continue
         print(f'	"{type}": C.Py{type}_Type,', file=f)
     print('}', file=f)
@@ -187,10 +192,10 @@ def main():
 
     files = get_includes(root, set(["Python.h", "frameobject.h"]))
 
-    checks, exact_checks, types = set(), set(), set()
+    checks, exact_checks, types, objects = set(), set(), set(), set()
     for name in sorted(files):
         path = os.path.join(root, name)
-        process(path, checks, exact_checks, types)
+        process(path, checks, exact_checks, types, objects)
 
     # PyGILState_Check is a special case, ignore it
     checks.remove("GILState")
@@ -212,7 +217,9 @@ def main():
 
     with open('cmd/gen_types/types.go', 'w', encoding='utf-8') as output:
         write_cmd_go_header(output)
-        write_type_table(output, checks, types)
+        write_type_table(output, checks, types, objects)
+
+    subprocess.run(["go", "run", "qur.me/py/v3/cmd/gen_types"], check=True)
 
 
 if __name__ == "__main__":

@@ -9,34 +9,15 @@ import "C"
 
 import "unsafe"
 
-// *Set represents a Python set.  In addition to satisfying the Object
-// interface, Set pointers also have a number of methods defined - representing
-// the PySet_XXX functions from the Python C API.
-type Set struct {
-	abstractObject
-	o C.PySetObject
-}
-
 type FrozenSet struct {
 	Set
 }
 
-// SetType is the Type object that represents the Set type.
-var SetType = (*Type)(unsafe.Pointer(&C.PySet_Type))
-
 // FrozenSetType is the Type object that represents the FrozenSet type.
 var FrozenSetType = (*Type)(unsafe.Pointer(&C.PyFrozenSet_Type))
 
-func setCheck(obj Object) bool {
-	return C.setCheck(c(obj)) != 0
-}
-
 func frozenSetCheck(obj Object) bool {
 	return C.frozenSetCheck(c(obj)) != 0
-}
-
-func newSet(obj *C.PyObject) *Set {
-	return (*Set)(unsafe.Pointer(obj))
 }
 
 func newFrozenSet(obj *C.PyObject) *FrozenSet {
@@ -72,16 +53,6 @@ func NewFrozenSet(o Object) (*FrozenSet, error) {
 func (f *FrozenSet) CheckExact() bool {
 	ret := C.frozenSetCheckE(c(f))
 	return ret != 0
-}
-
-// Size returns the number of elements in the set "s".  This is equivalent to
-// the Python "len(s)".
-func (s *Set) Size() int64 {
-	ret := C.PySet_Size(c(s))
-	if ret < 0 {
-		panic(exception())
-	}
-	return int64(ret)
 }
 
 // Contains returns true if the set "s" contains the Object "key".  "key" must

@@ -9,23 +9,6 @@ import "C"
 
 import "unsafe"
 
-type Unicode struct {
-	abstractObject
-	sequenceProtocol
-	o C.PyUnicodeObject
-}
-
-// UnicodeType is the Type object that represents the Unicode type.
-var UnicodeType = (*Type)(unsafe.Pointer(&C.PyUnicode_Type))
-
-func unicodeCheck(obj Object) bool {
-	return C.unicodeCheck(c(obj)) != 0
-}
-
-func newUnicode(obj *C.PyObject) *Unicode {
-	return (*Unicode)(unsafe.Pointer(obj))
-}
-
 func NewUnicode(s string) (*Unicode, error) {
 	cs := C.CString(s)
 	defer C.free(unsafe.Pointer(cs))
@@ -54,12 +37,6 @@ func (u *Unicode) AsString() (string, error) {
 	}
 	return C.GoString(ret), nil
 }
-
-// TODO(jp3): Size is deprecated, we want to wrap PyUnicode_GET_LENGTH instead.
-// func (u *Unicode) Size() int64 {
-// 	ret := C.PyUnicode_GetSize(c(u))
-// 	return int64(ret)
-// }
 
 func (u *Unicode) EncodeString(encoding, errors string) (Object, error) {
 	var cEncoding, cErrors *C.char

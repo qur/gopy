@@ -9,25 +9,7 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
-
-type Float struct {
-	abstractObject
-	numberProtocol
-	o C.PyFloatObject
-}
-
-// FloatType is the Type object that represents the Float type.
-var FloatType = (*Type)(unsafe.Pointer(&C.PyFloat_Type))
-
-func floatCheck(obj Object) bool {
-	return C.floatCheck(c(obj)) != 0
-}
-
-func newFloat(obj *C.PyObject) *Float {
-	return (*Float)(unsafe.Pointer(obj))
-}
 
 func NewFloat(v float64) (*Float, error) {
 	ret := C.PyFloat_FromDouble(C.double(v))

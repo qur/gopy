@@ -7,27 +7,6 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
-
-type Method struct {
-	abstractObject
-	o C.PyMethodObject
-}
-
-// MethodType is the Type object that represents the MethodObj type.
-var MethodType = (*Type)(unsafe.Pointer(&C.PyMethod_Type))
-
-func newMethod(obj *C.PyObject) *Method {
-	return (*Method)(unsafe.Pointer(obj))
-}
-
-func methodCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.methodCheck(c(obj)) != 0
-}
-
 func NewMethod(function, self Object) (*Method, error) {
 	ret := C.PyMethod_New(c(function), c(self))
 	if ret == nil {

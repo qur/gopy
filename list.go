@@ -9,28 +9,7 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
-
-// *List represents a Python list.  In addition to satisfying the Object
-// interface, List pointers also have a number of methods defined - representing
-// the PyList_XXX functions from the Python C API.
-type List struct {
-	abstractObject
-	sequenceProtocol
-	o C.PyListObject
-}
-
-// ListType is the Type object that represents the List type.
-var ListType = (*Type)(unsafe.Pointer(&C.PyList_Type))
-
-func listCheck(obj Object) bool {
-	return C.listCheck(c(obj)) != 0
-}
-
-func newList(obj *C.PyObject) *List {
-	return (*List)(unsafe.Pointer(obj))
-}
 
 // NewList creates a new Python List instance.  The created list has initial
 // length "size".
@@ -58,21 +37,11 @@ func (l *List) CheckExact() bool {
 	return false
 }
 
-// Size returns the number of elements in the list l.  This is equivalent to the
-// Python "len(l)".
-func (l *List) Size() int64 {
-	ret := C.PyList_Size(c(l))
-	if ret < 0 {
-		panic(exception())
-	}
-	return int64(ret)
-}
-
 // GetItem returns the Object contained in list l at index idx.  If idx is out
 // of bounds for l, then an IndexError will be returned.
 //
 // Return value: Borrowed Reference.
-func (l *List) GetItem(idx int64) (Object, error) {
+func (l *List) GetItem(idx int) (Object, error) {
 	ret := C.PyList_GetItem(c(l), C.Py_ssize_t(idx))
 	return obj2ObjErr(ret)
 }
@@ -81,7 +50,7 @@ func (l *List) GetItem(idx int64) (Object, error) {
 //
 // Note: This method "steals" a reference to obj, and discards a reference to
 // the current value of idx in l (if there is one).
-func (l *List) SetItem(idx int64, obj Object) error {
+func (l *List) SetItem(idx int, obj Object) error {
 	ret := C.PyList_SetItem(c(l), C.Py_ssize_t(idx), c(obj))
 	return int2Err(ret)
 }
@@ -89,7 +58,7 @@ func (l *List) SetItem(idx int64, obj Object) error {
 // Insert adds the Object obj to list l, by inserting it before the value
 // currently stored at index idx (making obj the new value with index idx).
 // This is equivalent to the Python "l.insert(idx, obj)".
-func (l *List) Insert(idx int64, obj Object) error {
+func (l *List) Insert(idx int, obj Object) error {
 	ret := C.PyList_Insert(c(l), C.Py_ssize_t(idx), c(obj))
 	return int2Err(ret)
 }
@@ -140,7 +109,7 @@ func (l *List) Tuple() *Tuple {
 func (l *List) Slice() []Object {
 	size := l.Size()
 	s := make([]Object, size)
-	for i := int64(0); i < size; i++ {
+	for i := 0; i < size; i++ {
 		o, err := l.GetItem(i)
 		if err != nil {
 			panic(err)

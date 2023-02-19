@@ -12,22 +12,6 @@ import (
 	"unsafe"
 )
 
-type CFunction struct {
-	abstractObject
-	o C.PyCFunctionObject
-}
-
-func cfunctionCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.cFunctionCheck(c(obj)) != 0
-}
-
-func newCFunction(obj *C.PyObject) *CFunction {
-	return (*CFunction)(unsafe.Pointer(obj))
-}
-
 func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {
 	return makeCFunction(name, fn, doc, nil)
 }

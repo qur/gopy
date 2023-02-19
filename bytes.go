@@ -8,25 +8,6 @@ import (
 	"unsafe"
 )
 
-type Bytes struct {
-	abstractObject
-	o C.PyBytesObject
-}
-
-// BytesType is the Type object that represents the Bytes type.
-var BytesType = (*Type)(unsafe.Pointer(&C.PyBytes_Type))
-
-func bytesCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.bytesCheck(c(obj)) != 0
-}
-
-func newBytes(obj *C.PyObject) *Bytes {
-	return (*Bytes)(unsafe.Pointer(obj))
-}
-
 func NewBytes(b []byte) *Bytes {
 	d := (*C.char)(unsafe.Pointer(&b[0]))
 	return newBytes(C.PyBytes_FromStringAndSize(d, C.Py_ssize_t(len(b))))
@@ -52,16 +33,6 @@ func (b *Bytes) Bytes() []byte {
 		return nil
 	}
 	return unsafe.Slice((*byte)(unsafe.Pointer(data)), int(length))
-}
-
-func (b *Bytes) Size() int {
-	ret := C.PyBytes_Size(c(b))
-	if ret < 0 {
-		// this should only happen if b fails PyBytes_Check, which shouldn't be
-		// possible.
-		return 0
-	}
-	return int(ret)
 }
 
 func (b *Bytes) String() string {

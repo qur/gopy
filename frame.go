@@ -11,25 +11,6 @@ import (
 	"unsafe"
 )
 
-type Frame struct {
-	abstractObject
-	o C.PyFrameObject
-}
-
-// FrameType is the Type object that represents the Frame type.
-var FrameType = (*Type)(unsafe.Pointer(&C.PyFrame_Type))
-
-func frameCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.frameCheck(c(obj)) != 0
-}
-
-func newFrame(obj *C.PyObject) *Frame {
-	return (*Frame)(unsafe.Pointer(obj))
-}
-
 func GetFrame() (*Frame, error) {
 	ret := C.PyEval_GetFrame()
 	if ret == nil {
