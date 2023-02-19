@@ -75,10 +75,7 @@ func PackTuple(items ...Object) (*Tuple, error) {
 
 func (t *Tuple) CheckExact() bool {
 	ret := C.tupleCheckE(c(t))
-	if int(ret) != 0 {
-		return true
-	}
-	return false
+	return int(ret) != 0
 }
 
 func (t *Tuple) GetItem(pos int) (Object, error) {
