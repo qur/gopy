@@ -64,6 +64,26 @@ func (s *Set) Or(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (s *Set) InPlaceSubtract(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceSubtract(c(s), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (s *Set) InPlaceAnd(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceAnd(c(s), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (s *Set) InPlaceXor(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceXor(c(s), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (s *Set) InPlaceOr(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceOr(c(s), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

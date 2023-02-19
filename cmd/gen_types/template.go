@@ -377,11 +377,105 @@ func ({{ .name }} *{{ .type }}) Or(obj Object) (Object, error) {
 
 {{ end }}
 
-
-
 {{- if .funcs.nb_inplace_add -}}
 func ({{ .name }} *{{ .type }}) InPlaceAdd(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceAdd(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_subtract -}}
+func ({{ .name }} *{{ .type }}) InPlaceSubtract(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceSubtract(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_multiply -}}
+func ({{ .name }} *{{ .type }}) InPlaceMultiply(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceMultiply(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_matrix_multiply -}}
+func ({{ .name }} *{{ .type }}) InPlaceMatrixMultiply(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceMatrixMultiply(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_floor_inplace_divide -}}
+func ({{ .name }} *{{ .type }}) InPlaceFloorDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceFloorDivide(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_true_divide -}}
+func ({{ .name }} *{{ .type }}) InPlaceTrueDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceTrueDivide(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_remainder -}}
+func ({{ .name }} *{{ .type }}) InPlaceRemainder(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceRemainder(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_power -}}
+func ({{ .name }} *{{ .type }}) InPlacePower(obj1, obj2 Object) (Object, error) {
+	ret := C.PyNumber_InPlacePower(c({{ .name }}), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_lshift -}}
+func ({{ .name }} *{{ .type }}) InPlaceLShift(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceLshift(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_rshift -}}
+func ({{ .name }} *{{ .type }}) InPlaceRShift(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceRshift(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_and -}}
+func ({{ .name }} *{{ .type }}) InPlaceAnd(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceAnd(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_xor -}}
+func ({{ .name }} *{{ .type }}) InPlaceXor(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceXor(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_inplace_or -}}
+func ({{ .name }} *{{ .type }}) InPlaceOr(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceOr(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
 }
 

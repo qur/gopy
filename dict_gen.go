@@ -95,6 +95,11 @@ func (d *Dict) Or(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (d *Dict) InPlaceOr(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceOr(c(d), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

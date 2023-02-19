@@ -54,6 +54,11 @@ func (o *ODict) Or(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (o *ODict) InPlaceOr(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceOr(c(o), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*
