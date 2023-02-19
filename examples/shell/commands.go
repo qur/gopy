@@ -1,7 +1,3 @@
-// Copyright 2011 Julian Phillips.  All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -26,13 +22,13 @@ func findCmdFunc(cmd string) (fn CmdFunc, err error) {
 	return
 }
 
-//////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////
 // builtin functions follow ...
-//
 var builtins = map[string]CmdFunc{
 	"echo": echo,
 	"cd":   chdir,
 }
+
 //////////////////////////////////////////////////////////////////////////////
 
 func echo(args []string) error {
