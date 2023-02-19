@@ -44,6 +44,26 @@ func (s *Set) Contains(obj Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
+func (s *Set) Subtract(obj Object) (Object, error) {
+	ret := C.PyNumber_Subtract(c(s), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (s *Set) And(obj Object) (Object, error) {
+	ret := C.PyNumber_And(c(s), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (s *Set) Xor(obj Object) (Object, error) {
+	ret := C.PyNumber_Xor(c(s), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (s *Set) Or(obj Object) (Object, error) {
+	ret := C.PyNumber_Or(c(s), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

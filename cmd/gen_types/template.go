@@ -233,6 +233,160 @@ func ({{ .name }} *{{ .type }}) AsNumber() *NumberMethods {
 
 {{ end }}
 
+{{- if .funcs.nb_add -}}
+func ({{ .name }} *{{ .type }}) Add(obj Object) (Object, error) {
+	ret := C.PyNumber_Add(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_subtract -}}
+func ({{ .name }} *{{ .type }}) Subtract(obj Object) (Object, error) {
+	ret := C.PyNumber_Subtract(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_multiply -}}
+func ({{ .name }} *{{ .type }}) Multiply(obj Object) (Object, error) {
+	ret := C.PyNumber_Multiply(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_matrix_multiply -}}
+func ({{ .name }} *{{ .type }}) MatrixMultiply(obj Object) (Object, error) {
+	ret := C.PyNumber_MatrixMultiply(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_floor_divide -}}
+func ({{ .name }} *{{ .type }}) FloorDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_FloorDivide(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_true_divide -}}
+func ({{ .name }} *{{ .type }}) TrueDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_TrueDivide(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_remainder -}}
+func ({{ .name }} *{{ .type }}) Remainder(obj Object) (Object, error) {
+	ret := C.PyNumber_Remainder(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_divmod -}}
+func ({{ .name }} *{{ .type }}) Divmod(obj Object) (Object, error) {
+	ret := C.PyNumber_Divmod(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_power -}}
+func ({{ .name }} *{{ .type }}) Power(obj1, obj2 Object) (Object, error) {
+	ret := C.PyNumber_Power(c({{ .name }}), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_negative -}}
+func ({{ .name }} *{{ .type }}) Negative() (Object, error) {
+	ret := C.PyNumber_Negative(c({{ .name }}))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_positive -}}
+func ({{ .name }} *{{ .type }}) Positive() (Object, error) {
+	ret := C.PyNumber_Positive(c({{ .name }}))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_absolute -}}
+func ({{ .name }} *{{ .type }}) Absolute() (Object, error) {
+	ret := C.PyNumber_Absolute(c({{ .name }}))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_invert -}}
+func ({{ .name }} *{{ .type }}) Invert() (Object, error) {
+	ret := C.PyNumber_Invert(c({{ .name }}))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_lshift -}}
+func ({{ .name }} *{{ .type }}) LShift(obj Object) (Object, error) {
+	ret := C.PyNumber_Lshift(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_rshift -}}
+func ({{ .name }} *{{ .type }}) RShift(obj Object) (Object, error) {
+	ret := C.PyNumber_Rshift(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_and -}}
+func ({{ .name }} *{{ .type }}) And(obj Object) (Object, error) {
+	ret := C.PyNumber_And(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_xor -}}
+func ({{ .name }} *{{ .type }}) Xor(obj Object) (Object, error) {
+	ret := C.PyNumber_Xor(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.nb_or -}}
+func ({{ .name }} *{{ .type }}) Or(obj Object) (Object, error) {
+	ret := C.PyNumber_Or(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+
+
+{{- if .funcs.nb_inplace_add -}}
+func ({{ .name }} *{{ .type }}) InPlaceAdd(obj Object) (Object, error) {
+	ret := C.PyNumber_InPlaceAdd(c({{ .name }}), c(obj))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
 /*
 set fields:
 {{- range $name, $set := .funcs -}}

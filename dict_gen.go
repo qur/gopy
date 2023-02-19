@@ -90,6 +90,11 @@ func (d *Dict) Contains(obj Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
+func (d *Dict) Or(obj Object) (Object, error) {
+	ret := C.PyNumber_Or(c(d), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

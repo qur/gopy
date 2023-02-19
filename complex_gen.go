@@ -32,8 +32,48 @@ func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
 }
 
-func (c *Complex) AsNumber() *NumberMethods {
-	return (*NumberMethods)(unsafe.Pointer(c.Base()))
+func (co *Complex) AsNumber() *NumberMethods {
+	return (*NumberMethods)(unsafe.Pointer(co.Base()))
+}
+
+func (co *Complex) Add(obj Object) (Object, error) {
+	ret := C.PyNumber_Add(c(co), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (co *Complex) Subtract(obj Object) (Object, error) {
+	ret := C.PyNumber_Subtract(c(co), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (co *Complex) Multiply(obj Object) (Object, error) {
+	ret := C.PyNumber_Multiply(c(co), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (co *Complex) TrueDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_TrueDivide(c(co), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (co *Complex) Power(obj1, obj2 Object) (Object, error) {
+	ret := C.PyNumber_Power(c(co), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
+func (co *Complex) Negative() (Object, error) {
+	ret := C.PyNumber_Negative(c(co))
+	return obj2ObjErr(ret)
+}
+
+func (co *Complex) Positive() (Object, error) {
+	ret := C.PyNumber_Positive(c(co))
+	return obj2ObjErr(ret)
+}
+
+func (co *Complex) Absolute() (Object, error) {
+	ret := C.PyNumber_Absolute(c(co))
+	return obj2ObjErr(ret)
 }
 
 

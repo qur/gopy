@@ -28,6 +28,16 @@ func examine(value any) map[string]bool {
 	return funcs
 }
 
+func shortName(name string) string {
+	n := strings.ToLower(name[:1])
+	if n == "c" {
+		// using c would conflict the the c() function that converts Object to
+		// *C.PyObject.
+		return strings.ToLower(name[:2])
+	}
+	return n
+}
+
 func generate(name string, funcs map[string]bool) {
 	path := fmt.Sprintf("%s_gen.go", strings.ToLower(name))
 	f, err := os.Create(path)
@@ -38,7 +48,7 @@ func generate(name string, funcs map[string]bool) {
 	if err := code.Execute(f, map[string]any{
 		"type":  name,
 		"ltype": strings.ToLower(name[:1]) + name[1:],
-		"name":  strings.ToLower(name[:1]),
+		"name":  shortName(name),
 		"funcs": funcs,
 	}); err != nil {
 		log.Fatalf("Failed to generate template: %s", err)

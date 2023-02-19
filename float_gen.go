@@ -36,6 +36,61 @@ func (f *Float) AsNumber() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(f.Base()))
 }
 
+func (f *Float) Add(obj Object) (Object, error) {
+	ret := C.PyNumber_Add(c(f), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) Subtract(obj Object) (Object, error) {
+	ret := C.PyNumber_Subtract(c(f), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) Multiply(obj Object) (Object, error) {
+	ret := C.PyNumber_Multiply(c(f), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) FloorDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_FloorDivide(c(f), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) TrueDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_TrueDivide(c(f), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) Remainder(obj Object) (Object, error) {
+	ret := C.PyNumber_Remainder(c(f), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) Divmod(obj Object) (Object, error) {
+	ret := C.PyNumber_Divmod(c(f), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) Power(obj1, obj2 Object) (Object, error) {
+	ret := C.PyNumber_Power(c(f), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) Negative() (Object, error) {
+	ret := C.PyNumber_Negative(c(f))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) Positive() (Object, error) {
+	ret := C.PyNumber_Positive(c(f))
+	return obj2ObjErr(ret)
+}
+
+func (f *Float) Absolute() (Object, error) {
+	ret := C.PyNumber_Absolute(c(f))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

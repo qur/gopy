@@ -49,6 +49,11 @@ func (o *ODict) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
+func (o *ODict) Or(obj Object) (Object, error) {
+	ret := C.PyNumber_Or(c(o), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

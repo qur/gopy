@@ -172,6 +172,11 @@ func (b *ByteArray) DelSlice(start, end int) error {
 	return int2Err(ret)
 }
 
+func (b *ByteArray) Remainder(obj Object) (Object, error) {
+	ret := C.PyNumber_Remainder(c(b), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

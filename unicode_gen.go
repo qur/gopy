@@ -123,6 +123,11 @@ func (u *Unicode) GetSlice(start, end int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (u *Unicode) Remainder(obj Object) (Object, error) {
+	ret := C.PyNumber_Remainder(c(u), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

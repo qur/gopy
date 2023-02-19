@@ -36,6 +36,91 @@ func (l *Long) AsNumber() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(l.Base()))
 }
 
+func (l *Long) Add(obj Object) (Object, error) {
+	ret := C.PyNumber_Add(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Subtract(obj Object) (Object, error) {
+	ret := C.PyNumber_Subtract(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Multiply(obj Object) (Object, error) {
+	ret := C.PyNumber_Multiply(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) FloorDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_FloorDivide(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) TrueDivide(obj Object) (Object, error) {
+	ret := C.PyNumber_TrueDivide(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Remainder(obj Object) (Object, error) {
+	ret := C.PyNumber_Remainder(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Divmod(obj Object) (Object, error) {
+	ret := C.PyNumber_Divmod(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Power(obj1, obj2 Object) (Object, error) {
+	ret := C.PyNumber_Power(c(l), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Negative() (Object, error) {
+	ret := C.PyNumber_Negative(c(l))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Positive() (Object, error) {
+	ret := C.PyNumber_Positive(c(l))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Absolute() (Object, error) {
+	ret := C.PyNumber_Absolute(c(l))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Invert() (Object, error) {
+	ret := C.PyNumber_Invert(c(l))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) LShift(obj Object) (Object, error) {
+	ret := C.PyNumber_Lshift(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) RShift(obj Object) (Object, error) {
+	ret := C.PyNumber_Rshift(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) And(obj Object) (Object, error) {
+	ret := C.PyNumber_And(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Xor(obj Object) (Object, error) {
+	ret := C.PyNumber_Xor(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
+func (l *Long) Or(obj Object) (Object, error) {
+	ret := C.PyNumber_Or(c(l), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

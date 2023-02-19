@@ -123,6 +123,11 @@ func (b *Bytes) GetSlice(start, end int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (b *Bytes) Remainder(obj Object) (Object, error) {
+	ret := C.PyNumber_Remainder(c(b), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

@@ -30,6 +30,11 @@ func newType(obj *C.PyObject) *Type {
 	return (*Type)(unsafe.Pointer(obj))
 }
 
+func (t *Type) Or(obj Object) (Object, error) {
+	ret := C.PyNumber_Or(c(t), c(obj))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*
