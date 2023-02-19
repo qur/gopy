@@ -13,6 +13,11 @@ import (
 	"unsafe"
 )
 
+// Code generation commands:
+//go:generate ./gen_exc.py exc.go
+//go:generate ./gen_slots.py
+//go:generate ./gen_types.py /usr/local/include/python3.11
+
 // Initialize initialises the Python runtime.
 //
 // You probably want InitAndLockWithSignals though, as it doesn't require the
