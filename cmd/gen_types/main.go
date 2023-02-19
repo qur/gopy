@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -28,7 +29,13 @@ func examine(value any) map[string]bool {
 }
 
 func generate(name string, funcs map[string]bool) {
-	if err := code.Execute(os.Stdout, map[string]any{
+	path := fmt.Sprintf("%s_gen.go", strings.ToLower(name))
+	f, err := os.Create(path)
+	if err != nil {
+		log.Fatalf("Failed to create file %s: %s", path, err)
+	}
+	defer f.Close()
+	if err := code.Execute(f, map[string]any{
 		"type":  name,
 		"ltype": strings.ToLower(name[:1]) + name[1:],
 		"name":  strings.ToLower(name[:1]),
@@ -39,15 +46,7 @@ func generate(name string, funcs map[string]bool) {
 }
 
 func main() {
-	// funcMap := map[string]map[string]bool{}
 	for name, t := range types {
-		// funcMap[name] = examine(t)
 		generate(name, examine(t))
 	}
-
-	// output, err := json.Marshal(funcMap)
-	// if err != nil {
-	// 	log.Fatalf("Failed to encode: %s", err)
-	// }
-	// fmt.Printf("%s\n", output)
 }

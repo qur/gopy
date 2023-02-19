@@ -66,14 +66,14 @@ func ({{ .name }} *{{ .type }}) HasKeyString(key string) bool {
 
 {{ if .funcs.mp_ass_subscript -}}
 func ({{ .name }} *{{ .type }}) DelItem(key Object) error {
-	ret := C.PyMapping_DelItem(c({{ .name }}), c(key))
+	ret := C.PyObject_DelItem(c({{ .name }}), c(key))
 	return int2Err(ret)
 }
 
 func ({{ .name }} *{{ .type }}) DelItemString(key string) error {
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
-	ret := C.PyMapping_DelItemString(c({{ .name }}), cKey)
+	ret := C.PyObject_DelItemString(c({{ .name }}), cKey)
 	return int2Err(ret)
 }
 
