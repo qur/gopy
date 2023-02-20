@@ -36,86 +36,154 @@ func (l *Long) AsNumber() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(l.Base()))
 }
 
+// Add returns the result of adding l and obj. The equivalent Python is
+// "l + obj".
+//
+// Return value: New Reference.
 func (l *Long) Add(obj Object) (Object, error) {
 	ret := C.PyNumber_Add(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Subtract returns the result of subtracting obj from l. The equivalent Python
+// is "l - obj".
+//
+// Return value: New Reference.
 func (l *Long) Subtract(obj Object) (Object, error) {
 	ret := C.PyNumber_Subtract(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Multiply returns the result of multiplying l by obj. The equivalent Python
+// is "l * obj".
+//
+// Return value: New Reference.
 func (l *Long) Multiply(obj Object) (Object, error) {
 	ret := C.PyNumber_Multiply(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// FloorDivide returns the floor of dividing l by obj. The equivalent Python is
+// "l // obj".
+//
+// Return value: New Reference.
 func (l *Long) FloorDivide(obj Object) (Object, error) {
 	ret := C.PyNumber_FloorDivide(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// TrueDivide returns the approximate result of dividing l by obj. The result is
+// approximate due to the limited representational accuracy of binary floating
+// point numbers. The equivalent Python is "l / obj".
+//
+// Return value: New Reference.
 func (l *Long) TrueDivide(obj Object) (Object, error) {
 	ret := C.PyNumber_TrueDivide(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Remainder returns the remainder of dividing l by obj. The equivalent Python
+// is "l % obj".
+//
+// Return value: New Reference.
 func (l *Long) Remainder(obj Object) (Object, error) {
 	ret := C.PyNumber_Remainder(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Divmod returns the result of the Python "divmod(l, obj)".
+//
+// Return value: New Reference.
 func (l *Long) Divmod(obj Object) (Object, error) {
 	ret := C.PyNumber_Divmod(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Power returns the result of the Python "pow(l, obj1, obj2)", where
+// obj2 is optional.
+//
+// Return value: New Reference.
 func (l *Long) Power(obj1, obj2 Object) (Object, error) {
+	if obj2 == nil {
+		None.Incref()
+		obj2 = None
+	}
 	ret := C.PyNumber_Power(c(l), c(obj1), c(obj2))
 	return obj2ObjErr(ret)
 }
 
+// Negative returns the negation of l. The equivalent Python is "-l".
+//
+// Return value: New Reference.
 func (l *Long) Negative() (Object, error) {
 	ret := C.PyNumber_Negative(c(l))
 	return obj2ObjErr(ret)
 }
 
+// Positive returns the positive of l. The equivalent Python is "+l".
+//
+// Return value: New Reference.
 func (l *Long) Positive() (Object, error) {
 	ret := C.PyNumber_Positive(c(l))
 	return obj2ObjErr(ret)
 }
 
+// Absolute returns the absolute value of l. The equivalent Python is "abs(l)".
+//
+// Return value: New Reference.
 func (l *Long) Absolute() (Object, error) {
 	ret := C.PyNumber_Absolute(c(l))
 	return obj2ObjErr(ret)
 }
 
+// Invert returns the bitwise negation of l. The equivalent Python is "-l".
+//
+// Return value: New Reference.
 func (l *Long) Invert() (Object, error) {
 	ret := C.PyNumber_Invert(c(l))
 	return obj2ObjErr(ret)
 }
 
+// LShift returns the result of left shifting l by obj. The equivalent Python
+// is "l << obj".
+//
+// Return value: New Reference.
 func (l *Long) LShift(obj Object) (Object, error) {
 	ret := C.PyNumber_Lshift(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// RShift returns the result of right shifting l by obj. The equivalent Python
+// is "l << obj".
+//
+// Return value: New Reference.
 func (l *Long) RShift(obj Object) (Object, error) {
 	ret := C.PyNumber_Rshift(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// And returns the bitwise and of l and obj. The equivalent Python is
+// "l & obj".
+//
+// Return value: New Reference.
 func (l *Long) And(obj Object) (Object, error) {
 	ret := C.PyNumber_And(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Xor returns the bitwise xor of l and obj. The equivalent Python is
+// "l ^ obj".
+//
+// Return value: New Reference.
 func (l *Long) Xor(obj Object) (Object, error) {
 	ret := C.PyNumber_Xor(c(l), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Or returns the bitwise or of l and obj. The equivalent Python is
+// "l | obj".
+//
+// Return value: New Reference.
 func (l *Long) Or(obj Object) (Object, error) {
 	ret := C.PyNumber_Or(c(l), c(obj))
 	return obj2ObjErr(ret)

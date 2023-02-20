@@ -234,6 +234,10 @@ func ({{ .name }} *{{ .type }}) AsNumber() *NumberMethods {
 {{ end }}
 
 {{- if .funcs.nb_add -}}
+// Add returns the result of adding {{ .name }} and obj. The equivalent Python is
+// "{{ .name }} + obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Add(obj Object) (Object, error) {
 	ret := C.PyNumber_Add(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -242,6 +246,10 @@ func ({{ .name }} *{{ .type }}) Add(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_subtract -}}
+// Subtract returns the result of subtracting obj from {{ .name }}. The equivalent Python
+// is "{{ .name }} - obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Subtract(obj Object) (Object, error) {
 	ret := C.PyNumber_Subtract(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -250,6 +258,10 @@ func ({{ .name }} *{{ .type }}) Subtract(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_multiply -}}
+// Multiply returns the result of multiplying {{ .name }} by obj. The equivalent Python
+// is "{{ .name }} * obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Multiply(obj Object) (Object, error) {
 	ret := C.PyNumber_Multiply(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -266,6 +278,10 @@ func ({{ .name }} *{{ .type }}) MatrixMultiply(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_floor_divide -}}
+// FloorDivide returns the floor of dividing {{ .name }} by obj. The equivalent Python is
+// "{{ .name }} // obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) FloorDivide(obj Object) (Object, error) {
 	ret := C.PyNumber_FloorDivide(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -274,6 +290,11 @@ func ({{ .name }} *{{ .type }}) FloorDivide(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_true_divide -}}
+// TrueDivide returns the approximate result of dividing {{ .name }} by obj. The result is
+// approximate due to the limited representational accuracy of binary floating
+// point numbers. The equivalent Python is "{{ .name }} / obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) TrueDivide(obj Object) (Object, error) {
 	ret := C.PyNumber_TrueDivide(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -282,6 +303,10 @@ func ({{ .name }} *{{ .type }}) TrueDivide(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_remainder -}}
+// Remainder returns the remainder of dividing {{ .name }} by obj. The equivalent Python
+// is "{{ .name }} % obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Remainder(obj Object) (Object, error) {
 	ret := C.PyNumber_Remainder(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -290,6 +315,9 @@ func ({{ .name }} *{{ .type }}) Remainder(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_divmod -}}
+// Divmod returns the result of the Python "divmod({{ .name }}, obj)".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Divmod(obj Object) (Object, error) {
 	ret := C.PyNumber_Divmod(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -298,7 +326,15 @@ func ({{ .name }} *{{ .type }}) Divmod(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_power -}}
+// Power returns the result of the Python "pow({{ .name }}, obj1, obj2)", where
+// obj2 is optional.
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Power(obj1, obj2 Object) (Object, error) {
+	if obj2 == nil {
+		None.Incref()
+		obj2 = None
+	}
 	ret := C.PyNumber_Power(c({{ .name }}), c(obj1), c(obj2))
 	return obj2ObjErr(ret)
 }
@@ -306,6 +342,9 @@ func ({{ .name }} *{{ .type }}) Power(obj1, obj2 Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_negative -}}
+// Negative returns the negation of {{ .name }}. The equivalent Python is "-{{ .name }}".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Negative() (Object, error) {
 	ret := C.PyNumber_Negative(c({{ .name }}))
 	return obj2ObjErr(ret)
@@ -314,6 +353,9 @@ func ({{ .name }} *{{ .type }}) Negative() (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_positive -}}
+// Positive returns the positive of {{ .name }}. The equivalent Python is "+{{ .name }}".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Positive() (Object, error) {
 	ret := C.PyNumber_Positive(c({{ .name }}))
 	return obj2ObjErr(ret)
@@ -322,6 +364,9 @@ func ({{ .name }} *{{ .type }}) Positive() (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_absolute -}}
+// Absolute returns the absolute value of {{ .name }}. The equivalent Python is "abs({{ .name }})".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Absolute() (Object, error) {
 	ret := C.PyNumber_Absolute(c({{ .name }}))
 	return obj2ObjErr(ret)
@@ -330,6 +375,9 @@ func ({{ .name }} *{{ .type }}) Absolute() (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_invert -}}
+// Invert returns the bitwise negation of {{ .name }}. The equivalent Python is "-{{ .name }}".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Invert() (Object, error) {
 	ret := C.PyNumber_Invert(c({{ .name }}))
 	return obj2ObjErr(ret)
@@ -338,6 +386,10 @@ func ({{ .name }} *{{ .type }}) Invert() (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_lshift -}}
+// LShift returns the result of left shifting {{ .name }} by obj. The equivalent Python
+// is "{{ .name }} << obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) LShift(obj Object) (Object, error) {
 	ret := C.PyNumber_Lshift(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -346,6 +398,10 @@ func ({{ .name }} *{{ .type }}) LShift(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_rshift -}}
+// RShift returns the result of right shifting {{ .name }} by obj. The equivalent Python
+// is "{{ .name }} << obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) RShift(obj Object) (Object, error) {
 	ret := C.PyNumber_Rshift(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -354,6 +410,10 @@ func ({{ .name }} *{{ .type }}) RShift(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_and -}}
+// And returns the bitwise and of {{ .name }} and obj. The equivalent Python is
+// "{{ .name }} & obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) And(obj Object) (Object, error) {
 	ret := C.PyNumber_And(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -362,6 +422,10 @@ func ({{ .name }} *{{ .type }}) And(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_xor -}}
+// Xor returns the bitwise xor of {{ .name }} and obj. The equivalent Python is
+// "{{ .name }} ^ obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Xor(obj Object) (Object, error) {
 	ret := C.PyNumber_Xor(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -370,6 +434,10 @@ func ({{ .name }} *{{ .type }}) Xor(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_or -}}
+// Or returns the bitwise or of {{ .name }} and obj. The equivalent Python is
+// "{{ .name }} | obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Or(obj Object) (Object, error) {
 	ret := C.PyNumber_Or(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -378,6 +446,10 @@ func ({{ .name }} *{{ .type }}) Or(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_add -}}
+// InPlaceAdd returns the result of adding {{ .name }} and obj. This is done in place.
+// The equivalent Python is "{{ .name }} += obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceAdd(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceAdd(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -386,6 +458,10 @@ func ({{ .name }} *{{ .type }}) InPlaceAdd(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_subtract -}}
+// InPlaceSubtract returns the result of subtracting obj from {{ .name }}. This is done
+// in place. The equivalent Python is "{{ .name }} -= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceSubtract(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceSubtract(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -394,6 +470,10 @@ func ({{ .name }} *{{ .type }}) InPlaceSubtract(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_multiply -}}
+// InPlaceMultiply returns the result of multiplying {{ .name }} by obj. This is done in
+// place. The equivalent Python is "{{ .name }} *= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceMultiply(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceMultiply(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -410,6 +490,10 @@ func ({{ .name }} *{{ .type }}) InPlaceMatrixMultiply(obj Object) (Object, error
 {{ end }}
 
 {{- if .funcs.nb_floor_inplace_divide -}}
+// InPlaceFloorDivide returns the floor of dividing {{ .name }} by obj. This is done in
+// place. The equivalent Python is "{{ .name }} //= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceFloorDivide(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceFloorDivide(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -418,6 +502,12 @@ func ({{ .name }} *{{ .type }}) InPlaceFloorDivide(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_true_divide -}}
+// InPlaceTrueDivide returns the approximate result of dividing {{ .name }} by obj. This
+// is done in place. The result is approximate due to the limited
+// representational accuracy of binary floating point numbers. The equivalent
+// Python is "{{ .name }} /= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceTrueDivide(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceTrueDivide(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -426,6 +516,10 @@ func ({{ .name }} *{{ .type }}) InPlaceTrueDivide(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_remainder -}}
+// InPlaceRemainder returns the remainder of {{ .name }} divided by obj. This is done in
+// place. The equivalent Python is "{{ .name }} %= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceRemainder(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceRemainder(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -434,6 +528,11 @@ func ({{ .name }} *{{ .type }}) InPlaceRemainder(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_power -}}
+// InPlacePower returns the result of the Python "pow({{ .name }}, obj1, obj2)". This is
+// done in place. If obj2 is None, then the Python "{{ .name }} **= obj" is also
+// equivalent, if obj2 is not None, there is no equivalent in Python.
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlacePower(obj1, obj2 Object) (Object, error) {
 	ret := C.PyNumber_InPlacePower(c({{ .name }}), c(obj1), c(obj2))
 	return obj2ObjErr(ret)
@@ -442,6 +541,10 @@ func ({{ .name }} *{{ .type }}) InPlacePower(obj1, obj2 Object) (Object, error) 
 {{ end }}
 
 {{- if .funcs.nb_inplace_lshift -}}
+// InPlaceLShift returns the result of left shifting {{ .name }} by obj. This is done in
+// place. The equivalent Python is "{{ .name }} <<= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceLShift(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceLshift(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -450,6 +553,10 @@ func ({{ .name }} *{{ .type }}) InPlaceLShift(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_rshift -}}
+// InPlaceRShift returns the result of right shifting {{ .name }} by obj. This is done in
+// place. The equivalent Python is "{{ .name }} >>= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceRShift(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceRshift(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -458,6 +565,10 @@ func ({{ .name }} *{{ .type }}) InPlaceRShift(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_and -}}
+// InPlaceAnd returns the bitwise and of {{ .name }} and obj. This is done in place. The
+// equivalent Python is "{{ .name }} &= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceAnd(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceAnd(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -466,6 +577,10 @@ func ({{ .name }} *{{ .type }}) InPlaceAnd(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_xor -}}
+// InPlaceXor returns the bitwise xor of {{ .name }} and obj. This is done in place. The
+// equivalent Python is "{{ .name }} ^= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceXor(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceXor(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)
@@ -474,6 +589,10 @@ func ({{ .name }} *{{ .type }}) InPlaceXor(obj Object) (Object, error) {
 {{ end }}
 
 {{- if .funcs.nb_inplace_or -}}
+// InPlaceOr returns the bitwise or of {{ .name }} and obj. This is done in place. The
+// equivalent Python is "{{ .name }} |= obj".
+//
+// Return value: New Reference.
 func ({{ .name }} *{{ .type }}) InPlaceOr(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceOr(c({{ .name }}), c(obj))
 	return obj2ObjErr(ret)

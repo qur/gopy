@@ -64,7 +64,7 @@ func (n *NumberMethods) Multiply(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// FloorDivide returns the floor of dividing n obj obj. The equivalent Python is
+// FloorDivide returns the floor of dividing n by obj. The equivalent Python is
 // "n // obj".
 //
 // Return value: New Reference.
@@ -211,7 +211,7 @@ func (n *NumberMethods) InPlaceMultiply(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// InPlaceFloorDivide returns the floor of dividing n obj obj. This is done in
+// InPlaceFloorDivide returns the floor of dividing n by obj. This is done in
 // place if supported by n. The equivalent Python is "n //= obj".
 //
 // Return value: New Reference.
@@ -222,8 +222,8 @@ func (n *NumberMethods) InPlaceFloorDivide(obj Object) (Object, error) {
 
 // InPlaceTrueDivide returns the approximate result of dividing n by obj. This
 // is done in place if supported by n. The result is approximate due to the
-// limited representational accuracy of binary floating point numbers. This is
-// done in place if supported by n. The equivalent Python is "n /= obj".
+// limited representational accuracy of binary floating point numbers. The
+// equivalent Python is "n /= obj".
 //
 // Return value: New Reference.
 func (n *NumberMethods) InPlaceTrueDivide(obj Object) (Object, error) {

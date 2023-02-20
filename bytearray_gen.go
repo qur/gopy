@@ -172,6 +172,10 @@ func (b *ByteArray) DelSlice(start, end int) error {
 	return int2Err(ret)
 }
 
+// Remainder returns the remainder of dividing b by obj. The equivalent Python
+// is "b % obj".
+//
+// Return value: New Reference.
 func (b *ByteArray) Remainder(obj Object) (Object, error) {
 	ret := C.PyNumber_Remainder(c(b), c(obj))
 	return obj2ObjErr(ret)

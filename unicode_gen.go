@@ -123,6 +123,10 @@ func (u *Unicode) GetSlice(start, end int) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// Remainder returns the remainder of dividing u by obj. The equivalent Python
+// is "u % obj".
+//
+// Return value: New Reference.
 func (u *Unicode) Remainder(obj Object) (Object, error) {
 	ret := C.PyNumber_Remainder(c(u), c(obj))
 	return obj2ObjErr(ret)

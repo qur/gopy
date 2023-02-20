@@ -49,11 +49,19 @@ func (o *ODict) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
+// Or returns the bitwise or of o and obj. The equivalent Python is
+// "o | obj".
+//
+// Return value: New Reference.
 func (o *ODict) Or(obj Object) (Object, error) {
 	ret := C.PyNumber_Or(c(o), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// InPlaceOr returns the bitwise or of o and obj. This is done in place. The
+// equivalent Python is "o |= obj".
+//
+// Return value: New Reference.
 func (o *ODict) InPlaceOr(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceOr(c(o), c(obj))
 	return obj2ObjErr(ret)

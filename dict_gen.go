@@ -90,11 +90,19 @@ func (d *Dict) Contains(obj Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
+// Or returns the bitwise or of d and obj. The equivalent Python is
+// "d | obj".
+//
+// Return value: New Reference.
 func (d *Dict) Or(obj Object) (Object, error) {
 	ret := C.PyNumber_Or(c(d), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// InPlaceOr returns the bitwise or of d and obj. This is done in place. The
+// equivalent Python is "d |= obj".
+//
+// Return value: New Reference.
 func (d *Dict) InPlaceOr(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceOr(c(d), c(obj))
 	return obj2ObjErr(ret)

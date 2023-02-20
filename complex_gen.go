@@ -36,41 +36,75 @@ func (co *Complex) AsNumber() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(co.Base()))
 }
 
+// Add returns the result of adding co and obj. The equivalent Python is
+// "co + obj".
+//
+// Return value: New Reference.
 func (co *Complex) Add(obj Object) (Object, error) {
 	ret := C.PyNumber_Add(c(co), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Subtract returns the result of subtracting obj from co. The equivalent Python
+// is "co - obj".
+//
+// Return value: New Reference.
 func (co *Complex) Subtract(obj Object) (Object, error) {
 	ret := C.PyNumber_Subtract(c(co), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Multiply returns the result of multiplying co by obj. The equivalent Python
+// is "co * obj".
+//
+// Return value: New Reference.
 func (co *Complex) Multiply(obj Object) (Object, error) {
 	ret := C.PyNumber_Multiply(c(co), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// TrueDivide returns the approximate result of dividing co by obj. The result is
+// approximate due to the limited representational accuracy of binary floating
+// point numbers. The equivalent Python is "co / obj".
+//
+// Return value: New Reference.
 func (co *Complex) TrueDivide(obj Object) (Object, error) {
 	ret := C.PyNumber_TrueDivide(c(co), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Power returns the result of the Python "pow(co, obj1, obj2)", where
+// obj2 is optional.
+//
+// Return value: New Reference.
 func (co *Complex) Power(obj1, obj2 Object) (Object, error) {
+	if obj2 == nil {
+		None.Incref()
+		obj2 = None
+	}
 	ret := C.PyNumber_Power(c(co), c(obj1), c(obj2))
 	return obj2ObjErr(ret)
 }
 
+// Negative returns the negation of co. The equivalent Python is "-co".
+//
+// Return value: New Reference.
 func (co *Complex) Negative() (Object, error) {
 	ret := C.PyNumber_Negative(c(co))
 	return obj2ObjErr(ret)
 }
 
+// Positive returns the positive of co. The equivalent Python is "+co".
+//
+// Return value: New Reference.
 func (co *Complex) Positive() (Object, error) {
 	ret := C.PyNumber_Positive(c(co))
 	return obj2ObjErr(ret)
 }
 
+// Absolute returns the absolute value of co. The equivalent Python is "abs(co)".
+//
+// Return value: New Reference.
 func (co *Complex) Absolute() (Object, error) {
 	ret := C.PyNumber_Absolute(c(co))
 	return obj2ObjErr(ret)

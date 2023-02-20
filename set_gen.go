@@ -44,41 +44,73 @@ func (s *Set) Contains(obj Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
+// Subtract returns the result of subtracting obj from s. The equivalent Python
+// is "s - obj".
+//
+// Return value: New Reference.
 func (s *Set) Subtract(obj Object) (Object, error) {
 	ret := C.PyNumber_Subtract(c(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// And returns the bitwise and of s and obj. The equivalent Python is
+// "s & obj".
+//
+// Return value: New Reference.
 func (s *Set) And(obj Object) (Object, error) {
 	ret := C.PyNumber_And(c(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Xor returns the bitwise xor of s and obj. The equivalent Python is
+// "s ^ obj".
+//
+// Return value: New Reference.
 func (s *Set) Xor(obj Object) (Object, error) {
 	ret := C.PyNumber_Xor(c(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Or returns the bitwise or of s and obj. The equivalent Python is
+// "s | obj".
+//
+// Return value: New Reference.
 func (s *Set) Or(obj Object) (Object, error) {
 	ret := C.PyNumber_Or(c(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// InPlaceSubtract returns the result of subtracting obj from s. This is done
+// in place. The equivalent Python is "s -= obj".
+//
+// Return value: New Reference.
 func (s *Set) InPlaceSubtract(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceSubtract(c(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// InPlaceAnd returns the bitwise and of s and obj. This is done in place. The
+// equivalent Python is "s &= obj".
+//
+// Return value: New Reference.
 func (s *Set) InPlaceAnd(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceAnd(c(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// InPlaceXor returns the bitwise xor of s and obj. This is done in place. The
+// equivalent Python is "s ^= obj".
+//
+// Return value: New Reference.
 func (s *Set) InPlaceXor(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceXor(c(s), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// InPlaceOr returns the bitwise or of s and obj. This is done in place. The
+// equivalent Python is "s |= obj".
+//
+// Return value: New Reference.
 func (s *Set) InPlaceOr(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceOr(c(s), c(obj))
 	return obj2ObjErr(ret)

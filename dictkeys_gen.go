@@ -44,21 +44,37 @@ func (d *DictKeys) Contains(obj Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
+// Subtract returns the result of subtracting obj from d. The equivalent Python
+// is "d - obj".
+//
+// Return value: New Reference.
 func (d *DictKeys) Subtract(obj Object) (Object, error) {
 	ret := C.PyNumber_Subtract(c(d), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// And returns the bitwise and of d and obj. The equivalent Python is
+// "d & obj".
+//
+// Return value: New Reference.
 func (d *DictKeys) And(obj Object) (Object, error) {
 	ret := C.PyNumber_And(c(d), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Xor returns the bitwise xor of d and obj. The equivalent Python is
+// "d ^ obj".
+//
+// Return value: New Reference.
 func (d *DictKeys) Xor(obj Object) (Object, error) {
 	ret := C.PyNumber_Xor(c(d), c(obj))
 	return obj2ObjErr(ret)
 }
 
+// Or returns the bitwise or of d and obj. The equivalent Python is
+// "d | obj".
+//
+// Return value: New Reference.
 func (d *DictKeys) Or(obj Object) (Object, error) {
 	ret := C.PyNumber_Or(c(d), c(obj))
 	return obj2ObjErr(ret)
