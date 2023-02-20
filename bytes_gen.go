@@ -43,6 +43,10 @@ func (b *Bytes) Size() int {
 	return int(ret)
 }
 
+// AsMapping returns a MappingMethods instance that refers to the same
+// underlying Python object as b.
+//
+// This method also means that Bytes implements the Mapping interface.
 func (b *Bytes) AsMapping() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer(b.Base()))
 }
@@ -68,6 +72,10 @@ func (b *Bytes) HasKeyString(key string) bool {
 	return ret > 0
 }
 
+// AsSequence returns a SequenceMethods instance that refers to the same
+// underlying Python object as b.
+//
+// This method also means that Bytes implements the Sequence interface.
 func (b *Bytes) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(b.Base()))
 }

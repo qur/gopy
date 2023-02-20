@@ -56,6 +56,10 @@ func ({{ .name }} *{{ .type }}) Size() int {
 {{ end }}
 
 {{- if .funcs.mp_subscript -}}
+// AsMapping returns a MappingMethods instance that refers to the same
+// underlying Python object as {{ .name }}.
+//
+// This method also means that {{ .type }} implements the Mapping interface.
 func ({{ .name }} *{{ .type }}) AsMapping() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer({{ .name }}.Base()))
 }
@@ -109,6 +113,10 @@ func ({{ .name }} *{{ .type }}) SetItemString(key string, v Object) error {
 {{ end }}
 
 {{- if .funcs.sq_item -}}
+// AsSequence returns a SequenceMethods instance that refers to the same
+// underlying Python object as {{ .name }}.
+//
+// This method also means that {{ .type }} implements the Sequence interface.
 func ({{ .name }} *{{ .type }}) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer({{ .name }}.Base()))
 }
@@ -227,6 +235,10 @@ func ({{ .name }} *{{ .type }}) DelSlice(start, end int) error {
 {{ end }}
 
 {{- if or .funcs.nb_index .funcs.nb_int .funcs.nb_float (eq .type "Complex") -}}
+// AsNumber returns a NumberMethods instance that refers to the same underlying
+// Python object as {{ .name }}.
+//
+// This method also means that {{ .type }} implements the Number interface.
 func ({{ .name }} *{{ .type }}) AsNumber() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer({{ .name }}.Base()))
 }

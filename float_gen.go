@@ -32,6 +32,10 @@ func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
 }
 
+// AsNumber returns a NumberMethods instance that refers to the same underlying
+// Python object as f.
+//
+// This method also means that Float implements the Number interface.
 func (f *Float) AsNumber() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(f.Base()))
 }

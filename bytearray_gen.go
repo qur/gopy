@@ -43,6 +43,10 @@ func (b *ByteArray) Size() int {
 	return int(ret)
 }
 
+// AsMapping returns a MappingMethods instance that refers to the same
+// underlying Python object as b.
+//
+// This method also means that ByteArray implements the Mapping interface.
 func (b *ByteArray) AsMapping() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer(b.Base()))
 }
@@ -87,6 +91,10 @@ func (b *ByteArray) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
+// AsSequence returns a SequenceMethods instance that refers to the same
+// underlying Python object as b.
+//
+// This method also means that ByteArray implements the Sequence interface.
 func (b *ByteArray) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(b.Base()))
 }

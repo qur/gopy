@@ -43,6 +43,10 @@ func (l *List) Size() int {
 	return int(ret)
 }
 
+// AsMapping returns a MappingMethods instance that refers to the same
+// underlying Python object as l.
+//
+// This method also means that List implements the Mapping interface.
 func (l *List) AsMapping() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer(l.Base()))
 }
@@ -87,6 +91,10 @@ func (l *List) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
+// AsSequence returns a SequenceMethods instance that refers to the same
+// underlying Python object as l.
+//
+// This method also means that List implements the Sequence interface.
 func (l *List) AsSequence() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(l.Base()))
 }

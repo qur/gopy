@@ -32,6 +32,10 @@ func newLong(obj *C.PyObject) *Long {
 	return (*Long)(unsafe.Pointer(obj))
 }
 
+// AsNumber returns a NumberMethods instance that refers to the same underlying
+// Python object as l.
+//
+// This method also means that Long implements the Number interface.
 func (l *Long) AsNumber() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(l.Base()))
 }

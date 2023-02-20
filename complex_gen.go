@@ -32,6 +32,10 @@ func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
 }
 
+// AsNumber returns a NumberMethods instance that refers to the same underlying
+// Python object as co.
+//
+// This method also means that Complex implements the Number interface.
 func (co *Complex) AsNumber() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(co.Base()))
 }
