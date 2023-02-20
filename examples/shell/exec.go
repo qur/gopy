@@ -19,8 +19,7 @@ func execCmd(cmd, fname string, args []string) error {
 		return err
 	}
 
-	_, err = p.Wait(0)
-	if err != nil {
+	if _, err = p.Wait(); err != nil {
 		return err
 	}
 

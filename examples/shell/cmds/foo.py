@@ -1,2 +1,2 @@
 def foo(*args):
-    print "foo:", args
+    print("foo:", args)

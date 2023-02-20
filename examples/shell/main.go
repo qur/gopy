@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 )
 
@@ -30,9 +31,9 @@ func runCmd(command string, args []string, bg bool) error {
 }
 
 func main() {
-	err := setupPython()
-	if err != nil {
-		fmt.Printf("Setup Error: %s\n", err)
+
+	if err := setupPython(); err != nil {
+		log.Fatalf("Setup Error: %s\n", err)
 	}
 
 	for {
@@ -49,8 +50,7 @@ func main() {
 			continue
 		}
 
-		err = runCmd(command, args, bg)
-		if err != nil {
+		if err := runCmd(command, args, bg); err != nil {
 			fmt.Printf("Error: %s\n", err)
 			continue
 		}

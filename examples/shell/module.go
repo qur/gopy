@@ -13,21 +13,17 @@ func pyTokenise(args *py.Tuple) (py.Object, error) {
 
 	parts := tokenise(s)
 
-	t, err := py.NewTuple(int64(len(parts)))
-	if err != nil {
-		return nil, err
-	}
-
+	pyParts := make([]py.Object, len(parts))
 	for i, arg := range parts {
-		pyS, err := py.NewString(arg)
+		pyS, err := py.NewUnicode(arg)
 		if err != nil {
-			t.Decref()
 			return nil, err
 		}
-		t.SetItem(int64(i), pyS)
+		defer pyS.Decref()
+		pyParts[i] = pyS
 	}
 
-	return t, nil
+	return py.PackTuple(pyParts...)
 }
 
 func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
@@ -50,7 +46,7 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 	case *py.List:
 		argS = a.Slice()
 	default:
-		return nil, py.NewTypeErrorString("args must be tuple or list")
+		return nil, py.NewError(py.TypeError, "args must be tuple or list")
 	}
 
 	cArgs := make([]string, len(argS))
@@ -59,7 +55,7 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 		if err != nil {
 			return nil, err
 		}
-		pyS := str.(*py.String)
+		pyS := str.(*py.Unicode)
 		cArgs[i] = pyS.String()
 	}
 
@@ -76,24 +72,38 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 	return py.None, nil
 }
 
-func setupShModule() error {
-	methods := []py.GoMethod{
+var shModule = py.ModuleDef{
+	Name: "sh",
+	Methods: []py.GoMethod{
 		{"tokenise", pyTokenise, "tokenise the given string"},
 		{"run", pyRun, "run the given command"},
-	}
+	},
+}
 
-	shMod, err := py.InitModule("sh", methods)
+var cmdsModule = py.ModuleDef{
+	Name: "sh.__cmds__",
+}
+
+func setupShModule() error {
+	shMod, err := py.CreateModule(&shModule)
 	if err != nil {
 		return err
 	}
 
-	mod, err := py.InitModule("sh.__cmds__", []py.GoMethod{})
+	if err := shMod.Register(); err != nil {
+		return err
+	}
+
+	mod, err := py.CreateModule(&cmdsModule)
 	if err != nil {
 		return err
 	}
 
-	err = shMod.AddObject("__cmds__", mod)
-	if err != nil {
+	if err := mod.Register(); err != nil {
+		return err
+	}
+
+	if err := shMod.AddObject("__cmds__", mod); err != nil {
 		return err
 	}
 

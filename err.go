@@ -18,6 +18,12 @@ type Error struct {
 // by the Error e.  This is the same as the final line of the Python output from
 // an uncaught exception.
 func (e *Error) Error() string {
+	// It is quite likely that this function will be called from code that
+	// wasn't expecting to call into Python. So we need to make sure that we
+	// hold the GIL for the duration of this function.
+	lock := NewLock()
+	defer lock.Unlock()
+
 	ts := ""
 	en := C.excName(c(e.Kind))
 	if en.c == nil {

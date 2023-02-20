@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -33,23 +35,21 @@ func callPyCmd(fn py.Object, args []string) error {
 	lock := py.NewLock()
 	defer lock.Unlock()
 
-	pyArgs, err := py.NewTuple(int64(len(args)))
+	pyParts := make([]py.Object, len(args))
+	for i, arg := range args {
+		pyS, err := py.NewUnicode(arg)
+		if err != nil {
+			return err
+		}
+		defer pyS.Decref()
+		pyParts[i] = pyS
+	}
+
+	pyArgs, err := py.PackTuple(pyParts...)
 	if err != nil {
 		return nil
 	}
 	defer pyArgs.Decref()
-
-	for i, arg := range args {
-		s, err := py.NewString(arg)
-		if err != nil {
-			return err
-		}
-		err = pyArgs.SetItem(int64(i), s)
-		if err != nil {
-			s.Decref()
-			return err
-		}
-	}
 
 	ret, err := fn.Base().CallObject(pyArgs)
 	if err != nil {
@@ -90,12 +90,9 @@ func findPyCmd(cmd string) (CmdFunc, error) {
 
 	name := path.Join(mydir, "cmds", cmd+".py")
 
-	_, err := os.Stat(name)
-	if err != nil {
-		perr := err.(*os.PathError)
-		if perr.Err == os.ENOENT {
-			return nil, nil
-		}
+	if _, err := os.Stat(name); errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	} else if err != nil {
 		return nil, err
 	}
 
