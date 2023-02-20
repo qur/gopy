@@ -50,6 +50,26 @@ func (t *Type) Call(args *Tuple, kwds *Dict) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// CallGo calls t with the given args and kwds, either may be nil. Returns the
+// result of the call, or an Error on failure.  This is equivalent to
+// "t(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
+func (t *Type) CallGo(args []Object, kwds map[string]Object) (Object, error) {
+	obj1, err := PackTuple(args...)
+	if err != nil {
+		return nil, err
+	}
+	defer obj1.Decref()
+	obj2, err := NewDictFromMapString(kwds)
+	if err != nil {
+		return nil, err
+	}
+	defer obj2.Decref()
+	ret := C.PyObject_Call(c(t), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
 // HasAttr returns true if "t" has the attribute "name".  This is equivalent
 // to the Python "hasattr(t, name)".
 func (t *Type) HasAttr(name Object) bool {

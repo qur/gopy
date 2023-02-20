@@ -13,4 +13,5 @@ type Hashable interface {
 type Callable interface {
 	Object
 	Call(*Tuple, *Dict) (Object, error)
+	CallGo(args []Object, kwds map[string]Object) (Object, error)
 }

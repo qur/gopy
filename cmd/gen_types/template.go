@@ -86,6 +86,26 @@ func ({{ .name }} *{{ .type }}) Call(args *Tuple, kwds *Dict) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// CallGo calls {{ .name }} with the given args and kwds, either may be nil. Returns the
+// result of the call, or an Error on failure.  This is equivalent to
+// "{{ .name }}(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
+func ({{ .name }} *{{ .type }}) CallGo(args []Object, kwds map[string]Object) (Object, error) {
+	obj1, err := PackTuple(args...)
+	if err != nil {
+		return nil, err
+	}
+	defer obj1.Decref()
+	obj2, err := NewDictFromMapString(kwds)
+	if err != nil {
+		return nil, err
+	}
+	defer obj2.Decref()
+	ret := C.PyObject_Call(c({{ .name }}), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
 {{ end }}
 
 {{- if .funcs.tp_str -}}

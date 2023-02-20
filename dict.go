@@ -18,6 +18,42 @@ func NewDict() (*Dict, error) {
 	return newDict(ret), nil
 }
 
+// NewDictFromMap creates a new dictionary containing the values from the given
+// map.
+//
+// Return value: New Reference.
+func NewDictFromMap(m map[Object]Object) (*Dict, error) {
+	d, err := NewDict()
+	if err != nil {
+		return nil, err
+	}
+	for key, value := range m {
+		if err := d.SetItem(key, value); err != nil {
+			d.Decref()
+			return nil, err
+		}
+	}
+	return d, nil
+}
+
+// NewDictFromMapString creates a new dictionary containing the values from the
+// given map.
+//
+// Return value: New Reference.
+func NewDictFromMapString(m map[string]Object) (*Dict, error) {
+	d, err := NewDict()
+	if err != nil {
+		return nil, err
+	}
+	for key, value := range m {
+		if err := d.SetItemString(key, value); err != nil {
+			d.Decref()
+			return nil, err
+		}
+	}
+	return d, nil
+}
+
 func NewDictProxy(obj Object) (*Dict, error) {
 	ret := C.PyDictProxy_New(c(obj))
 	if ret == nil {
