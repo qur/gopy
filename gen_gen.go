@@ -41,6 +41,30 @@ func (g *Gen) Repr() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// HasAttr returns true if "g" has the attribute "name".  This is equivalent
+// to the Python "hasattr(g, name)".
+func (g *Gen) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(g), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "g" with the name "name".  This is
+// equivalent to the Python "g.name".
+//
+// Return value: New Reference.
+func (g *Gen) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(g), c(name))
+	return obj2ObjErr(ret)
+}
+
+func (g *Gen) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(g))
+	return obj2ObjErr(ret)
+}
+
 // AsIterator returns a IteratorMethods instance that refers to the same
 // underlying Python object as g.
 //

@@ -49,6 +49,68 @@ func (m *Method) Hash() (int, error) {
 	return int(ret), nil
 }
 
+// Call calls m with the given args and kwds. kwds may be nil, args may not
+// (an empty Tuple must be used if no arguments are wanted). Returns the result
+// of the call, or an Error on failure.  This is equivalent to
+// "m(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
+func (m *Method) Call(args *Tuple, kwds *Dict) (Object, error) {
+	ret := C.PyObject_Call(c(m), c(args), c(kwds))
+	return obj2ObjErr(ret)
+}
+
+// HasAttr returns true if "m" has the attribute "name".  This is equivalent
+// to the Python "hasattr(m, name)".
+func (m *Method) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(m), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "m" with the name "name".  This is
+// equivalent to the Python "m.name".
+//
+// Return value: New Reference.
+func (m *Method) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(m), c(name))
+	return obj2ObjErr(ret)
+}
+
+// SetAttr sets the attribute of "m" with the name "name" to "value".  This is
+// equivalent to the Python "m.name = value".
+func (m *Method) SetAttr(name, value Object) error {
+	ret := C.PyObject_SetAttr(c(m), c(name), c(value))
+	return int2Err(ret)
+}
+
+// DelAttr deletes the attribute with the name "name" from "m".  This is
+// equivalent to the Python "del m.name".
+func (m *Method) DelAttr(name, value Object) error {
+	ret := C.PyObject_SetAttr(c(m), c(name), nil)
+	return int2Err(ret)
+}
+
+// RichCompare compares "m" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "m op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (m *Method) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(m), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (m *Method) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(m), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
 
 
 /*

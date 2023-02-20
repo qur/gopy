@@ -53,6 +53,48 @@ func (l *List) Hash() (int, error) {
 	return int(ret), nil
 }
 
+// HasAttr returns true if "l" has the attribute "name".  This is equivalent
+// to the Python "hasattr(l, name)".
+func (l *List) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(l), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "l" with the name "name".  This is
+// equivalent to the Python "l.name".
+//
+// Return value: New Reference.
+func (l *List) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(l), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "l" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "l op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (l *List) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(l), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (l *List) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(l), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+func (l *List) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(l))
+	return obj2ObjErr(ret)
+}
+
 func (l *List) Size() int {
 	ret := C.PyObject_Size(c(l))
 	if ret < 0 {

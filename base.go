@@ -140,7 +140,7 @@ func (obj *BaseObject) Str() (Object, error) {
 }
 
 // Bytes returns a Bytes representation of "obj".  This is equivalent to the
-// Python "bytes(obj)".  In Python 2.x this method is identical to Str().
+// Python "bytes(obj)".
 //
 // Return value: New Reference.
 func (obj *BaseObject) Bytes() (Object, error) {

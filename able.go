@@ -9,3 +9,8 @@ type Hashable interface {
 	Object
 	Hash() (Object, error)
 }
+
+type Callable interface {
+	Object
+	Call(*Tuple, *Dict) (Object, error)
+}

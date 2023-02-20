@@ -39,6 +39,29 @@ func (o *ODict) Repr() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// RichCompare compares "o" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "o op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (o *ODict) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(o), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (o *ODict) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(o), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+func (o *ODict) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(o))
+	return obj2ObjErr(ret)
+}
+
 func (o *ODict) DelItem(key Object) error {
 	ret := C.PyObject_DelItem(c(o), c(key))
 	return int2Err(ret)

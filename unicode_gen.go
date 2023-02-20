@@ -43,6 +43,16 @@ func (u *Unicode) Repr() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// Hash computes and returns the hash value of u. The equivalent
+// Python is "hash(u)".
+func (u *Unicode) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(u))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 // Str returns a String representation of "u". This is equivalent to the
 // Python "str(u)".
 //
@@ -52,14 +62,46 @@ func (u *Unicode) Str() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// Hash computes and returns the hash value of u. The equivalent
-// Python is "hash(u)".
-func (u *Unicode) Hash() (int, error) {
-	ret := C.PyObject_Hash(c(u))
-	if ret == -1 {
-		return 0, exception()
+// HasAttr returns true if "u" has the attribute "name".  This is equivalent
+// to the Python "hasattr(u, name)".
+func (u *Unicode) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(u), c(name))
+	if ret == 1 {
+		return true
 	}
-	return int(ret), nil
+	return false
+}
+
+// GetAttr returns the attribute of "u" with the name "name".  This is
+// equivalent to the Python "u.name".
+//
+// Return value: New Reference.
+func (u *Unicode) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(u), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "u" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "u op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (u *Unicode) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(u), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (u *Unicode) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(u), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+func (u *Unicode) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(u))
+	return obj2ObjErr(ret)
 }
 
 func (u *Unicode) Size() int {

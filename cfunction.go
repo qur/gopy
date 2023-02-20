@@ -62,14 +62,6 @@ func (f *CFunction) Flags() (int, error) {
 	return int(ret), exception()
 }
 
-func (f *CFunction) Call(args *Tuple, kw *Dict) (Object, error) {
-	ret := C.PyObject_Call(c(f), c(args), c(kw))
-	if ret == nil {
-		return nil, exception()
-	}
-	return newObject(ret), nil
-}
-
 type GoMethod struct {
 	Name string
 	Func interface{}

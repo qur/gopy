@@ -166,11 +166,6 @@ func (u *Unicode) Compare(right Object) (int, error) {
 	return int(ret), exception()
 }
 
-func (u *Unicode) RichCompare(right Object, op Op) (Object, error) {
-	ret := C.PyUnicode_RichCompare(c(u), c(right), C.int(op))
-	return obj2ObjErr(ret)
-}
-
 func (u *Unicode) Format(args *Tuple) (*Unicode, error) {
 	ret := C.PyUnicode_Format(c(u), c(args))
 	if ret == nil {

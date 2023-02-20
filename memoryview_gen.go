@@ -53,6 +53,48 @@ func (m *MemoryView) Hash() (int, error) {
 	return int(ret), nil
 }
 
+// HasAttr returns true if "m" has the attribute "name".  This is equivalent
+// to the Python "hasattr(m, name)".
+func (m *MemoryView) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(m), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "m" with the name "name".  This is
+// equivalent to the Python "m.name".
+//
+// Return value: New Reference.
+func (m *MemoryView) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(m), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "m" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "m op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (m *MemoryView) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(m), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (m *MemoryView) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(m), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+func (m *MemoryView) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(m))
+	return obj2ObjErr(ret)
+}
+
 func (m *MemoryView) Size() int {
 	ret := C.PyObject_Size(c(m))
 	if ret < 0 {

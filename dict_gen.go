@@ -51,6 +51,48 @@ func (d *Dict) Hash() (int, error) {
 	return int(ret), nil
 }
 
+// HasAttr returns true if "d" has the attribute "name".  This is equivalent
+// to the Python "hasattr(d, name)".
+func (d *Dict) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(d), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "d" with the name "name".  This is
+// equivalent to the Python "d.name".
+//
+// Return value: New Reference.
+func (d *Dict) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(d), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "d" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "d op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (d *Dict) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(d), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (d *Dict) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(d), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+func (d *Dict) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(d))
+	return obj2ObjErr(ret)
+}
+
 func (d *Dict) Size() int {
 	ret := C.PyObject_Size(c(d))
 	if ret < 0 {

@@ -39,6 +39,17 @@ func (f *Function) Repr() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// Call calls f with the given args and kwds. kwds may be nil, args may not
+// (an empty Tuple must be used if no arguments are wanted). Returns the result
+// of the call, or an Error on failure.  This is equivalent to
+// "f(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
+func (f *Function) Call(args *Tuple, kwds *Dict) (Object, error) {
+	ret := C.PyObject_Call(c(f), c(args), c(kwds))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

@@ -51,6 +51,43 @@ func (f *Float) Hash() (int, error) {
 	return int(ret), nil
 }
 
+// HasAttr returns true if "f" has the attribute "name".  This is equivalent
+// to the Python "hasattr(f, name)".
+func (f *Float) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(f), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "f" with the name "name".  This is
+// equivalent to the Python "f.name".
+//
+// Return value: New Reference.
+func (f *Float) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(f), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "f" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "f op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (f *Float) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(f), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (f *Float) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(f), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
 // AsNumber returns a NumberMethods instance that refers to the same underlying
 // Python object as f.
 //

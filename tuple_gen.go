@@ -53,6 +53,48 @@ func (t *Tuple) Hash() (int, error) {
 	return int(ret), nil
 }
 
+// HasAttr returns true if "t" has the attribute "name".  This is equivalent
+// to the Python "hasattr(t, name)".
+func (t *Tuple) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(t), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "t" with the name "name".  This is
+// equivalent to the Python "t.name".
+//
+// Return value: New Reference.
+func (t *Tuple) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(t), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "t" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "t op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (t *Tuple) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(t), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (t *Tuple) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(t), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+func (t *Tuple) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(t))
+	return obj2ObjErr(ret)
+}
+
 func (t *Tuple) Size() int {
 	ret := C.PyObject_Size(c(t))
 	if ret < 0 {

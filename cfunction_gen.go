@@ -49,6 +49,54 @@ func (cf *CFunction) Hash() (int, error) {
 	return int(ret), nil
 }
 
+// Call calls cf with the given args and kwds. kwds may be nil, args may not
+// (an empty Tuple must be used if no arguments are wanted). Returns the result
+// of the call, or an Error on failure.  This is equivalent to
+// "cf(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
+func (cf *CFunction) Call(args *Tuple, kwds *Dict) (Object, error) {
+	ret := C.PyObject_Call(c(cf), c(args), c(kwds))
+	return obj2ObjErr(ret)
+}
+
+// HasAttr returns true if "cf" has the attribute "name".  This is equivalent
+// to the Python "hasattr(cf, name)".
+func (cf *CFunction) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(cf), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "cf" with the name "name".  This is
+// equivalent to the Python "cf.name".
+//
+// Return value: New Reference.
+func (cf *CFunction) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(cf), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "cf" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "cf op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (cf *CFunction) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(cf), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (cf *CFunction) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(cf), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
 
 
 /*

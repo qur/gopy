@@ -61,6 +61,33 @@ func ({{ .name }} *{{ .type }}) Repr() (Object, error) {
 
 {{ end }}
 
+{{- if .funcs.tp_hash -}}
+// Hash computes and returns the hash value of {{ .name }}. The equivalent
+// Python is "hash({{ .name }})".
+func ({{ .name }} *{{ .type }}) Hash() (int, error) {
+	ret := C.PyObject_Hash(c({{ .name }}))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
+{{ end }}
+
+{{- if .funcs.tp_call -}}
+// Call calls {{ .name }} with the given args and kwds. kwds may be nil, args may not
+// (an empty Tuple must be used if no arguments are wanted). Returns the result
+// of the call, or an Error on failure.  This is equivalent to
+// "{{ .name }}(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
+func ({{ .name }} *{{ .type }}) Call(args *Tuple, kwds *Dict) (Object, error) {
+	ret := C.PyObject_Call(c({{ .name }}), c(args), c(kwds))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
 {{- if .funcs.tp_str -}}
 // Str returns a String representation of "{{ .name }}". This is equivalent to the
 // Python "str({{ .name }})".
@@ -72,6 +99,75 @@ func ({{ .name }} *{{ .type }}) Str() (Object, error) {
 }
 
 {{ end }}
+
+{{- if .funcs.tp_getattro -}}
+// HasAttr returns true if "{{ .name }}" has the attribute "name".  This is equivalent
+// to the Python "hasattr({{ .name }}, name)".
+func ({{ .name }} *{{ .type }}) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c({{ .name }}), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "{{ .name }}" with the name "name".  This is
+// equivalent to the Python "{{ .name }}.name".
+//
+// Return value: New Reference.
+func ({{ .name }} *{{ .type }}) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c({{ .name }}), c(name))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.tp_setattro -}}
+// SetAttr sets the attribute of "{{ .name }}" with the name "name" to "value".  This is
+// equivalent to the Python "{{ .name }}.name = value".
+func ({{ .name }} *{{ .type }}) SetAttr(name, value Object) error {
+	ret := C.PyObject_SetAttr(c({{ .name }}), c(name), c(value))
+	return int2Err(ret)
+}
+
+// DelAttr deletes the attribute with the name "name" from "{{ .name }}".  This is
+// equivalent to the Python "del {{ .name }}.name".
+func ({{ .name }} *{{ .type }}) DelAttr(name, value Object) error {
+	ret := C.PyObject_SetAttr(c({{ .name }}), c(name), nil)
+	return int2Err(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.tp_richcompare -}}
+// RichCompare compares "{{ .name }}" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "{{ .name }} op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func ({{ .name }} *{{ .type }}) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c({{ .name }}), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func ({{ .name }} *{{ .type }}) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c({{ .name }}), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.tp_iter -}}
+func ({{ .name }} *{{ .type }}) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c({{ .name }}))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
 
 {{- if .funcs.tp_iternext -}}
 // AsIterator returns a IteratorMethods instance that refers to the same
@@ -96,19 +192,6 @@ func ({{ .name }} *{{ .type }}) Next() (Object, error) {
 // This method also means that {{ .type }} implements the AsyncIterator interface.
 func ({{ .name }} *{{ .type }}) AsAsyncIterator() *AsyncIteratorMethods {
 	return (*AsyncIteratorMethods)(unsafe.Pointer({{ .name }}.Base()))
-}
-
-{{ end }}
-
-{{- if .funcs.tp_hash -}}
-// Hash computes and returns the hash value of {{ .name }}. The equivalent
-// Python is "hash({{ .name }})".
-func ({{ .name }} *{{ .type }}) Hash() (int, error) {
-	ret := C.PyObject_Hash(c({{ .name }}))
-	if ret == -1 {
-		return 0, exception()
-	}
-	return int(ret), nil
 }
 
 {{ end }}

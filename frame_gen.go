@@ -39,6 +39,39 @@ func (f *Frame) Repr() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// HasAttr returns true if "f" has the attribute "name".  This is equivalent
+// to the Python "hasattr(f, name)".
+func (f *Frame) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(f), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "f" with the name "name".  This is
+// equivalent to the Python "f.name".
+//
+// Return value: New Reference.
+func (f *Frame) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(f), c(name))
+	return obj2ObjErr(ret)
+}
+
+// SetAttr sets the attribute of "f" with the name "name" to "value".  This is
+// equivalent to the Python "f.name = value".
+func (f *Frame) SetAttr(name, value Object) error {
+	ret := C.PyObject_SetAttr(c(f), c(name), c(value))
+	return int2Err(ret)
+}
+
+// DelAttr deletes the attribute with the name "name" from "f".  This is
+// equivalent to the Python "del f.name".
+func (f *Frame) DelAttr(name, value Object) error {
+	ret := C.PyObject_SetAttr(c(f), c(name), nil)
+	return int2Err(ret)
+}
+
 
 
 /*

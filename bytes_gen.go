@@ -43,6 +43,16 @@ func (b *Bytes) Repr() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// Hash computes and returns the hash value of b. The equivalent
+// Python is "hash(b)".
+func (b *Bytes) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(b))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 // Str returns a String representation of "b". This is equivalent to the
 // Python "str(b)".
 //
@@ -52,14 +62,46 @@ func (b *Bytes) Str() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// Hash computes and returns the hash value of b. The equivalent
-// Python is "hash(b)".
-func (b *Bytes) Hash() (int, error) {
-	ret := C.PyObject_Hash(c(b))
-	if ret == -1 {
-		return 0, exception()
+// HasAttr returns true if "b" has the attribute "name".  This is equivalent
+// to the Python "hasattr(b, name)".
+func (b *Bytes) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(b), c(name))
+	if ret == 1 {
+		return true
 	}
-	return int(ret), nil
+	return false
+}
+
+// GetAttr returns the attribute of "b" with the name "name".  This is
+// equivalent to the Python "b.name".
+//
+// Return value: New Reference.
+func (b *Bytes) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(b), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "b" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "b op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (b *Bytes) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(b), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (b *Bytes) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(b), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+func (b *Bytes) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(b))
+	return obj2ObjErr(ret)
 }
 
 func (b *Bytes) Size() int {

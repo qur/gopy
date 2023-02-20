@@ -39,6 +39,50 @@ func (t *Type) Repr() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// Call calls t with the given args and kwds. kwds may be nil, args may not
+// (an empty Tuple must be used if no arguments are wanted). Returns the result
+// of the call, or an Error on failure.  This is equivalent to
+// "t(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
+func (t *Type) Call(args *Tuple, kwds *Dict) (Object, error) {
+	ret := C.PyObject_Call(c(t), c(args), c(kwds))
+	return obj2ObjErr(ret)
+}
+
+// HasAttr returns true if "t" has the attribute "name".  This is equivalent
+// to the Python "hasattr(t, name)".
+func (t *Type) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(t), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "t" with the name "name".  This is
+// equivalent to the Python "t.name".
+//
+// Return value: New Reference.
+func (t *Type) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(t), c(name))
+	return obj2ObjErr(ret)
+}
+
+// SetAttr sets the attribute of "t" with the name "name" to "value".  This is
+// equivalent to the Python "t.name = value".
+func (t *Type) SetAttr(name, value Object) error {
+	ret := C.PyObject_SetAttr(c(t), c(name), c(value))
+	return int2Err(ret)
+}
+
+// DelAttr deletes the attribute with the name "name" from "t".  This is
+// equivalent to the Python "del t.name".
+func (t *Type) DelAttr(name, value Object) error {
+	ret := C.PyObject_SetAttr(c(t), c(name), nil)
+	return int2Err(ret)
+}
+
 // Or returns the bitwise or of t and obj. The equivalent Python is
 // "t | obj".
 //

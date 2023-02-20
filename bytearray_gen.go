@@ -52,6 +52,48 @@ func (b *ByteArray) Str() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// HasAttr returns true if "b" has the attribute "name".  This is equivalent
+// to the Python "hasattr(b, name)".
+func (b *ByteArray) HasAttr(name Object) bool {
+	ret := C.PyObject_HasAttr(c(b), c(name))
+	if ret == 1 {
+		return true
+	}
+	return false
+}
+
+// GetAttr returns the attribute of "b" with the name "name".  This is
+// equivalent to the Python "b.name".
+//
+// Return value: New Reference.
+func (b *ByteArray) GetAttr(name Object) (Object, error) {
+	ret := C.PyObject_GetAttr(c(b), c(name))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "b" with "obj" using the specified operation (LE, GE
+// etc.), and returns the result.  The equivalent Python is "b op obj", where
+// op is the corresponding Python operator for op.
+//
+// Return value: New Reference.
+func (b *ByteArray) RichCompare(obj Object, op Op) (Object, error) {
+	ret := C.PyObject_RichCompare(c(b), c(obj), C.int(op))
+	return obj2ObjErr(ret)
+}
+
+// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// where op is the corresponding Python operator for op.
+func (b *ByteArray) RichCompareBool(obj Object, op Op) (bool, error) {
+	ret := C.PyObject_RichCompareBool(c(b), c(obj), C.int(op))
+	return int2BoolErr(ret)
+}
+
+func (b *ByteArray) Iter() (Object, error) {
+	ret := C.PyObject_GetIter(c(b))
+	return obj2ObjErr(ret)
+}
+
 func (b *ByteArray) Size() int {
 	ret := C.PyObject_Size(c(b))
 	if ret < 0 {
