@@ -30,6 +30,15 @@ func newODict(obj *C.PyObject) *ODict {
 	return (*ODict)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "o". This is equivalent to the
+// Python "repr(o)".
+//
+// Return value: New Reference.
+func (o *ODict) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(o))
+	return obj2ObjErr(ret)
+}
+
 func (o *ODict) DelItem(key Object) error {
 	ret := C.PyObject_DelItem(c(o), c(key))
 	return int2Err(ret)

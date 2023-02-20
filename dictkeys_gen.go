@@ -30,6 +30,15 @@ func newDictKeys(obj *C.PyObject) *DictKeys {
 	return (*DictKeys)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "d". This is equivalent to the
+// Python "repr(d)".
+//
+// Return value: New Reference.
+func (d *DictKeys) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(d))
+	return obj2ObjErr(ret)
+}
+
 func (d *DictKeys) Size() int {
 	ret := C.PyObject_Size(c(d))
 	if ret < 0 {

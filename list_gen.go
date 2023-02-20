@@ -34,6 +34,25 @@ func newList(obj *C.PyObject) *List {
 	return (*List)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "l". This is equivalent to the
+// Python "repr(l)".
+//
+// Return value: New Reference.
+func (l *List) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(l))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of l. The equivalent
+// Python is "hash(l)".
+func (l *List) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(l))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 func (l *List) Size() int {
 	ret := C.PyObject_Size(c(l))
 	if ret < 0 {

@@ -32,6 +32,25 @@ func newDict(obj *C.PyObject) *Dict {
 	return (*Dict)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "d". This is equivalent to the
+// Python "repr(d)".
+//
+// Return value: New Reference.
+func (d *Dict) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(d))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of d. The equivalent
+// Python is "hash(d)".
+func (d *Dict) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(d))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 func (d *Dict) Size() int {
 	ret := C.PyObject_Size(c(d))
 	if ret < 0 {

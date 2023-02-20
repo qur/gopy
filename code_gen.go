@@ -30,6 +30,25 @@ func newCode(obj *C.PyObject) *Code {
 	return (*Code)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "co". This is equivalent to the
+// Python "repr(co)".
+//
+// Return value: New Reference.
+func (co *Code) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(co))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of co. The equivalent
+// Python is "hash(co)".
+func (co *Code) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(co))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 
 
 /*

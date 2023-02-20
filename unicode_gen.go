@@ -34,6 +34,34 @@ func newUnicode(obj *C.PyObject) *Unicode {
 	return (*Unicode)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "u". This is equivalent to the
+// Python "repr(u)".
+//
+// Return value: New Reference.
+func (u *Unicode) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(u))
+	return obj2ObjErr(ret)
+}
+
+// Str returns a String representation of "u". This is equivalent to the
+// Python "str(u)".
+//
+// Return value: New Reference.
+func (u *Unicode) Str() (Object, error) {
+	ret := C.PyObject_Str(c(u))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of u. The equivalent
+// Python is "hash(u)".
+func (u *Unicode) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(u))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 func (u *Unicode) Size() int {
 	ret := C.PyObject_Size(c(u))
 	if ret < 0 {

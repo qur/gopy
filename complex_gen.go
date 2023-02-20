@@ -32,6 +32,25 @@ func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "co". This is equivalent to the
+// Python "repr(co)".
+//
+// Return value: New Reference.
+func (co *Complex) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(co))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of co. The equivalent
+// Python is "hash(co)".
+func (co *Complex) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(co))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 // AsNumber returns a NumberMethods instance that refers to the same underlying
 // Python object as co.
 //

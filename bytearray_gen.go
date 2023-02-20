@@ -34,6 +34,24 @@ func newByteArray(obj *C.PyObject) *ByteArray {
 	return (*ByteArray)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "b". This is equivalent to the
+// Python "repr(b)".
+//
+// Return value: New Reference.
+func (b *ByteArray) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(b))
+	return obj2ObjErr(ret)
+}
+
+// Str returns a String representation of "b". This is equivalent to the
+// Python "str(b)".
+//
+// Return value: New Reference.
+func (b *ByteArray) Str() (Object, error) {
+	ret := C.PyObject_Str(c(b))
+	return obj2ObjErr(ret)
+}
+
 func (b *ByteArray) Size() int {
 	ret := C.PyObject_Size(c(b))
 	if ret < 0 {

@@ -30,6 +30,25 @@ func newMethod(obj *C.PyObject) *Method {
 	return (*Method)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "m". This is equivalent to the
+// Python "repr(m)".
+//
+// Return value: New Reference.
+func (m *Method) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(m))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of m. The equivalent
+// Python is "hash(m)".
+func (m *Method) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(m))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 
 
 /*

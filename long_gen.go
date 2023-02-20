@@ -32,6 +32,25 @@ func newLong(obj *C.PyObject) *Long {
 	return (*Long)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "l". This is equivalent to the
+// Python "repr(l)".
+//
+// Return value: New Reference.
+func (l *Long) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(l))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of l. The equivalent
+// Python is "hash(l)".
+func (l *Long) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(l))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 // AsNumber returns a NumberMethods instance that refers to the same underlying
 // Python object as l.
 //

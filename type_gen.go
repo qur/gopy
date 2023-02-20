@@ -30,6 +30,15 @@ func newType(obj *C.PyObject) *Type {
 	return (*Type)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "t". This is equivalent to the
+// Python "repr(t)".
+//
+// Return value: New Reference.
+func (t *Type) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(t))
+	return obj2ObjErr(ret)
+}
+
 // Or returns the bitwise or of t and obj. The equivalent Python is
 // "t | obj".
 //

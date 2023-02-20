@@ -34,6 +34,25 @@ func newMemoryView(obj *C.PyObject) *MemoryView {
 	return (*MemoryView)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "m". This is equivalent to the
+// Python "repr(m)".
+//
+// Return value: New Reference.
+func (m *MemoryView) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(m))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of m. The equivalent
+// Python is "hash(m)".
+func (m *MemoryView) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(m))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 func (m *MemoryView) Size() int {
 	ret := C.PyObject_Size(c(m))
 	if ret < 0 {

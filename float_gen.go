@@ -32,6 +32,25 @@ func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "f". This is equivalent to the
+// Python "repr(f)".
+//
+// Return value: New Reference.
+func (f *Float) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(f))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of f. The equivalent
+// Python is "hash(f)".
+func (f *Float) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(f))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 // AsNumber returns a NumberMethods instance that refers to the same underlying
 // Python object as f.
 //

@@ -30,6 +30,15 @@ func newFunction(obj *C.PyObject) *Function {
 	return (*Function)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "f". This is equivalent to the
+// Python "repr(f)".
+//
+// Return value: New Reference.
+func (f *Function) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(f))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

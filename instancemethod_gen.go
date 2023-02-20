@@ -30,6 +30,15 @@ func newInstanceMethod(obj *C.PyObject) *InstanceMethod {
 	return (*InstanceMethod)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "i". This is equivalent to the
+// Python "repr(i)".
+//
+// Return value: New Reference.
+func (i *InstanceMethod) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(i))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

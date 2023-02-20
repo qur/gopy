@@ -3,6 +3,10 @@ package py
 // #include "utils.h"
 import "C"
 
+import (
+	"unsafe"
+)
+
 // Sequence is an interface that is implemented by types that implement the
 // Python "Sequence Protocol".
 type Sequence interface {
@@ -28,6 +32,9 @@ type SequenceMethods struct {
 func AsSequence(obj Object) *SequenceMethods {
 	if n, ok := obj.(Sequence); ok {
 		return n.AsSequence()
+	}
+	if C.sequenceCheck(c(obj)) > 0 {
+		return (*SequenceMethods)(unsafe.Pointer(obj.Base()))
 	}
 	return nil
 }

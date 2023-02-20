@@ -30,6 +30,25 @@ func newSet(obj *C.PyObject) *Set {
 	return (*Set)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "s". This is equivalent to the
+// Python "repr(s)".
+//
+// Return value: New Reference.
+func (s *Set) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(s))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of s. The equivalent
+// Python is "hash(s)".
+func (s *Set) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(s))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 func (s *Set) Size() int {
 	ret := C.PyObject_Size(c(s))
 	if ret < 0 {

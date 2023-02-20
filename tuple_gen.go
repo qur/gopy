@@ -34,6 +34,25 @@ func newTuple(obj *C.PyObject) *Tuple {
 	return (*Tuple)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "t". This is equivalent to the
+// Python "repr(t)".
+//
+// Return value: New Reference.
+func (t *Tuple) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(t))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of t. The equivalent
+// Python is "hash(t)".
+func (t *Tuple) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(t))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 func (t *Tuple) Size() int {
 	ret := C.PyObject_Size(c(t))
 	if ret < 0 {

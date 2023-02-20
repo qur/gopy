@@ -3,6 +3,10 @@ package py
 // #include "utils.h"
 import "C"
 
+import (
+	"unsafe"
+)
+
 // Number is an interface that is implemented by types that implement the
 // Python "Number Protocol".
 type Number interface {
@@ -33,6 +37,9 @@ type NumberMethods struct {
 func AsNumber(obj Object) *NumberMethods {
 	if n, ok := obj.(Number); ok {
 		return n.AsNumber()
+	}
+	if C.numberCheck(c(obj)) > 0 {
+		return (*NumberMethods)(unsafe.Pointer(obj.Base()))
 	}
 	return nil
 }
@@ -251,20 +258,20 @@ func (n *NumberMethods) InPlacePower(obj1, obj2 Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// InPlaceLshift returns the result of left shifting n by obj.  This is done in
+// InPlaceLShift returns the result of left shifting n by obj.  This is done in
 // place if supported by n.  The equivalent Python is "n <<= obj".
 //
 // Return value: New Reference.
-func (n *NumberMethods) InPlaceLshift(obj Object) (Object, error) {
+func (n *NumberMethods) InPlaceLShift(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceLshift(c(n), c(obj))
 	return obj2ObjErr(ret)
 }
 
-// InPlaceRshift returns the result of right shifting n by obj.  This is done in
+// InPlaceRShift returns the result of right shifting n by obj.  This is done in
 // place if supported by n.  The equivalent Python is "n >>= obj".
 //
 // Return value: New Reference.
-func (n *NumberMethods) InPlaceRshift(obj Object) (Object, error) {
+func (n *NumberMethods) InPlaceRShift(obj Object) (Object, error) {
 	ret := C.PyNumber_InPlaceRshift(c(n), c(obj))
 	return obj2ObjErr(ret)
 }

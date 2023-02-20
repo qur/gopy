@@ -30,6 +30,15 @@ func newCell(obj *C.PyObject) *Cell {
 	return (*Cell)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "ce". This is equivalent to the
+// Python "repr(ce)".
+//
+// Return value: New Reference.
+func (ce *Cell) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(ce))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

@@ -34,6 +34,34 @@ func newBytes(obj *C.PyObject) *Bytes {
 	return (*Bytes)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "b". This is equivalent to the
+// Python "repr(b)".
+//
+// Return value: New Reference.
+func (b *Bytes) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(b))
+	return obj2ObjErr(ret)
+}
+
+// Str returns a String representation of "b". This is equivalent to the
+// Python "str(b)".
+//
+// Return value: New Reference.
+func (b *Bytes) Str() (Object, error) {
+	ret := C.PyObject_Str(c(b))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of b. The equivalent
+// Python is "hash(b)".
+func (b *Bytes) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(b))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 func (b *Bytes) Size() int {
 	ret := C.PyObject_Size(c(b))
 	if ret < 0 {

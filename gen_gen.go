@@ -11,6 +11,8 @@ import (
 
 // Gen represents objects of the GenType (or PyGenType
 // in the Python API) type.
+//
+// This type implements the Iterator protocol.
 type Gen struct {
 	abstractObject
 	o C.PyGenObject
@@ -28,6 +30,28 @@ func genCheck(obj Object) bool {
 
 func newGen(obj *C.PyObject) *Gen {
 	return (*Gen)(unsafe.Pointer(obj))
+}
+
+// Repr returns a String representation of "g". This is equivalent to the
+// Python "repr(g)".
+//
+// Return value: New Reference.
+func (g *Gen) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(g))
+	return obj2ObjErr(ret)
+}
+
+// AsIterator returns a IteratorMethods instance that refers to the same
+// underlying Python object as g.
+//
+// This method also means that Gen implements the Iterator interface.
+func (g *Gen) AsIterator() *IteratorMethods {
+	return (*IteratorMethods)(unsafe.Pointer(g.Base()))
+}
+
+func (g *Gen) Next() (Object, error) {
+	ret := C.PyIter_Next(c(g))
+	return obj2ObjErr(ret)
 }
 
 

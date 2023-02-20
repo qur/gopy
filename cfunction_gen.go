@@ -30,6 +30,25 @@ func newCFunction(obj *C.PyObject) *CFunction {
 	return (*CFunction)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "cf". This is equivalent to the
+// Python "repr(cf)".
+//
+// Return value: New Reference.
+func (cf *CFunction) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(cf))
+	return obj2ObjErr(ret)
+}
+
+// Hash computes and returns the hash value of cf. The equivalent
+// Python is "hash(cf)".
+func (cf *CFunction) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(cf))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
 
 
 /*

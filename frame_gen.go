@@ -30,6 +30,15 @@ func newFrame(obj *C.PyObject) *Frame {
 	return (*Frame)(unsafe.Pointer(obj))
 }
 
+// Repr returns a String representation of "f". This is equivalent to the
+// Python "repr(f)".
+//
+// Return value: New Reference.
+func (f *Frame) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c(f))
+	return obj2ObjErr(ret)
+}
+
 
 
 /*

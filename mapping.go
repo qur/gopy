@@ -3,7 +3,9 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 // Mapping is an interface that is implemented by types that implement the
 // Python "Mapping Protocol".
@@ -30,6 +32,9 @@ type MappingMethods struct {
 func AsMapping(obj Object) *MappingMethods {
 	if n, ok := obj.(Mapping); ok {
 		return n.AsMapping()
+	}
+	if C.mappingCheck(c(obj)) > 0 {
+		return (*MappingMethods)(unsafe.Pointer(obj.Base()))
 	}
 	return nil
 }

@@ -23,6 +23,12 @@ import (
 {{- end }}{{ if or .funcs.nb_index .funcs.nb_int .funcs.nb_float (eq .type "Complex") }}
 //
 // This type implements the Number protocol.
+{{- end }}{{ if .funcs.tp_iternext }}
+//
+// This type implements the Iterator protocol.
+{{- end }}{{ if .funcs.am_anext }}
+//
+// This type implements the AsyncIterator protocol.
 {{- end }}
 type {{ .type }} struct {
 	abstractObject
@@ -43,7 +49,71 @@ func new{{ .type }}(obj *C.PyObject) *{{ .type }} {
 	return (*{{ .type }})(unsafe.Pointer(obj))
 }
 
-{{ if or .funcs.mp_length .funcs.sq_length -}}
+{{ if .funcs.tp_repr -}}
+// Repr returns a String representation of "{{ .name }}". This is equivalent to the
+// Python "repr({{ .name }})".
+//
+// Return value: New Reference.
+func ({{ .name }} *{{ .type }}) Repr() (Object, error) {
+	ret := C.PyObject_Repr(c({{ .name }}))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.tp_str -}}
+// Str returns a String representation of "{{ .name }}". This is equivalent to the
+// Python "str({{ .name }})".
+//
+// Return value: New Reference.
+func ({{ .name }} *{{ .type }}) Str() (Object, error) {
+	ret := C.PyObject_Str(c({{ .name }}))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.tp_iternext -}}
+// AsIterator returns a IteratorMethods instance that refers to the same
+// underlying Python object as {{ .name }}.
+//
+// This method also means that {{ .type }} implements the Iterator interface.
+func ({{ .name }} *{{ .type }}) AsIterator() *IteratorMethods {
+	return (*IteratorMethods)(unsafe.Pointer({{ .name }}.Base()))
+}
+
+func ({{ .name }} *{{ .type }}) Next() (Object, error) {
+	ret := C.PyIter_Next(c({{ .name }}))
+	return obj2ObjErr(ret)
+}
+
+{{ end }}
+
+{{- if .funcs.am_anext -}}
+// AsAsyncIterator returns a AyncIteratorMethods instance that refers to the
+// same underlying Python object as {{ .name }}.
+//
+// This method also means that {{ .type }} implements the AsyncIterator interface.
+func ({{ .name }} *{{ .type }}) AsAsyncIterator() *AsyncIteratorMethods {
+	return (*AsyncIteratorMethods)(unsafe.Pointer({{ .name }}.Base()))
+}
+
+{{ end }}
+
+{{- if .funcs.tp_hash -}}
+// Hash computes and returns the hash value of {{ .name }}. The equivalent
+// Python is "hash({{ .name }})".
+func ({{ .name }} *{{ .type }}) Hash() (int, error) {
+	ret := C.PyObject_Hash(c({{ .name }}))
+	if ret == -1 {
+		return 0, exception()
+	}
+	return int(ret), nil
+}
+
+{{ end }}
+
+{{- if or .funcs.mp_length .funcs.sq_length -}}
 func ({{ .name }} *{{ .type }}) Size() int {
 	ret := C.PyObject_Size(c({{ .name }}))
 	if ret < 0 {
