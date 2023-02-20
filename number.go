@@ -10,6 +10,11 @@ type Number interface {
 	AsNumber() *NumberMethods
 }
 
+type Index interface {
+	Object
+	Index() (*Long, error)
+}
+
 // NumberMethods is a concrete realisation of the full set of Number Protocol
 // methods.  A type that implements the "Number Protocol" can be turned into a
 // NumberMethods instance using AsNumber.
@@ -291,18 +296,32 @@ func (n *NumberMethods) InPlaceOr(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// PyNumber_Coerce: TODO
-
-// PyNumber_CoerceEx: TODO
-
-// PyNumber_Int: TODO
-
 // PyNumber_Long: TODO
+func (n *NumberMethods) Long() (*Long, error) {
+	ret := C.PyNumber_Long(c(n))
+	return newLong(ret), exception()
+}
 
 // PyNumber_Float: TODO
+func (n *NumberMethods) Float() (*Float, error) {
+	ret := C.PyNumber_Float(c(n))
+	return newFloat(ret), exception()
+}
 
 // PyNumber_Index: TODO
+func (n *NumberMethods) Index() (*Long, error) {
+	ret := C.PyNumber_Index(c(n))
+	return newLong(ret), exception()
+}
 
 // PyNumber_ToBase: TODO
+func (n *NumberMethods) ToBase(base int) (*Long, error) {
+	ret := C.PyNumber_ToBase(c(n), C.int(base))
+	return newLong(ret), exception()
+}
 
 // PyNumber_AsSsize_t: TODO
+func (n *NumberMethods) AsInt(exc *ExceptionClass) (int, error) {
+	ret := C.PyNumber_AsSsize_t(c(n), c(exc))
+	return int(ret), exception()
+}

@@ -481,6 +481,40 @@ func ({{ .name }} *{{ .type }}) InPlaceOr(obj Object) (Object, error) {
 
 {{ end }}
 
+{{- if and .funcs.nb_int (ne .type "Long") -}}
+func ({{ .name }} *{{ .type }}) Long() (*Long, error) {
+	ret := C.PyNumber_Long(c({{ .name }}))
+	return newLong(ret), exception()
+}
+
+{{ end }}
+
+{{- if and .funcs.nb_float (ne .type "Float") -}}
+func ({{ .name }} *{{ .type }}) Float() (*Float, error) {
+	ret := C.PyNumber_Float(c({{ .name }}))
+	return newFloat(ret), exception()
+}
+
+{{ end }}
+
+{{- if .funcs.nb_index -}}
+func ({{ .name }} *{{ .type }}) Index() (*Long, error) {
+	ret := C.PyNumber_Index(c({{ .name }}))
+	return newLong(ret), exception()
+}
+
+func ({{ .name }} *{{ .type }}) ToBase(base int) (*Long, error) {
+	ret := C.PyNumber_ToBase(c({{ .name }}), C.int(base))
+	return newLong(ret), exception()
+}
+
+func ({{ .name }} *{{ .type }}) AsInt(exc *ExceptionClass) (int, error) {
+	ret := C.PyNumber_AsSsize_t(c({{ .name }}), c(exc))
+	return int(ret), exception()
+}
+
+{{ end }}
+
 /*
 set fields:
 {{- range $name, $set := .funcs -}}

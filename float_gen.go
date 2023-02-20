@@ -91,6 +91,11 @@ func (f *Float) Absolute() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (f *Float) Long() (*Long, error) {
+	ret := C.PyNumber_Long(c(f))
+	return newLong(ret), exception()
+}
+
 
 
 /*

@@ -121,6 +121,26 @@ func (l *Long) Or(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+func (l *Long) Float() (*Float, error) {
+	ret := C.PyNumber_Float(c(l))
+	return newFloat(ret), exception()
+}
+
+func (l *Long) Index() (*Long, error) {
+	ret := C.PyNumber_Index(c(l))
+	return newLong(ret), exception()
+}
+
+func (l *Long) ToBase(base int) (*Long, error) {
+	ret := C.PyNumber_ToBase(c(l), C.int(base))
+	return newLong(ret), exception()
+}
+
+func (l *Long) AsInt(exc *ExceptionClass) (int, error) {
+	ret := C.PyNumber_AsSsize_t(c(l), c(exc))
+	return int(ret), exception()
+}
+
 
 
 /*
