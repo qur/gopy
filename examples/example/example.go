@@ -45,6 +45,7 @@ func iterate(args *py.Tuple) (py.Object, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer i.Decref()
 	fmt.Printf("iterator: %T (%s)\n", i, i.Type().String())
 	items, err := py.Iterate(i)
 	// iterate through items first, to make sure decref gets called
@@ -156,7 +157,8 @@ var subDef = py.ModuleDef{
 
 func main() {
 	// We don't want to call unlock, as Python will not be initialised after
-	// Main returns, and that will cause Unlock to panic
+	// Main returns, and that will cause Unlock to panic. For the same reason,
+	// we don't defer any Decref calls here.
 	py.InitAndLockWithSignals()
 
 	m, err := py.CreateModule(&modDef)

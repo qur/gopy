@@ -33,8 +33,13 @@ func newIterator(o *C.PyObject) (Iterator, error) {
 	return nil, TypeError.Err("object of type '%T' is not an iterator", obj)
 }
 
+// GetIterator returns an iterator for the given object. If the object is
+// neither already an iterator nor iterable, then a TypeError is returned.
+//
+// Return value: New Reference.
 func GetIterator(obj Object) (Iterator, error) {
 	if i := AsIterator(obj); i != nil {
+		i.Incref()
 		return i, nil
 	}
 	if n, ok := obj.(Iterable); ok {
