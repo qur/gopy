@@ -143,9 +143,12 @@ func (l *List) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (l *List) Iter() (Object, error) {
+func (l *List) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(l))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 func (l *List) Size() int {

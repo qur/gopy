@@ -143,9 +143,12 @@ func (m *MemoryView) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (m *MemoryView) Iter() (Object, error) {
+func (m *MemoryView) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(m))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 func (m *MemoryView) Size() int {

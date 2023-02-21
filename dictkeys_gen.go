@@ -129,9 +129,12 @@ func (d *DictKeys) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (d *DictKeys) Iter() (Object, error) {
+func (d *DictKeys) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(d))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 func (d *DictKeys) Size() int {

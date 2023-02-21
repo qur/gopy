@@ -234,9 +234,12 @@ func ({{ .name }} *{{ .type }}) RichCompareBool(obj Object, op Op) (bool, error)
 {{ end }}
 
 {{- if .funcs.tp_iter -}}
-func ({{ .name }} *{{ .type }}) Iter() (Object, error) {
+func ({{ .name }} *{{ .type }}) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c({{ .name }}))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 {{ end }}

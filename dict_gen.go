@@ -141,9 +141,12 @@ func (d *Dict) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (d *Dict) Iter() (Object, error) {
+func (d *Dict) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(d))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 func (d *Dict) Size() int {

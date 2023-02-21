@@ -152,9 +152,12 @@ func (u *Unicode) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (u *Unicode) Iter() (Object, error) {
+func (u *Unicode) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(u))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 func (u *Unicode) Size() int {

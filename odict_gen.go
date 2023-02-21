@@ -110,9 +110,12 @@ func (o *ODict) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (o *ODict) Iter() (Object, error) {
+func (o *ODict) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(o))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 func (o *ODict) DelItem(key Object) error {

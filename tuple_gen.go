@@ -143,9 +143,12 @@ func (t *Tuple) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (t *Tuple) Iter() (Object, error) {
+func (t *Tuple) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(t))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 func (t *Tuple) Size() int {

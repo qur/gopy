@@ -2,7 +2,7 @@ package py
 
 type Iterable interface {
 	Object
-	Next() (Object, error)
+	Iter() (Iterator, error)
 }
 
 type Hashable interface {
@@ -13,5 +13,10 @@ type Hashable interface {
 type Callable interface {
 	Object
 	Call(*Tuple, *Dict) (Object, error)
-	CallGo(args []Object, kwds map[string]Object) (Object, error)
+	CallGo([]Object, map[string]Object) (Object, error)
+}
+
+type Comparable interface {
+	Object
+	RichCompare(Object, Op) (Object, error)
 }

@@ -113,9 +113,12 @@ func (g *Gen) GetAttr(name Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-func (g *Gen) Iter() (Object, error) {
+func (g *Gen) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(g))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 // AsIterator returns a IteratorMethods instance that refers to the same

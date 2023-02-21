@@ -142,9 +142,12 @@ func (b *ByteArray) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-func (b *ByteArray) Iter() (Object, error) {
+func (b *ByteArray) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(b))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newIterator(ret)
 }
 
 func (b *ByteArray) Size() int {
