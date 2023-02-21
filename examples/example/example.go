@@ -62,17 +62,12 @@ func (e *Example) PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	return py.None, nil
 }
 
-func (e *Example) PyCompare(obj py.Object) (int, error) {
+func (e *Example) PyRichCompare(obj py.Object, op py.Op) (py.Object, error) {
 	o, ok := obj.(*Example)
 	if !ok {
-		return 0, fmt.Errorf("TypeError: not a example.ExampleClass instance")
+		return nil, py.TypeError.Err("not a example.ExampleClass instance")
 	}
-	if e.wibble < o.wibble {
-		return -1, nil
-	} else if e.wibble > o.wibble {
-		return 1, nil
-	}
-	return 0, nil
+	return py.RichCompareNative(e.wibble, o.wibble, op)
 }
 
 func (e *Example) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) {

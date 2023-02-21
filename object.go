@@ -6,6 +6,8 @@ import "C"
 import (
 	"sync"
 	"unsafe"
+
+	"golang.org/x/exp/constraints"
 )
 
 type Op int
@@ -18,6 +20,40 @@ const (
 	GT = Op(C.Py_GT)
 	GE = Op(C.Py_GE)
 )
+
+var NotImplemented = newObject(&C._Py_NotImplementedStruct)
+
+func RichCompareNativeBool[T constraints.Ordered](a, b T, op Op) (bool, error) {
+	switch op {
+	case LT:
+		return a < b, nil
+	case LE:
+		return a <= b, nil
+	case EQ:
+		return a == b, nil
+	case NE:
+		return a != b, nil
+	case GT:
+		return a > b, nil
+	case GE:
+		return a >= b, nil
+	default:
+		return false, ValueError.Err("unknown compare op: %d", op)
+	}
+}
+
+func RichCompareNative[T constraints.Ordered](a, b T, op Op) (Object, error) {
+	ret, err := RichCompareNativeBool(a, b, op)
+	if err != nil {
+		return NotImplemented, nil
+	}
+	if ret {
+		True.Incref()
+		return True, nil
+	}
+	False.Incref()
+	return False, nil
+}
 
 // Object is the generic interface that represents a Python object.  All of the
 // concrete types satisfy the Object interface.
