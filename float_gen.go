@@ -33,6 +33,10 @@ func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
 }
 
+func (f *Float) c() *C.PyFloatObject {
+	return (*C.PyFloatObject)(unsafe.Pointer(f))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (f *Float) Base() *BaseObject {
@@ -42,8 +46,7 @@ func (f *Float) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (f *Float) Type() *Type {
-	obType := c(f).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(f).ob_type)))
 }
 
 // Decref decrements f's reference count, f may not be nil.

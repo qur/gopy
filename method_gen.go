@@ -31,6 +31,10 @@ func newMethod(obj *C.PyObject) *Method {
 	return (*Method)(unsafe.Pointer(obj))
 }
 
+func (m *Method) c() *C.PyMethodObject {
+	return (*C.PyMethodObject)(unsafe.Pointer(m))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (m *Method) Base() *BaseObject {
@@ -40,8 +44,7 @@ func (m *Method) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (m *Method) Type() *Type {
-	obType := c(m).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(m).ob_type)))
 }
 
 // Decref decrements m's reference count, m may not be nil.

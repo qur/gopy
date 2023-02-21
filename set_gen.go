@@ -31,6 +31,10 @@ func newSet(obj *C.PyObject) *Set {
 	return (*Set)(unsafe.Pointer(obj))
 }
 
+func (s *Set) c() *C.PySetObject {
+	return (*C.PySetObject)(unsafe.Pointer(s))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (s *Set) Base() *BaseObject {
@@ -40,8 +44,7 @@ func (s *Set) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (s *Set) Type() *Type {
-	obType := c(s).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(s).ob_type)))
 }
 
 // Decref decrements s's reference count, s may not be nil.

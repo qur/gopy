@@ -33,6 +33,10 @@ func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
 }
 
+func (co *Complex) c() *C.PyComplexObject {
+	return (*C.PyComplexObject)(unsafe.Pointer(co))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (co *Complex) Base() *BaseObject {
@@ -42,8 +46,7 @@ func (co *Complex) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (co *Complex) Type() *Type {
-	obType := c(co).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(co).ob_type)))
 }
 
 // Decref decrements co's reference count, co may not be nil.

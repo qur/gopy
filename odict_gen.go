@@ -31,6 +31,10 @@ func newODict(obj *C.PyObject) *ODict {
 	return (*ODict)(unsafe.Pointer(obj))
 }
 
+func (o *ODict) c() *C.PyODictObject {
+	return (*C.PyODictObject)(unsafe.Pointer(o))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (o *ODict) Base() *BaseObject {
@@ -40,8 +44,7 @@ func (o *ODict) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (o *ODict) Type() *Type {
-	obType := c(o).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(o).ob_type)))
 }
 
 // Decref decrements o's reference count, o may not be nil.

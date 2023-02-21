@@ -33,6 +33,10 @@ func newDict(obj *C.PyObject) *Dict {
 	return (*Dict)(unsafe.Pointer(obj))
 }
 
+func (d *Dict) c() *C.PyDictObject {
+	return (*C.PyDictObject)(unsafe.Pointer(d))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (d *Dict) Base() *BaseObject {
@@ -42,8 +46,7 @@ func (d *Dict) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (d *Dict) Type() *Type {
-	obType := c(d).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(d).ob_type)))
 }
 
 // Decref decrements d's reference count, d may not be nil.

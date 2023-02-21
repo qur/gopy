@@ -35,6 +35,10 @@ func newList(obj *C.PyObject) *List {
 	return (*List)(unsafe.Pointer(obj))
 }
 
+func (l *List) c() *C.PyListObject {
+	return (*C.PyListObject)(unsafe.Pointer(l))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (l *List) Base() *BaseObject {
@@ -44,8 +48,7 @@ func (l *List) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (l *List) Type() *Type {
-	obType := c(l).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(l).ob_type)))
 }
 
 // Decref decrements l's reference count, l may not be nil.

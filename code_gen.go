@@ -31,6 +31,10 @@ func newCode(obj *C.PyObject) *Code {
 	return (*Code)(unsafe.Pointer(obj))
 }
 
+func (co *Code) c() *C.PyCodeObject {
+	return (*C.PyCodeObject)(unsafe.Pointer(co))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (co *Code) Base() *BaseObject {
@@ -40,8 +44,7 @@ func (co *Code) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (co *Code) Type() *Type {
-	obType := c(co).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(co).ob_type)))
 }
 
 // Decref decrements co's reference count, co may not be nil.

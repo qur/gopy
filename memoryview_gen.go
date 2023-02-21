@@ -35,6 +35,10 @@ func newMemoryView(obj *C.PyObject) *MemoryView {
 	return (*MemoryView)(unsafe.Pointer(obj))
 }
 
+func (m *MemoryView) c() *C.PyMemoryViewObject {
+	return (*C.PyMemoryViewObject)(unsafe.Pointer(m))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (m *MemoryView) Base() *BaseObject {
@@ -44,8 +48,7 @@ func (m *MemoryView) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (m *MemoryView) Type() *Type {
-	obType := c(m).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(m).ob_type)))
 }
 
 // Decref decrements m's reference count, m may not be nil.

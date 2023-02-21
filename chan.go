@@ -97,6 +97,7 @@ func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, error) {
 	return obj, nil
 }
 
+// Py_close provides a c.close() method when this object is used in Python.
 func (c *Chan) Py_close(args *Tuple, kw *Dict) (ret Object, err error) {
 	if err := ParseTupleAndKeywords(args, kw, "", []string{}); err != nil {
 		return nil, err

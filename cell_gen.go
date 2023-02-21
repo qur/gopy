@@ -31,6 +31,10 @@ func newCell(obj *C.PyObject) *Cell {
 	return (*Cell)(unsafe.Pointer(obj))
 }
 
+func (ce *Cell) c() *C.PyCellObject {
+	return (*C.PyCellObject)(unsafe.Pointer(ce))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (ce *Cell) Base() *BaseObject {
@@ -40,8 +44,7 @@ func (ce *Cell) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (ce *Cell) Type() *Type {
-	obType := c(ce).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(ce).ob_type)))
 }
 
 // Decref decrements ce's reference count, ce may not be nil.

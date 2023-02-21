@@ -5,6 +5,7 @@ import "C"
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"unsafe"
 )
@@ -48,6 +49,7 @@ func Import(name string) (*Module, error) {
 type ModuleDef struct {
 	Name    string
 	Doc     string
+	Package bool
 	Methods []GoMethod
 }
 
@@ -63,33 +65,55 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 	if m == nil {
 		return nil, exception()
 	}
+	mod := newModule(m)
+
+	if md.Package {
+		// mark module as package by adding an empty list as __path__
+		l, err := NewList(0)
+		if err != nil {
+			mod.Decref()
+			return nil, err
+		}
+		defer l.Decref()
+
+		if err := mod.AddObjectRef("__path__", l); err != nil {
+			mod.Decref()
+			return nil, err
+		}
+	}
 
 	if len(md.Methods) == 0 {
-		return newModule(m), nil
+		return mod, nil
 	}
 
 	n := C.PyUnicode_FromString(pyMD.m_name)
 	if n == nil {
+		mod.Decref()
 		return nil, exception()
 	}
+	defer newObject(n).Decref()
 
 	d := C.PyModule_GetDict(m)
 	if d == nil {
+		mod.Decref()
 		return nil, exception()
 	}
 
 	for _, method := range md.Methods {
 		pyF, err := makeCFunction(method.Name, method.Func, method.Doc, n)
 		if err != nil {
+			mod.Decref()
 			return nil, err
 		}
+		defer pyF.Decref()
 
 		if C.PyDict_SetItemString(d, C.CString(method.Name), c(pyF)) != 0 {
+			mod.Decref()
 			return nil, exception()
 		}
 	}
 
-	return newModule(m), nil
+	return mod, nil
 }
 
 func ExecCodeModule(name string, code Object) (*Module, error) {
@@ -119,6 +143,13 @@ func (mod *Module) Register() error {
 	if err != nil {
 		return err
 	}
+	if parent := getParentName(name); parent != "" {
+		if pMod := getImport(parent); pMod == nil {
+			return fmt.Errorf("parent module '%s' isn't registered", parent)
+		} else if !pMod.isPackage() {
+			return fmt.Errorf("parent module '%s' is not a package", parent)
+		}
+	}
 	addImport(name, mod)
 	return nil
 }
@@ -138,6 +169,11 @@ func (mod *Module) Name() (string, error) {
 		return "", exception()
 	}
 	return C.GoString(ret), nil
+}
+
+func (mod *Module) isPackage() bool {
+	ret, err := mod.GetAttrString("__path__")
+	return ret != None && err == nil
 }
 
 // GetAttr is a convenience wrapper that is equivalent to
@@ -174,11 +210,7 @@ func (mod *Module) AddObject(name string, obj Object) error {
 	defer C.free(unsafe.Pointer(cname))
 
 	ret := C.PyModule_AddObject(c(mod), cname, c(obj))
-	if ret < 0 {
-		return exception()
-	}
-
-	return nil
+	return int2Err(ret)
 }
 
 func (mod *Module) AddObjectRef(name string, obj Object) error {
@@ -190,11 +222,7 @@ func (mod *Module) AddObjectRef(name string, obj Object) error {
 	defer C.free(unsafe.Pointer(cname))
 
 	ret := C.PyModule_AddObjectRef(c(mod), cname, c(obj))
-	if ret < 0 {
-		return exception()
-	}
-
-	return nil
+	return int2Err(ret)
 }
 
 func (mod *Module) AddIntConstant(name string, value int) error {
@@ -224,6 +252,18 @@ func (mod *Module) AddStringConstant(name, value string) error {
 	return nil
 }
 
+func (mod *Module) AddType(t *Type) error {
+	ret := C.PyModule_AddType(c(mod), t.c())
+	return int2Err(ret)
+}
+
+func getParentName(name string) string {
+	if i := strings.LastIndex(name, "."); i >= 0 {
+		return name[:i]
+	}
+	return ""
+}
+
 var (
 	importLock   sync.Mutex
 	importMap    = map[string]*Module{}
@@ -245,14 +285,21 @@ func getImport(name string) *Module {
 	return importMap[name]
 }
 
+func getParent(name string) *Module {
+	if parent := getParentName(name); parent != "" {
+		return getImport(parent)
+	}
+	return nil
+}
+
 func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 	var name string
 	var path, target Object
 	ParseTuple(args, "sO|O", &name, &path, &target)
 
-	if path != None {
-		// we don't support lookups with path - basically this is a variant of
-		// BuiltinImporter, so we copy the behaviour
+	// If this is a sub-package, we will only import it if we also own the
+	// parent.
+	if path != None && getParent(name) == nil {
 		None.Incref()
 		return None, nil
 	}

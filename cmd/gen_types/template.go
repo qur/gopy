@@ -50,6 +50,10 @@ func new{{ .type }}(obj *C.PyObject) *{{ .type }} {
 	return (*{{ .type }})(unsafe.Pointer(obj))
 }
 
+func ({{ .name }} *{{ .type }}) c() *C.Py{{ .type }}Object {
+	return (*C.Py{{ .type }}Object)(unsafe.Pointer({{ .name }}))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func ({{ .name }} *{{ .type }}) Base() *BaseObject {

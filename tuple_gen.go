@@ -35,6 +35,10 @@ func newTuple(obj *C.PyObject) *Tuple {
 	return (*Tuple)(unsafe.Pointer(obj))
 }
 
+func (t *Tuple) c() *C.PyTupleObject {
+	return (*C.PyTupleObject)(unsafe.Pointer(t))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (t *Tuple) Base() *BaseObject {
@@ -44,8 +48,7 @@ func (t *Tuple) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (t *Tuple) Type() *Type {
-	obType := c(t).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(t).ob_type)))
 }
 
 // Decref decrements t's reference count, t may not be nil.

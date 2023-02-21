@@ -33,6 +33,10 @@ func newGen(obj *C.PyObject) *Gen {
 	return (*Gen)(unsafe.Pointer(obj))
 }
 
+func (g *Gen) c() *C.PyGenObject {
+	return (*C.PyGenObject)(unsafe.Pointer(g))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (g *Gen) Base() *BaseObject {
@@ -42,8 +46,7 @@ func (g *Gen) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (g *Gen) Type() *Type {
-	obType := c(g).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(g).ob_type)))
 }
 
 // Decref decrements g's reference count, g may not be nil.

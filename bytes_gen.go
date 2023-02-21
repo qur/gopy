@@ -35,6 +35,10 @@ func newBytes(obj *C.PyObject) *Bytes {
 	return (*Bytes)(unsafe.Pointer(obj))
 }
 
+func (b *Bytes) c() *C.PyBytesObject {
+	return (*C.PyBytesObject)(unsafe.Pointer(b))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (b *Bytes) Base() *BaseObject {
@@ -44,8 +48,7 @@ func (b *Bytes) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (b *Bytes) Type() *Type {
-	obType := c(b).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(b).ob_type)))
 }
 
 // Decref decrements b's reference count, b may not be nil.

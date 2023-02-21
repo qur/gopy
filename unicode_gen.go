@@ -35,6 +35,10 @@ func newUnicode(obj *C.PyObject) *Unicode {
 	return (*Unicode)(unsafe.Pointer(obj))
 }
 
+func (u *Unicode) c() *C.PyUnicodeObject {
+	return (*C.PyUnicodeObject)(unsafe.Pointer(u))
+}
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (u *Unicode) Base() *BaseObject {
@@ -44,8 +48,7 @@ func (u *Unicode) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (u *Unicode) Type() *Type {
-	obType := c(u).ob_type
-	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+	return newType((*C.PyObject)(unsafe.Pointer(c(u).ob_type)))
 }
 
 // Decref decrements u's reference count, u may not be nil.

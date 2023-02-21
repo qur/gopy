@@ -123,10 +123,15 @@ var exampleClass = py.Class{
 }
 
 var modDef = py.ModuleDef{
-	Name: "example",
+	Name:    "example",
+	Package: true,
 	Methods: []py.GoMethod{
 		{"example", example, "example function"},
 	},
+}
+
+var subDef = py.ModuleDef{
+	Name: "example.sub",
 }
 
 func main() {
@@ -149,6 +154,16 @@ func main() {
 	}
 
 	if err := m.Register(); err != nil {
+		log.Fatalf("ERROR: %s", err)
+	}
+
+	s, err := py.CreateModule(&subDef)
+	if err != nil {
+		log.Fatalf("ERROR: %s", err)
+	}
+	defer s.Decref()
+
+	if err := s.Register(); err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
 
