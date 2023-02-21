@@ -33,6 +33,9 @@ type tp_getattro interface {
 type tp_setattro interface {
 	PySetAttr(Object, Object) error
 }
+type tp_richcompare interface {
+	PyRichCompare(Object, Op) (Object, error)
+}
 type tp_iter interface {
 	PyIter() (Object, error)
 }
@@ -56,6 +59,9 @@ type am_aiter interface {
 }
 type am_anext interface {
 	PyAsyncNext() (Object, error)
+}
+type am_send interface {
+	PyAsyncSend(Object) (Object, SendResult, error)
 }
 type nb_add interface {
 	PyAdd(Object) (Object, error)
@@ -277,6 +283,19 @@ func goClassSlot_tp_setattro(obj, arg1, arg2 unsafe.Pointer) int {
 
 	return 0
 }
+//export goClassSlot_tp_richcompare
+func goClassSlot_tp_richcompare(obj, arg1 unsafe.Pointer, arg2 C.int) unsafe.Pointer {
+	co := newObject((*C.PyObject)(obj)).(tp_richcompare)
+
+	o := newObject((*C.PyObject)(arg1))
+	ret, err := co.PyRichCompare(o, Op(arg2))
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
 //export goClassSlot_tp_iter
 func goClassSlot_tp_iter(obj unsafe.Pointer) unsafe.Pointer {
 	co := newObject((*C.PyObject)(obj)).(tp_iter)
@@ -376,6 +395,22 @@ func goClassSlot_am_anext(obj unsafe.Pointer) unsafe.Pointer {
 	}
 
 	return unsafe.Pointer(c(ret))
+}
+//export goClassSlot_am_send
+func goClassSlot_am_send(obj, arg, out unsafe.Pointer) C.PySendResult {
+	co := newObject((*C.PyObject)(obj)).(am_send)
+
+	o := newObject((*C.PyObject)(arg))
+	result := (**C.PyObject)(out)
+	ret, res, err := co.PyAsyncSend(o)
+	if err != nil {
+		raise(err)
+		*result = nil
+		return C.PYGEN_ERROR
+	}
+
+	*result = c(ret)
+	return C.PySendResult(res)
 }
 //export goClassSlot_nb_add
 func goClassSlot_nb_add(obj, arg unsafe.Pointer) unsafe.Pointer {
@@ -993,6 +1028,7 @@ var slotMap = map[C.uint64_t]reflect.Type{
 	C.CLASS_HAS_TP_STR: reflect.TypeOf((*tp_str)(nil)).Elem(),
 	C.CLASS_HAS_TP_GETATTRO: reflect.TypeOf((*tp_getattro)(nil)).Elem(),
 	C.CLASS_HAS_TP_SETATTRO: reflect.TypeOf((*tp_setattro)(nil)).Elem(),
+	C.CLASS_HAS_TP_RICHCOMPARE: reflect.TypeOf((*tp_richcompare)(nil)).Elem(),
 	C.CLASS_HAS_TP_ITER: reflect.TypeOf((*tp_iter)(nil)).Elem(),
 	C.CLASS_HAS_TP_ITERNEXT: reflect.TypeOf((*tp_iternext)(nil)).Elem(),
 	C.CLASS_HAS_TP_DESCR_GET: reflect.TypeOf((*tp_descr_get)(nil)).Elem(),
@@ -1001,6 +1037,7 @@ var slotMap = map[C.uint64_t]reflect.Type{
 	C.CLASS_HAS_AM_AWAIT: reflect.TypeOf((*am_await)(nil)).Elem(),
 	C.CLASS_HAS_AM_AITER: reflect.TypeOf((*am_aiter)(nil)).Elem(),
 	C.CLASS_HAS_AM_ANEXT: reflect.TypeOf((*am_anext)(nil)).Elem(),
+	C.CLASS_HAS_AM_SEND: reflect.TypeOf((*am_send)(nil)).Elem(),
 	C.CLASS_HAS_NB_ADD: reflect.TypeOf((*nb_add)(nil)).Elem(),
 	C.CLASS_HAS_NB_INPLACE_ADD: reflect.TypeOf((*nb_inplace_add)(nil)).Elem(),
 	C.CLASS_HAS_NB_SUBTRACT: reflect.TypeOf((*nb_subtract)(nil)).Elem(),

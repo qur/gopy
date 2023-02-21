@@ -20,7 +20,7 @@ slots = [
     ("tp_str", "reprfunc", "PyStr", "() string"),
     ("tp_getattro", "getattrofunc", "PyGetAttr", "(Object) (Object, error)"),
     ("tp_setattro", "setattrofunc", "PySetAttr", "(Object, Object) error"),
-    #    TODO(jp3): ("tp_richcompare", "richcmpfunc", "PyRichCompare", ""),
+    ("tp_richcompare", "richcmpfunc", "PyRichCompare", "(Object, Op) (Object, error)"),
     ("tp_iter", "getiterfunc", "PyIter", "() (Object, error)"),
     ("tp_iternext", "iternextfunc", "PyIterNext", "() (Object, error)"),
     ("tp_descr_get", "descrgetfunc", "PyDescrGet",
@@ -32,7 +32,7 @@ slots = [
     ("am_await", "unaryfunc", "PyAwait", "() (Object, error)"),
     ("am_aiter", "unaryfunc", "PyAsyncIter", "() (Object, error)"),
     ("am_anext", "unaryfunc", "PyAsyncNext", "() (Object, error)"),
-    #    TODO(jp3): ("am_send", "sendfunc", "", ""),
+    ("am_send", "sendfunc", "PyAsyncSend", "(Object) (Object, SendResult, error)"),
 
     # Number Slots
     ("nb_add", "binaryfunc", "PyAdd", "(Object) (Object, error)"),
@@ -199,6 +199,22 @@ callbacks = {
             '	return 0',
         ],
     ),
+    "(Object) (Object, SendResult, error)": (
+        "(obj, arg, out unsafe.Pointer) C.PySendResult",
+        [
+            '	o := newObject((*C.PyObject)(arg))',
+            '	result := (**C.PyObject)(out)',
+            '	ret, res, err := co.%(fn)s(o)',
+            '	if err != nil {',
+            '		raise(err)',
+            '		*result = nil',
+            '		return C.PYGEN_ERROR',
+            '	}',
+            '',
+            '	*result = c(ret)',
+            '	return C.PySendResult(res)',
+        ],
+    ),
     "(Object, int) error": (
         "(obj, arg1 unsafe.Pointer, arg2 C.int) int",
         [
@@ -216,6 +232,19 @@ callbacks = {
         [
             '	o := newObject((*C.PyObject)(arg1))',
             '	ret, err := co.%(fn)s(o, int(arg2))',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
+        ],
+    ),
+    "(Object, Op) (Object, error)": (
+        "(obj, arg1 unsafe.Pointer, arg2 C.int) unsafe.Pointer",
+        [
+            '	o := newObject((*C.PyObject)(arg1))',
+            '	ret, err := co.%(fn)s(o, Op(arg2))',
             '	if err != nil {',
             '		raise(err)',
             '		return nil',
@@ -292,6 +321,23 @@ callbacks = {
         ],
     ),
 }
+
+
+def check_slots():
+    # we can only have 64 slots with a single uint64_t
+    if len(slots) > 64:
+        print("TOO MANY SLOTS!", file=sys.stderr)
+        print(
+            f"Can only fit 64 slots in a uint64_t, we have {len(slots)}", file=sys.stderr)
+        sys.exit(1)
+
+    # names should be unique
+    slot_names = {}
+    for (slot, _, _, _) in slots:
+        if slot in slot_names:
+            print(f"DUPLICATE SLOT: {slot}", file=sys.stderr)
+            sys.exit(1)
+        slot_names[slot] = True
 
 
 def write_h_header(f):
@@ -466,11 +512,7 @@ def write_slotMap(f):
 
 
 def main():
-    if len(slots) > 64:
-        print("TOO MANY SLOTS!", file=sys.stderr)
-        print(
-            f"Can only fit 64 slots in a uint64_t, we have {len(slots)}", file=sys.stderr)
-        sys.exit(1)
+    check_slots()
 
     with open("class_slots.c", "w", encoding='utf-8') as output:
         write_c_header(output)

@@ -21,6 +21,7 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
     if (slotFlags & CLASS_HAS_TP_STR) m->tp_str = (reprfunc)goClassSlot_tp_str;
     if (slotFlags & CLASS_HAS_TP_GETATTRO) m->tp_getattro = (getattrofunc)goClassSlot_tp_getattro;
     if (slotFlags & CLASS_HAS_TP_SETATTRO) m->tp_setattro = (setattrofunc)goClassSlot_tp_setattro;
+    if (slotFlags & CLASS_HAS_TP_RICHCOMPARE) m->tp_richcompare = (richcmpfunc)goClassSlot_tp_richcompare;
     if (slotFlags & CLASS_HAS_TP_ITER) m->tp_iter = (getiterfunc)goClassSlot_tp_iter;
     if (slotFlags & CLASS_HAS_TP_ITERNEXT) m->tp_iternext = (iternextfunc)goClassSlot_tp_iternext;
     if (slotFlags & CLASS_HAS_TP_DESCR_GET) m->tp_descr_get = (descrgetfunc)goClassSlot_tp_descr_get;
@@ -34,6 +35,7 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
     if (slotFlags & CLASS_HAS_AM_AWAIT) m->am_await = (unaryfunc)goClassSlot_am_await;
     if (slotFlags & CLASS_HAS_AM_AITER) m->am_aiter = (unaryfunc)goClassSlot_am_aiter;
     if (slotFlags & CLASS_HAS_AM_ANEXT) m->am_anext = (unaryfunc)goClassSlot_am_anext;
+    if (slotFlags & CLASS_HAS_AM_SEND) m->am_send = (sendfunc)goClassSlot_am_send;
   }
 
   if (slotFlags & CLASS_HAS_NB) {

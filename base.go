@@ -27,10 +27,7 @@ func newBaseObject(obj *C.PyObject) *BaseObject {
 // to the Python "hasattr(obj, name)".
 func (obj *BaseObject) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(obj), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // HasAttrString returns true if "obj" has the attribute "name".  This is
@@ -39,10 +36,7 @@ func (obj *BaseObject) HasAttrString(name string) bool {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyObject_HasAttrString(c(obj), s)
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "obj" with the name "name".  This is
