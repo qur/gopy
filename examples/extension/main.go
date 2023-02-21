@@ -139,7 +139,7 @@ func initExtension() (*py.Module, error) {
 		return nil, err
 	}
 
-	if err = m.AddObject("ExampleClass", &exampleClass); err != nil {
+	if err = m.AddObjectRef("ExampleClass", &exampleClass); err != nil {
 		return nil, err
 	}
 

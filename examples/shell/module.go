@@ -89,6 +89,7 @@ func setupShModule() error {
 	if err != nil {
 		return err
 	}
+	defer shMod.Decref()
 
 	if err := shMod.Register(); err != nil {
 		return err
@@ -98,12 +99,13 @@ func setupShModule() error {
 	if err != nil {
 		return err
 	}
+	defer mod.Decref()
 
 	if err := mod.Register(); err != nil {
 		return err
 	}
 
-	if err := shMod.AddObject("__cmds__", mod); err != nil {
+	if err := shMod.AddObjectRef("__cmds__", mod); err != nil {
 		return err
 	}
 

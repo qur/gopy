@@ -56,7 +56,7 @@ func NewChan(buffer int) (*Chan, error) {
 }
 
 // Py_put provides a c.put() method when this object is used in Python.
-func (c *Chan) Py_put(args *Tuple, kw *Dict) (Object, error) {
+func (c *Chan) Py_put(args *Tuple, kw *Dict) (ret Object, err error) {
 	var obj Object
 	kwlist := []string{"obj"}
 
@@ -65,10 +65,21 @@ func (c *Chan) Py_put(args *Tuple, kw *Dict) (Object, error) {
 	}
 
 	obj.Incref()
+	None.Incref()
+	ret = None
+
+	defer func() {
+		if p := recover(); p != nil {
+			obj.Decref()
+			ret.Decref()
+			ret = nil
+			err = ChanClosedError.Err("Chan closed")
+		}
+	}()
+
 	c.c <- obj
 
-	None.Incref()
-	return None, nil
+	return
 }
 
 // Py_get provides a c.get() method when this object is used in Python.
@@ -79,18 +90,32 @@ func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, error) {
 
 	obj := <-c.c
 
+	if obj == nil {
+		return nil, ChanClosedError.Err("Chan closed")
+	}
+
 	return obj, nil
 }
 
-func (c *Chan) Py_close(args *Tuple, kw *Dict) (Object, error) {
+func (c *Chan) Py_close(args *Tuple, kw *Dict) (ret Object, err error) {
 	if err := ParseTupleAndKeywords(args, kw, "", []string{}); err != nil {
 		return nil, err
 	}
 
+	None.Incref()
+	ret = None
+
+	defer func() {
+		if p := recover(); p != nil {
+			ret.Decref()
+			ret = nil
+			err = ChanClosedError.Err("Chan already closed")
+		}
+	}()
+
 	close(c.c)
 
-	None.Incref()
-	return None, nil
+	return
 }
 
 // PyIter is called to get an iterator for the item. This is used when running

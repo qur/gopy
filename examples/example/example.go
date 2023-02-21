@@ -138,12 +138,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
+	defer m.Decref()
 
 	if err := exampleClass.Create(); err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
 
-	if err = m.AddObject("ExampleClass", &exampleClass); err != nil {
+	if err = m.AddObjectRef("ExampleClass", &exampleClass); err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
 

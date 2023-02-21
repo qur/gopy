@@ -181,6 +181,22 @@ func (mod *Module) AddObject(name string, obj Object) error {
 	return nil
 }
 
+func (mod *Module) AddObjectRef(name string, obj Object) error {
+	if obj == nil {
+		return AssertionError.Err("ValueError: obj == nil!")
+	}
+
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+
+	ret := C.PyModule_AddObjectRef(c(mod), cname, c(obj))
+	if ret < 0 {
+		return exception()
+	}
+
+	return nil
+}
+
 func (mod *Module) AddIntConstant(name string, value int) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
@@ -218,6 +234,7 @@ func addImport(name string, mod *Module) {
 	importLock.Lock()
 	defer importLock.Unlock()
 
+	mod.Incref()
 	importMap[name] = mod
 }
 

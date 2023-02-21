@@ -432,8 +432,10 @@ var (
 	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
 )
 
-// Create creates and returns a pointer to a PyTypeObject that is the Python
-// representation of the class that has been implemented in Go.
+// Create completes the initialisation of the Class by creating the Python type.
+// The created type is then stored in the Class and accessible via the Type
+// method. A Class is not a valid Python object until Create has been
+// successfully called.
 func (cls *Class) Create() error {
 	pyType := C.newType()
 	pyType.tp_name = C.CString(cls.Name)
