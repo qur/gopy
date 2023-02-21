@@ -35,6 +35,30 @@ func example(args *py.Tuple) (py.Object, error) {
 	return ret, nil
 }
 
+func iterate(args *py.Tuple) (py.Object, error) {
+	var o py.Object
+	if err := py.ParseTuple(args, "O", &o); err != nil {
+		return nil, err
+	}
+	fmt.Printf("item: %T (%s)\n", o, o.Type().String())
+	i, err := py.GetIterator(o)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("iterator: %T (%s)\n", i, i.Type().String())
+	items, err := py.Iterate(i)
+	// iterate through items first, to make sure decref gets called
+	for i, item := range items {
+		fmt.Printf("%d: %s (%T)\n", i, item, item)
+		item.Decref()
+	}
+	if err != nil {
+		return nil, err
+	}
+	py.None.Incref()
+	return py.None, nil
+}
+
 type Example struct {
 	py.ClassBaseObject
 	wibble int64
@@ -122,6 +146,7 @@ var modDef = py.ModuleDef{
 	Package: true,
 	Methods: []py.GoMethod{
 		{"example", example, "example function"},
+		{"iterate", iterate, "iterate any iterable"},
 	},
 }
 
