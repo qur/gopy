@@ -14,9 +14,10 @@ import (
 //
 // This type implements the Number protocol.
 type Complex struct {
-	abstractObject
 	o C.PyComplexObject
 }
+
+var _ Object = (*Complex)(nil)
 
 // ComplexType is the Type object that represents the Complex type.
 var ComplexType = (*Type)(unsafe.Pointer(&C.PyComplex_Type))
@@ -30,6 +31,55 @@ func complexCheck(obj Object) bool {
 
 func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (co *Complex) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(co))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (co *Complex) Type() *Type {
+	obType := c(co).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements co's reference count, co may not be nil.
+func (co *Complex) Decref() {
+	C.decref(c(co))
+}
+
+// Incref increments co's reference count, co may not be nil.
+func (co *Complex) Incref() {
+	C.incref(c(co))
+}
+
+// IsTrue returns true if the value of co is considered to be True. This is
+// equivalent to "if co:" in Python.
+func (co *Complex) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(co))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of co is considered to be False. This is
+// equivalent to "if not co:" in Python.
+func (co *Complex) Not() bool {
+	ret := C.PyObject_Not(c(co))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for co. After calling this method,
+// co should no longer be used.
+func (co *Complex) Free() {
+	free(co)
 }
 
 // Repr returns a String representation of "co". This is equivalent to the

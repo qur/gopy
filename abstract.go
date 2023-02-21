@@ -3,7 +3,9 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 // abstractObject is an 0-sized type that can be embedded as the first item in
 // concrete types to provide the Object interface functions.
@@ -79,6 +81,12 @@ func (obj *abstractObject) Not() bool {
 // Free deallocates the storage (in Python) for obj.  After calling this method,
 // obj should no longer be used.
 func (obj *abstractObject) Free() {
+	free(obj)
+}
+
+// free deallocates the storage (in Python) for obj.  After calling this method,
+// obj should no longer be used.
+func free(obj Object) {
 	o := c(obj)
 
 	// This can happen if a PyDealloc method on a ClassObject calls Free

@@ -31,9 +31,10 @@ import (
 // This type implements the AsyncIterator protocol.
 {{- end }}
 type {{ .type }} struct {
-	abstractObject
 	o C.Py{{ .type }}Object
 }
+
+var _ Object = (*{{ .type }})(nil)
 
 // {{ .type }}Type is the Type object that represents the {{ .type }} type.
 var {{ .type }}Type = (*Type)(unsafe.Pointer(&C.Py{{ .type }}_Type))
@@ -47,6 +48,54 @@ func {{ .ltype }}Check(obj Object) bool {
 
 func new{{ .type }}(obj *C.PyObject) *{{ .type }} {
 	return (*{{ .type }})(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func ({{ .name }} *{{ .type }}) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer({{ .name }}))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func ({{ .name }} *{{ .type }}) Type() *Type {
+	return newType((*C.PyObject)(unsafe.Pointer(c({{ .name }}).ob_type)))
+}
+
+// Decref decrements {{ .name }}'s reference count, {{ .name }} may not be nil.
+func ({{ .name }} *{{ .type }}) Decref() {
+	C.decref(c({{ .name }}))
+}
+
+// Incref increments {{ .name }}'s reference count, {{ .name }} may not be nil.
+func ({{ .name }} *{{ .type }}) Incref() {
+	C.incref(c({{ .name }}))
+}
+
+// IsTrue returns true if the value of {{ .name }} is considered to be True. This is
+// equivalent to "if {{ .name }}:" in Python.
+func ({{ .name }} *{{ .type }}) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c({{ .name }}))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of {{ .name }} is considered to be False. This is
+// equivalent to "if not {{ .name }}:" in Python.
+func ({{ .name }} *{{ .type }}) Not() bool {
+	ret := C.PyObject_Not(c({{ .name }}))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for {{ .name }}. After calling this method,
+// {{ .name }} should no longer be used.
+func ({{ .name }} *{{ .type }}) Free() {
+	free({{ .name }})
 }
 
 {{ if .funcs.tp_repr -}}

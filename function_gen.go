@@ -12,9 +12,10 @@ import (
 // Function represents objects of the FunctionType (or PyFunctionType
 // in the Python API) type.
 type Function struct {
-	abstractObject
 	o C.PyFunctionObject
 }
+
+var _ Object = (*Function)(nil)
 
 // FunctionType is the Type object that represents the Function type.
 var FunctionType = (*Type)(unsafe.Pointer(&C.PyFunction_Type))
@@ -28,6 +29,55 @@ func functionCheck(obj Object) bool {
 
 func newFunction(obj *C.PyObject) *Function {
 	return (*Function)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (f *Function) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(f))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (f *Function) Type() *Type {
+	obType := c(f).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements f's reference count, f may not be nil.
+func (f *Function) Decref() {
+	C.decref(c(f))
+}
+
+// Incref increments f's reference count, f may not be nil.
+func (f *Function) Incref() {
+	C.incref(c(f))
+}
+
+// IsTrue returns true if the value of f is considered to be True. This is
+// equivalent to "if f:" in Python.
+func (f *Function) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(f))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of f is considered to be False. This is
+// equivalent to "if not f:" in Python.
+func (f *Function) Not() bool {
+	ret := C.PyObject_Not(c(f))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for f. After calling this method,
+// f should no longer be used.
+func (f *Function) Free() {
+	free(f)
 }
 
 // Repr returns a String representation of "f". This is equivalent to the

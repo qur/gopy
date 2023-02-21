@@ -12,9 +12,10 @@ import (
 // Type represents objects of the TypeType (or PyTypeType
 // in the Python API) type.
 type Type struct {
-	abstractObject
 	o C.PyTypeObject
 }
+
+var _ Object = (*Type)(nil)
 
 // TypeType is the Type object that represents the Type type.
 var TypeType = (*Type)(unsafe.Pointer(&C.PyType_Type))
@@ -28,6 +29,55 @@ func typeCheck(obj Object) bool {
 
 func newType(obj *C.PyObject) *Type {
 	return (*Type)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (t *Type) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(t))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (t *Type) Type() *Type {
+	obType := c(t).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements t's reference count, t may not be nil.
+func (t *Type) Decref() {
+	C.decref(c(t))
+}
+
+// Incref increments t's reference count, t may not be nil.
+func (t *Type) Incref() {
+	C.incref(c(t))
+}
+
+// IsTrue returns true if the value of t is considered to be True. This is
+// equivalent to "if t:" in Python.
+func (t *Type) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(t))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of t is considered to be False. This is
+// equivalent to "if not t:" in Python.
+func (t *Type) Not() bool {
+	ret := C.PyObject_Not(c(t))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for t. After calling this method,
+// t should no longer be used.
+func (t *Type) Free() {
+	free(t)
 }
 
 // Repr returns a String representation of "t". This is equivalent to the

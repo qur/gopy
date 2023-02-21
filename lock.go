@@ -111,6 +111,10 @@ func initAndLock(initsigs bool) *Lock {
 //	// Call Python code ...
 //
 //	lock.Unlock()
+//
+// Note: The Lock and Unlock methods will panic if Python is not initialised, so
+// Lock and Unlock should not be called before Python is initialised, or after
+// Python is finalized.
 type Lock struct {
 	gilState *GilState
 	thState  *C.PyThreadState
@@ -145,6 +149,10 @@ func (lock *Lock) Lock() {
 
 func (lock *Lock) setCount(l int64) {
 	dict := newDict(C.PyThreadState_GetDict())
+	if dict == nil {
+		// no current thread state, Python is not initialised on this thread.
+		panic("Python not initialised on this thread")
+	}
 	pl := NewLong(l)
 	defer pl.Decref()
 	err := dict.SetItemString("gopy.count", pl)
@@ -155,6 +163,10 @@ func (lock *Lock) setCount(l int64) {
 
 func (lock *Lock) getCount() int64 {
 	dict := newDict(C.PyThreadState_GetDict())
+	if dict == nil {
+		// no current thread state, Python is not initialised on this thread.
+		panic("Python not initialised on this thread")
+	}
 	val, err := dict.GetItemString("gopy.count")
 	if err != nil {
 		return 0
@@ -183,7 +195,7 @@ func (lock *Lock) dec() bool {
 // Unlock unlocks the lock.  When it returns no calls into Python may be made.
 //
 // If the lock is not locked when this function is called, then nothing happens,
-// and the function returns immediately.  Also, it is not necessay to call
+// and the function returns immediately.  Also, it is not necessary to call
 // BlockThreads() before calling Unlock(), even if UnblockThreads() has been
 // called.
 func (lock *Lock) Unlock() {

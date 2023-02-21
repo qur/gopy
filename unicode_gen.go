@@ -16,9 +16,10 @@ import (
 //
 // This type implements the Sequence protocol.
 type Unicode struct {
-	abstractObject
 	o C.PyUnicodeObject
 }
+
+var _ Object = (*Unicode)(nil)
 
 // UnicodeType is the Type object that represents the Unicode type.
 var UnicodeType = (*Type)(unsafe.Pointer(&C.PyUnicode_Type))
@@ -32,6 +33,55 @@ func unicodeCheck(obj Object) bool {
 
 func newUnicode(obj *C.PyObject) *Unicode {
 	return (*Unicode)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (u *Unicode) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(u))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (u *Unicode) Type() *Type {
+	obType := c(u).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements u's reference count, u may not be nil.
+func (u *Unicode) Decref() {
+	C.decref(c(u))
+}
+
+// Incref increments u's reference count, u may not be nil.
+func (u *Unicode) Incref() {
+	C.incref(c(u))
+}
+
+// IsTrue returns true if the value of u is considered to be True. This is
+// equivalent to "if u:" in Python.
+func (u *Unicode) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(u))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of u is considered to be False. This is
+// equivalent to "if not u:" in Python.
+func (u *Unicode) Not() bool {
+	ret := C.PyObject_Not(c(u))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for u. After calling this method,
+// u should no longer be used.
+func (u *Unicode) Free() {
+	free(u)
 }
 
 // Repr returns a String representation of "u". This is equivalent to the

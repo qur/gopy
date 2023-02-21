@@ -130,7 +130,9 @@ var modDef = py.ModuleDef{
 }
 
 func main() {
-	py.Initialize()
+	// We don't want to call unlock, as Python will not be initialised after
+	// Main returns, and that will cause Unlock to panic
+	py.InitAndLockWithSignals()
 
 	m, err := py.CreateModule(&modDef)
 	if err != nil {
@@ -146,6 +148,10 @@ func main() {
 	}
 
 	if err := m.Register(); err != nil {
+		log.Fatalf("ERROR: %s", err)
+	}
+
+	if _, err := py.InitGoModule(); err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
 

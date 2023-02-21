@@ -12,9 +12,10 @@ import (
 // Frame represents objects of the FrameType (or PyFrameType
 // in the Python API) type.
 type Frame struct {
-	abstractObject
 	o C.PyFrameObject
 }
+
+var _ Object = (*Frame)(nil)
 
 // FrameType is the Type object that represents the Frame type.
 var FrameType = (*Type)(unsafe.Pointer(&C.PyFrame_Type))
@@ -28,6 +29,55 @@ func frameCheck(obj Object) bool {
 
 func newFrame(obj *C.PyObject) *Frame {
 	return (*Frame)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (f *Frame) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(f))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (f *Frame) Type() *Type {
+	obType := c(f).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements f's reference count, f may not be nil.
+func (f *Frame) Decref() {
+	C.decref(c(f))
+}
+
+// Incref increments f's reference count, f may not be nil.
+func (f *Frame) Incref() {
+	C.incref(c(f))
+}
+
+// IsTrue returns true if the value of f is considered to be True. This is
+// equivalent to "if f:" in Python.
+func (f *Frame) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(f))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of f is considered to be False. This is
+// equivalent to "if not f:" in Python.
+func (f *Frame) Not() bool {
+	ret := C.PyObject_Not(c(f))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for f. After calling this method,
+// f should no longer be used.
+func (f *Frame) Free() {
+	free(f)
 }
 
 // Repr returns a String representation of "f". This is equivalent to the

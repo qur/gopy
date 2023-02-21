@@ -12,9 +12,10 @@ import (
 // Method represents objects of the MethodType (or PyMethodType
 // in the Python API) type.
 type Method struct {
-	abstractObject
 	o C.PyMethodObject
 }
+
+var _ Object = (*Method)(nil)
 
 // MethodType is the Type object that represents the Method type.
 var MethodType = (*Type)(unsafe.Pointer(&C.PyMethod_Type))
@@ -28,6 +29,55 @@ func methodCheck(obj Object) bool {
 
 func newMethod(obj *C.PyObject) *Method {
 	return (*Method)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (m *Method) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(m))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (m *Method) Type() *Type {
+	obType := c(m).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements m's reference count, m may not be nil.
+func (m *Method) Decref() {
+	C.decref(c(m))
+}
+
+// Incref increments m's reference count, m may not be nil.
+func (m *Method) Incref() {
+	C.incref(c(m))
+}
+
+// IsTrue returns true if the value of m is considered to be True. This is
+// equivalent to "if m:" in Python.
+func (m *Method) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(m))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of m is considered to be False. This is
+// equivalent to "if not m:" in Python.
+func (m *Method) Not() bool {
+	ret := C.PyObject_Not(c(m))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for m. After calling this method,
+// m should no longer be used.
+func (m *Method) Free() {
+	free(m)
 }
 
 // Repr returns a String representation of "m". This is equivalent to the

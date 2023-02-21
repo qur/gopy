@@ -14,9 +14,10 @@ import (
 //
 // This type implements the Number protocol.
 type Long struct {
-	abstractObject
 	o C.PyLongObject
 }
+
+var _ Object = (*Long)(nil)
 
 // LongType is the Type object that represents the Long type.
 var LongType = (*Type)(unsafe.Pointer(&C.PyLong_Type))
@@ -30,6 +31,55 @@ func longCheck(obj Object) bool {
 
 func newLong(obj *C.PyObject) *Long {
 	return (*Long)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (l *Long) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(l))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (l *Long) Type() *Type {
+	obType := c(l).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements l's reference count, l may not be nil.
+func (l *Long) Decref() {
+	C.decref(c(l))
+}
+
+// Incref increments l's reference count, l may not be nil.
+func (l *Long) Incref() {
+	C.incref(c(l))
+}
+
+// IsTrue returns true if the value of l is considered to be True. This is
+// equivalent to "if l:" in Python.
+func (l *Long) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(l))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of l is considered to be False. This is
+// equivalent to "if not l:" in Python.
+func (l *Long) Not() bool {
+	ret := C.PyObject_Not(c(l))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for l. After calling this method,
+// l should no longer be used.
+func (l *Long) Free() {
+	free(l)
 }
 
 // Repr returns a String representation of "l". This is equivalent to the

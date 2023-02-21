@@ -16,9 +16,10 @@ import (
 //
 // This type implements the Sequence protocol.
 type Bytes struct {
-	abstractObject
 	o C.PyBytesObject
 }
+
+var _ Object = (*Bytes)(nil)
 
 // BytesType is the Type object that represents the Bytes type.
 var BytesType = (*Type)(unsafe.Pointer(&C.PyBytes_Type))
@@ -32,6 +33,55 @@ func bytesCheck(obj Object) bool {
 
 func newBytes(obj *C.PyObject) *Bytes {
 	return (*Bytes)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (b *Bytes) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(b))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (b *Bytes) Type() *Type {
+	obType := c(b).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements b's reference count, b may not be nil.
+func (b *Bytes) Decref() {
+	C.decref(c(b))
+}
+
+// Incref increments b's reference count, b may not be nil.
+func (b *Bytes) Incref() {
+	C.incref(c(b))
+}
+
+// IsTrue returns true if the value of b is considered to be True. This is
+// equivalent to "if b:" in Python.
+func (b *Bytes) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(b))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of b is considered to be False. This is
+// equivalent to "if not b:" in Python.
+func (b *Bytes) Not() bool {
+	ret := C.PyObject_Not(c(b))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for b. After calling this method,
+// b should no longer be used.
+func (b *Bytes) Free() {
+	free(b)
 }
 
 // Repr returns a String representation of "b". This is equivalent to the

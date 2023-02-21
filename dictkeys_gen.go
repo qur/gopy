@@ -12,9 +12,10 @@ import (
 // DictKeys represents objects of the DictKeysType (or PyDictKeysType
 // in the Python API) type.
 type DictKeys struct {
-	abstractObject
 	o C.PyDictKeysObject
 }
+
+var _ Object = (*DictKeys)(nil)
 
 // DictKeysType is the Type object that represents the DictKeys type.
 var DictKeysType = (*Type)(unsafe.Pointer(&C.PyDictKeys_Type))
@@ -28,6 +29,55 @@ func dictKeysCheck(obj Object) bool {
 
 func newDictKeys(obj *C.PyObject) *DictKeys {
 	return (*DictKeys)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (d *DictKeys) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(d))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (d *DictKeys) Type() *Type {
+	obType := c(d).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements d's reference count, d may not be nil.
+func (d *DictKeys) Decref() {
+	C.decref(c(d))
+}
+
+// Incref increments d's reference count, d may not be nil.
+func (d *DictKeys) Incref() {
+	C.incref(c(d))
+}
+
+// IsTrue returns true if the value of d is considered to be True. This is
+// equivalent to "if d:" in Python.
+func (d *DictKeys) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(d))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of d is considered to be False. This is
+// equivalent to "if not d:" in Python.
+func (d *DictKeys) Not() bool {
+	ret := C.PyObject_Not(c(d))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for d. After calling this method,
+// d should no longer be used.
+func (d *DictKeys) Free() {
+	free(d)
 }
 
 // Repr returns a String representation of "d". This is equivalent to the

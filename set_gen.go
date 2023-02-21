@@ -12,9 +12,10 @@ import (
 // Set represents objects of the SetType (or PySetType
 // in the Python API) type.
 type Set struct {
-	abstractObject
 	o C.PySetObject
 }
+
+var _ Object = (*Set)(nil)
 
 // SetType is the Type object that represents the Set type.
 var SetType = (*Type)(unsafe.Pointer(&C.PySet_Type))
@@ -28,6 +29,55 @@ func setCheck(obj Object) bool {
 
 func newSet(obj *C.PyObject) *Set {
 	return (*Set)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (s *Set) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(s))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (s *Set) Type() *Type {
+	obType := c(s).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements s's reference count, s may not be nil.
+func (s *Set) Decref() {
+	C.decref(c(s))
+}
+
+// Incref increments s's reference count, s may not be nil.
+func (s *Set) Incref() {
+	C.incref(c(s))
+}
+
+// IsTrue returns true if the value of s is considered to be True. This is
+// equivalent to "if s:" in Python.
+func (s *Set) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(s))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of s is considered to be False. This is
+// equivalent to "if not s:" in Python.
+func (s *Set) Not() bool {
+	ret := C.PyObject_Not(c(s))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for s. After calling this method,
+// s should no longer be used.
+func (s *Set) Free() {
+	free(s)
 }
 
 // Repr returns a String representation of "s". This is equivalent to the

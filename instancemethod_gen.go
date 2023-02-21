@@ -12,9 +12,10 @@ import (
 // InstanceMethod represents objects of the InstanceMethodType (or PyInstanceMethodType
 // in the Python API) type.
 type InstanceMethod struct {
-	abstractObject
 	o C.PyInstanceMethodObject
 }
+
+var _ Object = (*InstanceMethod)(nil)
 
 // InstanceMethodType is the Type object that represents the InstanceMethod type.
 var InstanceMethodType = (*Type)(unsafe.Pointer(&C.PyInstanceMethod_Type))
@@ -28,6 +29,55 @@ func instanceMethodCheck(obj Object) bool {
 
 func newInstanceMethod(obj *C.PyObject) *InstanceMethod {
 	return (*InstanceMethod)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (i *InstanceMethod) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(i))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (i *InstanceMethod) Type() *Type {
+	obType := c(i).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements i's reference count, i may not be nil.
+func (i *InstanceMethod) Decref() {
+	C.decref(c(i))
+}
+
+// Incref increments i's reference count, i may not be nil.
+func (i *InstanceMethod) Incref() {
+	C.incref(c(i))
+}
+
+// IsTrue returns true if the value of i is considered to be True. This is
+// equivalent to "if i:" in Python.
+func (i *InstanceMethod) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(i))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of i is considered to be False. This is
+// equivalent to "if not i:" in Python.
+func (i *InstanceMethod) Not() bool {
+	ret := C.PyObject_Not(c(i))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for i. After calling this method,
+// i should no longer be used.
+func (i *InstanceMethod) Free() {
+	free(i)
 }
 
 // Repr returns a String representation of "i". This is equivalent to the

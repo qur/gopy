@@ -12,9 +12,10 @@ import (
 // ODict represents objects of the ODictType (or PyODictType
 // in the Python API) type.
 type ODict struct {
-	abstractObject
 	o C.PyODictObject
 }
+
+var _ Object = (*ODict)(nil)
 
 // ODictType is the Type object that represents the ODict type.
 var ODictType = (*Type)(unsafe.Pointer(&C.PyODict_Type))
@@ -28,6 +29,55 @@ func oDictCheck(obj Object) bool {
 
 func newODict(obj *C.PyObject) *ODict {
 	return (*ODict)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (o *ODict) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(o))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (o *ODict) Type() *Type {
+	obType := c(o).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements o's reference count, o may not be nil.
+func (o *ODict) Decref() {
+	C.decref(c(o))
+}
+
+// Incref increments o's reference count, o may not be nil.
+func (o *ODict) Incref() {
+	C.incref(c(o))
+}
+
+// IsTrue returns true if the value of o is considered to be True. This is
+// equivalent to "if o:" in Python.
+func (o *ODict) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(o))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of o is considered to be False. This is
+// equivalent to "if not o:" in Python.
+func (o *ODict) Not() bool {
+	ret := C.PyObject_Not(c(o))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for o. After calling this method,
+// o should no longer be used.
+func (o *ODict) Free() {
+	free(o)
 }
 
 // Repr returns a String representation of "o". This is equivalent to the

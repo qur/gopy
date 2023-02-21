@@ -12,9 +12,10 @@ import (
 // CMethod represents objects of the CMethodType (or PyCMethodType
 // in the Python API) type.
 type CMethod struct {
-	abstractObject
 	o C.PyCMethodObject
 }
+
+var _ Object = (*CMethod)(nil)
 
 // CMethodType is the Type object that represents the CMethod type.
 var CMethodType = (*Type)(unsafe.Pointer(&C.PyCMethod_Type))
@@ -28,6 +29,55 @@ func cMethodCheck(obj Object) bool {
 
 func newCMethod(obj *C.PyObject) *CMethod {
 	return (*CMethod)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (cm *CMethod) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(cm))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (cm *CMethod) Type() *Type {
+	obType := c(cm).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements cm's reference count, cm may not be nil.
+func (cm *CMethod) Decref() {
+	C.decref(c(cm))
+}
+
+// Incref increments cm's reference count, cm may not be nil.
+func (cm *CMethod) Incref() {
+	C.incref(c(cm))
+}
+
+// IsTrue returns true if the value of cm is considered to be True. This is
+// equivalent to "if cm:" in Python.
+func (cm *CMethod) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(cm))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of cm is considered to be False. This is
+// equivalent to "if not cm:" in Python.
+func (cm *CMethod) Not() bool {
+	ret := C.PyObject_Not(c(cm))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for cm. After calling this method,
+// cm should no longer be used.
+func (cm *CMethod) Free() {
+	free(cm)
 }
 
 

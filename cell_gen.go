@@ -12,9 +12,10 @@ import (
 // Cell represents objects of the CellType (or PyCellType
 // in the Python API) type.
 type Cell struct {
-	abstractObject
 	o C.PyCellObject
 }
+
+var _ Object = (*Cell)(nil)
 
 // CellType is the Type object that represents the Cell type.
 var CellType = (*Type)(unsafe.Pointer(&C.PyCell_Type))
@@ -28,6 +29,55 @@ func cellCheck(obj Object) bool {
 
 func newCell(obj *C.PyObject) *Cell {
 	return (*Cell)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (ce *Cell) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(ce))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (ce *Cell) Type() *Type {
+	obType := c(ce).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements ce's reference count, ce may not be nil.
+func (ce *Cell) Decref() {
+	C.decref(c(ce))
+}
+
+// Incref increments ce's reference count, ce may not be nil.
+func (ce *Cell) Incref() {
+	C.incref(c(ce))
+}
+
+// IsTrue returns true if the value of ce is considered to be True. This is
+// equivalent to "if ce:" in Python.
+func (ce *Cell) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(ce))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of ce is considered to be False. This is
+// equivalent to "if not ce:" in Python.
+func (ce *Cell) Not() bool {
+	ret := C.PyObject_Not(c(ce))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for ce. After calling this method,
+// ce should no longer be used.
+func (ce *Cell) Free() {
+	free(ce)
 }
 
 // Repr returns a String representation of "ce". This is equivalent to the

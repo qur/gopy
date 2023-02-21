@@ -12,9 +12,10 @@ import (
 // Slice represents objects of the SliceType (or PySliceType
 // in the Python API) type.
 type Slice struct {
-	abstractObject
 	o C.PySliceObject
 }
+
+var _ Object = (*Slice)(nil)
 
 // SliceType is the Type object that represents the Slice type.
 var SliceType = (*Type)(unsafe.Pointer(&C.PySlice_Type))
@@ -28,6 +29,55 @@ func sliceCheck(obj Object) bool {
 
 func newSlice(obj *C.PyObject) *Slice {
 	return (*Slice)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (s *Slice) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(s))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (s *Slice) Type() *Type {
+	obType := c(s).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements s's reference count, s may not be nil.
+func (s *Slice) Decref() {
+	C.decref(c(s))
+}
+
+// Incref increments s's reference count, s may not be nil.
+func (s *Slice) Incref() {
+	C.incref(c(s))
+}
+
+// IsTrue returns true if the value of s is considered to be True. This is
+// equivalent to "if s:" in Python.
+func (s *Slice) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(s))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of s is considered to be False. This is
+// equivalent to "if not s:" in Python.
+func (s *Slice) Not() bool {
+	ret := C.PyObject_Not(c(s))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for s. After calling this method,
+// s should no longer be used.
+func (s *Slice) Free() {
+	free(s)
 }
 
 // Repr returns a String representation of "s". This is equivalent to the

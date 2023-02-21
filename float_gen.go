@@ -14,9 +14,10 @@ import (
 //
 // This type implements the Number protocol.
 type Float struct {
-	abstractObject
 	o C.PyFloatObject
 }
+
+var _ Object = (*Float)(nil)
 
 // FloatType is the Type object that represents the Float type.
 var FloatType = (*Type)(unsafe.Pointer(&C.PyFloat_Type))
@@ -30,6 +31,55 @@ func floatCheck(obj Object) bool {
 
 func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (f *Float) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(f))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (f *Float) Type() *Type {
+	obType := c(f).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements f's reference count, f may not be nil.
+func (f *Float) Decref() {
+	C.decref(c(f))
+}
+
+// Incref increments f's reference count, f may not be nil.
+func (f *Float) Incref() {
+	C.incref(c(f))
+}
+
+// IsTrue returns true if the value of f is considered to be True. This is
+// equivalent to "if f:" in Python.
+func (f *Float) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(f))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of f is considered to be False. This is
+// equivalent to "if not f:" in Python.
+func (f *Float) Not() bool {
+	ret := C.PyObject_Not(c(f))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for f. After calling this method,
+// f should no longer be used.
+func (f *Float) Free() {
+	free(f)
 }
 
 // Repr returns a String representation of "f". This is equivalent to the

@@ -16,9 +16,10 @@ import (
 //
 // This type implements the Sequence protocol.
 type MemoryView struct {
-	abstractObject
 	o C.PyMemoryViewObject
 }
+
+var _ Object = (*MemoryView)(nil)
 
 // MemoryViewType is the Type object that represents the MemoryView type.
 var MemoryViewType = (*Type)(unsafe.Pointer(&C.PyMemoryView_Type))
@@ -32,6 +33,55 @@ func memoryViewCheck(obj Object) bool {
 
 func newMemoryView(obj *C.PyObject) *MemoryView {
 	return (*MemoryView)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (m *MemoryView) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(m))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (m *MemoryView) Type() *Type {
+	obType := c(m).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements m's reference count, m may not be nil.
+func (m *MemoryView) Decref() {
+	C.decref(c(m))
+}
+
+// Incref increments m's reference count, m may not be nil.
+func (m *MemoryView) Incref() {
+	C.incref(c(m))
+}
+
+// IsTrue returns true if the value of m is considered to be True. This is
+// equivalent to "if m:" in Python.
+func (m *MemoryView) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(m))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of m is considered to be False. This is
+// equivalent to "if not m:" in Python.
+func (m *MemoryView) Not() bool {
+	ret := C.PyObject_Not(c(m))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for m. After calling this method,
+// m should no longer be used.
+func (m *MemoryView) Free() {
+	free(m)
 }
 
 // Repr returns a String representation of "m". This is equivalent to the

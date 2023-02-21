@@ -14,9 +14,10 @@ import (
 //
 // This type implements the Iterator protocol.
 type Gen struct {
-	abstractObject
 	o C.PyGenObject
 }
+
+var _ Object = (*Gen)(nil)
 
 // GenType is the Type object that represents the Gen type.
 var GenType = (*Type)(unsafe.Pointer(&C.PyGen_Type))
@@ -30,6 +31,55 @@ func genCheck(obj Object) bool {
 
 func newGen(obj *C.PyObject) *Gen {
 	return (*Gen)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (g *Gen) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(g))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (g *Gen) Type() *Type {
+	obType := c(g).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements g's reference count, g may not be nil.
+func (g *Gen) Decref() {
+	C.decref(c(g))
+}
+
+// Incref increments g's reference count, g may not be nil.
+func (g *Gen) Incref() {
+	C.incref(c(g))
+}
+
+// IsTrue returns true if the value of g is considered to be True. This is
+// equivalent to "if g:" in Python.
+func (g *Gen) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(g))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of g is considered to be False. This is
+// equivalent to "if not g:" in Python.
+func (g *Gen) Not() bool {
+	ret := C.PyObject_Not(c(g))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for g. After calling this method,
+// g should no longer be used.
+func (g *Gen) Free() {
+	free(g)
 }
 
 // Repr returns a String representation of "g". This is equivalent to the

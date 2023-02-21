@@ -27,10 +27,14 @@ func newChan(c *Class, args *Tuple, kw *Dict) (ClassObject, error) {
 // Object, buffer)".
 //
 // Note: This function should only be called if InitGoModule() has been called,
-// as otherwise the Chan Python type has not been initialized.
+// as otherwise the Chan Python type has not been initialized. It will always
+// return an error if InitGoModule() has not been called.
 //
 // Return value: New Reference.
 func NewChan(buffer int) (*Chan, error) {
+	goModLock.Lock()
+	defer goModLock.Unlock()
+
 	if goModule == nil {
 		return nil, AssertionError.Err("go module has not been initialized!")
 	}
@@ -56,8 +60,7 @@ func (c *Chan) Py_put(args *Tuple, kw *Dict) (Object, error) {
 	var obj Object
 	kwlist := []string{"obj"}
 
-	err := ParseTupleAndKeywords(args, kw, "O", kwlist, &obj)
-	if err != nil {
+	if err := ParseTupleAndKeywords(args, kw, "O", kwlist, &obj); err != nil {
 		return nil, err
 	}
 
@@ -70,11 +73,36 @@ func (c *Chan) Py_put(args *Tuple, kw *Dict) (Object, error) {
 
 // Py_get provides a c.get() method when this object is used in Python.
 func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, error) {
-	err := ParseTupleAndKeywords(args, kw, "", []string{})
-	if err != nil {
+	if err := ParseTupleAndKeywords(args, kw, "", []string{}); err != nil {
 		return nil, err
 	}
 
+	obj := <-c.c
+
+	return obj, nil
+}
+
+func (c *Chan) Py_close(args *Tuple, kw *Dict) (Object, error) {
+	if err := ParseTupleAndKeywords(args, kw, "", []string{}); err != nil {
+		return nil, err
+	}
+
+	close(c.c)
+
+	None.Incref()
+	return None, nil
+}
+
+// PyIter is called to get an iterator for the item. This is used when running
+// "for ... in c" in Python.
+func (c *Chan) PyIter() (Object, error) {
+	c.Incref()
+	return c, nil
+}
+
+// PyIterNext is the iterator API. This function will get called to return the
+// next value.
+func (c *Chan) PyIterNext() (Object, error) {
 	obj := <-c.c
 
 	return obj, nil

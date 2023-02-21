@@ -12,9 +12,10 @@ import (
 // CFunction represents objects of the CFunctionType (or PyCFunctionType
 // in the Python API) type.
 type CFunction struct {
-	abstractObject
 	o C.PyCFunctionObject
 }
+
+var _ Object = (*CFunction)(nil)
 
 // CFunctionType is the Type object that represents the CFunction type.
 var CFunctionType = (*Type)(unsafe.Pointer(&C.PyCFunction_Type))
@@ -28,6 +29,55 @@ func cFunctionCheck(obj Object) bool {
 
 func newCFunction(obj *C.PyObject) *CFunction {
 	return (*CFunction)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (cf *CFunction) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(cf))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (cf *CFunction) Type() *Type {
+	obType := c(cf).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements cf's reference count, cf may not be nil.
+func (cf *CFunction) Decref() {
+	C.decref(c(cf))
+}
+
+// Incref increments cf's reference count, cf may not be nil.
+func (cf *CFunction) Incref() {
+	C.incref(c(cf))
+}
+
+// IsTrue returns true if the value of cf is considered to be True. This is
+// equivalent to "if cf:" in Python.
+func (cf *CFunction) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(cf))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of cf is considered to be False. This is
+// equivalent to "if not cf:" in Python.
+func (cf *CFunction) Not() bool {
+	ret := C.PyObject_Not(c(cf))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for cf. After calling this method,
+// cf should no longer be used.
+func (cf *CFunction) Free() {
+	free(cf)
 }
 
 // Repr returns a String representation of "cf". This is equivalent to the

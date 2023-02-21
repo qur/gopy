@@ -12,9 +12,10 @@ import (
 // Code represents objects of the CodeType (or PyCodeType
 // in the Python API) type.
 type Code struct {
-	abstractObject
 	o C.PyCodeObject
 }
+
+var _ Object = (*Code)(nil)
 
 // CodeType is the Type object that represents the Code type.
 var CodeType = (*Type)(unsafe.Pointer(&C.PyCode_Type))
@@ -28,6 +29,55 @@ func codeCheck(obj Object) bool {
 
 func newCode(obj *C.PyObject) *Code {
 	return (*Code)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (co *Code) Base() *BaseObject {
+	return (*BaseObject)(unsafe.Pointer(co))
+}
+
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (co *Code) Type() *Type {
+	obType := c(co).ob_type
+	return newType((*C.PyObject)(unsafe.Pointer(obType)))
+}
+
+// Decref decrements co's reference count, co may not be nil.
+func (co *Code) Decref() {
+	C.decref(c(co))
+}
+
+// Incref increments co's reference count, co may not be nil.
+func (co *Code) Incref() {
+	C.incref(c(co))
+}
+
+// IsTrue returns true if the value of co is considered to be True. This is
+// equivalent to "if co:" in Python.
+func (co *Code) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(co))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Not returns true if the value of co is considered to be False. This is
+// equivalent to "if not co:" in Python.
+func (co *Code) Not() bool {
+	ret := C.PyObject_Not(c(co))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
+
+// Free deallocates the storage (in Python) for co. After calling this method,
+// co should no longer be used.
+func (co *Code) Free() {
+	free(co)
 }
 
 // Repr returns a String representation of "co". This is equivalent to the
