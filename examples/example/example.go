@@ -143,7 +143,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
-	defer m.Decref()
 
 	if err := exampleClass.Create(); err != nil {
 		log.Fatalf("ERROR: %s", err)
@@ -161,7 +160,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
-	defer s.Decref()
 
 	if err := s.Register(); err != nil {
 		log.Fatalf("ERROR: %s", err)
