@@ -91,4 +91,13 @@ var basic = map[string]typeSettings{
 		New:   false,
 		Type:  false,
 	},
+	"BufferMethods": {
+		Doc: strings.TrimSpace(`
+// BufferMethods represents an arbitrary Python type that implements the Buffer
+// Protocol.
+		`),
+		Check: false,
+		New:   false,
+		Type:  false,
+	},
 }

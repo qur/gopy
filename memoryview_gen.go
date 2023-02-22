@@ -263,6 +263,24 @@ func (m *MemoryView) DelSlice(start, end int) error {
 	return int2Err(ret)
 }
 
+// AsBufferMethods returns a BufferMethods instance that refers to the same
+// underlying Python object as m.
+//
+// This method also means that MemoryView implements the BufferProtocol
+// interface.
+func (m *MemoryView) AsBufferMethods() *BufferMethods {
+	return (*BufferMethods)(unsafe.Pointer(m.Base()))
+}
+
+func(m *MemoryView) GetBuffer(flags BufferFlags) (*Buffer, error) {
+	buf := newBuffer()
+	ret := C.PyObject_GetBuffer(c(m), buf.c(), C.int(flags))
+	if ret < 0 {
+		return nil, exception()
+	}
+	return buf, nil
+}
+
 
 
 /*

@@ -887,6 +887,27 @@ func ({{ .name }} *{{ .type }}) AsInt(exc *ExceptionClass) (int, error) {
 
 {{ end }}
 
+{{- if .funcs.bf_getbuffer -}}
+// AsBufferMethods returns a BufferMethods instance that refers to the same
+// underlying Python object as {{ .name }}.
+//
+// This method also means that {{ .type }} implements the BufferProtocol
+// interface.
+func ({{ .name }} *{{ .type }}) AsBufferMethods() *BufferMethods {
+	return (*BufferMethods)(unsafe.Pointer({{ .name }}.Base()))
+}
+
+func({{ .name }} *{{ .type }}) GetBuffer(flags BufferFlags) (*Buffer, error) {
+	buf := newBuffer()
+	ret := C.PyObject_GetBuffer(c({{ .name }}), buf.c(), C.int(flags))
+	if ret < 0 {
+		return nil, exception()
+	}
+	return buf, nil
+}
+
+{{ end }}
+
 /*
 set fields:
 {{- range $name, $set := .funcs -}}

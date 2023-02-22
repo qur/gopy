@@ -267,6 +267,24 @@ func (b *Bytes) Remainder(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// AsBufferMethods returns a BufferMethods instance that refers to the same
+// underlying Python object as b.
+//
+// This method also means that Bytes implements the BufferProtocol
+// interface.
+func (b *Bytes) AsBufferMethods() *BufferMethods {
+	return (*BufferMethods)(unsafe.Pointer(b.Base()))
+}
+
+func(b *Bytes) GetBuffer(flags BufferFlags) (*Buffer, error) {
+	buf := newBuffer()
+	ret := C.PyObject_GetBuffer(c(b), buf.c(), C.int(flags))
+	if ret < 0 {
+		return nil, exception()
+	}
+	return buf, nil
+}
+
 
 
 /*

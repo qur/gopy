@@ -354,3 +354,11 @@ func (obj *BaseObject) Dir() (Object, error) {
 }
 
 // PyObject_GetIter : TODO
+
+// CopyData copies the data from src to obj. Unless both obj and src implement
+// the Buffer Protocol this method will return a TypeError. If both obj and src
+// implement the Buffer Protocol, then the copy may still fail with an error.
+func (obj *BaseObject) CopyData(src Object) error {
+	ret := C.PyObject_CopyData(c(obj), c(src))
+	return int2Err(ret)
+}
