@@ -196,17 +196,53 @@ func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// CallGo calls obj with the given args and kwds, either may be nil. Returns the
+// result of the call, or an Error on failure.  This is equivalent to
+// "obj(*args, **kwds)" in Python.
+//
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
+// Return value: New Reference.
+func (obj *BaseObject) CallGo(args []any, kwds map[string]any) (Object, error) {
+	obj1, err := NewTupleFromValues(args...)
+	if err != nil {
+		return nil, err
+	}
+	defer obj1.Decref()
+	obj2, err := NewDictFromValuesString(kwds)
+	if err != nil {
+		return nil, err
+	}
+	defer obj2.Decref()
+	ret := C.PyObject_Call(c(obj), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
+// CallGoArgs calls obj with the given args. Returns the result of the call, or
+// an Error on failure.  This is equivalent to "obj(*args)" in Python.
+//
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
+// Return value: New Reference.
+func (obj *BaseObject) CallGoArgs(args ...any) (Object, error) {
+	obj1, err := NewTupleFromValues(args...)
+	if err != nil {
+		return nil, err
+	}
+	defer obj1.Decref()
+	ret := C.PyObject_CallObject(c(obj), c(obj1))
+	return obj2ObjErr(ret)
+}
+
 // CallObject calls obj with the given args.  args may be nil.  Returns the
 // result of the call, or an Error on failure.  This is equivalent to
 // "obj(*args)" in Python.
 //
 // Return value: New Reference.
 func (obj *BaseObject) CallObject(args *Tuple) (Object, error) {
-	var a *C.PyObject = nil
-	if args != nil {
-		a = c(args)
-	}
-	ret := C.PyObject_CallObject(c(obj), a)
+	ret := C.PyObject_CallObject(c(obj), c(args))
 	return obj2ObjErr(ret)
 }
 

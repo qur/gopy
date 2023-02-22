@@ -54,6 +54,63 @@ func NewDictFromMapString(m map[string]Object) (*Dict, error) {
 	return d, nil
 }
 
+// NewDictFromValues creates a new dictionary containing the values from the
+// given map.
+//
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
+// Return value: New Reference.
+func NewDictFromValues(m map[any]any) (*Dict, error) {
+	d, err := NewDict()
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range m {
+		key, err := NewValue(k)
+		if err != nil {
+			return nil, err
+		}
+		defer key.Decref()
+		value, err := NewValue(v)
+		if err != nil {
+			return nil, err
+		}
+		defer value.Decref()
+		if err := d.SetItem(key, value); err != nil {
+			d.Decref()
+			return nil, err
+		}
+	}
+	return d, nil
+}
+
+// NewDictFromValuesString creates a new dictionary containing the values from
+// the given map.
+//
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
+// Return value: New Reference.
+func NewDictFromValuesString(m map[string]any) (*Dict, error) {
+	d, err := NewDict()
+	if err != nil {
+		return nil, err
+	}
+	for key, v := range m {
+		value, err := NewValue(v)
+		if err != nil {
+			return nil, err
+		}
+		defer value.Decref()
+		if err := d.SetItemString(key, value); err != nil {
+			d.Decref()
+			return nil, err
+		}
+	}
+	return d, nil
+}
+
 func NewDictProxy(obj Object) (*Dict, error) {
 	ret := C.PyDictProxy_New(c(obj))
 	if ret == nil {
