@@ -13,6 +13,9 @@ import (
 	"unsafe"
 )
 
+{{ if .settings.Doc -}}
+{{ .settings.Doc -}}
+{{ else -}}
 // {{ .type }} represents objects of the {{ .type }}Type (or Py{{ .type }}Type
 // in the Python API) type.{{ if .funcs.mp_subscript }}
 //
@@ -30,28 +33,35 @@ import (
 //
 // This type implements the AsyncIterator protocol.
 {{- end }}
+{{- end }}
 type {{ .type }} struct {
-	o C.Py{{ .type }}Object
+	o C.{{ .ctype }}
 }
 
 var _ Object = (*{{ .type }})(nil)
 
+{{ if .settings.Type -}}
 // {{ .type }}Type is the Type object that represents the {{ .type }} type.
 var {{ .type }}Type = (*Type)(unsafe.Pointer(&C.Py{{ .type }}_Type))
+{{- end }}
 
+{{ if .settings.Check -}}
 func {{ .ltype }}Check(obj Object) bool {
 	if obj == nil {
 		return false
 	}
 	return C.{{ .ltype }}Check(c(obj)) != 0
 }
+{{- end }}
 
+{{ if .settings.New -}}
 func new{{ .type }}(obj *C.PyObject) *{{ .type }} {
 	return (*{{ .type }})(unsafe.Pointer(obj))
 }
+{{- end }}
 
-func ({{ .name }} *{{ .type }}) c() *C.Py{{ .type }}Object {
-	return (*C.Py{{ .type }}Object)(unsafe.Pointer({{ .name }}))
+func ({{ .name }} *{{ .type }}) c() *C.{{ .ctype }} {
+	return (*C.{{ .ctype }})(unsafe.Pointer({{ .name }}))
 }
 
 // Base returns a BaseObject pointer that gives access to the generic methods on

@@ -17,10 +17,6 @@ type AsyncIterator interface {
 	AsAsyncIterator() *AsyncIteratorMethods
 }
 
-type AsyncIteratorMethods struct {
-	BaseObject
-}
-
 func AsAsyncIterator(obj Object) *AsyncIteratorMethods {
 	if n, ok := obj.(AsyncIterator); ok {
 		return n.AsAsyncIterator()

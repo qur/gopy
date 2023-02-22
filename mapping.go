@@ -14,19 +14,6 @@ type Mapping interface {
 	AsMapping() *MappingMethods
 }
 
-// MappingMethods is a concrete realisation of the full set of Mapping Protocol
-// methods.  A type that implements the "Mapping Protocol" can be turned into a
-// MappingMethods instance using AsMapping.
-//
-// Note that the methods not already implemented on the type itself may return
-// an error, as not all methods are implemented by all types that support the
-// protocol.
-type MappingMethods struct {
-	BaseObject
-}
-
-var _ Object = (*MappingMethods)(nil)
-
 // AsMapping returns a MappingMethods instance that refers to the same
 // underlying Python object as obj. If obj doesn't implement the "Mapping
 // Protocol" (i.e. the Mapping interface), then nil is returned.

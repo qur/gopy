@@ -14,19 +14,6 @@ type Sequence interface {
 	AsSequence() *SequenceMethods
 }
 
-// MappingMethods is a concrete realisation of the full set of Sequence Protocol
-// methods.  A type that implements the "Sequence Protocol" can be turned into a
-// SequenceMethods instance using AsSequence.
-//
-// Note that the methods not already implemented on the type itself may return
-// an error, as not all methods are implemented by all types that support the
-// protocol.
-type SequenceMethods struct {
-	BaseObject
-}
-
-var _ Object = (*SequenceMethods)(nil)
-
 // AsSequence returns a SequenceMethods instance that refers to the same
 // underlying Python object as obj. If obj doesn't implement the "Sequence
 // Protocol" (i.e. the Sequence interface), then nil is returned.

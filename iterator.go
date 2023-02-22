@@ -17,12 +17,6 @@ type IteratorProtocol interface {
 	AsIterator() *IteratorMethods
 }
 
-type IteratorMethods struct {
-	BaseObject
-}
-
-var _ Object = (*IteratorMethods)(nil)
-
 func newIterator(o *C.PyObject) (Iterator, error) {
 	obj := newObject(o)
 	if n, ok := obj.(Iterator); ok {

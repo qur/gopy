@@ -11,6 +11,13 @@ import (
 	"strings"
 )
 
+type typeSettings struct {
+	Doc   string
+	Check bool
+	New   bool
+	Type  bool
+}
+
 func doExamine(v reflect.Value, prefix string, funcs map[string]bool) {
 	t := v.Type()
 
@@ -49,6 +56,25 @@ func shortName(name string) string {
 	return n
 }
 
+func generateBasic(name string, settings typeSettings) {
+	path := fmt.Sprintf("%s_gen.go", strings.ToLower(name))
+	f, err := os.Create(path)
+	if err != nil {
+		log.Fatalf("Failed to create file %s: %s", path, err)
+	}
+	defer f.Close()
+	if err := code.Execute(f, map[string]any{
+		"type":     name,
+		"ctype":    "PyObject",
+		"ltype":    strings.ToLower(name[:1]) + name[1:],
+		"name":     shortName(name),
+		"funcs":    map[string]bool{},
+		"settings": settings,
+	}); err != nil {
+		log.Fatalf("Failed to generate template: %s", err)
+	}
+}
+
 func generate(name string, funcs map[string]bool) {
 	path := fmt.Sprintf("%s_gen.go", strings.ToLower(name))
 	f, err := os.Create(path)
@@ -58,15 +84,27 @@ func generate(name string, funcs map[string]bool) {
 	defer f.Close()
 	if err := code.Execute(f, map[string]any{
 		"type":  name,
+		"ctype": fmt.Sprintf("Py%sObject", name),
 		"ltype": strings.ToLower(name[:1]) + name[1:],
 		"name":  shortName(name),
 		"funcs": funcs,
+		"settings": typeSettings{
+			Check: true,
+			New:   true,
+			Type:  true,
+		},
 	}); err != nil {
 		log.Fatalf("Failed to generate template: %s", err)
 	}
 }
 
 func main() {
+	// Generate minimal code for basic types
+	for name, settings := range basic {
+		generateBasic(name, settings)
+	}
+
+	// Generate full types by examining the types
 	for name, t := range types {
 		generate(name, examine(t))
 	}

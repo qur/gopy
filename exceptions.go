@@ -7,10 +7,6 @@ import (
 	"unsafe"
 )
 
-type ExceptionClass struct {
-	BaseObject
-}
-
 func newException(obj *C.PyObject) *ExceptionClass {
 	return (*ExceptionClass)(unsafe.Pointer(obj))
 }

@@ -10,24 +10,6 @@ import (
 	"unsafe"
 )
 
-type Module struct {
-	BaseObject
-}
-
-// ModuleType is the Type object that represents the Module type.
-var ModuleType = (*Type)(unsafe.Pointer(&C.PyModule_Type))
-
-func moduleCheck(obj Object) bool {
-	if obj == nil {
-		return false
-	}
-	return C.moduleCheck(c(obj)) != 0
-}
-
-func newModule(obj *C.PyObject) *Module {
-	return (*Module)(unsafe.Pointer(obj))
-}
-
 func Import(name string) (*Module, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))

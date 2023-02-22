@@ -19,17 +19,6 @@ type Index interface {
 	Index() (*Long, error)
 }
 
-// NumberMethods is a concrete realisation of the full set of Number Protocol
-// methods.  A type that implements the "Number Protocol" can be turned into a
-// NumberMethods instance using AsNumber.
-//
-// Note that the methods not already implemented on the type itself may return
-// an error, as not all methods are implemented by all types that support the
-// protocol.
-type NumberMethods struct {
-	BaseObject
-}
-
 // AsNumber returns a NumberMethods instance that refers to the same
 // underlying Python object as obj. If obj doesn't implement the "Number
 // Protocol" (i.e. the Number interface), then nil is returned.
