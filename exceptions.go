@@ -8,8 +8,7 @@ import (
 )
 
 type ExceptionClass struct {
-	abstractObject
-	o C.PyBaseExceptionObject
+	BaseObject
 }
 
 func newException(obj *C.PyObject) *ExceptionClass {

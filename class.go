@@ -140,27 +140,12 @@ func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
 		return -1
 	}
 
-	st := reflect.TypeOf(class.Object).Elem()
+	// TODO(jp3): implement properly using getClassObject
+	// we have to call visit (via C.doVisit?) for each Object in the instance
+	// type (I think).
 
-	for i := 0; i < st.NumField(); i++ {
-		field := st.Field(i)
-		if !field.Type.AssignableTo(otyp) {
-			continue
-		}
-		v := unsafe.Pointer(uintptr(obj) + field.Offset)
-		var o Object
-		if field.Type == otyp {
-			o = *(*Object)(v)
-		} else {
-			o = *(**abstractObject)(v)
-		}
-		ret := C.doVisit(c(o), visit, arg)
-		if ret != 0 {
-			return int(ret)
-		}
-	}
-
-	return 0
+	raise(NotImplementedError.Err("TODO: implement using getClassObject & reflection for %s", class.Name))
+	return -1
 }
 
 //export goClassClear
@@ -175,28 +160,17 @@ func goClassClear(obj unsafe.Pointer) int {
 		return -1
 	}
 
-	st := reflect.TypeOf(class.Object).Elem()
+	// TODO(jp3): implement properly using getClassObject
+	// we have to decref each Object in the instance type - being careful to
+	// remove it from the instance first. So we need to:
+	//  * store field as tmp
+	//  * set field to nil
+	//  * decref tmp
+	// we use this order to make sure that the field is nil when we call decref
+	// to avoid issues with loops (I think).
 
-	for i := 0; i < st.NumField(); i++ {
-		field := st.Field(i)
-		if !field.Type.AssignableTo(otyp) {
-			continue
-		}
-		v := unsafe.Pointer(uintptr(obj) + field.Offset)
-		if field.Type == otyp {
-			o := (*Object)(v)
-			tmp := *o
-			*o = nil
-			Decref(tmp)
-		} else {
-			o := (**abstractObject)(v)
-			tmp := *o
-			*o = nil
-			Decref(tmp)
-		}
-	}
-
-	return 0
+	raise(NotImplementedError.Err("TODO: implement using getClassObject & reflection for %s", class.Name))
+	return -1
 }
 
 type tpDealloc interface {
@@ -215,7 +189,7 @@ func goClassDealloc(obj unsafe.Pointer) {
 
 	// we always want Python to _actually_ free the object, any registered hook
 	// should just be tidying things up on the Go side.
-	(*abstractObject)(obj).Free()
+	free(co)
 }
 
 //export goClassNew

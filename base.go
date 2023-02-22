@@ -5,22 +5,45 @@ import "C"
 
 import "unsafe"
 
-// *BaseObject is the concrete representation of the Python "Object *".  It is
+// BaseObject is the concrete representation of the Python "Object *".  It is
 // used less than in the C API, as the Object interface is mostly used when the
 // type is not fixed.  Any Object "o" can be turned into a *BaseObject using the
 // Base() method (i.e. o.Base() returns a *BaseObject that refers to the same
 // underlying Python object as "o").  This allows the Python functions that
 // accept any type of object to be defined as methods on *BaseObject.
 type BaseObject struct {
-	abstractObject
 	o C.PyObject
 }
+
+var _ Object = (*BaseObject)(nil)
 
 // BaseType is the Type object that represents the BaseObject type.
 var BaseType = (*Type)(unsafe.Pointer(&C.PyBaseObject_Type))
 
 func newBaseObject(obj *C.PyObject) *BaseObject {
 	return (*BaseObject)(unsafe.Pointer(obj))
+}
+
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
+func (obj *BaseObject) Base() *BaseObject {
+	return obj
+}
+
+// Decref decrements obj's reference count, obj may not be nil.
+func (obj *BaseObject) Decref() {
+	C.decref(c(obj))
+}
+
+// Incref increments obj's reference count, obj may not be nil.
+func (obj *BaseObject) Incref() {
+	C.incref(c(obj))
+}
+
+// Free deallocates the storage (in Python) for obj.  After calling this method,
+// obj should no longer be used.
+func (obj *BaseObject) Free() {
+	free(obj)
 }
 
 // HasAttr returns true if "obj" has the attribute "name".  This is equivalent
@@ -258,11 +281,31 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, e
 // PyObject_HashNotImplement : This is an internal function, that we probably
 // don't need to export.
 
-// PyObject_IsTrue : Implemented on AbstractObject
+// IsTrue returns true if the value of obj is considered to be True.  This is
+// equivalent to "if obj:" in Python.
+func (obj *BaseObject) IsTrue() bool {
+	ret := C.PyObject_IsTrue(c(obj))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
 
-// PyObject_Not : Implemented on AbstractObject
+// Not returns true if the value of obj is considered to be False.  This is
+// equivalent to "if not obj:" in Python.
+func (obj *BaseObject) Not() bool {
+	ret := C.PyObject_Not(c(obj))
+	if ret < 0 {
+		panic(exception())
+	}
+	return ret != 0
+}
 
-// PyObject_Type : Implemented on AbstractObject
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
+func (obj *BaseObject) Type() *Type {
+	return newType((*C.PyObject)(unsafe.Pointer(c(obj).ob_type)))
+}
 
 // PyObject_TypeCheck : TODO
 

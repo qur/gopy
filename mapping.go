@@ -22,9 +22,10 @@ type Mapping interface {
 // an error, as not all methods are implemented by all types that support the
 // protocol.
 type MappingMethods struct {
-	abstractObject
-	o C.PyObject
+	BaseObject
 }
+
+var _ Object = (*MappingMethods)(nil)
 
 // AsMapping returns a MappingMethods instance that refers to the same
 // underlying Python object as obj. If obj doesn't implement the "Mapping

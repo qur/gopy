@@ -73,11 +73,25 @@ var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
 // NoneObject is the type of the None value.  The only value of this type is
 // None.
 type NoneObject struct {
-	abstractObject
+	BaseObject
 }
 
 func (n *NoneObject) String() string {
 	return "None"
+}
+
+// Decref decrements obj's reference count, obj may be nil.
+func Decref(obj Object) {
+	if obj != nil {
+		C.decref(c(obj))
+	}
+}
+
+// Incref increments obj's reference count, obj may be nil.
+func Incref(obj Object) {
+	if obj != nil {
+		C.incref(c(obj))
+	}
 }
 
 func c(obj Object) *C.PyObject {
@@ -85,6 +99,24 @@ func c(obj Object) *C.PyObject {
 		return nil
 	}
 	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
+}
+
+// free deallocates the storage (in Python) for obj.  After calling this method,
+// obj should no longer be used.
+func free(obj Object) {
+	o := c(obj)
+
+	// This can happen if a PyDealloc method on a ClassObject calls Free
+	if o == nil {
+		return
+	}
+
+	// Make sure this instance isn't registered any more
+	clearClassObject(unsafe.Pointer(o))
+
+	// Call Python free function
+	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
+	C.typeFree(pyType, o)
 }
 
 var (

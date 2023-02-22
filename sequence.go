@@ -22,9 +22,10 @@ type Sequence interface {
 // an error, as not all methods are implemented by all types that support the
 // protocol.
 type SequenceMethods struct {
-	abstractObject
-	o C.PyObject
+	BaseObject
 }
+
+var _ Object = (*SequenceMethods)(nil)
 
 // AsSequence returns a SequenceMethods instance that refers to the same
 // underlying Python object as obj. If obj doesn't implement the "Sequence

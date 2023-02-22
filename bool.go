@@ -8,13 +8,14 @@ import (
 	"unsafe"
 )
 
-// *Bool is the representation of the Python bool type.  There are only two
+// Bool is the representation of the Python bool type.  There are only two
 // possible values for a Bool, True and False.  Every True value refers to the
 // same instance, and every False value refers to the same value.
 type Bool struct {
-	abstractObject
-	o C.PyLongObject
+	BaseObject
 }
+
+var _ Object = (*Bool)(nil)
 
 // BoolType is the Type object that represents the Bool type.
 var BoolType = (*Type)(unsafe.Pointer(&C.PyBool_Type))
@@ -44,13 +45,14 @@ func newBool(obj *C.PyObject) *Bool {
 // Bool returns the value of "b" as a bool.  true for True, false for False.  If
 // "b" is neither True nor False then this function will panic.
 func (b *Bool) Bool() bool {
-	if b == True {
+	switch b {
+	case True:
 		return true
-	}
-	if b == False {
+	case False:
 		return false
+	default:
+		panic(TypeError.Err("not a bool"))
 	}
-	panic(TypeError.Err("not a bool"))
 }
 
 // String returns a printable representation of the Bool "b".

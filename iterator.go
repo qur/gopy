@@ -18,9 +18,10 @@ type IteratorProtocol interface {
 }
 
 type IteratorMethods struct {
-	abstractObject
-	o C.PyObject
+	BaseObject
 }
+
+var _ Object = (*IteratorMethods)(nil)
 
 func newIterator(o *C.PyObject) (Iterator, error) {
 	obj := newObject(o)

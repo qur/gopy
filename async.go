@@ -18,8 +18,7 @@ type AsyncIterator interface {
 }
 
 type AsyncIteratorMethods struct {
-	abstractObject
-	o C.PyObject
+	BaseObject
 }
 
 func AsAsyncIterator(obj Object) *AsyncIteratorMethods {

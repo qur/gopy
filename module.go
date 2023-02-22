@@ -11,8 +11,7 @@ import (
 )
 
 type Module struct {
-	abstractObject
-	o C.PyObject
+	BaseObject
 }
 
 // ModuleType is the Type object that represents the Module type.

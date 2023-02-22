@@ -27,8 +27,7 @@ type Index interface {
 // an error, as not all methods are implemented by all types that support the
 // protocol.
 type NumberMethods struct {
-	abstractObject
-	o C.PyObject
+	BaseObject
 }
 
 // AsNumber returns a NumberMethods instance that refers to the same
