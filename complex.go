@@ -15,15 +15,15 @@ func NewComplex(v complex128) (*Complex, error) {
 	return newComplex(ret), nil
 }
 
-func (o *Complex) Complex128() complex128 {
-	r := float64(C.PyComplex_RealAsDouble(c(o)))
-	i := float64(C.PyComplex_ImagAsDouble(c(o)))
+func (co *Complex) Complex128() complex128 {
+	r := float64(C.PyComplex_RealAsDouble(c(co)))
+	i := float64(C.PyComplex_ImagAsDouble(c(co)))
 	return complex(r, i)
 }
 
-func (c *Complex) String() string {
-	if c == nil {
+func (co *Complex) String() string {
+	if co == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("%v", c.Complex128())
+	return fmt.Sprintf("%v", co.Complex128())
 }

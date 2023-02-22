@@ -39,8 +39,8 @@ func InitializeEx(initsigs bool) {
 		C.Py_InitializeEx(0)
 	}
 
-	if err := initModules(); err != nil {
-		log.Printf("failed to init modules: %s", err)
+	if err := setupImporter(); err != nil {
+		log.Printf("failed to setup importer: %s", err)
 	}
 }
 
