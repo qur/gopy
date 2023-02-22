@@ -72,11 +72,15 @@ type Object interface {
 //
 // If an Object is supplied, then a new reference to that Object will be
 // returned.
+//
+// Return value: New Reference.
 func NewValue(value any) (Object, error) {
 	switch v := value.(type) {
 	case Object:
 		v.Incref()
 		return v, nil
+	case bool:
+		return NewBool(v), nil
 	case int:
 		return NewLong(v), nil
 	case int8:

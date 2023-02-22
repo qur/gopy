@@ -25,6 +25,18 @@ func newBool(obj *C.PyObject) *Bool {
 	panic(TypeError.Err("not a bool"))
 }
 
+// NewBool returns True if b is true, or False if b is false.
+//
+// Return value: New Reference.
+func NewBool(b bool) *Bool {
+	if b {
+		True.Incref()
+		return True
+	}
+	False.Incref()
+	return False
+}
+
 // Bool returns the value of "b" as a bool.  true for True, false for False.  If
 // "b" is neither True nor False then this function will panic.
 func (b *Bool) Bool() bool {
