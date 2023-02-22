@@ -141,11 +141,12 @@ func (l *Long) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-// AsNumber returns a NumberMethods instance that refers to the same underlying
-// Python object as l.
+// AsNumberMethods returns a NumberMethods instance that refers to the same
+// underlying Python object as l.
 //
-// This method also means that Long implements the Number interface.
-func (l *Long) AsNumber() *NumberMethods {
+// This method also means that Long implements the NumberProtocol
+// interface.
+func (l *Long) AsNumberMethods() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(l.Base()))
 }
 

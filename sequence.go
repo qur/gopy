@@ -7,24 +7,34 @@ import (
 	"unsafe"
 )
 
-// Sequence is an interface that is implemented by types that implement the
-// Python "Sequence Protocol".
-type Sequence interface {
+// SequenceProtocol is an interface that is implemented by types that implement
+// the Python "Sequence Protocol".
+type SequenceProtocol interface {
 	Object
-	AsSequence() *SequenceMethods
+	AsSequenceMethods() *SequenceMethods
 }
 
-// AsSequence returns a SequenceMethods instance that refers to the same
+// AsSequenceMethods returns a SequenceMethods instance that refers to the same
 // underlying Python object as obj. If obj doesn't implement the "Sequence
-// Protocol" (i.e. the Sequence interface), then nil is returned.
-func AsSequence(obj Object) *SequenceMethods {
-	if n, ok := obj.(Sequence); ok {
-		return n.AsSequence()
+// Protocol", then nil is returned.
+//
+// This method is more complete than the SequenceProtocol interface, as it will
+// also work with unknown or dynamic types that implement the "Sequence
+// Protocol".
+func AsSequenceMethods(obj Object) *SequenceMethods {
+	if n, ok := obj.(SequenceProtocol); ok {
+		return n.AsSequenceMethods()
 	}
 	if C.sequenceCheck(c(obj)) > 0 {
 		return (*SequenceMethods)(unsafe.Pointer(obj.Base()))
 	}
 	return nil
+}
+
+// AsSequenceMethods simply returns s. This ensures however that SequenceMethods
+// implements SequenceProtocol.
+func (s *SequenceMethods) AsSequenceMethods() *SequenceMethods {
+	return s
 }
 
 func (s *SequenceMethods) Size() (int, error) {

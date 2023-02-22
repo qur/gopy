@@ -160,11 +160,11 @@ func (t *Tuple) Size() int {
 	return int(ret)
 }
 
-// AsMapping returns a MappingMethods instance that refers to the same
+// AsMappingMethods returns a MappingMethods instance that refers to the same
 // underlying Python object as t.
 //
-// This method also means that Tuple implements the Mapping interface.
-func (t *Tuple) AsMapping() *MappingMethods {
+// This method also means that Tuple implements the MappingProtocol interface.
+func (t *Tuple) AsMappingMethods() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer(t.Base()))
 }
 
@@ -189,11 +189,12 @@ func (t *Tuple) HasKeyString(key string) bool {
 	return ret > 0
 }
 
-// AsSequence returns a SequenceMethods instance that refers to the same
+// AsSequenceMethods returns a SequenceMethods instance that refers to the same
 // underlying Python object as t.
 //
-// This method also means that Tuple implements the Sequence interface.
-func (t *Tuple) AsSequence() *SequenceMethods {
+// This method also means that Tuple implements the SequenceProtocol
+// interface.
+func (t *Tuple) AsSequenceMethods() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(t.Base()))
 }
 

@@ -14,7 +14,7 @@ type Iterator interface {
 
 type IteratorProtocol interface {
 	Object
-	AsIterator() *IteratorMethods
+	AsIteratorMethods() *IteratorMethods
 }
 
 func newIterator(o *C.PyObject) (Iterator, error) {
@@ -48,7 +48,7 @@ func AsIterator(obj Object) Iterator {
 		return n
 	}
 	if n, ok := obj.(IteratorProtocol); ok {
-		return n.AsIterator()
+		return n.AsIteratorMethods()
 	}
 	if C.iterCheck(c(obj)) > 0 {
 		return (*IteratorMethods)(unsafe.Pointer(obj.Base()))

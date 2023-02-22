@@ -141,11 +141,12 @@ func (f *Float) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-// AsNumber returns a NumberMethods instance that refers to the same underlying
-// Python object as f.
+// AsNumberMethods returns a NumberMethods instance that refers to the same
+// underlying Python object as f.
 //
-// This method also means that Float implements the Number interface.
-func (f *Float) AsNumber() *NumberMethods {
+// This method also means that Float implements the NumberProtocol
+// interface.
+func (f *Float) AsNumberMethods() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(f.Base()))
 }
 

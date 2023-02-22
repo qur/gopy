@@ -169,11 +169,11 @@ func (u *Unicode) Size() int {
 	return int(ret)
 }
 
-// AsMapping returns a MappingMethods instance that refers to the same
+// AsMappingMethods returns a MappingMethods instance that refers to the same
 // underlying Python object as u.
 //
-// This method also means that Unicode implements the Mapping interface.
-func (u *Unicode) AsMapping() *MappingMethods {
+// This method also means that Unicode implements the MappingProtocol interface.
+func (u *Unicode) AsMappingMethods() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer(u.Base()))
 }
 
@@ -198,11 +198,12 @@ func (u *Unicode) HasKeyString(key string) bool {
 	return ret > 0
 }
 
-// AsSequence returns a SequenceMethods instance that refers to the same
+// AsSequenceMethods returns a SequenceMethods instance that refers to the same
 // underlying Python object as u.
 //
-// This method also means that Unicode implements the Sequence interface.
-func (u *Unicode) AsSequence() *SequenceMethods {
+// This method also means that Unicode implements the SequenceProtocol
+// interface.
+func (u *Unicode) AsSequenceMethods() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(u.Base()))
 }
 

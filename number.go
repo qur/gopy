@@ -7,11 +7,11 @@ import (
 	"unsafe"
 )
 
-// Number is an interface that is implemented by types that implement the
-// Python "Number Protocol".
-type Number interface {
+// NumberProtocol is an interface that is implemented by types that implement
+// the Python "Number Protocol".
+type NumberProtocol interface {
 	Object
-	AsNumber() *NumberMethods
+	AsNumberMethods() *NumberMethods
 }
 
 type Index interface {
@@ -19,17 +19,27 @@ type Index interface {
 	Index() (*Long, error)
 }
 
-// AsNumber returns a NumberMethods instance that refers to the same
+// AsNumberMethods returns a NumberMethods instance that refers to the same
 // underlying Python object as obj. If obj doesn't implement the "Number
 // Protocol" (i.e. the Number interface), then nil is returned.
-func AsNumber(obj Object) *NumberMethods {
-	if n, ok := obj.(Number); ok {
-		return n.AsNumber()
+//
+// This method is more complete than the NumberProtocol interface, as it will
+// also work with unknown or dynamic types that implement the "Number
+// Protocol".
+func AsNumberMethods(obj Object) *NumberMethods {
+	if n, ok := obj.(NumberProtocol); ok {
+		return n.AsNumberMethods()
 	}
 	if C.numberCheck(c(obj)) > 0 {
 		return (*NumberMethods)(unsafe.Pointer(obj.Base()))
 	}
 	return nil
+}
+
+// AsNumberMethods simply returns n. This ensures however that NumberMethods
+// implements NumberProtocol.
+func (n *NumberMethods) AsNumberMethods() *NumberMethods {
+	return n
 }
 
 // Add returns the result of adding n and obj.  The equivalent Python is "n +

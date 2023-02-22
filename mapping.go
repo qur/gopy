@@ -7,24 +7,32 @@ import (
 	"unsafe"
 )
 
-// Mapping is an interface that is implemented by types that implement the
-// Python "Mapping Protocol".
-type Mapping interface {
+// MappingProtocol is an interface that is implemented by types that implement
+// the Python "Mapping Protocol".
+type MappingProtocol interface {
 	Object
-	AsMapping() *MappingMethods
+	AsMappingMethods() *MappingMethods
 }
 
 // AsMapping returns a MappingMethods instance that refers to the same
 // underlying Python object as obj. If obj doesn't implement the "Mapping
-// Protocol" (i.e. the Mapping interface), then nil is returned.
-func AsMapping(obj Object) *MappingMethods {
-	if n, ok := obj.(Mapping); ok {
-		return n.AsMapping()
+// Protocol", then nil is returned.
+//
+// This method is more complete than the MappingProtocol interface, as it will
+// also work with unknown or dynamic types that implement the "Mapping
+// Protocol".
+func AsMappingMethods(obj Object) *MappingMethods {
+	if n, ok := obj.(MappingProtocol); ok {
+		return n.AsMappingMethods()
 	}
 	if C.mappingCheck(c(obj)) > 0 {
 		return (*MappingMethods)(unsafe.Pointer(obj.Base()))
 	}
 	return nil
+}
+
+func (m *MappingMethods) AsMappingMethods() *MappingMethods {
+	return m
 }
 
 func (m *MappingMethods) Size() (int, error) {

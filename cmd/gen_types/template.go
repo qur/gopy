@@ -256,11 +256,11 @@ func ({{ .name }} *{{ .type }}) Iter() (Iterator, error) {
 
 
 {{- if .funcs.tp_iternext -}}
-// AsIterator returns a IteratorMethods instance that refers to the same
+// AsIteratorMethods returns a IteratorMethods instance that refers to the same
 // underlying Python object as {{ .name }}.
 //
 // This method also means that {{ .type }} implements the Iterator interface.
-func ({{ .name }} *{{ .type }}) AsIterator() *IteratorMethods {
+func ({{ .name }} *{{ .type }}) AsIteratorMethods() *IteratorMethods {
 	return (*IteratorMethods)(unsafe.Pointer({{ .name }}.Base()))
 }
 
@@ -295,11 +295,11 @@ func ({{ .name }} *{{ .type }}) Size() int {
 {{ end }}
 
 {{- if .funcs.mp_subscript -}}
-// AsMapping returns a MappingMethods instance that refers to the same
+// AsMappingMethods returns a MappingMethods instance that refers to the same
 // underlying Python object as {{ .name }}.
 //
-// This method also means that {{ .type }} implements the Mapping interface.
-func ({{ .name }} *{{ .type }}) AsMapping() *MappingMethods {
+// This method also means that {{ .type }} implements the MappingProtocol interface.
+func ({{ .name }} *{{ .type }}) AsMappingMethods() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer({{ .name }}.Base()))
 }
 
@@ -352,11 +352,12 @@ func ({{ .name }} *{{ .type }}) SetItemString(key string, v Object) error {
 {{ end }}
 
 {{- if .funcs.sq_item -}}
-// AsSequence returns a SequenceMethods instance that refers to the same
+// AsSequenceMethods returns a SequenceMethods instance that refers to the same
 // underlying Python object as {{ .name }}.
 //
-// This method also means that {{ .type }} implements the Sequence interface.
-func ({{ .name }} *{{ .type }}) AsSequence() *SequenceMethods {
+// This method also means that {{ .type }} implements the SequenceProtocol
+// interface.
+func ({{ .name }} *{{ .type }}) AsSequenceMethods() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer({{ .name }}.Base()))
 }
 
@@ -474,11 +475,12 @@ func ({{ .name }} *{{ .type }}) DelSlice(start, end int) error {
 {{ end }}
 
 {{- if or .funcs.nb_index .funcs.nb_int .funcs.nb_float (eq .type "Complex") -}}
-// AsNumber returns a NumberMethods instance that refers to the same underlying
-// Python object as {{ .name }}.
+// AsNumberMethods returns a NumberMethods instance that refers to the same
+// underlying Python object as {{ .name }}.
 //
-// This method also means that {{ .type }} implements the Number interface.
-func ({{ .name }} *{{ .type }}) AsNumber() *NumberMethods {
+// This method also means that {{ .type }} implements the NumberProtocol
+// interface.
+func ({{ .name }} *{{ .type }}) AsNumberMethods() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer({{ .name }}.Base()))
 }
 

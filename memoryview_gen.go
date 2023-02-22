@@ -160,11 +160,11 @@ func (m *MemoryView) Size() int {
 	return int(ret)
 }
 
-// AsMapping returns a MappingMethods instance that refers to the same
+// AsMappingMethods returns a MappingMethods instance that refers to the same
 // underlying Python object as m.
 //
-// This method also means that MemoryView implements the Mapping interface.
-func (m *MemoryView) AsMapping() *MappingMethods {
+// This method also means that MemoryView implements the MappingProtocol interface.
+func (m *MemoryView) AsMappingMethods() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer(m.Base()))
 }
 
@@ -208,11 +208,12 @@ func (m *MemoryView) SetItemString(key string, v Object) error {
 	return int2Err(ret)
 }
 
-// AsSequence returns a SequenceMethods instance that refers to the same
+// AsSequenceMethods returns a SequenceMethods instance that refers to the same
 // underlying Python object as m.
 //
-// This method also means that MemoryView implements the Sequence interface.
-func (m *MemoryView) AsSequence() *SequenceMethods {
+// This method also means that MemoryView implements the SequenceProtocol
+// interface.
+func (m *MemoryView) AsSequenceMethods() *SequenceMethods {
 	return (*SequenceMethods)(unsafe.Pointer(m.Base()))
 }
 

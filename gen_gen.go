@@ -121,11 +121,11 @@ func (g *Gen) Iter() (Iterator, error) {
 	return newIterator(ret)
 }
 
-// AsIterator returns a IteratorMethods instance that refers to the same
+// AsIteratorMethods returns a IteratorMethods instance that refers to the same
 // underlying Python object as g.
 //
 // This method also means that Gen implements the Iterator interface.
-func (g *Gen) AsIterator() *IteratorMethods {
+func (g *Gen) AsIteratorMethods() *IteratorMethods {
 	return (*IteratorMethods)(unsafe.Pointer(g.Base()))
 }
 

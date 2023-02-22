@@ -158,11 +158,11 @@ func (d *Dict) Size() int {
 	return int(ret)
 }
 
-// AsMapping returns a MappingMethods instance that refers to the same
+// AsMappingMethods returns a MappingMethods instance that refers to the same
 // underlying Python object as d.
 //
-// This method also means that Dict implements the Mapping interface.
-func (d *Dict) AsMapping() *MappingMethods {
+// This method also means that Dict implements the MappingProtocol interface.
+func (d *Dict) AsMappingMethods() *MappingMethods {
 	return (*MappingMethods)(unsafe.Pointer(d.Base()))
 }
 

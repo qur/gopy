@@ -141,11 +141,12 @@ func (co *Complex) RichCompareBool(obj Object, op Op) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-// AsNumber returns a NumberMethods instance that refers to the same underlying
-// Python object as co.
+// AsNumberMethods returns a NumberMethods instance that refers to the same
+// underlying Python object as co.
 //
-// This method also means that Complex implements the Number interface.
-func (co *Complex) AsNumber() *NumberMethods {
+// This method also means that Complex implements the NumberProtocol
+// interface.
+func (co *Complex) AsNumberMethods() *NumberMethods {
 	return (*NumberMethods)(unsafe.Pointer(co.Base()))
 }
 
