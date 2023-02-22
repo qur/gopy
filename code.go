@@ -30,13 +30,13 @@ func CompileFile(name string) (*Code, error) {
 	return newCode(ret), nil
 }
 
-func (code *Code) Eval(globals, locals Object) (Object, error) {
-	ret := C.PyEval_EvalCode(c(code), c(globals), c(locals))
+func (co *Code) Eval(globals, locals Object) (Object, error) {
+	ret := C.PyEval_EvalCode(c(co), c(globals), c(locals))
 	return obj2ObjErr(ret)
 }
 
-func (code *Code) NumFree() int {
-	pyCode := (*C.PyCodeObject)(unsafe.Pointer(code))
+func (co *Code) NumFree() int {
+	pyCode := (*C.PyCodeObject)(unsafe.Pointer(co))
 	n := C.PyCode_GetNumFree_(pyCode)
 	return int(n)
 }

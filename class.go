@@ -82,46 +82,46 @@ type Class struct {
 	base   *Type
 }
 
-func (c *Class) Base() *BaseObject {
-	return c.base.Base()
+func (cls *Class) Base() *BaseObject {
+	return cls.base.Base()
 }
 
-func (c *Class) Type() *Type {
-	return c.base.Type()
+func (cls *Class) Type() *Type {
+	return cls.base.Type()
 }
 
-func (c *Class) RawType() *Type {
-	return c.base
+func (cls *Class) RawType() *Type {
+	return cls.base
 }
 
-func (c *Class) Decref() {
-	c.base.Decref()
+func (cls *Class) Decref() {
+	cls.base.Decref()
 }
 
-func (c *Class) Incref() {
-	c.base.Incref()
+func (cls *Class) Incref() {
+	cls.base.Incref()
 }
 
-func (c *Class) IsTrue() bool {
-	return c.base.IsTrue()
+func (cls *Class) IsTrue() bool {
+	return cls.base.IsTrue()
 }
 
-func (c *Class) Not() bool {
-	return c.base.Not()
+func (cls *Class) Not() bool {
+	return cls.base.Not()
 }
 
-func (c *Class) Free() {
-	c.base.Free()
+func (cls *Class) Free() {
+	cls.base.Free()
 }
 
-func (c *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
+func (cls *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 	// simple case, a New method has been provided
-	if c.New != nil {
-		return c.New(c, args, kwds)
+	if cls.New != nil {
+		return cls.New(cls, args, kwds)
 	}
 
 	// no New provided, so we need to create an instance of the correct type
-	t := reflect.TypeOf(c.Object).Elem()
+	t := reflect.TypeOf(cls.Object).Elem()
 	v := reflect.New(t)
 	return v.Interface().(ClassObject), nil
 }

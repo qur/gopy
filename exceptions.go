@@ -11,15 +11,15 @@ func newException(obj *C.PyObject) *ExceptionClass {
 	return (*ExceptionClass)(unsafe.Pointer(obj))
 }
 
-// ErrV returns a new Error of the specified kind, and with the given value.
-func (kind *ExceptionClass) ErrV(obj Object) *Error {
-	return NewErrorV(kind, obj)
+// ErrV returns a new Error of the specified kind (e), and with the given value.
+func (e *ExceptionClass) ErrV(obj Object) *Error {
+	return NewErrorV(e, obj)
 }
 
-// Err returns a new Error of the specified kind, and with the value being a
+// Err returns a new Error of the specified kind (e), and with the value being a
 // new String containing the string created the given format and args.
-func (kind *ExceptionClass) Err(format string, args ...interface{}) *Error {
-	return NewError(kind, format, args...)
+func (e *ExceptionClass) Err(format string, args ...interface{}) *Error {
+	return NewError(e, format, args...)
 }
 
 // NewException creates and returns a new exception class. The name argument
