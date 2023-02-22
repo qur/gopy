@@ -7,8 +7,9 @@ import (
 	"fmt"
 )
 
-func NewComplex(v complex128) (*Complex, error) {
-	ret := C.PyComplex_FromDoubles(C.double(real(v)), C.double(imag(v)))
+func NewComplex[T ~complex64 | ~complex128](v T) (*Complex, error) {
+	c := complex128(v)
+	ret := C.PyComplex_FromDoubles(C.double(real(c)), C.double(imag(c)))
 	if ret == nil {
 		return nil, exception()
 	}

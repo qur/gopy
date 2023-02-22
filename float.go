@@ -7,8 +7,8 @@ import (
 	"fmt"
 )
 
-func NewFloat(v float64) (*Float, error) {
-	ret := C.PyFloat_FromDouble(C.double(v))
+func NewFloat[T ~float32 | ~float64](f T) (*Float, error) {
+	ret := C.PyFloat_FromDouble(C.double(float64(f)))
 	if ret == nil {
 		return nil, exception()
 	}

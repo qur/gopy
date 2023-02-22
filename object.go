@@ -67,6 +67,53 @@ type Object interface {
 	Free()
 }
 
+// NewValue will try to return an appropriate Python Object for the supplied
+// value. If the type can't be converted, then a TypeError will be returned.
+//
+// If an Object is supplied, then a new reference to that Object will be
+// returned.
+func NewValue(value any) (Object, error) {
+	switch v := value.(type) {
+	case Object:
+		v.Incref()
+		return v, nil
+	case int:
+		return NewLong(v), nil
+	case int8:
+		return NewLong(v), nil
+	case int16:
+		return NewLong(v), nil
+	case int32:
+		return NewLong(v), nil
+	case int64:
+		return NewLong(v), nil
+	case uint8:
+		return NewLong(v), nil
+	case uint16:
+		return NewLong(v), nil
+	case uint32:
+		return NewLong(v), nil
+	case float32:
+		return NewFloat(v)
+	case float64:
+		return NewFloat(v)
+	case complex64:
+		return NewComplex(v)
+	case complex128:
+		return NewComplex(v)
+	case string:
+		return NewUnicode(v)
+	case []Object:
+		return NewListFromObjects(v...)
+	case map[Object]Object:
+		return NewDictFromMap(v)
+	case map[string]Object:
+		return NewDictFromMapString(v)
+	default:
+		return nil, TypeError.Err("unsupported type %T", v)
+	}
+}
+
 // None is the Python equivalent to nil.
 var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
 

@@ -5,7 +5,6 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
 
 func buildTuple(format string, args ...interface{}) (*Tuple, error) {
@@ -36,37 +35,47 @@ func NewTuple(size int) (*Tuple, error) {
 	return newTuple(ret), nil
 }
 
-// PackTuple returns a new *Tuple which contains the arguments.  This tuple is
-// ready to use.
+// PackTuple returns a new *Tuple which contains the arguments. This tuple is
+// ready to use. This function steals the references to the Objects.
 //
 // Return value: New Reference.
 func PackTuple(items ...Object) (*Tuple, error) {
-	ret := C.PyTuple_New(C.Py_ssize_t(len(items)))
-	if ret == nil {
-		return nil, exception()
+	t, err := NewTuple(len(items))
+	if err != nil {
+		return nil, err
 	}
 
-	// Since the ob_item array has a size of 1, Go won't let us index more than
-	// a single entry, and if we try and use our own local type definition with
-	// a flexible array member then cgo converts it to [0]byte which is even
-	// less useful.  So, we resort to pointer manipulation - which is
-	// unfortunate, as it's messy in Go.
-
-	// base is a pointer to the first item in the array of PyObject pointers.
-	// step is the size of a PyObject * (i.e. the number of bytes we need to add
-	// to get to the next item).
-	base := unsafe.Pointer(&(*C.PyTupleObject)(unsafe.Pointer(ret)).ob_item[0])
-	step := uintptr(C.tupleItemSize())
-
-	for _, item := range items {
-		item.Incref()
-		*(**C.PyObject)(base) = c(item)
-
-		// Move base to point to the next item, by incrementing by step bytes
-		base = unsafe.Pointer(uintptr(base) + step)
+	for i, item := range items {
+		if err := t.SetIndexSteal(i, item); err != nil {
+			t.Decref()
+			return nil, err
+		}
 	}
 
-	return newTuple(ret), nil
+	return t, nil
+}
+
+// NewTupleFromValues creates a new Python Tuple from the supplied values. The
+// values are converted to Objects using NewValue.
+//
+// Return value: New Reference.
+func NewTupleFromValues(values ...any) (*Tuple, error) {
+	t, err := NewTuple(len(values))
+	if err != nil {
+		return nil, err
+	}
+	for i, v := range values {
+		o, err := NewValue(v)
+		if err != nil {
+			t.Decref()
+			return nil, err
+		}
+		if err := t.SetIndexSteal(i, o); err != nil {
+			t.Decref()
+			return nil, err
+		}
+	}
+	return t, nil
 }
 
 func (t *Tuple) CheckExact() bool {
@@ -74,10 +83,14 @@ func (t *Tuple) CheckExact() bool {
 	return int(ret) != 0
 }
 
-// func (t *Tuple) GetItem(pos int) (Object, error) {
-// 	ret := C.PyTuple_GetItem(c(t), C.Py_ssize_t(pos))
-// 	return obj2ObjErr(ret)
-// }
+// BorrowIndex returns the Object contained in tuple t at index idx. If idx is
+// out of bounds for t, then an IndexError will be returned.
+//
+// Return value: Borrowed Reference.
+func (t *Tuple) BorrowIndex(pos int) (Object, error) {
+	ret := C.PyTuple_GetItem(c(t), C.Py_ssize_t(pos))
+	return obj2ObjErr(ret)
+}
 
 // func (t *Tuple) GetSlice(low, high int) (*Tuple, error) {
 // 	ret := C.PyTuple_GetSlice(c(t), C.Py_ssize_t(low), C.Py_ssize_t(high))
@@ -87,10 +100,14 @@ func (t *Tuple) CheckExact() bool {
 // 	return newTuple(ret), nil
 // }
 
-// func (t *Tuple) SetItem(pos int, obj Object) error {
-// 	ret := C.PyTuple_SetItem(c(t), C.Py_ssize_t(pos), c(obj))
-// 	return int2Err(ret)
-// }
+// SetIndexSteal sets the Object at index idx in tuple t to Object obj.
+//
+// Note: This method "steals" a reference to obj, and discards a reference to
+// the current value of idx in t (if there is one).
+func (t *Tuple) SetIndexSteal(pos int, obj Object) error {
+	ret := C.PyTuple_SetItem(c(t), C.Py_ssize_t(pos), c(obj))
+	return int2Err(ret)
+}
 
 // _PyTuple_Resize
 
