@@ -60,6 +60,36 @@ func iterate(args *py.Tuple) (py.Object, error) {
 	return py.None, nil
 }
 
+func msg(args *py.Tuple) (py.Object, error) {
+	builtins, err := py.Import("builtins")
+	if err != nil {
+		return nil, err
+	}
+	defer builtins.Decref()
+
+	print, err := builtins.GetAttrString("print")
+	if err != nil {
+		return nil, err
+	}
+	defer print.Decref()
+
+	log.Printf("print: %T", print)
+
+	sys, err := py.Import("sys")
+	if err != nil {
+		return nil, err
+	}
+	defer sys.Decref()
+
+	stderr, err := sys.GetAttrString("stderr")
+	if err != nil {
+		return nil, err
+	}
+	defer stderr.Decref()
+
+	return print.Base().CallGo(py.A{"this is a message"}, py.K{"file": stderr})
+}
+
 type Example struct {
 	py.ClassBaseObject
 	wibble int64
@@ -148,6 +178,7 @@ var modDef = py.ModuleDef{
 	Methods: []py.GoMethod{
 		{"example", example, "example function"},
 		{"iterate", iterate, "iterate any iterable"},
+		{"msg", msg, "print messages using Python's print function"},
 	},
 }
 

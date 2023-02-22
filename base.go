@@ -196,6 +196,12 @@ func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// Convenience types for using things like CallGo
+type (
+	A []any
+	K map[string]any
+)
+
 // CallGo calls obj with the given args and kwds, either may be nil. Returns the
 // result of the call, or an Error on failure.  This is equivalent to
 // "obj(*args, **kwds)" in Python.

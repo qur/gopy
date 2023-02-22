@@ -107,14 +107,17 @@ func (t *Type) Call(args *Tuple, kwds *Dict) (Object, error) {
 // result of the call, or an Error on failure.  This is equivalent to
 // "t(*args, **kwds)" in Python.
 //
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
 // Return value: New Reference.
-func (t *Type) CallGo(args []Object, kwds map[string]Object) (Object, error) {
-	obj1, err := PackTuple(args...)
+func (t *Type) CallGo(args []any, kwds map[string]any) (Object, error) {
+	obj1, err := NewTupleFromValues(args...)
 	if err != nil {
 		return nil, err
 	}
 	defer obj1.Decref()
-	obj2, err := NewDictFromMapString(kwds)
+	obj2, err := NewDictFromValuesString(kwds)
 	if err != nil {
 		return nil, err
 	}
