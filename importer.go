@@ -39,7 +39,9 @@ func getParent(name string) *Module {
 func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 	var name string
 	var path, target Object
-	ParseTuple(args, "sO|O", &name, &path, &target)
+	if err := ParseTuple(args, "sO|O", &name, &path, &target); err != nil {
+		return nil, err
+	}
 
 	// If this is a sub-package, we will only import it if we also own the
 	// parent.
@@ -70,10 +72,7 @@ func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 // importerExecModule starts the setup of a module.
 //
 // Shamelessly copied from _imp_create_builtin and create_builtin from import.c.
-func importerCreateModule(args *Tuple) (Object, error) {
-	var spec Object
-	ParseTuple(args, "O", &spec)
-
+func importerCreateModule(spec Object) (Object, error) {
 	nameObj, err := spec.Base().GetAttrString("name")
 	if err != nil {
 		return nil, err
@@ -97,10 +96,7 @@ func importerCreateModule(args *Tuple) (Object, error) {
 // importerExecModule completes the setup of a module.
 //
 // Shamelessly copied from exec_builtin_or_dynamic from import.c.
-func importerExecModule(args *Tuple) (Object, error) {
-	var mod Object
-	ParseTuple(args, "O", &mod)
-
+func importerExecModule(mod Object) (Object, error) {
 	if _, ok := mod.(*Module); !ok {
 		// not actually a module, ignore it
 		None.Incref()
