@@ -169,6 +169,7 @@ func (e *Example) PySet_wibble(arg py.Object) error {
 
 var exampleClass = py.Class{
 	Name:   "example.ExampleClass",
+	Flags:  py.TPFLAGS_BASETYPE,
 	Object: (*Example)(nil),
 }
 
