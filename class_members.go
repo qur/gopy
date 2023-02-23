@@ -9,28 +9,38 @@ import (
 	"unsafe"
 )
 
-func getField(obj, arg unsafe.Pointer) (reflect.Value, error) {
+func getField(obj, arg unsafe.Pointer) (reflect.Value, reflect.StructField, error) {
 	o := getClassObject(obj)
 	if o == nil {
-		return reflect.Value{}, fmt.Errorf("unknown object")
+		return reflect.Value{}, reflect.StructField{}, fmt.Errorf("unknown object")
 	}
 
 	idx := int(C.PyLong_AsLong((*C.PyObject)(arg)))
 
-	return reflect.ValueOf(o).Elem().Field(idx), nil
+	return reflect.ValueOf(o).Elem().Field(idx), reflect.TypeOf(o).Elem().Field(idx), nil
 }
 
 //export goClassNatGet
 func goClassNatGet(obj, idx unsafe.Pointer) *C.PyObject {
-	f, err := getField(obj, idx)
+	f, _, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
 		return nil
 	}
 
 	switch f.Type().Kind() {
+	case reflect.Bool:
+		return c(NewBool(f.Bool()))
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return c(NewLong(f.Int()))
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		return c(NewLong(int64(f.Uint())))
+	case reflect.Float32, reflect.Float64:
+		return ce(NewFloat(f.Float()))
+	case reflect.String:
+		return ce(NewUnicode(f.String()))
+	case reflect.Complex64, reflect.Complex128:
+		return ce(NewComplex(f.Complex()))
 	}
 
 	raise(NotImplementedError.ErrV(None))
@@ -39,7 +49,7 @@ func goClassNatGet(obj, idx unsafe.Pointer) *C.PyObject {
 
 //export goClassNatSet
 func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
-	f, err := getField(obj, idx)
+	f, t, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
 		return -1
@@ -47,14 +57,56 @@ func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
 
 	// This is the new value we are being asked to set
 	value := (*C.PyObject)(obj2)
+	o := newObject(value)
 
 	switch f.Type().Kind() {
+	case reflect.Bool:
+		b, ok := o.(*Bool)
+		if !ok {
+			raise(TypeError.Err("field %s is bool, got %s", t.Name, o.Type()))
+			return -1
+		}
+		f.SetBool(b.Bool())
+		return 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		v := int64(C.PyLong_AsLong(value))
 		if exceptionRaised() {
 			return -1
 		}
 		f.SetInt(v)
+		return 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		v := int64(C.PyLong_AsLong(value))
+		if exceptionRaised() {
+			return -1
+		}
+		if v < 0 {
+			raise(ValueError.Err("field %s is unsigned, can't set to negative value %d", t.Name, v))
+			return -1
+		}
+		f.SetUint(uint64(v))
+		return 0
+	case reflect.Float32, reflect.Float64:
+		v := float64(C.PyFloat_AsDouble(value))
+		if exceptionRaised() {
+			return -1
+		}
+		f.SetFloat(v)
+		return 0
+	case reflect.String:
+		v := C.PyUnicode_AsUTF8(value)
+		if exceptionRaised() {
+			return -1
+		}
+		f.SetString(C.GoString(v))
+		return 0
+	case reflect.Complex64, reflect.Complex128:
+		v, ok := o.(*Complex)
+		if !ok {
+			raise(TypeError.Err("field %s is complex, got %s", t.Name, o.Type()))
+			return -1
+		}
+		f.SetComplex(v.Complex128())
 		return 0
 	}
 
@@ -64,7 +116,7 @@ func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
 
 //export goClassObjGet
 func goClassObjGet(obj, idx unsafe.Pointer) *C.PyObject {
-	f, err := getField(obj, idx)
+	f, _, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
 		return nil
@@ -82,7 +134,7 @@ func goClassObjGet(obj, idx unsafe.Pointer) *C.PyObject {
 
 //export goClassObjSet
 func goClassObjSet(obj, obj2, idx unsafe.Pointer) int {
-	f, err := getField(obj, idx)
+	f, _, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
 		return -1

@@ -152,6 +152,14 @@ func c(obj Object) *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
 }
 
+func ce(obj Object, err error) *C.PyObject {
+	if err != nil {
+		raise(err)
+		return nil
+	}
+	return c(obj)
+}
+
 // free deallocates the storage (in Python) for obj.  After calling this method,
 // obj should no longer be used.
 func free(obj Object) {

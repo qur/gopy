@@ -311,20 +311,21 @@ func getStaticCallFlags(f reflect.Type) (C.int, error) {
 }
 
 var exportable = map[reflect.Kind]bool{
-	reflect.Bool:    true,
-	reflect.Int:     true,
-	reflect.Int8:    true,
-	reflect.Int16:   true,
-	reflect.Int32:   true,
-	reflect.Int64:   true,
-	reflect.Uint:    true,
-	reflect.Uint8:   true,
-	reflect.Uint16:  true,
-	reflect.Uint32:  true,
-	reflect.Uint64:  true,
-	reflect.Uintptr: true,
-	reflect.Float32: true,
-	reflect.Float64: true,
+	reflect.Bool:       true,
+	reflect.Int:        true,
+	reflect.Int8:       true,
+	reflect.Int16:      true,
+	reflect.Int32:      true,
+	reflect.Int64:      true,
+	reflect.Uint:       true,
+	reflect.Uint8:      true,
+	reflect.Uint16:     true,
+	reflect.Uint32:     true,
+	reflect.Float32:    true,
+	reflect.Float64:    true,
+	reflect.String:     true,
+	reflect.Complex64:  true,
+	reflect.Complex128: true,
 }
 
 type methodSignature struct {
@@ -460,14 +461,17 @@ func (cls *Class) Create() error {
 
 	for i := 0; i < btyp.NumField(); i++ {
 		field := btyp.Field(i)
+		if field.Name == "ClassBaseObject" || !field.IsExported() {
+			// We require ClassBaseObject to be embedded to turn the type into
+			// an Object/ClassObject. Don't export this to Python. We also
+			// ignore anything that isn't exported.
+			continue
+		}
 		pyname := field.Tag.Get("py")
-		pydoc := field.Tag.Get("pyDoc")
 		if pyname == "-" {
 			continue
 		}
-		if pyname == "" && pydoc == "" {
-			continue
-		}
+		pydoc := field.Tag.Get("pyDoc")
 		ro := C.int(0)
 		parts := strings.Split(pyname, ",")
 		if len(parts) > 0 {
@@ -476,6 +480,11 @@ func (cls *Class) Create() error {
 				switch opt {
 				case "ro":
 					ro = C.int(1)
+				default:
+					C.free(unsafe.Pointer(ctxt))
+					C.free(unsafe.Pointer(pyType.tp_name))
+					C.free(unsafe.Pointer(pyType))
+					return fmt.Errorf("unknown tag option: %s", opt)
 				}
 			}
 		}
