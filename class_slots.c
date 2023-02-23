@@ -13,6 +13,11 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
   type->tp_new = (newfunc)goClassNew;
   type->tp_dealloc = (destructor)goClassDealloc;
 
+  if (type->tp_flags & Py_TPFLAGS_HAVE_GC) {
+    type->tp_traverse = (traverseproc)goClassTraverse;
+    type->tp_clear = (inquiry)goClassClear;
+  }
+
   {
     PyTypeObject *m = type;
     if (slotFlags & CLASS_HAS_TP_REPR) m->tp_repr = (reprfunc)goClassSlot_tp_repr;

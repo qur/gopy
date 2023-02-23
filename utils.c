@@ -265,11 +265,6 @@ PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,
   return PyDescr_NewGetSet(type, gsp);
 }
 
-void enableClassGc(PyTypeObject *type) {
-  type->tp_traverse = (traverseproc)goClassTraverse;
-  type->tp_clear = (inquiry)goClassClear;
-}
-
 struct _en excName(PyObject *o) {
   struct _en en = {NULL, NULL};
 
@@ -336,9 +331,6 @@ PyTypeObject *newType(void) { return calloc(1, sizeof(PyTypeObject)); }
 int typeReady(PyTypeObject *o) {
   if (o->tp_new == NULL && o->tp_base == NULL) {
     o->tp_new = PyType_GenericNew;
-  }
-  if (o->tp_flags & Py_TPFLAGS_HAVE_GC) {
-    enableClassGc(o);
   }
   return PyType_Ready(o);
 }

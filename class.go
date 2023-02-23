@@ -40,11 +40,21 @@ const (
 // This struct may have the following special methods (the equivalent Python
 // methods are also indicated):
 //
-//	PyInit(args *py.Tuple, kwds *py.Dict) os.Error              // __init__
-//	PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error) // __call__
+//	PyInit(args *py.Tuple, kwds *py.Dict) error                 // __init__
+//	PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error)    // __call__
 //	PyRepr() string                                             // __repr__
 //	PyStr() string                                              // __str__
-//	PyCompare(obj py.Object) (int, os.Error)                    // __cmp__
+//	PyRichCompare(obj py.Object, op py.Op) (py.Object, error)   // __cmp__
+//
+// If control over the deallocation process is desired, then the struct can
+// implement:
+//
+//	PyDealloc()
+//
+// This method will then be called when the instance is being deallocated. If
+// the method is implemented then it takes responsibility for clearing any
+// contained Objects. The py.Clear and py.ClearClassObject functions can be used
+// to assist.
 //
 // Properties are also supported, by implementing get and set methods:
 //
@@ -126,51 +136,75 @@ func (cls *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 	return v.Interface().(ClassObject), nil
 }
 
-var otyp = reflect.TypeOf(new(Object)).Elem()
+var otyp = reflect.TypeOf((*Object)(nil)).Elem()
 
 //export goClassTraverse
 func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
-	// Get the Python type object
-	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
-
-	class, ok := getType(pyType)
-	if !ok {
-		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
-		raise(TypeError.Err("Not a recognised type: %s", t))
+	co := getClassObject(obj)
+	if co == nil {
+		raise(TypeError.Err("not a recognised type: %s", newObject((*C.PyObject)(obj)).Type()))
 		return -1
 	}
 
-	// TODO(jp3): implement properly using getClassObject
-	// we have to call visit (via C.doVisit?) for each Object in the instance
-	// type (I think).
+	v := reflect.ValueOf(co)
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		if !f.Type().Implements(otyp) || f.IsNil() {
+			// only care about non-nil Object values
+			continue
+		}
+		if ret := C.doVisit((*C.PyObject)(f.UnsafePointer()), visit, arg); ret != 0 {
+			return int(ret)
+		}
+	}
 
-	raise(NotImplementedError.Err("TODO: implement using getClassObject & reflection for %s", class.Name))
-	return -1
+	return 0
+}
+
+// Clear clear the given Object field correctly. This is equivalent to Py_CLEAR
+// from the Python C API.
+//
+// To clear a field called foo in a struct called self:
+//
+//	py.Clear(&self.foo)
+//
+// This will set self.foo to nil, and decrement the reference count of foo.
+func Clear[T Object](f *T) {
+	tmp := *f
+	f = nil
+	tmp.Decref()
+}
+
+// ClearClassObject clears any contained Objects in the given instance. This
+// function will correctly clear (i.e. decref and set to nil) any contained
+// Objects in the supplied ClassObject.
+func ClearClassObject(co ClassObject) {
+	v := reflect.ValueOf(co).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		if !f.Type().Implements(otyp) || f.IsNil() {
+			// only care about non-nil Object values
+			continue
+		}
+		// Copy the behaviour of Py_CLEAR to avoid issues with loops when
+		// calling decref
+		tmp := f.Interface().(Object)
+		f.SetZero()
+		tmp.Decref()
+	}
 }
 
 //export goClassClear
 func goClassClear(obj unsafe.Pointer) int {
-	// Get the Python type object
-	pyType := (*C.PyTypeObject)((*C.PyObject)(obj).ob_type)
-
-	class, ok := getType(pyType)
-	if !ok {
-		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
-		raise(TypeError.Err("Not a recognised type: %s", t))
+	co := getClassObject(obj)
+	if co == nil {
+		raise(TypeError.Err("not a recognised type: %s", newObject((*C.PyObject)(obj)).Type()))
 		return -1
 	}
 
-	// TODO(jp3): implement properly using getClassObject
-	// we have to decref each Object in the instance type - being careful to
-	// remove it from the instance first. So we need to:
-	//  * store field as tmp
-	//  * set field to nil
-	//  * decref tmp
-	// we use this order to make sure that the field is nil when we call decref
-	// to avoid issues with loops (I think).
+	ClearClassObject(co)
 
-	raise(NotImplementedError.Err("TODO: implement using getClassObject & reflection for %s", class.Name))
-	return -1
+	return 0
 }
 
 type tpDealloc interface {
@@ -180,11 +214,23 @@ type tpDealloc interface {
 //export goClassDealloc
 func goClassDealloc(obj unsafe.Pointer) {
 	// Turn obj into the ClassObject instead of the proxy.
-	co := newObject((*C.PyObject)(obj)).(ClassObject)
+	co := getClassObject(obj)
+	if co == nil {
+		// not a recognised type, but dealloc can't return an error ...
+		return
+	}
 
-	// If co implements tpDealloc then call the PyDealloc method
+	class, _ := getType(co.Type().c())
+	if class != nil && (class.Flags&TPFLAGS_HAVE_GC != 0) {
+		C.PyObject_GC_UnTrack(unsafe.Pointer(c(co)))
+	}
+
+	// If co implements tpDealloc then call the PyDealloc method, else use
+	// ClearClassObject
 	if dealloc, ok := co.(tpDealloc); ok {
 		dealloc.PyDealloc()
+	} else {
+		ClearClassObject(co)
 	}
 
 	// we always want Python to _actually_ free the object, any registered hook
@@ -346,14 +392,6 @@ func (class *Class) Alloc(n int64) (obj Object, err error) {
 	// setClassContext(unsafe.Pointer(c(obj)), pyType)
 
 	// return
-}
-
-func Clear(obj Object) error {
-	ret := goClassClear(unsafe.Pointer(c(obj)))
-	if ret < 0 {
-		return exception()
-	}
-	return nil
 }
 
 var exportable = map[reflect.Kind]bool{
@@ -545,7 +583,7 @@ func (cls *Class) Create() error {
 			C.free(unsafe.Pointer(ctxt))
 			C.free(unsafe.Pointer(pyType.tp_name))
 			C.free(unsafe.Pointer(pyType))
-			return fmt.Errorf("Cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
+			return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 		}
 		s := C.CString(pyname)
 		defer C.free(unsafe.Pointer(s))

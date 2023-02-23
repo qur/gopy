@@ -426,6 +426,11 @@ def write_setSlots(f):
     print("  type->tp_new = (newfunc)goClassNew;", file=f)
     print("  type->tp_dealloc = (destructor)goClassDealloc;", file=f)
     print("", file=f)
+    print("  if (type->tp_flags & Py_TPFLAGS_HAVE_GC) {", file=f)
+    print("    type->tp_traverse = (traverseproc)goClassTraverse;", file=f)
+    print("    type->tp_clear = (inquiry)goClassClear;", file=f)
+    print("  }", file=f)
+    print("", file=f)
     print("  {", file=f)
     print("    PyTypeObject *m = type;", file=f)
     current_prefix = "tp"

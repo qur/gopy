@@ -92,7 +92,7 @@ typedef struct {
   // Protective NULL pointer
   void *zero;
 
-  // The concrete Methods structs for the protocols (PyTypeObjects only store
+  // The concrete Methods structs for the protocols (PyTypeObjects only stores
   // a pointer).
   PyAsyncMethods am_meth;
   PyNumberMethods nb_meth;

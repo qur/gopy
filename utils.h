@@ -18,8 +18,6 @@ extern int doParseTupleKwds(PyObject *args, PyObject *kwds, char *fmt,
                             char *kwlist[], void *values[], int c);
 extern PyObject *doBuildValue(char *fmt, ArgValue values[], int c);
 
-extern void enableClassGc(PyTypeObject *type);
-
 struct _en {
   const char *m;
   const char *c;
