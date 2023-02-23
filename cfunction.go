@@ -21,6 +21,10 @@ func makeCFunction(name string, fn interface{}, doc string, mod_name *C.PyObject
 		C.set_call_noargs(&ml.ml_meth)
 		ml.ml_flags = C.METH_NOARGS
 
+	case func(Object) (Object, error):
+		C.set_call_single(&ml.ml_meth)
+		ml.ml_flags = C.METH_NOARGS
+
 	case func(a *Tuple) (Object, error):
 		C.set_call_args(&ml.ml_meth)
 		ml.ml_flags = C.METH_VARARGS
@@ -102,6 +106,22 @@ func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
 		return nil
 	}
 	ret, err := f()
+	if err != nil {
+		raise(err)
+		return nil
+	}
+	return unsafe.Pointer(c(ret))
+}
+
+//export callWithSingle
+func callWithSingle(self, arg unsafe.Pointer) unsafe.Pointer {
+	f, ok := getFunc(self).(func(a Object) (Object, error))
+	if !ok {
+		raise(AssertionError.Err("callWithArgs: wrong function type!!!"))
+		return nil
+	}
+	a := newObject((*C.PyObject)(arg))
+	ret, err := f(a)
 	if err != nil {
 		raise(err)
 		return nil
