@@ -80,6 +80,9 @@ const (
 //
 // User is not used by the library code. It can be used to store state for the
 // class methods, etc.
+//
+// To create a new instance of the Class in Go, then use the Callable methods
+// (i.e. Call or CallGo), which map to the Python expression "cls(...)".
 type Class struct {
 	Name   string
 	Flags  uint32
@@ -122,6 +125,40 @@ func (cls *Class) Not() bool {
 
 func (cls *Class) Free() {
 	cls.base.Free()
+}
+
+// Call calls cls with the given args and kwds. kwds may be nil, args may not
+// (an empty Tuple must be used if no arguments are wanted). Returns the result
+// of the call, or an Error on failure. This is equivalent to
+// "cls(*args, **kwds)" in Python.
+//
+// Return value: New Reference.
+func (cls *Class) Call(args *Tuple, kwds *Dict) (Object, error) {
+	ret := C.PyObject_Call(c(cls), c(args), c(kwds))
+	return obj2ObjErr(ret)
+}
+
+// CallGo calls cf with the given args and kwds, either may be nil. Returns the
+// result of the call, or an Error on failure. This is equivalent to
+// "cf(*args, **kwds)" in Python.
+//
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
+// Return value: New Reference.
+func (cls *Class) CallGo(args []any, kwds map[string]any) (Object, error) {
+	obj1, err := NewTupleFromValues(args...)
+	if err != nil {
+		return nil, err
+	}
+	defer obj1.Decref()
+	obj2, err := NewDictFromValuesString(kwds)
+	if err != nil {
+		return nil, err
+	}
+	defer obj2.Decref()
+	ret := C.PyObject_Call(c(cls), c(obj1), c(obj2))
+	return obj2ObjErr(ret)
 }
 
 func (cls *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
@@ -187,28 +224,28 @@ func methSigMatches(got reflect.Type, _want interface{}) error {
 
 	if got.NumIn() == 0 {
 		// The receiver is missing!
-		return fmt.Errorf("Method without reciever!")
+		return fmt.Errorf("method without reciever!")
 	}
 
 	want := reflect.TypeOf(_want)
 
 	if got.NumIn()-1 != want.NumIn() {
-		return fmt.Errorf("Method should have %d arguments, not %d", want.NumIn(), got.NumIn()-1)
+		return fmt.Errorf("method should have %d arguments, not %d", want.NumIn(), got.NumIn()-1)
 	}
 
 	if got.NumOut() != want.NumOut() {
-		return fmt.Errorf("Method should have %d return values, not %d", want.NumOut(), got.NumOut())
+		return fmt.Errorf("method should have %d return values, not %d", want.NumOut(), got.NumOut())
 	}
 
 	for i := 0; i < want.NumIn(); i++ {
 		if got.In(i+1) != want.In(i) {
-			return fmt.Errorf("Method argument %d should be %v, not %v", i+1, want.In(i), got.In(i+1))
+			return fmt.Errorf("method argument %d should be %v, not %v", i+1, want.In(i), got.In(i+1))
 		}
 	}
 
 	for i := 0; i < want.NumOut(); i++ {
 		if got.Out(i) != want.Out(i) {
-			return fmt.Errorf("Method return value %d should be %v, not %v", i+1, want.Out(i), got.Out(i))
+			return fmt.Errorf("method return value %d should be %v, not %v", i+1, want.Out(i), got.Out(i))
 		}
 	}
 
