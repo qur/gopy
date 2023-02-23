@@ -172,6 +172,9 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
       case METH_NOARGS:
         self->meth.ml_meth = (PyCFunction)goClassCallMethod;
         break;
+      case METH_O:
+        self->meth.ml_meth = (PyCFunction)goClassCallMethodSingle;
+        break;
       case METH_VARARGS:
         self->meth.ml_meth = (PyCFunction)goClassCallMethodArgs;
         break;
@@ -181,6 +184,9 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
       case METH_STATIC | METH_NOARGS:
         self->meth.ml_meth = (PyCFunction)goClassCallStaticMethod;
         break;
+      case METH_STATIC | METH_O:
+        self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodSingle;
+        break;
       case METH_STATIC | METH_VARARGS:
         self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodArgs;
         break;
@@ -189,6 +195,9 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
         break;
       case METH_CLASS | METH_NOARGS:
         self->meth.ml_meth = (PyCFunction)goClassCallClassMethod;
+        break;
+      case METH_CLASS | METH_O:
+        self->meth.ml_meth = (PyCFunction)goClassCallClassMethodSingle;
         break;
       case METH_CLASS | METH_VARARGS:
         self->meth.ml_meth = (PyCFunction)goClassCallClassMethodArgs;
@@ -200,10 +209,13 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
         fprintf(stderr, "Invalid method flags: %x\n", flags);
         return NULL;
     }
-    // For static methods, don't tell Python, otherwise it will call the Go
-    // function with NULL instead of the context we need to retrieve the
-    // function to call.
+    // For static methods, tell Python they are class methods instead, otherwise
+    // it will call the Go function with NULL instead of the context we need to
+    // retrieve the function to call.
     self->meth.ml_flags = flags & ~METH_STATIC;
+    if (flags & METH_STATIC) {
+      self->meth.ml_flags |= METH_CLASS;
+    }
     self->meth.ml_doc = "";
   }
 

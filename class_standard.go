@@ -57,7 +57,7 @@ func goClassDealloc(obj unsafe.Pointer) {
 	}
 
 	class := getClass(co.Type().c())
-	if class != nil && (class.Flags&TPFLAGS_HAVE_GC != 0) {
+	if class != nil && (class.Flags&ClassHaveGC != 0) {
 		C.PyObject_GC_UnTrack(unsafe.Pointer(c(co)))
 	}
 

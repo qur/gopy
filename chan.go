@@ -10,6 +10,8 @@ type Chan struct {
 	c chan Object
 }
 
+// newChan is the New function for the Chan Class that is called as part of the
+// object initialisation.
 func newChan(c *Class, args *Tuple, kw *Dict) (ClassObject, error) {
 	var buffer int
 	if err := ParseTuple(args, "i", &buffer); err != nil {
@@ -39,7 +41,7 @@ func NewChan(buffer int) (*Chan, error) {
 		return nil, AssertionError.Err("go module has not been initialized!")
 	}
 
-	obj, err := chanClass.Alloc(0)
+	obj, err := chanClass.Call(nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +51,6 @@ func NewChan(buffer int) (*Chan, error) {
 		defer obj.Decref()
 		return nil, TypeError.Err("Alloc returned wrong type: %T", obj)
 	}
-
-	self.c = make(chan Object, buffer)
 
 	return self, nil
 }

@@ -150,6 +150,12 @@ func (e *Example) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	return py.None, nil
 }
 
+func (e *Example) Py_doot(arg py.Object) (py.Object, error) {
+	log.Printf("arg: %T", arg)
+	py.None.Incref()
+	return py.None, nil
+}
+
 func (e *Example) PyGet_wibble() (py.Object, error) {
 	i := py.NewLong(e.wibble)
 	if i == nil {
@@ -169,7 +175,7 @@ func (e *Example) PySet_wibble(arg py.Object) error {
 
 var exampleClass = py.Class{
 	Name:   "example.ExampleClass",
-	Flags:  py.TPFLAGS_BASETYPE,
+	Flags:  py.ClassBaseType,
 	Object: (*Example)(nil),
 }
 

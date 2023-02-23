@@ -39,13 +39,13 @@ func (t *Type) Modified() {
 }
 
 // HasFeature returns true when "t" has the feature in question.
-func (t *Type) HasFeature(feature uint32) bool {
+func (t *Type) HasFeature(feature ClassFlags) bool {
 	return (t.o.tp_flags & C.ulong(feature)) != 0
 }
 
 // IsGc returns true if the type "t" supports Cyclic Garbage Collection.
 func (t *Type) IsGc() bool {
-	return t.HasFeature(TPFLAGS_HAVE_GC)
+	return t.HasFeature(ClassHaveGC)
 }
 
 // IsSubtype returns true if "t" is a subclass of "t2".
@@ -59,4 +59,4 @@ func (t *Type) IsSubtype(t2 *Type) bool {
 // PyType_GenericNew : Another internal function we don't need to expose.
 
 // PyType_Ready : This function is wrapped (along with a lot of other
-// functionality) in the Create method of the Class stuct.
+// functionality) in the Create method of the Class struct.

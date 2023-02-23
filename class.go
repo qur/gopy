@@ -10,9 +10,13 @@ import (
 	"unsafe"
 )
 
+var otyp = reflect.TypeOf((*Object)(nil)).Elem()
+
+type ClassFlags uint32
+
 const (
-	TPFLAGS_HAVE_GC  = uint32(C.Py_TPFLAGS_HAVE_GC)
-	TPFLAGS_BASETYPE = uint32(C.Py_TPFLAGS_BASETYPE)
+	ClassHaveGC   = ClassFlags(C.Py_TPFLAGS_HAVE_GC)
+	ClassBaseType = ClassFlags(C.Py_TPFLAGS_BASETYPE)
 )
 
 // A Class struct instance is used to define a Python class that has been
@@ -85,7 +89,7 @@ const (
 // (i.e. Call or CallGo), which map to the Python expression "cls(...)".
 type Class struct {
 	Name   string
-	Flags  uint32
+	Flags  ClassFlags
 	Doc    string
 	Object ClassObject
 	Static map[string]any
@@ -173,8 +177,6 @@ func (cls *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 	return v.Interface().(ClassObject), nil
 }
 
-var otyp = reflect.TypeOf((*Object)(nil)).Elem()
-
 // Clear clear the given Object field correctly. This is equivalent to Py_CLEAR
 // from the Python C API.
 //
@@ -254,11 +256,13 @@ func methSigMatches(got reflect.Type, _want interface{}) error {
 
 func getPythonCallFlags(f reflect.Type) (C.int, error) {
 	switch {
-	case methSigMatches(f, pyUnaryFunc) == nil:
+	case methSigMatches(f, pyNoArgsFunc) == nil:
 		return C.METH_NOARGS, nil
-	case methSigMatches(f, pyBinaryCallFunc) == nil:
+	case methSigMatches(f, pySingleFunc) == nil:
+		return C.METH_O, nil
+	case methSigMatches(f, pyVarargsFunc) == nil:
 		return C.METH_VARARGS, nil
-	case methSigMatches(f, pyTernaryCallFunc) == nil:
+	case methSigMatches(f, pyKeywordsFunc) == nil:
 		return C.METH_VARARGS | C.METH_KEYWORDS, nil
 	default:
 		return 0, fmt.Errorf("invalid method signature")
@@ -293,29 +297,17 @@ func funcSigMatches(got reflect.Type, _want interface{}) error {
 
 func getStaticCallFlags(f reflect.Type) (C.int, error) {
 	switch {
-	case funcSigMatches(f, pyUnaryFunc) == nil:
+	case funcSigMatches(f, pyNoArgsFunc) == nil:
 		return C.METH_NOARGS, nil
-	case funcSigMatches(f, pyBinaryCallFunc) == nil:
+	case funcSigMatches(f, pySingleFunc) == nil:
+		return C.METH_O, nil
+	case funcSigMatches(f, pyVarargsFunc) == nil:
 		return C.METH_VARARGS, nil
-	case funcSigMatches(f, pyTernaryCallFunc) == nil:
+	case funcSigMatches(f, pyKeywordsFunc) == nil:
 		return C.METH_VARARGS | C.METH_KEYWORDS, nil
 	default:
 		return 0, fmt.Errorf("invalid function signature")
 	}
-}
-
-// Alloc is a convenience function, so that Go code can create a new Object
-// instance.
-func (class *Class) Alloc(n int64) (obj Object, err error) {
-	return nil, fmt.Errorf("TODO(jp3): how should Class.Alloc be working now?")
-	// obj, err = class.base.Alloc(n)
-
-	// // Since we are creating this object for Go code, this is probably the only
-	// // opportunity we will get to register this object instance.
-	// pyType := (*C.PyTypeObject)(unsafe.Pointer(c(class.base)))
-	// setClassContext(unsafe.Pointer(c(obj)), pyType)
-
-	// return
 }
 
 var exportable = map[reflect.Kind]bool{
@@ -340,32 +332,14 @@ type methodSignature struct {
 	sig   interface{}
 }
 
-// Function signatures for methods that implement Python methods.  Note, the
+// Function signatures for methods that implement Python methods. Note, the
 // first argument is always the receiver, and is not included in these
-// signatures (hence the names are one greater than the number of arguments
-// taken).
+// signatures.
 var (
-	pyInitFunc        = (func(*Tuple, *Dict) error)(nil)
-	pyVoidFunc        = (func())(nil)
-	pyReprFunc        = (func() string)(nil)
-	pyLenFunc         = (func() int64)(nil)
-	pyHashFunc        = (func() (uint32, error))(nil)
-	pyInquiryFunc     = (func() (bool, error))(nil)
-	pyUnaryFunc       = (func() (Object, error))(nil)
-	pyBinaryFunc      = (func(Object) (Object, error))(nil)
-	pyTernaryFunc     = (func(a, b Object) (Object, error))(nil)
-	pyBinaryCallFunc  = (func(*Tuple) (Object, error))(nil)
-	pyTernaryCallFunc = (func(*Tuple, *Dict) (Object, error))(nil)
-	pyCompareFunc     = (func(Object) (int, error))(nil)
-	pyRichCmpFunc     = (func(Object, Op) (Object, error))(nil)
-	pyObjObjArgFunc   = (func(a, b Object) error)(nil)
-	pySsizeArgFunc    = (func(int64) (Object, error))(nil)
-	pySsizeObjArgFunc = (func(int64, Object) error)(nil)
-	pyObjObjFunc      = (func(Object) (bool, error))(nil)
-	pyGetAttrFunc     = (func(string) (Object, error))(nil)
-	pyGetAttrObjFunc  = (func(Object) (Object, error))(nil)
-	pySetAttrFunc     = (func(string, Object) error)(nil)
-	pySetAttrObjFunc  = (func(Object, Object) error)(nil)
+	pyNoArgsFunc   = (func() (Object, error))(nil)
+	pySingleFunc   = (func(Object) (Object, error))(nil)
+	pyVarargsFunc  = (func(*Tuple) (Object, error))(nil)
+	pyKeywordsFunc = (func(*Tuple, *Dict) (Object, error))(nil)
 )
 
 // Create completes the initialisation of the Class by creating the Python type.

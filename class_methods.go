@@ -9,6 +9,12 @@ import (
 	"unsafe"
 )
 
+//////////////////////////////////////////////////////////////////////////////
+//
+// METHODS
+//
+//////////////////////////////////////////////////////////////////////////////
+
 func getMethod(obj unsafe.Pointer) (any, error) {
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -34,6 +40,30 @@ func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	f := m.(func() (Object, error))
 
 	ret, err := f()
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassCallMethodSingle
+func goClassCallMethodSingle(obj, arg unsafe.Pointer) unsafe.Pointer {
+	// Unpack context and self pointer from obj
+	m, err := getMethod(obj)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	// Get arg ready to use, by turning it into a pointer of the appropriate
+	// type
+	o := newObject((*C.PyObject)(arg))
+
+	f := m.(func(Object) (Object, error))
+
+	ret, err := f(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -91,6 +121,12 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(c(ret))
 }
 
+//////////////////////////////////////////////////////////////////////////////
+//
+// STATIC
+//
+//////////////////////////////////////////////////////////////////////////////
+
 func getStaticMethod(obj unsafe.Pointer) any {
 	t := (*C.PyObject)(obj)
 	c := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(t, 0))))
@@ -108,6 +144,28 @@ func goClassCallStaticMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	f := m.(func() (Object, error))
 
 	ret, err := f()
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassCallStaticMethodSingle
+func goClassCallStaticMethodSingle(obj, arg unsafe.Pointer) unsafe.Pointer {
+	// Unpack function from obj
+	m := getStaticMethod(obj)
+
+	// Get arg ready to use, by turning it into a pointer of the appropriate
+	// type
+	o := newObject((*C.PyObject)(arg))
+
+	// Now call the actual static method by pulling the method out of the
+	// reflect.Type object stored in the context
+	f := m.(func(Object) (Object, error))
+
+	ret, err := f(o)
 	if err != nil {
 		raise(err)
 		return nil
@@ -161,6 +219,12 @@ func goClassCallStaticMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer 
 	return unsafe.Pointer(c(ret))
 }
 
+//////////////////////////////////////////////////////////////////////////////
+//
+// CLASS
+//
+//////////////////////////////////////////////////////////////////////////////
+
 func getMethodAndClass(obj unsafe.Pointer) (any, *Class, error) {
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
@@ -188,6 +252,32 @@ func goClassCallClassMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	f := m.(func(p *Class) (Object, error))
 
 	ret, err := f(o)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	return unsafe.Pointer(c(ret))
+}
+
+//export goClassCallClassMethodSingle
+func goClassCallClassMethodSingle(obj, arg unsafe.Pointer) unsafe.Pointer {
+	// Unpack context and class pointer from obj
+	m, o, err := getMethodAndClass(obj)
+	if err != nil {
+		raise(err)
+		return nil
+	}
+
+	// Get arg ready to use, by turning it into a pointer of the appropriate
+	// type
+	a := newObject((*C.PyObject)(arg))
+
+	// Now call the actual struct method by pulling the method out of the
+	// reflect.Type object stored in the context
+	f := m.(func(*Class, Object) (Object, error))
+
+	ret, err := f(o, a)
 	if err != nil {
 		raise(err)
 		return nil
