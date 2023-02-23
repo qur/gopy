@@ -462,8 +462,22 @@ func (cls *Class) Create() error {
 		field := btyp.Field(i)
 		pyname := field.Tag.Get("py")
 		pydoc := field.Tag.Get("pyDoc")
+		if pyname == "-" {
+			continue
+		}
 		if pyname == "" && pydoc == "" {
 			continue
+		}
+		ro := C.int(0)
+		parts := strings.Split(pyname, ",")
+		if len(parts) > 0 {
+			pyname = parts[0]
+			for _, opt := range parts[1:] {
+				switch opt {
+				case "ro":
+					ro = C.int(1)
+				}
+			}
 		}
 		if pyname == "" {
 			pyname = field.Name
@@ -474,7 +488,7 @@ func (cls *Class) Create() error {
 			s := C.CString(pyname)
 			defer C.free(unsafe.Pointer(s))
 			d := C.CString(pydoc)
-			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), d))
+			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), d, ro))
 			continue
 		}
 		if !exportable[field.Type.Kind()] {
@@ -486,7 +500,7 @@ func (cls *Class) Create() error {
 		s := C.CString(pyname)
 		defer C.free(unsafe.Pointer(s))
 		d := C.CString(pydoc)
-		C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d))
+		C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d, ro))
 	}
 
 	cls.base = newType((*C.PyObject)(unsafe.Pointer(pyType)))

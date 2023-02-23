@@ -93,7 +93,7 @@ func msg(args *py.Tuple) (py.Object, error) {
 type Example struct {
 	py.ClassBaseObject
 	wibble int64
-	Foo    int       `py:"foo"`
+	Foo    int       `py:"foo,ro"`
 	X      py.Object `py:"x"`
 	Y      *py.Tuple `py:"y"`
 }
@@ -152,6 +152,11 @@ func (e *Example) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 
 func (e *Example) Py_doot(arg py.Object) (py.Object, error) {
 	log.Printf("arg: %T", arg)
+	l, ok := arg.(*py.Long)
+	if !ok {
+		return nil, py.TypeError.Err("expected int, not %s", arg.Type())
+	}
+	e.Foo = int(l.Int64())
 	py.None.Incref()
 	return py.None, nil
 }

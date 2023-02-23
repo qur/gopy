@@ -222,32 +222,40 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
   return (PyObject *)self;
 }
 
-PyObject *newObjMember(PyTypeObject *type, char *name, PyObject *idx,
-                       char *doc) {
+PyObject *newObjMember(PyTypeObject *type, char *name, PyObject *idx, char *doc,
+                       int ro) {
   PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
 
   if (gsp == NULL) return NULL;
 
   gsp->name = name;
   gsp->get = (getter)goClassObjGet;
-  gsp->set = (setter)goClassObjSet;
+  gsp->set = NULL;
   gsp->doc = doc;
   gsp->closure = idx;
+
+  if (!ro) {
+    gsp->set = (setter)goClassObjSet;
+  }
 
   return PyDescr_NewGetSet(type, gsp);
 }
 
-PyObject *newNatMember(PyTypeObject *type, char *name, PyObject *idx,
-                       char *doc) {
+PyObject *newNatMember(PyTypeObject *type, char *name, PyObject *idx, char *doc,
+                       int ro) {
   PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
 
   if (gsp == NULL) return NULL;
 
   gsp->name = name;
   gsp->get = (getter)goClassNatGet;
-  gsp->set = (setter)goClassNatSet;
+  gsp->set = NULL;
   gsp->doc = doc;
   gsp->closure = idx;
+
+  if (!ro) {
+    gsp->set = (setter)goClassNatSet;
+  }
 
   return PyDescr_NewGetSet(type, gsp);
 }

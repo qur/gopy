@@ -60,9 +60,9 @@ extern int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o);
 extern int doVisit(PyObject *o, void *v, void *a);
 extern PyObject *newMethod(char *name, PyObject *func, int flags);
 extern PyObject *newObjMember(PyTypeObject *type, char *name, PyObject *idx,
-                              char *doc);
+                              char *doc, int ro);
 extern PyObject *newNatMember(PyTypeObject *type, char *name, PyObject *idx,
-                              char *doc);
+                              char *doc, int ro);
 extern PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,
                              PyObject *set);
 //
