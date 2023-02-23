@@ -93,7 +93,7 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 func getStaticMethod(obj unsafe.Pointer) any {
 	t := (*C.PyObject)(obj)
-	c, _ := getType((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(t, 0))))
+	c := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(t, 0))))
 	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(t, 1)))
 	return c.Static[name]
 }
@@ -165,7 +165,7 @@ func getMethodAndClass(obj unsafe.Pointer) (any, *Class, error) {
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
 
-	c, _ := getType((*C.PyTypeObject)(pyobj))
+	c := getClass((*C.PyTypeObject)(pyobj))
 	if c == nil {
 		return nil, nil, fmt.Errorf("unknown class")
 	}

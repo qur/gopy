@@ -175,20 +175,18 @@ var (
 	types    = make(map[*C.PyTypeObject]*Class)
 )
 
-func registerType(pyType *C.PyTypeObject, class *Class) {
+func registerClass(pyType *C.PyTypeObject, class *Class) {
 	typeLock.Lock()
 	defer typeLock.Unlock()
 
 	types[pyType] = class
 }
 
-func getType(pyType *C.PyTypeObject) (*Class, bool) {
+func getClass(pyType *C.PyTypeObject) *Class {
 	typeLock.RLock()
 	defer typeLock.RUnlock()
 
-	class, ok := types[pyType]
-
-	return class, ok
+	return types[pyType]
 }
 
 func newObject(obj *C.PyObject) Object {
@@ -201,13 +199,11 @@ func newObject(obj *C.PyObject) Object {
 		return None
 	}
 
-	cObj := getClassObject(o)
-	if cObj != nil {
+	if cObj := getClassObject(o); cObj != nil {
 		return cObj
 	}
 
-	class, ok := getType((*C.PyTypeObject)(o))
-	if ok {
+	if class := getClass((*C.PyTypeObject)(o)); class != nil {
 		return class
 	}
 
@@ -215,8 +211,7 @@ func newObject(obj *C.PyObject) Object {
 		return newException(obj)
 	}
 
-	natObj := getNativeType(obj)
-	if natObj != nil {
+	if natObj := getNativeType(obj); natObj != nil {
 		return natObj
 	}
 
