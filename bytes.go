@@ -8,9 +8,25 @@ import (
 	"unsafe"
 )
 
+// NewBytes returns a new Bytes instance that contains a copy of the supplied
+// []byte.
+//
+// Return value: New Reference.
 func NewBytes(b []byte) *Bytes {
 	d := (*C.char)(unsafe.Pointer(&b[0]))
 	return newBytes(C.PyBytes_FromStringAndSize(d, C.Py_ssize_t(len(b))))
+}
+
+// NewBytesFromObject returns a new Bytes instance created from the supplied
+// Object.
+//
+// Return value: New Reference.
+func NewBytesFromObject(o Object) (*Bytes, error) {
+	ret := C.PyBytes_FromObject(c(o))
+	if ret == nil {
+		return nil, exception()
+	}
+	return newBytes(ret), nil
 }
 
 // Bytes returns the contents of the Bytes object

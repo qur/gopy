@@ -10,8 +10,23 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+// Object is the generic interface that represents a Python object. All of the
+// concrete types satisfy the Object interface.
+type Object interface {
+	Base() *BaseObject
+	Type() *Type
+	Decref()
+	Incref()
+	IsTrue() bool
+	Not() bool
+	Free()
+}
+
+// Op is the type for the Python comparison operators. Used by the RichCompare
+// functions.
 type Op int
 
+// Python comparison operators
 const (
 	LT = Op(C.Py_LT)
 	LE = Op(C.Py_LE)
@@ -21,8 +36,14 @@ const (
 	GE = Op(C.Py_GE)
 )
 
+// NotImplemented is a special Object value than can be returned in some
+// circumstances to indicate that a type method is not implemented.
 var NotImplemented = newObject(&C._Py_NotImplementedStruct)
 
+// RichCompareNativeBool is a helper function for implementing RichCompareBool.
+// Given two comparable Go values it will compare them with the requested Op and
+// return true or false. If the op is unknown, then a ValueError will be
+// returned.
 func RichCompareNativeBool[T constraints.Ordered](a, b T, op Op) (bool, error) {
 	switch op {
 	case LT:
@@ -42,6 +63,12 @@ func RichCompareNativeBool[T constraints.Ordered](a, b T, op Op) (bool, error) {
 	}
 }
 
+// RichCompareNative is a helper function for implementing RichCompare. Given
+// two comparable Go values it will compare them with the requested Op and
+// return True or False. If the op is unknown, then a ValueError will be
+// returned.
+//
+// Return value: New Reference.
 func RichCompareNative[T constraints.Ordered](a, b T, op Op) (Object, error) {
 	ret, err := RichCompareNativeBool(a, b, op)
 	if err != nil {
@@ -53,18 +80,6 @@ func RichCompareNative[T constraints.Ordered](a, b T, op Op) (Object, error) {
 	}
 	False.Incref()
 	return False, nil
-}
-
-// Object is the generic interface that represents a Python object.  All of the
-// concrete types satisfy the Object interface.
-type Object interface {
-	Base() *BaseObject
-	Type() *Type
-	Decref()
-	Incref()
-	IsTrue() bool
-	Not() bool
-	Free()
 }
 
 // NewValue will try to return an appropriate Python Object for the supplied
@@ -107,6 +122,8 @@ func NewValue(value any) (Object, error) {
 		return NewComplex(v)
 	case string:
 		return NewUnicode(v)
+	case []byte:
+		return NewBytes(v), nil
 	case []Object:
 		return NewListFromObjects(v...)
 	case map[Object]Object:
