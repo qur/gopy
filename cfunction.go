@@ -23,7 +23,7 @@ func makeCFunction(name string, fn interface{}, doc string, mod_name *C.PyObject
 
 	case func(Object) (Object, error):
 		C.set_call_single(&ml.ml_meth)
-		ml.ml_flags = C.METH_NOARGS
+		ml.ml_flags = C.METH_O
 
 	case func(a *Tuple) (Object, error):
 		C.set_call_args(&ml.ml_meth)
