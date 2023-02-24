@@ -183,7 +183,7 @@ func (obj *BaseObject) IsInstance(cls Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-// IsSubclass retuns true if "obj" is a Subclass of "cls", false otherwise.  If
+// IsSubclass returns true if "obj" is a Subclass of "cls", false otherwise.  If
 // "cls" is a Tuple, then true is returned if "obj" is a Subclass of any member
 // of "cls".  This is equivalent to the Python "issubclass(obj, cls)".
 func (obj *BaseObject) IsSubclass(cls Object) (bool, error) {
