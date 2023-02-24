@@ -1,3 +1,5 @@
+[![Go Reference](https://pkg.go.dev/badge/gopython.xyz/py/v3.svg)](https://pkg.go.dev/gopython.xyz/py/v3)
+
 goPy
 ====
 
