@@ -35,11 +35,7 @@ func example(args *py.Tuple) (py.Object, error) {
 	return ret, nil
 }
 
-func iterate(args *py.Tuple) (py.Object, error) {
-	var o py.Object
-	if err := py.ParseTuple(args, "O", &o); err != nil {
-		return nil, err
-	}
+func iterate(o py.Object) (py.Object, error) {
 	fmt.Printf("item: %T (%s)\n", o, o.Type().String())
 	i, err := py.GetIterator(o)
 	if err != nil {
@@ -60,7 +56,7 @@ func iterate(args *py.Tuple) (py.Object, error) {
 	return py.None, nil
 }
 
-func msg(args *py.Tuple) (py.Object, error) {
+func msg() (py.Object, error) {
 	builtins, err := py.Import("builtins")
 	if err != nil {
 		return nil, err
