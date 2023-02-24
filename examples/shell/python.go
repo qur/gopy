@@ -41,7 +41,6 @@ func callPyCmd(fn py.Object, args []string) error {
 		if err != nil {
 			return err
 		}
-		defer pyS.Decref()
 		pyParts[i] = pyS
 	}
 

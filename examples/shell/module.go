@@ -1,6 +1,8 @@
 package main
 
-import "gopython.xyz/py/v3"
+import (
+	"gopython.xyz/py/v3"
+)
 
 var shMod *py.Module
 
@@ -19,7 +21,6 @@ func pyTokenise(args *py.Tuple) (py.Object, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer pyS.Decref()
 		pyParts[i] = pyS
 	}
 
@@ -55,8 +56,7 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 		if err != nil {
 			return nil, err
 		}
-		pyS := str.(*py.Unicode)
-		cArgs[i] = pyS.String()
+		cArgs[i] = str.String()
 	}
 
 	if bg == nil {
@@ -78,10 +78,12 @@ var shModule = py.ModuleDef{
 		{"tokenise", pyTokenise, "tokenise the given string"},
 		{"run", pyRun, "run the given command"},
 	},
+	Package: true,
 }
 
 var cmdsModule = py.ModuleDef{
-	Name: "sh.__cmds__",
+	Name:    "sh.__cmds__",
+	Package: true,
 }
 
 func setupShModule() error {
