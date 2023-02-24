@@ -461,10 +461,39 @@ func (cls *Class) Create() error {
 
 	for i := 0; i < btyp.NumField(); i++ {
 		field := btyp.Field(i)
-		if field.Name == "ClassBaseObject" || !field.IsExported() {
-			// We require ClassBaseObject to be embedded to turn the type into
-			// an Object/ClassObject. Don't export this to Python. We also
-			// ignore anything that isn't exported.
+		pyEmbed := false
+		switch field.Type {
+		case cipType:
+			if _, ok := cls.Object.(tp_iternext); !ok {
+				C.free(unsafe.Pointer(ctxt))
+				C.free(unsafe.Pointer(pyType.tp_name))
+				C.free(unsafe.Pointer(pyType))
+				return fmt.Errorf("%T claimed to implement IteratorProtocol by embedding ClassIteratorProtocol, but doesn't have required methods", cls.Object)
+			}
+			pyEmbed = true
+		case cspType:
+			if _, ok := cls.Object.(sq_item); !ok {
+				C.free(unsafe.Pointer(ctxt))
+				C.free(unsafe.Pointer(pyType.tp_name))
+				C.free(unsafe.Pointer(pyType))
+				return fmt.Errorf("%T claimed to implement SequenceProtocol by embedding ClassSequenceProtocol, but doesn't have required methods", cls.Object)
+			}
+			pyEmbed = true
+		case cmpType:
+			if _, ok := cls.Object.(mp_subscript); !ok {
+				C.free(unsafe.Pointer(ctxt))
+				C.free(unsafe.Pointer(pyType.tp_name))
+				C.free(unsafe.Pointer(pyType))
+				return fmt.Errorf("%T claimed to implement MappingProtocol by embedding ClassMappingProtocol, but doesn't have required methods", cls.Object)
+			}
+			pyEmbed = true
+		case cboType, cnpType:
+			pyEmbed = true
+		}
+		if pyEmbed || !field.IsExported() {
+			// We have some helper types that get embedded in the ClassObject
+			// implementation. Don't export these to Python. We also ignore
+			// anything that isn't exported.
 			continue
 		}
 		pyname := field.Tag.Get("py")

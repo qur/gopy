@@ -43,6 +43,8 @@ func GetIterator(obj Object) (Iterator, error) {
 	return nil, TypeError.Err("cannot get iterator from %T", obj)
 }
 
+// AsIterator returns obj as an Iterator. If obj is not an Iterator, then nil
+// will be returned.
 func AsIterator(obj Object) Iterator {
 	if n, ok := obj.(Iterator); ok {
 		return n
@@ -56,6 +58,10 @@ func AsIterator(obj Object) Iterator {
 	return nil
 }
 
+// Next returns the next item from the iterator. When the iterator is exhausted
+// both the returned Object and error will be nil.
+//
+// Return value: New Reference.
 func (i *IteratorMethods) Next() (Object, error) {
 	ret := C.PyIter_Next(c(i))
 	return obj2ObjErr(ret)

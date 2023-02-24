@@ -115,6 +115,15 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	// finalise the setup of the go object
 	goObj.setBase((*BaseObject)(pyObj))
+	v := reflect.ValueOf(goObj).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		switch field.Type() {
+		case cipType, cnpType, cspType, cmpType:
+			cp := field.Addr().Interface().(classProtocol)
+			cp.setCBO(goObj.getCBO())
+		}
+	}
 	registerClassObject(pyObj, goObj)
 
 	return pyObj
