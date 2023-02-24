@@ -9,6 +9,11 @@ import (
 	"unsafe"
 )
 
+// Import tries to import the Python module with the given name. This is
+// equivalent to then "__import__()" function call in Python. In particular it
+// will use the import hooks from the current environment.
+//
+// Return value: New Reference.
 func Import(name string) (*Module, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
@@ -26,6 +31,14 @@ func Import(name string) (*Module, error) {
 
 // TODO(jp3): add support for other fields of PyModuleDef
 
+// ModuleDef defines a Python module. Name is the module name (including any
+// parent packages, separated by ., e.g. "foo.bar"), Doc is the module docsring,
+// Package should be set to true to make the module a package (a module that can
+// have sub-modules), and Methods defined the module's methods.
+//
+// The definition can be turned into an actual module using py.CreateModule, and
+// registered for importing in embedded Python using the Module's Register
+// method.
 type ModuleDef struct {
 	Name    string
 	Doc     string
@@ -33,6 +46,9 @@ type ModuleDef struct {
 	Methods []GoMethod
 }
 
+// CreateModule builds a Module instance given a ModuleDef.
+//
+// Return value: New Reference.
 func CreateModule(md *ModuleDef) (*Module, error) {
 	pyMD := C.newModuleDef()
 
@@ -96,7 +112,10 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 	return mod, nil
 }
 
-func ExecCodeModule(name string, code Object) (*Module, error) {
+// ExecCodeModule builds a Python module from the supplied Code.
+//
+// Return value: New Reference.
+func ExecCodeModule(name string, code *Code) (*Module, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
 	ret := C.PyImport_ExecCodeModule(s, c(code))
@@ -106,6 +125,9 @@ func ExecCodeModule(name string, code Object) (*Module, error) {
 	return newModule(ret), nil
 }
 
+// NewModule creates a new, empty Python module.
+//
+// Return value: New Reference.
 func NewModule(name string) (*Module, error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
@@ -118,6 +140,8 @@ func NewModule(name string) (*Module, error) {
 	return newModule(ret), nil
 }
 
+// Register adds the Python module to the importer for the embedded Python. This
+// makes the module available for import by Python code using the module name.
 func (m *Module) Register() error {
 	name, err := m.Name()
 	if err != nil {
@@ -138,11 +162,17 @@ func (m *Module) CheckExact() bool {
 	return C.moduleCheckE(c(m)) != 0
 }
 
+// Dict returns the Dict that implements m's namespace.
+//
+// Manipulating this Dict directly is discouraged.
+//
+// Return value: Borrowed Reference.
 func (m *Module) Dict() *Dict {
 	ret := C.PyModule_GetDict(c(m))
 	return newDict(ret)
 }
 
+// Name returns the name of the Python module m.
 func (m *Module) Name() (string, error) {
 	ret := C.PyModule_GetName(c(m))
 	if ret == nil {
@@ -181,6 +211,11 @@ func (m *Module) GetAttrString(name string) (Object, error) {
 // 	return C.GoString(ret), nil
 // }
 
+// AddObject adds the given Object to the Python module m under the given name.
+//
+// NOTE: This method steals a reference to obj, AddObjectRef is preferred. Aso,
+// if an error is returned, then AddObject does not decrement the reference
+// count, so the caller still owns the reference.
 func (m *Module) AddObject(name string, obj Object) error {
 	if obj == nil {
 		return AssertionError.Err("ValueError: obj == nil!")
@@ -193,6 +228,8 @@ func (m *Module) AddObject(name string, obj Object) error {
 	return int2Err(ret)
 }
 
+// AddObjectRef adds the given Object to the Python module m under the given
+// name. This method does not steal a reference.
 func (m *Module) AddObjectRef(name string, obj Object) error {
 	if obj == nil {
 		return AssertionError.Err("ValueError: obj == nil!")
@@ -205,6 +242,8 @@ func (m *Module) AddObjectRef(name string, obj Object) error {
 	return int2Err(ret)
 }
 
+// AddIntConstant adds the given value as an integer constant to the Python
+// module m with the given name.
 func (m *Module) AddIntConstant(name string, value int) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
@@ -217,6 +256,8 @@ func (m *Module) AddIntConstant(name string, value int) error {
 	return nil
 }
 
+// AddStringConstant adds the given value as a string constant to the Python
+// module m with the given name.
 func (m *Module) AddStringConstant(name, value string) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
@@ -232,6 +273,8 @@ func (m *Module) AddStringConstant(name, value string) error {
 	return nil
 }
 
+// AddType adds the given Type to the Python module m. The name of the type is
+// used as the name in the module.
 func (m *Module) AddType(t *Type) error {
 	ret := C.PyModule_AddType(c(m), t.c())
 	return int2Err(ret)
@@ -244,6 +287,9 @@ func getParentName(name string) string {
 	return ""
 }
 
+// InitExtension is a helper method for writing an extension init function.
+//
+// Normally this is called by code generated by cmd/gen_extension
 func InitExtension(f func() (*Module, error)) *BaseObject {
 	ret, err := f()
 	if err != nil {

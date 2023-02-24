@@ -25,11 +25,11 @@ func makeCFunction(name string, fn interface{}, doc string, mod_name *C.PyObject
 		C.set_call_single(&ml.ml_meth)
 		ml.ml_flags = C.METH_O
 
-	case func(a *Tuple) (Object, error):
+	case func(*Tuple) (Object, error):
 		C.set_call_args(&ml.ml_meth)
 		ml.ml_flags = C.METH_VARARGS
 
-	case func(a *Tuple, k *Dict) (Object, error):
+	case func(*Tuple, *Dict) (Object, error):
 		C.set_call_keywords(&ml.ml_meth)
 		ml.ml_flags = C.METH_VARARGS | C.METH_KEYWORDS
 
@@ -66,6 +66,24 @@ func (f *CFunction) Flags() (int, error) {
 	return int(ret), exception()
 }
 
+// GoMethod describes a Go function to be used in Python. Name is the name of
+// the function in Python, Doc is the docstring to be used, and Func is the
+// function to be called.
+//
+// Multiple signatures for the function are supported:
+//
+//	func() (py.Object, error)
+//	func(py.Object) (py.Object, error)
+//	func(*py.Tuple) (py.Object, error)
+//	func(*py.Tuple, *py.Dict) (py.Object, error)
+//
+// These map to the following behaviours:
+//
+//   - A function with no arguments
+//   - A function with a single argument, passed directly
+//   - A function with positional arguments only, passed as a Tuple
+//   - A function with positional and keyword arguments, passed as a Tuple and
+//     Dict
 type GoMethod struct {
 	Name string
 	Func interface{}
