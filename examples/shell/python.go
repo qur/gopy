@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"qur.me/py/v3"
+	"gopython.xyz/py/v3"
 )
 
 var mydir string

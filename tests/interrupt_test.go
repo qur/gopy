@@ -1,7 +1,7 @@
 package pytesting
 
 import (
-	"qur.me/py/v3"
+	"gopython.xyz/py/v3"
 	"testing"
 	"time"
 )

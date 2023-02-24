@@ -218,7 +218,7 @@ def main():
         write_cmd_go_header(output)
         write_type_table(output, checks, types, objects)
 
-    subprocess.run(["go", "run", "qur.me/py/v3/cmd/gen_types"], check=True)
+    subprocess.run(["go", "run", "gopython.xyz/py/v3/cmd/gen_types"], check=True)
 
 
 if __name__ == "__main__":

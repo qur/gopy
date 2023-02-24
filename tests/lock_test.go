@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"qur.me/py/v3"
+	"gopython.xyz/py/v3"
 )
 
 func test2() {

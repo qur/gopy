@@ -1,11 +1,11 @@
 package main
 
-//go:generate go run qur.me/py/v3/cmd/gen_extension extension extension.go
+//go:generate go run gopython.xyz/py/v3/cmd/gen_extension extension extension.go
 
 import (
 	"fmt"
 
-	"qur.me/py/v3"
+	"gopython.xyz/py/v3"
 )
 
 func example(args *py.Tuple) (py.Object, error) {

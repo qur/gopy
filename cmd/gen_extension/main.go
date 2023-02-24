@@ -23,7 +23,7 @@ import "C"
 import (
 	"unsafe"
 
-	"qur.me/py/v3"
+	"gopython.xyz/py/v3"
 )
 
 //export PyInit_{{ .name }}

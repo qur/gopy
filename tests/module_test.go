@@ -3,7 +3,7 @@ package pytesting
 import (
 	"testing"
 
-	"qur.me/py/v3"
+	"gopython.xyz/py/v3"
 )
 
 func TestFunction(t *testing.T) {

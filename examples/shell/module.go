@@ -1,6 +1,6 @@
 package main
 
-import "qur.me/py/v3"
+import "gopython.xyz/py/v3"
 
 var shMod *py.Module
 

@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"qur.me/py/v3"
+	"gopython.xyz/py/v3"
 )
 
 func example(args *py.Tuple) (py.Object, error) {
