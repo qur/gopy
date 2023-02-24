@@ -14,106 +14,97 @@ methods = {
 
 slots = [
     # Standard Slots
-    ("tp_repr", "reprfunc", "PyRepr", "() string"),
-    ("tp_hash", "hashfunc", "PyHash", "() (uint32, error)"),
-    ("tp_call", "ternaryfunc", "PyCall", "(*Tuple, *Dict) (Object, error)"),
-    ("tp_str", "reprfunc", "PyStr", "() string"),
-    ("tp_getattro", "getattrofunc", "PyGetAttr", "(Object) (Object, error)"),
-    ("tp_setattro", "setattrofunc", "PySetAttr", "(Object, Object) error"),
-    ("tp_richcompare", "richcmpfunc", "PyRichCompare", "(Object, Op) (Object, error)"),
-    ("tp_iter", "getiterfunc", "PyIter", "() (Object, error)"),
-    ("tp_iternext", "iternextfunc", "PyIterNext", "() (Object, error)"),
-    ("tp_descr_get", "descrgetfunc", "PyDescrGet",
+    ("tp_repr", "reprfunc", "Repr", "() (Object, error)"),
+    ("tp_hash", "hashfunc", "Hash", "() (int, error)"),
+    ("tp_call", "ternaryfunc", "Call", "(*Tuple, *Dict) (Object, error)"),
+    ("tp_str", "reprfunc", "Str", "() (Object, error)"),
+    ("tp_getattro", "getattrofunc", "GetAttr", "(Object) (Object, error)"),
+    ("tp_setattro", "setattrofunc", "SetAttr", "(Object, Object) error"),
+    ("tp_richcompare", "richcmpfunc", "RichCompare", "(Object, Op) (Object, error)"),
+    ("tp_iter", "getiterfunc", "Iter", "() (Iterator, error)"),
+    ("tp_iternext", "iternextfunc", "Next", "() (Object, error)"),
+    ("tp_descr_get", "descrgetfunc", "DescrGet",
      "(Object, Object) (Object, error)"),
-    ("tp_descr_set", "descrsetfunc", "PyDescrSet", "(Object, Object) error"),
-    ("tp_init", "initproc", "PyInit", "(*Tuple, *Dict) error"),
+    ("tp_descr_set", "descrsetfunc", "DescrSet", "(Object, Object) error"),
+    ("tp_init", "initproc", "Init", "(*Tuple, *Dict) error"),
 
     # Async Slots
-    ("am_await", "unaryfunc", "PyAwait", "() (Object, error)"),
-    ("am_aiter", "unaryfunc", "PyAsyncIter", "() (Object, error)"),
-    ("am_anext", "unaryfunc", "PyAsyncNext", "() (Object, error)"),
-    ("am_send", "sendfunc", "PyAsyncSend", "(Object) (Object, SendResult, error)"),
+    ("am_await", "unaryfunc", "Await", "() (Object, error)"),
+    ("am_aiter", "unaryfunc", "AsyncIter", "() (Object, error)"),
+    ("am_anext", "unaryfunc", "AsyncNext", "() (Object, error)"),
+    ("am_send", "sendfunc", "AsyncSend", "(Object) (Object, SendResult, error)"),
 
     # Number Slots
-    ("nb_add", "binaryfunc", "PyAdd", "(Object) (Object, error)"),
-    ("nb_inplace_add", "binaryfunc", "PyInPlaceAdd", "(Object) (Object, error)"),
-    ("nb_subtract", "binaryfunc", "PySubtract", "(Object) (Object, error)"),
+    ("nb_add", "binaryfunc", "Add", "(Object) (Object, error)"),
+    ("nb_inplace_add", "binaryfunc", "InPlaceAdd", "(Object) (Object, error)"),
+    ("nb_subtract", "binaryfunc", "Subtract", "(Object) (Object, error)"),
     ("nb_inplace_subtract", "binaryfunc",
-     "PyInPlaceSubtract", "(Object) (Object, error)"),
-    ("nb_multiply", "binaryfunc", "PyMultiply", "(Object) (Object, error)"),
+     "InPlaceSubtract", "(Object) (Object, error)"),
+    ("nb_multiply", "binaryfunc", "Multiply", "(Object) (Object, error)"),
     ("nb_inplace_multiply", "binaryfunc",
-     "PyInPlaceMultiply", "(Object) (Object, error)"),
-    ("nb_remainder", "binaryfunc", "PyRemainder", "(Object) (Object, error)"),
+     "InPlaceMultiply", "(Object) (Object, error)"),
+    ("nb_remainder", "binaryfunc", "Remainder", "(Object) (Object, error)"),
     ("nb_inplace_remainder", "binaryfunc",
-     "PyInPlaceRemainder", "(Object) (Object, error)"),
-    ("nb_divmod", "binaryfunc", "PyDivmod", "(Object) (Object, error)"),
-    ("nb_power", "ternaryfunc", "PyPower", "(Object, Object) (Object, error)"),
-    ("nb_inplace_power", "ternaryfunc", "PyInPlacePower",
+     "InPlaceRemainder", "(Object) (Object, error)"),
+    ("nb_divmod", "binaryfunc", "Divmod", "(Object) (Object, error)"),
+    ("nb_power", "ternaryfunc", "Power", "(Object, Object) (Object, error)"),
+    ("nb_inplace_power", "ternaryfunc", "InPlacePower",
      "(Object, Object) (Object, error)"),
-    ("nb_negative", "unaryfunc", "PyNegative", "() (Object, error)"),
-    ("nb_positive", "unaryfunc", "PyPositive", "() (Object, error)"),
-    ("nb_absolute", "unaryfunc", "PyAbsolute", "() (Object, error)"),
-    ("nb_bool", "inquiry", "PyBool", "() (bool, error)"),
-    ("nb_invert", "unaryfunc", "PyInvert", "() (Object, error)"),
-    ("nb_lshift", "binaryfunc", "PyLShift", "(Object) (Object, error)"),
+    ("nb_negative", "unaryfunc", "Negative", "() (Object, error)"),
+    ("nb_positive", "unaryfunc", "Positive", "() (Object, error)"),
+    ("nb_absolute", "unaryfunc", "Absolute", "() (Object, error)"),
+    ("nb_bool", "inquiry", "Bool", "() (bool, error)"),
+    ("nb_invert", "unaryfunc", "Invert", "() (Object, error)"),
+    ("nb_lshift", "binaryfunc", "LShift", "(Object) (Object, error)"),
     ("nb_inplace_lshift", "binaryfunc",
-     "PyInPlaceLShift", "(Object) (Object, error)"),
-    ("nb_rshift", "binaryfunc", "PyRShift", "(Object) (Object, error)"),
+     "InPlaceLShift", "(Object) (Object, error)"),
+    ("nb_rshift", "binaryfunc", "RShift", "(Object) (Object, error)"),
     ("nb_inplace_rshift", "binaryfunc",
-     "PyInPlaceRShift", "(Object) (Object, error)"),
-    ("nb_and", "binaryfunc", "PyAnd", "(Object) (Object, error)"),
-    ("nb_inplace_and", "binaryfunc", "PyInPlaceAnd", "(Object) (Object, error)"),
-    ("nb_xor", "binaryfunc", "PyXor", "(Object) (Object, error)"),
+     "InPlaceRShift", "(Object) (Object, error)"),
+    ("nb_and", "binaryfunc", "And", "(Object) (Object, error)"),
+    ("nb_inplace_and", "binaryfunc", "InPlaceAnd", "(Object) (Object, error)"),
+    ("nb_xor", "binaryfunc", "Xor", "(Object) (Object, error)"),
     ("nb_inplace_xor", "binaryfunc", "PyInPlaceXor", "(Object) (Object, error)"),
-    ("nb_or", "binaryfunc", "PyOr", "(Object) (Object, error)"),
+    ("nb_or", "binaryfunc", "Or", "(Object) (Object, error)"),
     ("nb_inplace_or", "binaryfunc", "PyInPlaceOr", "(Object) (Object, error)"),
-    ("nb_int", "unaryfunc", "PyInt", "() (Object, error)"),
-    ("nb_float", "unaryfunc", "PyFloat", "() (Object, error)"),
-    ("nb_floor_divide", "binaryfunc", "PyFloorDivide", "(Object) (Object, error)"),
+    ("nb_int", "unaryfunc", "Long", "() (*Long, error)"),
+    ("nb_float", "unaryfunc", "Float", "() (*Float, error)"),
+    ("nb_floor_divide", "binaryfunc", "FloorDivide", "(Object) (Object, error)"),
     ("nb_inplace_floor_divide", "binaryfunc",
-     "PyInPlaceFloorDivide", "(Object) (Object, error)"),
-    ("nb_true_divide", "binaryfunc", "PyTrueDivide", "(Object) (Object, error)"),
+     "InPlaceFloorDivide", "(Object) (Object, error)"),
+    ("nb_true_divide", "binaryfunc", "TrueDivide", "(Object) (Object, error)"),
     ("nb_inplace_true_divide", "binaryfunc",
-     "PyInPlaceTrueDivide", "(Object) (Object, error)"),
-    ("nb_index", "unaryfunc", "PyIndex", "() (Object, error)"),
+     "InPlaceTrueDivide", "(Object) (Object, error)"),
+    ("nb_index", "unaryfunc", "Index", "() (*Long, error)"),
     ("nb_matrix_multiply", "binaryfunc",
-     "PyMatrixMultiply", "(Object) (Object, error)"),
+     "MatrixMultiply", "(Object) (Object, error)"),
     ("nb_inplace_matrix_multiply", "binaryfunc",
-     "PyInPlaceMatrixMultiply", "(Object) (Object, error)"),
+     "InPlaceMatrixMultiply", "(Object) (Object, error)"),
 
     # Mapping Slots
     ("mp_length", "lenfunc", "PyMappingLen", "() int"),
-    ("mp_subscript", "binaryfunc", "PySubscript", "(Object) (Object, error)"),
+    ("mp_subscript", "binaryfunc", "Subscript", "(Object) (Object, error)"),
     ("mp_ass_subscript", "objobjargproc",
-     "PyAssSubscript", "(Object, Object) error"),
+     "AssSubscript", "(Object, Object) error"),
 
     # Sequence Slots
-    ("sq_length", "lenfunc", "PyLen", "() int"),
-    ("sq_concat", "binaryfunc", "PyConcat", "(Object) (Object, error)"),
-    ("sq_repeat", "ssizeargfunc", "PyRepeat", "(Object, int) (Object, error)"),
-    ("sq_item", "ssizeargfunc", "PyItem", "(Object, int) (Object, error)"),
-    ("sq_ass_item", "ssizeobjargproc", "PyAssItem", "(Object, int, Object) error"),
-    ("sq_contains", "objobjproc", "PyContains", "(Object) (bool, error)"),
+    ("sq_length", "lenfunc", "Len", "() int"),
+    ("sq_concat", "binaryfunc", "Concat", "(Object) (Object, error)"),
+    ("sq_repeat", "ssizeargfunc", "Repeat", "(Object, int) (Object, error)"),
+    ("sq_item", "ssizeargfunc", "GetIndex", "(int) (Object, error)"),
+    ("sq_ass_item", "ssizeobjargproc", "SetIndex", "(int, Object) error"),
+    ("sq_contains", "objobjproc", "Contains", "(Object) (bool, error)"),
     ("sq_inplace_concat", "binaryfunc",
-     "PyInPlaceConcat", "(Object) (Object, error)"),
+     "InPlaceConcat", "(Object) (Object, error)"),
     ("sq_inplace_repeat", "ssizeargfunc",
-     "PyInPlaceRepeat", "(Object, int) (Object, error)"),
+     "InPlaceRepeat", "(Object, int) (Object, error)"),
 
     # Buffer Slots
-    ("bf_getbuffer", "getbufferproc", "PyGetBuffer", "(Object, int) error"),
-    ("bf_releasebuffer", "releasebufferproc", "PyReleaseBuffer", "(Object)"),
+    ("bf_getbuffer", "getbufferproc", "GetBuffer", "(Object, int) error"),
+    ("bf_releasebuffer", "releasebufferproc", "ReleaseBuffer", "(Object)"),
 ]
 
 callbacks = {
-    "() string": (
-        "(obj unsafe.Pointer) unsafe.Pointer",
-        [
-            '	s := C.CString(co.%(fn)s())',
-            '	defer C.free(unsafe.Pointer(s))',
-            '',
-            '	return unsafe.Pointer(C.PyUnicode_FromString(s))',
-        ],
-    ),
     "() int": (
         "(obj unsafe.Pointer) C.Py_ssize_t",
         [
@@ -148,18 +139,66 @@ callbacks = {
             '	return unsafe.Pointer(c(ret))',
         ],
     ),
-    "() (uint32, error)": (
+    "() (Iterator, error)": (
+        "(obj unsafe.Pointer) unsafe.Pointer",
+        [
+            '	ret, err := co.%(fn)s()',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
+        ],
+    ),
+    "() (*Long, error)": (
+        "(obj unsafe.Pointer) unsafe.Pointer",
+        [
+            '	ret, err := co.%(fn)s()',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
+        ],
+    ),
+    "() (*Float, error)": (
+        "(obj unsafe.Pointer) unsafe.Pointer",
+        [
+            '	ret, err := co.%(fn)s()',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
+        ],
+    ),
+    "() (int, error)": (
         "(obj unsafe.Pointer) C.long",
         [
             '	ret, err := co.%(fn)s()',
             '	if err != nil {',
             '		raise(err)',
             '		return -1',
-            '	} else if C.long(ret) == -1 {',
+            '	} else if ret == -1 {',
             '		return -2',
             '	}',
             '',
             '	return C.long(ret)',
+        ],
+    ),
+    "(int) (Object, error)": (
+        "(obj unsafe.Pointer, arg1 C.Py_ssize_t) unsafe.Pointer",
+        [
+            '	ret, err := co.%(fn)s(int(arg1))',
+            '	if err != nil {',
+            '		raise(err)',
+            '		return nil',
+            '	}',
+            '',
+            '	return unsafe.Pointer(c(ret))',
         ],
     ),
     "(Object)": (
@@ -307,12 +346,11 @@ callbacks = {
             '	return unsafe.Pointer(c(ret))',
         ],
     ),
-    "(Object, int, Object) error": (
-        "(obj, arg1 unsafe.Pointer, arg2 C.Py_ssize_t, arg3 unsafe.Pointer) C.int",
+    "(int, Object) error": (
+        "(obj unsafe.Pointer, arg1 C.Py_ssize_t, arg2 unsafe.Pointer) C.int",
         [
-            '	o1 := newObject((*C.PyObject)(arg1))',
-            '	o3 := newObject((*C.PyObject)(arg1))',
-            '	if err := co.%(fn)s(o1, int(arg2), o3); err != nil {',
+            '	a := newObject((*C.PyObject)(arg2))',
+            '	if err := co.%(fn)s(int(arg1), a); err != nil {',
             '		raise(err)',
             '		return -1',
             '	}',
@@ -324,20 +362,42 @@ callbacks = {
 
 
 def check_slots():
+    slots_ok = True
+
     # we can only have 64 slots with a single uint64_t
     if len(slots) > 64:
         print("TOO MANY SLOTS!", file=sys.stderr)
         print(
             f"Can only fit 64 slots in a uint64_t, we have {len(slots)}", file=sys.stderr)
-        sys.exit(1)
+        slots_ok = False
 
     # names should be unique
     slot_names = {}
-    for (slot, _, _, _) in slots:
+    func_names = {}
+    wanted_callbacks = {}
+    for (slot, _, func, cb) in slots:
         if slot in slot_names:
             print(f"DUPLICATE SLOT: {slot}", file=sys.stderr)
-            sys.exit(1)
+            slots_ok = False
+        if func in func_names:
+            print(f"DUPLICATE FUNC: {func}", file=sys.stderr)
+            slots_ok = False
         slot_names[slot] = True
+        func_names[func] = True
+        wanted_callbacks[cb] = True
+
+    # all callbacks should be needed, and all wanted callbacks should be present
+    for cb in callbacks:
+        if not wanted_callbacks.get(cb, False):
+            print(f"UNUSED CALLBACK: {cb}")
+            slots_ok = False
+    for cb in wanted_callbacks:
+        if not cb in callbacks:
+            print(f"MISSING CALLBACK: {cb}")
+            slots_ok = False
+
+    if not slots_ok:
+        sys.exit(1)
 
 
 def write_h_header(f):
@@ -387,7 +447,7 @@ def write_ClassContext(f):
     print("  // Protective NULL pointer", file=f)
     print("  void *zero;", file=f)
     print("", file=f)
-    print("  // The concrete Methods structs for the protocols (PyTypeObjects only store", file=f)
+    print("  // The concrete Methods structs for the protocols (PyTypeObjects only stores", file=f)
     print("  // a pointer).", file=f)
     for prefix, (method_set, method_type) in methods.items():
         if method_set is not None:

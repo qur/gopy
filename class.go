@@ -44,11 +44,11 @@ const (
 // This struct may have the following special methods (the equivalent Python
 // methods are also indicated):
 //
-//	PyInit(args *py.Tuple, kwds *py.Dict) error                 // __init__
-//	PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error)    // __call__
-//	PyRepr() string                                             // __repr__
-//	PyStr() string                                              // __str__
-//	PyRichCompare(obj py.Object, op py.Op) (py.Object, error)   // __cmp__
+//	Init(args *py.Tuple, kwds *py.Dict) error                 // __init__
+//	Call(args *py.Tuple, kwds *py.Dict) (py.Object, error)    // __call__
+//	Repr() (Object, error)                                    // __repr__
+//	Str() (Object, error)                                     // __str__
+//	RichCompare(obj py.Object, op py.Op) (py.Object, error)   // __cmp__
 //
 // If control over the deallocation process is desired, then the struct can
 // implement:

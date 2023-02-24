@@ -87,9 +87,12 @@ func (s *Slice) Free() {
 // Python "repr(s)".
 //
 // Return value: New Reference.
-func (s *Slice) Repr() (Object, error) {
+func (s *Slice) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(s))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of s. The equivalent

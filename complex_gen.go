@@ -89,9 +89,12 @@ func (co *Complex) Free() {
 // Python "repr(co)".
 //
 // Return value: New Reference.
-func (co *Complex) Repr() (Object, error) {
+func (co *Complex) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(co))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of co. The equivalent

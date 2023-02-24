@@ -117,9 +117,12 @@ func ({{ .name }} *{{ .type }}) Free() {
 // Python "repr({{ .name }})".
 //
 // Return value: New Reference.
-func ({{ .name }} *{{ .type }}) Repr() (Object, error) {
+func ({{ .name }} *{{ .type }}) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c({{ .name }}))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 {{ end }}
@@ -179,9 +182,12 @@ func ({{ .name }} *{{ .type }}) CallGo(args []any, kwds map[string]any) (Object,
 // Python "str({{ .name }})".
 //
 // Return value: New Reference.
-func ({{ .name }} *{{ .type }}) Str() (Object, error) {
+func ({{ .name }} *{{ .type }}) Str() (*Unicode, error) {
 	ret := C.PyObject_Str(c({{ .name }}))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 {{ end }}

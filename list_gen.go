@@ -91,9 +91,12 @@ func (l *List) Free() {
 // Python "repr(l)".
 //
 // Return value: New Reference.
-func (l *List) Repr() (Object, error) {
+func (l *List) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(l))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of l. The equivalent

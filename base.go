@@ -142,18 +142,24 @@ func (obj *BaseObject) RichCompareBool(obj2 Object, op Op) (bool, error) {
 // Python "repr(obj)".
 //
 // Return value: New Reference.
-func (obj *BaseObject) Repr() (Object, error) {
+func (obj *BaseObject) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(obj))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Str returns a String representation of "obj".  This is equivalent to the
 // Python "str(obj)".
 //
 // Return value: New Reference.
-func (obj *BaseObject) Str() (Object, error) {
+func (obj *BaseObject) Str() (*Unicode, error) {
 	ret := C.PyObject_Str(c(obj))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Bytes returns a Bytes representation of "obj".  This is equivalent to the

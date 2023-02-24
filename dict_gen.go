@@ -89,9 +89,12 @@ func (d *Dict) Free() {
 // Python "repr(d)".
 //
 // Return value: New Reference.
-func (d *Dict) Repr() (Object, error) {
+func (d *Dict) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(d))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of d. The equivalent

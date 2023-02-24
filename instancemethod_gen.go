@@ -87,9 +87,12 @@ func (i *InstanceMethod) Free() {
 // Python "repr(i)".
 //
 // Return value: New Reference.
-func (i *InstanceMethod) Repr() (Object, error) {
+func (i *InstanceMethod) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(i))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Call calls i with the given args and kwds. kwds may be nil, args may not

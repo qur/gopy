@@ -87,9 +87,12 @@ func (d *DictKeys) Free() {
 // Python "repr(d)".
 //
 // Return value: New Reference.
-func (d *DictKeys) Repr() (Object, error) {
+func (d *DictKeys) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(d))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // HasAttr returns true if "d" has the attribute "name".  This is equivalent

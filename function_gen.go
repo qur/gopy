@@ -87,9 +87,12 @@ func (f *Function) Free() {
 // Python "repr(f)".
 //
 // Return value: New Reference.
-func (f *Function) Repr() (Object, error) {
+func (f *Function) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(f))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Call calls f with the given args and kwds. kwds may be nil, args may not

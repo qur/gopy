@@ -87,9 +87,12 @@ func (ce *Cell) Free() {
 // Python "repr(ce)".
 //
 // Return value: New Reference.
-func (ce *Cell) Repr() (Object, error) {
+func (ce *Cell) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(ce))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // HasAttr returns true if "ce" has the attribute "name".  This is equivalent

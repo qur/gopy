@@ -89,9 +89,12 @@ func (g *Gen) Free() {
 // Python "repr(g)".
 //
 // Return value: New Reference.
-func (g *Gen) Repr() (Object, error) {
+func (g *Gen) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(g))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // HasAttr returns true if "g" has the attribute "name".  This is equivalent

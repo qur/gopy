@@ -87,9 +87,12 @@ func (cf *CFunction) Free() {
 // Python "repr(cf)".
 //
 // Return value: New Reference.
-func (cf *CFunction) Repr() (Object, error) {
+func (cf *CFunction) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(cf))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of cf. The equivalent

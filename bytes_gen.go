@@ -91,9 +91,12 @@ func (b *Bytes) Free() {
 // Python "repr(b)".
 //
 // Return value: New Reference.
-func (b *Bytes) Repr() (Object, error) {
+func (b *Bytes) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(b))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of b. The equivalent
@@ -110,9 +113,12 @@ func (b *Bytes) Hash() (int, error) {
 // Python "str(b)".
 //
 // Return value: New Reference.
-func (b *Bytes) Str() (Object, error) {
+func (b *Bytes) Str() (*Unicode, error) {
 	ret := C.PyObject_Str(c(b))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // HasAttr returns true if "b" has the attribute "name".  This is equivalent

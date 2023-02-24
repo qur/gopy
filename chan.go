@@ -119,16 +119,16 @@ func (c *Chan) Py_close(args *Tuple, kw *Dict) (ret Object, err error) {
 	return
 }
 
-// PyIter is called to get an iterator for the item. This is used when running
+// Iter is called to get an iterator for the item. This is used when running
 // "for ... in c" in Python.
-func (c *Chan) PyIter() (Object, error) {
+func (c *Chan) Iter() (Iterator, error) {
 	c.Incref()
 	return c, nil
 }
 
-// PyIterNext is the iterator API. This function will get called to return the
-// next value.
-func (c *Chan) PyIterNext() (Object, error) {
+// Next is the iterator API. This function will get called to return the next
+// value.
+func (c *Chan) Next() (Object, error) {
 	obj := <-c.c
 
 	return obj, nil

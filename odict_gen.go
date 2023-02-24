@@ -87,9 +87,12 @@ func (o *ODict) Free() {
 // Python "repr(o)".
 //
 // Return value: New Reference.
-func (o *ODict) Repr() (Object, error) {
+func (o *ODict) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(o))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // RichCompare compares "o" with "obj" using the specified operation (LE, GE

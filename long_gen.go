@@ -89,9 +89,12 @@ func (l *Long) Free() {
 // Python "repr(l)".
 //
 // Return value: New Reference.
-func (l *Long) Repr() (Object, error) {
+func (l *Long) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(l))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of l. The equivalent

@@ -91,9 +91,12 @@ func (t *Tuple) Free() {
 // Python "repr(t)".
 //
 // Return value: New Reference.
-func (t *Tuple) Repr() (Object, error) {
+func (t *Tuple) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(t))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of t. The equivalent

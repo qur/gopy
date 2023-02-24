@@ -87,9 +87,12 @@ func (m *Method) Free() {
 // Python "repr(m)".
 //
 // Return value: New Reference.
-func (m *Method) Repr() (Object, error) {
+func (m *Method) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(m))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Hash computes and returns the hash value of m. The equivalent

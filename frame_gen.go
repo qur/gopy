@@ -87,9 +87,12 @@ func (f *Frame) Free() {
 // Python "repr(f)".
 //
 // Return value: New Reference.
-func (f *Frame) Repr() (Object, error) {
+func (f *Frame) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(f))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // HasAttr returns true if "f" has the attribute "name".  This is equivalent

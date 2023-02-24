@@ -91,18 +91,24 @@ func (b *ByteArray) Free() {
 // Python "repr(b)".
 //
 // Return value: New Reference.
-func (b *ByteArray) Repr() (Object, error) {
+func (b *ByteArray) Repr() (*Unicode, error) {
 	ret := C.PyObject_Repr(c(b))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // Str returns a String representation of "b". This is equivalent to the
 // Python "str(b)".
 //
 // Return value: New Reference.
-func (b *ByteArray) Str() (Object, error) {
+func (b *ByteArray) Str() (*Unicode, error) {
 	ret := C.PyObject_Str(c(b))
-	return obj2ObjErr(ret)
+	if ret == nil {
+		return nil, exception()
+	}
+	return newObject(ret).(*Unicode), nil
 }
 
 // HasAttr returns true if "b" has the attribute "name".  This is equivalent

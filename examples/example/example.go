@@ -98,26 +98,26 @@ type Example struct {
 	Y      *py.Tuple `py:"y"`
 }
 
-func (e *Example) PyInit(args *py.Tuple, kwds *py.Dict) error {
+func (e *Example) Init(args *py.Tuple, kwds *py.Dict) error {
 	fmt.Printf("ExampleClass.PyInit: e=%p args=%v, kwds=%v\n", e, args, kwds)
 	return nil
 }
 
-func (e *Example) PyRepr() string {
-	return fmt.Sprintf("<example.ExampleClass self=%p wibble=%d>", e, e.wibble)
+func (e *Example) Repr() (*py.Unicode, error) {
+	return py.NewUnicode(fmt.Sprintf("<example.ExampleClass self=%p wibble=%d>", e, e.wibble))
 }
 
-func (e *Example) PyStr() string {
-	return fmt.Sprintf("example.ExampleClass(wibble=%d)", e.wibble)
+func (e *Example) Str() (*py.Unicode, error) {
+	return py.NewUnicode(fmt.Sprintf("example.ExampleClass(wibble=%d)", e.wibble))
 }
 
-func (e *Example) PyCall(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
+func (e *Example) Call(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	fmt.Printf("ExampleClass.PyCall(self=%p, args=%v, kwds=%v)\n", e, args, kwds)
 	py.None.Incref()
 	return py.None, nil
 }
 
-func (e *Example) PyRichCompare(obj py.Object, op py.Op) (py.Object, error) {
+func (e *Example) RichCompare(obj py.Object, op py.Op) (py.Object, error) {
 	o, ok := obj.(*Example)
 	if !ok {
 		return nil, py.TypeError.Err("not a example.ExampleClass instance")
