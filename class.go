@@ -187,7 +187,7 @@ func (cls *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 // This will set self.foo to nil, and decrement the reference count of foo.
 func Clear[T Object](f *T) {
 	tmp := *f
-	f = nil
+	reflect.ValueOf(f).Elem().SetZero()
 	tmp.Decref()
 }
 
