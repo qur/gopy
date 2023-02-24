@@ -18,7 +18,7 @@ type CFunction struct {
 var _ Object = (*CFunction)(nil)
 
 // CFunctionType is the Type object that represents the CFunction type.
-var CFunctionType = (*Type)(unsafe.Pointer(&C.PyCFunction_Type))
+var CFunctionType = newType(&C.PyCFunction_Type)
 
 func cFunctionCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func cFunctionCheck(obj Object) bool {
 func newCFunction(obj *C.PyObject) *CFunction {
 	return (*CFunction)(unsafe.Pointer(obj))
 }
+
+
 
 func (cf *CFunction) c() *C.PyCFunctionObject {
 	return (*C.PyCFunctionObject)(unsafe.Pointer(cf))
@@ -44,7 +46,7 @@ func (cf *CFunction) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (cf *CFunction) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(cf).ob_type)))
+	return newType(c(cf).ob_type)
 }
 
 // Decref decrements cf's reference count, cf may not be nil.

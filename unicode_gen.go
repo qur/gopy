@@ -22,7 +22,7 @@ type Unicode struct {
 var _ Object = (*Unicode)(nil)
 
 // UnicodeType is the Type object that represents the Unicode type.
-var UnicodeType = (*Type)(unsafe.Pointer(&C.PyUnicode_Type))
+var UnicodeType = newType(&C.PyUnicode_Type)
 
 func unicodeCheck(obj Object) bool {
 	if obj == nil {
@@ -34,6 +34,8 @@ func unicodeCheck(obj Object) bool {
 func newUnicode(obj *C.PyObject) *Unicode {
 	return (*Unicode)(unsafe.Pointer(obj))
 }
+
+
 
 func (u *Unicode) c() *C.PyUnicodeObject {
 	return (*C.PyUnicodeObject)(unsafe.Pointer(u))
@@ -48,7 +50,7 @@ func (u *Unicode) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (u *Unicode) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(u).ob_type)))
+	return newType(c(u).ob_type)
 }
 
 // Decref decrements u's reference count, u may not be nil.

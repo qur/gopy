@@ -18,7 +18,7 @@ type Slice struct {
 var _ Object = (*Slice)(nil)
 
 // SliceType is the Type object that represents the Slice type.
-var SliceType = (*Type)(unsafe.Pointer(&C.PySlice_Type))
+var SliceType = newType(&C.PySlice_Type)
 
 func sliceCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func sliceCheck(obj Object) bool {
 func newSlice(obj *C.PyObject) *Slice {
 	return (*Slice)(unsafe.Pointer(obj))
 }
+
+
 
 func (s *Slice) c() *C.PySliceObject {
 	return (*C.PySliceObject)(unsafe.Pointer(s))
@@ -44,7 +46,7 @@ func (s *Slice) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (s *Slice) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(s).ob_type)))
+	return newType(c(s).ob_type)
 }
 
 // Decref decrements s's reference count, s may not be nil.

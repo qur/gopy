@@ -22,7 +22,7 @@ type Bytes struct {
 var _ Object = (*Bytes)(nil)
 
 // BytesType is the Type object that represents the Bytes type.
-var BytesType = (*Type)(unsafe.Pointer(&C.PyBytes_Type))
+var BytesType = newType(&C.PyBytes_Type)
 
 func bytesCheck(obj Object) bool {
 	if obj == nil {
@@ -34,6 +34,8 @@ func bytesCheck(obj Object) bool {
 func newBytes(obj *C.PyObject) *Bytes {
 	return (*Bytes)(unsafe.Pointer(obj))
 }
+
+
 
 func (b *Bytes) c() *C.PyBytesObject {
 	return (*C.PyBytesObject)(unsafe.Pointer(b))
@@ -48,7 +50,7 @@ func (b *Bytes) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (b *Bytes) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(b).ob_type)))
+	return newType(c(b).ob_type)
 }
 
 // Decref decrements b's reference count, b may not be nil.

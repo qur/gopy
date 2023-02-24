@@ -22,7 +22,7 @@ type Tuple struct {
 var _ Object = (*Tuple)(nil)
 
 // TupleType is the Type object that represents the Tuple type.
-var TupleType = (*Type)(unsafe.Pointer(&C.PyTuple_Type))
+var TupleType = newType(&C.PyTuple_Type)
 
 func tupleCheck(obj Object) bool {
 	if obj == nil {
@@ -34,6 +34,8 @@ func tupleCheck(obj Object) bool {
 func newTuple(obj *C.PyObject) *Tuple {
 	return (*Tuple)(unsafe.Pointer(obj))
 }
+
+
 
 func (t *Tuple) c() *C.PyTupleObject {
 	return (*C.PyTupleObject)(unsafe.Pointer(t))
@@ -48,7 +50,7 @@ func (t *Tuple) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (t *Tuple) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(t).ob_type)))
+	return newType(c(t).ob_type)
 }
 
 // Decref decrements t's reference count, t may not be nil.

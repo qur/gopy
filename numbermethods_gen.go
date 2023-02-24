@@ -26,8 +26,6 @@ var _ Object = (*NumberMethods)(nil)
 
 
 
-
-
 func (n *NumberMethods) c() *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(n))
 }
@@ -41,7 +39,7 @@ func (n *NumberMethods) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (n *NumberMethods) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(n).ob_type)))
+	return newType(c(n).ob_type)
 }
 
 // Decref decrements n's reference count, n may not be nil.

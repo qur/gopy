@@ -21,8 +21,6 @@ var _ Object = (*BufferMethods)(nil)
 
 
 
-
-
 func (b *BufferMethods) c() *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(b))
 }
@@ -36,7 +34,7 @@ func (b *BufferMethods) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (b *BufferMethods) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(b).ob_type)))
+	return newType(c(b).ob_type)
 }
 
 // Decref decrements b's reference count, b may not be nil.

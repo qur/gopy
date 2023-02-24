@@ -19,7 +19,7 @@ type Bool struct {
 var _ Object = (*Bool)(nil)
 
 // BoolType is the Type object that represents the Bool type.
-var BoolType = (*Type)(unsafe.Pointer(&C.PyBool_Type))
+var BoolType = newType(&C.PyBool_Type)
 
 func boolCheck(obj Object) bool {
 	if obj == nil {
@@ -43,7 +43,7 @@ func (b *Bool) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (b *Bool) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(b).ob_type)))
+	return newType(c(b).ob_type)
 }
 
 // Decref decrements b's reference count, b may not be nil.

@@ -18,7 +18,7 @@ type ODict struct {
 var _ Object = (*ODict)(nil)
 
 // ODictType is the Type object that represents the ODict type.
-var ODictType = (*Type)(unsafe.Pointer(&C.PyODict_Type))
+var ODictType = newType(&C.PyODict_Type)
 
 func oDictCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func oDictCheck(obj Object) bool {
 func newODict(obj *C.PyObject) *ODict {
 	return (*ODict)(unsafe.Pointer(obj))
 }
+
+
 
 func (o *ODict) c() *C.PyODictObject {
 	return (*C.PyODictObject)(unsafe.Pointer(o))
@@ -44,7 +46,7 @@ func (o *ODict) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (o *ODict) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(o).ob_type)))
+	return newType(c(o).ob_type)
 }
 
 // Decref decrements o's reference count, o may not be nil.

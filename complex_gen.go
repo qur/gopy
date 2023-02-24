@@ -20,7 +20,7 @@ type Complex struct {
 var _ Object = (*Complex)(nil)
 
 // ComplexType is the Type object that represents the Complex type.
-var ComplexType = (*Type)(unsafe.Pointer(&C.PyComplex_Type))
+var ComplexType = newType(&C.PyComplex_Type)
 
 func complexCheck(obj Object) bool {
 	if obj == nil {
@@ -32,6 +32,8 @@ func complexCheck(obj Object) bool {
 func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
 }
+
+
 
 func (co *Complex) c() *C.PyComplexObject {
 	return (*C.PyComplexObject)(unsafe.Pointer(co))
@@ -46,7 +48,7 @@ func (co *Complex) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (co *Complex) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(co).ob_type)))
+	return newType(c(co).ob_type)
 }
 
 // Decref decrements co's reference count, co may not be nil.

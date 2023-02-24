@@ -18,7 +18,7 @@ type Type struct {
 var _ Object = (*Type)(nil)
 
 // TypeType is the Type object that represents the Type type.
-var TypeType = (*Type)(unsafe.Pointer(&C.PyType_Type))
+var TypeType = newType(&C.PyType_Type)
 
 func typeCheck(obj Object) bool {
 	if obj == nil {
@@ -27,7 +27,7 @@ func typeCheck(obj Object) bool {
 	return C.typeCheck(c(obj)) != 0
 }
 
-func newType(obj *C.PyObject) *Type {
+func newType(obj *C.PyTypeObject) *Type {
 	return (*Type)(unsafe.Pointer(obj))
 }
 
@@ -44,7 +44,7 @@ func (t *Type) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (t *Type) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(t).ob_type)))
+	return newType(c(t).ob_type)
 }
 
 // Decref decrements t's reference count, t may not be nil.

@@ -24,8 +24,6 @@ var _ Object = (*ExceptionClass)(nil)
 
 
 
-
-
 func (e *ExceptionClass) c() *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(e))
 }
@@ -39,7 +37,7 @@ func (e *ExceptionClass) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (e *ExceptionClass) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(e).ob_type)))
+	return newType(c(e).ob_type)
 }
 
 // Decref decrements e's reference count, e may not be nil.

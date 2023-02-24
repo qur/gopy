@@ -87,13 +87,13 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 
 	if class == nil {
-		t := newType((*C.PyObject)(unsafe.Pointer(pyType)))
+		t := newType(pyType)
 		raise(TypeError.Err("Not a recognised type: %s", t))
 		return nil
 	}
 
 	// Get typ ready to use by turning into *Type
-	t := newType((*C.PyObject)(typ))
+	t := newType((*C.PyTypeObject)(typ))
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type

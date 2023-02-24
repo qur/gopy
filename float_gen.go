@@ -20,7 +20,7 @@ type Float struct {
 var _ Object = (*Float)(nil)
 
 // FloatType is the Type object that represents the Float type.
-var FloatType = (*Type)(unsafe.Pointer(&C.PyFloat_Type))
+var FloatType = newType(&C.PyFloat_Type)
 
 func floatCheck(obj Object) bool {
 	if obj == nil {
@@ -32,6 +32,8 @@ func floatCheck(obj Object) bool {
 func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
 }
+
+
 
 func (f *Float) c() *C.PyFloatObject {
 	return (*C.PyFloatObject)(unsafe.Pointer(f))
@@ -46,7 +48,7 @@ func (f *Float) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (f *Float) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(f).ob_type)))
+	return newType(c(f).ob_type)
 }
 
 // Decref decrements f's reference count, f may not be nil.

@@ -22,7 +22,7 @@ type MemoryView struct {
 var _ Object = (*MemoryView)(nil)
 
 // MemoryViewType is the Type object that represents the MemoryView type.
-var MemoryViewType = (*Type)(unsafe.Pointer(&C.PyMemoryView_Type))
+var MemoryViewType = newType(&C.PyMemoryView_Type)
 
 func memoryViewCheck(obj Object) bool {
 	if obj == nil {
@@ -34,6 +34,8 @@ func memoryViewCheck(obj Object) bool {
 func newMemoryView(obj *C.PyObject) *MemoryView {
 	return (*MemoryView)(unsafe.Pointer(obj))
 }
+
+
 
 func (m *MemoryView) c() *C.PyMemoryViewObject {
 	return (*C.PyMemoryViewObject)(unsafe.Pointer(m))
@@ -48,7 +50,7 @@ func (m *MemoryView) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (m *MemoryView) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(m).ob_type)))
+	return newType(c(m).ob_type)
 }
 
 // Decref decrements m's reference count, m may not be nil.

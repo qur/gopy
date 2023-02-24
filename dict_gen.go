@@ -20,7 +20,7 @@ type Dict struct {
 var _ Object = (*Dict)(nil)
 
 // DictType is the Type object that represents the Dict type.
-var DictType = (*Type)(unsafe.Pointer(&C.PyDict_Type))
+var DictType = newType(&C.PyDict_Type)
 
 func dictCheck(obj Object) bool {
 	if obj == nil {
@@ -32,6 +32,8 @@ func dictCheck(obj Object) bool {
 func newDict(obj *C.PyObject) *Dict {
 	return (*Dict)(unsafe.Pointer(obj))
 }
+
+
 
 func (d *Dict) c() *C.PyDictObject {
 	return (*C.PyDictObject)(unsafe.Pointer(d))
@@ -46,7 +48,7 @@ func (d *Dict) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (d *Dict) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(d).ob_type)))
+	return newType(c(d).ob_type)
 }
 
 // Decref decrements d's reference count, d may not be nil.

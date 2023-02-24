@@ -26,8 +26,6 @@ var _ Object = (*SequenceMethods)(nil)
 
 
 
-
-
 func (s *SequenceMethods) c() *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(s))
 }
@@ -41,7 +39,7 @@ func (s *SequenceMethods) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (s *SequenceMethods) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(s).ob_type)))
+	return newType(c(s).ob_type)
 }
 
 // Decref decrements s's reference count, s may not be nil.

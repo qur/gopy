@@ -18,7 +18,7 @@ type FrozenSet struct {
 var _ Object = (*FrozenSet)(nil)
 
 // FrozenSetType is the Type object that represents the FrozenSet type.
-var FrozenSetType = (*Type)(unsafe.Pointer(&C.PyFrozenSet_Type))
+var FrozenSetType = newType(&C.PyFrozenSet_Type)
 
 func frozenSetCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func frozenSetCheck(obj Object) bool {
 func newFrozenSet(obj *C.PyObject) *FrozenSet {
 	return (*FrozenSet)(unsafe.Pointer(obj))
 }
+
+
 
 func (f *FrozenSet) c() *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(f))
@@ -44,7 +46,7 @@ func (f *FrozenSet) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (f *FrozenSet) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(f).ob_type)))
+	return newType(c(f).ob_type)
 }
 
 // Decref decrements f's reference count, f may not be nil.

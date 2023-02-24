@@ -18,7 +18,7 @@ type Function struct {
 var _ Object = (*Function)(nil)
 
 // FunctionType is the Type object that represents the Function type.
-var FunctionType = (*Type)(unsafe.Pointer(&C.PyFunction_Type))
+var FunctionType = newType(&C.PyFunction_Type)
 
 func functionCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func functionCheck(obj Object) bool {
 func newFunction(obj *C.PyObject) *Function {
 	return (*Function)(unsafe.Pointer(obj))
 }
+
+
 
 func (f *Function) c() *C.PyFunctionObject {
 	return (*C.PyFunctionObject)(unsafe.Pointer(f))
@@ -44,7 +46,7 @@ func (f *Function) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (f *Function) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(f).ob_type)))
+	return newType(c(f).ob_type)
 }
 
 // Decref decrements f's reference count, f may not be nil.

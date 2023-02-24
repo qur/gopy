@@ -26,8 +26,6 @@ var _ Object = (*MappingMethods)(nil)
 
 
 
-
-
 func (m *MappingMethods) c() *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(m))
 }
@@ -41,7 +39,7 @@ func (m *MappingMethods) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (m *MappingMethods) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(m).ob_type)))
+	return newType(c(m).ob_type)
 }
 
 // Decref decrements m's reference count, m may not be nil.

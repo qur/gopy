@@ -512,7 +512,7 @@ func (cls *Class) Create() error {
 		C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d, ro))
 	}
 
-	cls.base = newType((*C.PyObject)(unsafe.Pointer(pyType)))
+	cls.base = newType(pyType)
 
 	registerClass(pyType, cls)
 

@@ -18,7 +18,7 @@ type InstanceMethod struct {
 var _ Object = (*InstanceMethod)(nil)
 
 // InstanceMethodType is the Type object that represents the InstanceMethod type.
-var InstanceMethodType = (*Type)(unsafe.Pointer(&C.PyInstanceMethod_Type))
+var InstanceMethodType = newType(&C.PyInstanceMethod_Type)
 
 func instanceMethodCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func instanceMethodCheck(obj Object) bool {
 func newInstanceMethod(obj *C.PyObject) *InstanceMethod {
 	return (*InstanceMethod)(unsafe.Pointer(obj))
 }
+
+
 
 func (i *InstanceMethod) c() *C.PyInstanceMethodObject {
 	return (*C.PyInstanceMethodObject)(unsafe.Pointer(i))
@@ -44,7 +46,7 @@ func (i *InstanceMethod) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (i *InstanceMethod) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(i).ob_type)))
+	return newType(c(i).ob_type)
 }
 
 // Decref decrements i's reference count, i may not be nil.

@@ -42,7 +42,7 @@ var _ Object = (*{{ .type }})(nil)
 
 {{ if .settings.Type -}}
 // {{ .type }}Type is the Type object that represents the {{ .type }} type.
-var {{ .type }}Type = (*Type)(unsafe.Pointer(&C.Py{{ .type }}_Type))
+var {{ .type }}Type = newType(&C.Py{{ .type }}_Type)
 {{- end }}
 
 {{ if .settings.Check -}}
@@ -52,10 +52,18 @@ func {{ .ltype }}Check(obj Object) bool {
 	}
 	return C.{{ .ltype }}Check(c(obj)) != 0
 }
-{{- end }}
 
-{{ if .settings.New -}}
+{{ end }}
+
+{{- if and .settings.New (ne .type "Type") -}}
 func new{{ .type }}(obj *C.PyObject) *{{ .type }} {
+	return (*{{ .type }})(unsafe.Pointer(obj))
+}
+
+{{ end }}
+
+{{- if eq .type "Type" -}}
+func new{{ .type }}(obj *C.PyTypeObject) *{{ .type }} {
 	return (*{{ .type }})(unsafe.Pointer(obj))
 }
 {{- end }}
@@ -73,7 +81,7 @@ func ({{ .name }} *{{ .type }}) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func ({{ .name }} *{{ .type }}) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c({{ .name }}).ob_type)))
+	return newType(c({{ .name }}).ob_type)
 }
 
 // Decref decrements {{ .name }}'s reference count, {{ .name }} may not be nil.

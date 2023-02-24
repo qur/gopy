@@ -20,7 +20,7 @@ type Gen struct {
 var _ Object = (*Gen)(nil)
 
 // GenType is the Type object that represents the Gen type.
-var GenType = (*Type)(unsafe.Pointer(&C.PyGen_Type))
+var GenType = newType(&C.PyGen_Type)
 
 func genCheck(obj Object) bool {
 	if obj == nil {
@@ -32,6 +32,8 @@ func genCheck(obj Object) bool {
 func newGen(obj *C.PyObject) *Gen {
 	return (*Gen)(unsafe.Pointer(obj))
 }
+
+
 
 func (g *Gen) c() *C.PyGenObject {
 	return (*C.PyGenObject)(unsafe.Pointer(g))
@@ -46,7 +48,7 @@ func (g *Gen) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (g *Gen) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(g).ob_type)))
+	return newType(c(g).ob_type)
 }
 
 // Decref decrements g's reference count, g may not be nil.

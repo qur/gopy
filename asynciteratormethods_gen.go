@@ -20,8 +20,6 @@ var _ Object = (*AsyncIteratorMethods)(nil)
 
 
 
-
-
 func (a *AsyncIteratorMethods) c() *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(a))
 }
@@ -35,7 +33,7 @@ func (a *AsyncIteratorMethods) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (a *AsyncIteratorMethods) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(a).ob_type)))
+	return newType(c(a).ob_type)
 }
 
 // Decref decrements a's reference count, a may not be nil.

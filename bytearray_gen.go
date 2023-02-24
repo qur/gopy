@@ -22,7 +22,7 @@ type ByteArray struct {
 var _ Object = (*ByteArray)(nil)
 
 // ByteArrayType is the Type object that represents the ByteArray type.
-var ByteArrayType = (*Type)(unsafe.Pointer(&C.PyByteArray_Type))
+var ByteArrayType = newType(&C.PyByteArray_Type)
 
 func byteArrayCheck(obj Object) bool {
 	if obj == nil {
@@ -34,6 +34,8 @@ func byteArrayCheck(obj Object) bool {
 func newByteArray(obj *C.PyObject) *ByteArray {
 	return (*ByteArray)(unsafe.Pointer(obj))
 }
+
+
 
 func (b *ByteArray) c() *C.PyByteArrayObject {
 	return (*C.PyByteArrayObject)(unsafe.Pointer(b))
@@ -48,7 +50,7 @@ func (b *ByteArray) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (b *ByteArray) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(b).ob_type)))
+	return newType(c(b).ob_type)
 }
 
 // Decref decrements b's reference count, b may not be nil.

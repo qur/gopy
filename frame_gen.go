@@ -18,7 +18,7 @@ type Frame struct {
 var _ Object = (*Frame)(nil)
 
 // FrameType is the Type object that represents the Frame type.
-var FrameType = (*Type)(unsafe.Pointer(&C.PyFrame_Type))
+var FrameType = newType(&C.PyFrame_Type)
 
 func frameCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func frameCheck(obj Object) bool {
 func newFrame(obj *C.PyObject) *Frame {
 	return (*Frame)(unsafe.Pointer(obj))
 }
+
+
 
 func (f *Frame) c() *C.PyFrameObject {
 	return (*C.PyFrameObject)(unsafe.Pointer(f))
@@ -44,7 +46,7 @@ func (f *Frame) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (f *Frame) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(f).ob_type)))
+	return newType(c(f).ob_type)
 }
 
 // Decref decrements f's reference count, f may not be nil.

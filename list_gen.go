@@ -22,7 +22,7 @@ type List struct {
 var _ Object = (*List)(nil)
 
 // ListType is the Type object that represents the List type.
-var ListType = (*Type)(unsafe.Pointer(&C.PyList_Type))
+var ListType = newType(&C.PyList_Type)
 
 func listCheck(obj Object) bool {
 	if obj == nil {
@@ -34,6 +34,8 @@ func listCheck(obj Object) bool {
 func newList(obj *C.PyObject) *List {
 	return (*List)(unsafe.Pointer(obj))
 }
+
+
 
 func (l *List) c() *C.PyListObject {
 	return (*C.PyListObject)(unsafe.Pointer(l))
@@ -48,7 +50,7 @@ func (l *List) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (l *List) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(l).ob_type)))
+	return newType(c(l).ob_type)
 }
 
 // Decref decrements l's reference count, l may not be nil.

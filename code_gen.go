@@ -18,7 +18,7 @@ type Code struct {
 var _ Object = (*Code)(nil)
 
 // CodeType is the Type object that represents the Code type.
-var CodeType = (*Type)(unsafe.Pointer(&C.PyCode_Type))
+var CodeType = newType(&C.PyCode_Type)
 
 func codeCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func codeCheck(obj Object) bool {
 func newCode(obj *C.PyObject) *Code {
 	return (*Code)(unsafe.Pointer(obj))
 }
+
+
 
 func (co *Code) c() *C.PyCodeObject {
 	return (*C.PyCodeObject)(unsafe.Pointer(co))
@@ -44,7 +46,7 @@ func (co *Code) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (co *Code) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(co).ob_type)))
+	return newType(c(co).ob_type)
 }
 
 // Decref decrements co's reference count, co may not be nil.

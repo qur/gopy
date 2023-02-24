@@ -8,6 +8,10 @@ package py
 // #include "utils.h"
 import "C"
 
+import (
+	"unsafe"
+)
+
 // ===============================================================
 
 func getNativeType(obj *C.PyObject) Object {
@@ -63,7 +67,7 @@ func getNativeType(obj *C.PyObject) Object {
 	case &C.PyTuple_Type:
 		return newTuple(obj)
 	case &C.PyType_Type:
-		return newType(obj)
+		return newType((*C.PyTypeObject)(unsafe.Pointer(obj)))
 	case &C.PyUnicode_Type:
 		return newUnicode(obj)
 	}

@@ -18,7 +18,7 @@ type Cell struct {
 var _ Object = (*Cell)(nil)
 
 // CellType is the Type object that represents the Cell type.
-var CellType = (*Type)(unsafe.Pointer(&C.PyCell_Type))
+var CellType = newType(&C.PyCell_Type)
 
 func cellCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func cellCheck(obj Object) bool {
 func newCell(obj *C.PyObject) *Cell {
 	return (*Cell)(unsafe.Pointer(obj))
 }
+
+
 
 func (ce *Cell) c() *C.PyCellObject {
 	return (*C.PyCellObject)(unsafe.Pointer(ce))
@@ -44,7 +46,7 @@ func (ce *Cell) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (ce *Cell) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(ce).ob_type)))
+	return newType(c(ce).ob_type)
 }
 
 // Decref decrements ce's reference count, ce may not be nil.

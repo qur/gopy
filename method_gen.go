@@ -18,7 +18,7 @@ type Method struct {
 var _ Object = (*Method)(nil)
 
 // MethodType is the Type object that represents the Method type.
-var MethodType = (*Type)(unsafe.Pointer(&C.PyMethod_Type))
+var MethodType = newType(&C.PyMethod_Type)
 
 func methodCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func methodCheck(obj Object) bool {
 func newMethod(obj *C.PyObject) *Method {
 	return (*Method)(unsafe.Pointer(obj))
 }
+
+
 
 func (m *Method) c() *C.PyMethodObject {
 	return (*C.PyMethodObject)(unsafe.Pointer(m))
@@ -44,7 +46,7 @@ func (m *Method) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (m *Method) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(m).ob_type)))
+	return newType(c(m).ob_type)
 }
 
 // Decref decrements m's reference count, m may not be nil.

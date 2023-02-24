@@ -138,6 +138,10 @@ def write_go_header(f):
     print('// #include "utils.h"', file=f)
     print('import "C"', file=f)
     print('', file=f)
+    print('import (', file=f)
+    print('	"unsafe"', file=f)
+    print(')', file=f)
+    print('', file=f)
 
 
 def write_get_native_type(f, checks, types, objects):
@@ -148,6 +152,11 @@ def write_get_native_type(f, checks, types, objects):
     for type in sorted(types):
         # Bool, FrozenSet and Module are manually generated, we want to include them
         if (type not in checks or type not in objects) and type not in ["Bool", "FrozenSet", "Module"]:
+            continue
+        if type == "Type":
+            # Special case for Type, as newType has a different signature
+            print(f"	case &C.PyType_Type:", file=f)
+            print(f"		return newType((*C.PyTypeObject)(unsafe.Pointer(obj)))", file=f)
             continue
         print(f"	case &C.Py{ type }_Type:", file=f)
         print(f"		return new{ type }(obj)", file=f)

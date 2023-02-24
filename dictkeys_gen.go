@@ -18,7 +18,7 @@ type DictKeys struct {
 var _ Object = (*DictKeys)(nil)
 
 // DictKeysType is the Type object that represents the DictKeys type.
-var DictKeysType = (*Type)(unsafe.Pointer(&C.PyDictKeys_Type))
+var DictKeysType = newType(&C.PyDictKeys_Type)
 
 func dictKeysCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func dictKeysCheck(obj Object) bool {
 func newDictKeys(obj *C.PyObject) *DictKeys {
 	return (*DictKeys)(unsafe.Pointer(obj))
 }
+
+
 
 func (d *DictKeys) c() *C.PyDictKeysObject {
 	return (*C.PyDictKeysObject)(unsafe.Pointer(d))
@@ -44,7 +46,7 @@ func (d *DictKeys) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (d *DictKeys) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(d).ob_type)))
+	return newType(c(d).ob_type)
 }
 
 // Decref decrements d's reference count, d may not be nil.

@@ -20,7 +20,7 @@ type Long struct {
 var _ Object = (*Long)(nil)
 
 // LongType is the Type object that represents the Long type.
-var LongType = (*Type)(unsafe.Pointer(&C.PyLong_Type))
+var LongType = newType(&C.PyLong_Type)
 
 func longCheck(obj Object) bool {
 	if obj == nil {
@@ -32,6 +32,8 @@ func longCheck(obj Object) bool {
 func newLong(obj *C.PyObject) *Long {
 	return (*Long)(unsafe.Pointer(obj))
 }
+
+
 
 func (l *Long) c() *C.PyLongObject {
 	return (*C.PyLongObject)(unsafe.Pointer(l))
@@ -46,7 +48,7 @@ func (l *Long) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (l *Long) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(l).ob_type)))
+	return newType(c(l).ob_type)
 }
 
 // Decref decrements l's reference count, l may not be nil.

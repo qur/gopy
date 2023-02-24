@@ -18,7 +18,7 @@ type BaseObject struct {
 var _ Object = (*BaseObject)(nil)
 
 // BaseType is the Type object that represents the BaseObject type.
-var BaseType = (*Type)(unsafe.Pointer(&C.PyBaseObject_Type))
+var BaseType = newType(&C.PyBaseObject_Type)
 
 func newBaseObject(obj *C.PyObject) *BaseObject {
 	return (*BaseObject)(unsafe.Pointer(obj))
@@ -352,7 +352,7 @@ func (obj *BaseObject) Not() bool {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (obj *BaseObject) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(obj).ob_type)))
+	return newType(c(obj).ob_type)
 }
 
 // PyObject_TypeCheck : TODO

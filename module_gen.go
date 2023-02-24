@@ -17,7 +17,7 @@ type Module struct {
 var _ Object = (*Module)(nil)
 
 // ModuleType is the Type object that represents the Module type.
-var ModuleType = (*Type)(unsafe.Pointer(&C.PyModule_Type))
+var ModuleType = newType(&C.PyModule_Type)
 
 func moduleCheck(obj Object) bool {
 	if obj == nil {
@@ -29,6 +29,8 @@ func moduleCheck(obj Object) bool {
 func newModule(obj *C.PyObject) *Module {
 	return (*Module)(unsafe.Pointer(obj))
 }
+
+
 
 func (m *Module) c() *C.PyObject {
 	return (*C.PyObject)(unsafe.Pointer(m))
@@ -43,7 +45,7 @@ func (m *Module) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (m *Module) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(m).ob_type)))
+	return newType(c(m).ob_type)
 }
 
 // Decref decrements m's reference count, m may not be nil.

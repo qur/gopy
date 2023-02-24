@@ -18,7 +18,7 @@ type CMethod struct {
 var _ Object = (*CMethod)(nil)
 
 // CMethodType is the Type object that represents the CMethod type.
-var CMethodType = (*Type)(unsafe.Pointer(&C.PyCMethod_Type))
+var CMethodType = newType(&C.PyCMethod_Type)
 
 func cMethodCheck(obj Object) bool {
 	if obj == nil {
@@ -30,6 +30,8 @@ func cMethodCheck(obj Object) bool {
 func newCMethod(obj *C.PyObject) *CMethod {
 	return (*CMethod)(unsafe.Pointer(obj))
 }
+
+
 
 func (cm *CMethod) c() *C.PyCMethodObject {
 	return (*C.PyCMethodObject)(unsafe.Pointer(cm))
@@ -44,7 +46,7 @@ func (cm *CMethod) Base() *BaseObject {
 // Type returns a pointer to the Type that represents the type of this object in
 // Python.
 func (cm *CMethod) Type() *Type {
-	return newType((*C.PyObject)(unsafe.Pointer(c(cm).ob_type)))
+	return newType(c(cm).ob_type)
 }
 
 // Decref decrements cm's reference count, cm may not be nil.
