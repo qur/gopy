@@ -226,7 +226,7 @@ func methSigMatches(got reflect.Type, _want interface{}) error {
 
 	if got.NumIn() == 0 {
 		// The receiver is missing!
-		return fmt.Errorf("method without reciever!")
+		return fmt.Errorf("method without reciever")
 	}
 
 	want := reflect.TypeOf(_want)

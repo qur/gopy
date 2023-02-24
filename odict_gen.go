@@ -105,14 +105,15 @@ func (o *ODict) RichCompare(obj Object, op Op) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
-// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// RichCompare compares "o" with "obj" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "o op obj",
 // where op is the corresponding Python operator for op.
 func (o *ODict) RichCompareBool(obj Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c(o), c(obj), C.int(op))
 	return int2BoolErr(ret)
 }
 
+// Iter returns an Iterator that will iterate over the members of o.
 func (o *ODict) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(o))
 	if ret == nil {

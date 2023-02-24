@@ -133,10 +133,7 @@ func (t *Type) CallGo(args []any, kwds map[string]any) (Object, error) {
 // to the Python "hasattr(t, name)".
 func (t *Type) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(t), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "t" with the name "name".  This is

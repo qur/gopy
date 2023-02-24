@@ -101,10 +101,7 @@ func (g *Gen) Repr() (*Unicode, error) {
 // to the Python "hasattr(g, name)".
 func (g *Gen) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(g), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "g" with the name "name".  This is
@@ -116,6 +113,7 @@ func (g *Gen) GetAttr(name Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// Iter returns an Iterator that will iterate over the members of g.
 func (g *Gen) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(g))
 	if ret == nil {
@@ -132,6 +130,9 @@ func (g *Gen) AsIteratorMethods() *IteratorMethods {
 	return (*IteratorMethods)(unsafe.Pointer(g.Base()))
 }
 
+// Next is the Iterator method, it returns the next item from the Object being
+// iterated. When the end is reached then both the Object and the error will be
+// nil.
 func (g *Gen) Next() (Object, error) {
 	ret := C.PyIter_Next(c(g))
 	return obj2ObjErr(ret)

@@ -111,10 +111,7 @@ func (l *Long) Hash() (int, error) {
 // to the Python "hasattr(l, name)".
 func (l *Long) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(l), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "l" with the name "name".  This is
@@ -136,8 +133,8 @@ func (l *Long) RichCompare(obj Object, op Op) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
-// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// RichCompare compares "l" with "obj" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "l op obj",
 // where op is the corresponding Python operator for op.
 func (l *Long) RichCompareBool(obj Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c(l), c(obj), C.int(op))

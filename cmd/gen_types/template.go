@@ -197,10 +197,7 @@ func ({{ .name }} *{{ .type }}) Str() (*Unicode, error) {
 // to the Python "hasattr({{ .name }}, name)".
 func ({{ .name }} *{{ .type }}) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c({{ .name }}), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "{{ .name }}" with the name "name".  This is
@@ -242,8 +239,8 @@ func ({{ .name }} *{{ .type }}) RichCompare(obj Object, op Op) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
-// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// RichCompare compares "{{ .name }}" with "obj" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "{{ .name }} op obj",
 // where op is the corresponding Python operator for op.
 func ({{ .name }} *{{ .type }}) RichCompareBool(obj Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c({{ .name }}), c(obj), C.int(op))
@@ -253,6 +250,7 @@ func ({{ .name }} *{{ .type }}) RichCompareBool(obj Object, op Op) (bool, error)
 {{ end }}
 
 {{- if .funcs.tp_iter -}}
+// Iter returns an Iterator that will iterate over the members of {{ .name }}.
 func ({{ .name }} *{{ .type }}) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c({{ .name }}))
 	if ret == nil {
@@ -273,6 +271,9 @@ func ({{ .name }} *{{ .type }}) AsIteratorMethods() *IteratorMethods {
 	return (*IteratorMethods)(unsafe.Pointer({{ .name }}.Base()))
 }
 
+// Next is the Iterator method, it returns the next item from the Object being
+// iterated. When the end is reached then both the Object and the error will be
+// nil.
 func ({{ .name }} *{{ .type }}) Next() (Object, error) {
 	ret := C.PyIter_Next(c({{ .name }}))
 	return obj2ObjErr(ret)
@@ -292,6 +293,7 @@ func ({{ .name }} *{{ .type }}) AsAsyncIterator() *AsyncIteratorMethods {
 {{ end }}
 
 {{- if or .funcs.mp_length .funcs.sq_length -}}
+// Size returns the size of {{ .name }}. The equivalent Python is "len({{ .name }})".
 func ({{ .name }} *{{ .type }}) Size() int {
 	ret := C.PyObject_Size(c({{ .name }}))
 	if ret < 0 {

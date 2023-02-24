@@ -125,10 +125,7 @@ func (u *Unicode) Str() (*Unicode, error) {
 // to the Python "hasattr(u, name)".
 func (u *Unicode) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(u), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "u" with the name "name".  This is
@@ -150,14 +147,15 @@ func (u *Unicode) RichCompare(obj Object, op Op) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
-// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// RichCompare compares "u" with "obj" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "u op obj",
 // where op is the corresponding Python operator for op.
 func (u *Unicode) RichCompareBool(obj Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c(u), c(obj), C.int(op))
 	return int2BoolErr(ret)
 }
 
+// Iter returns an Iterator that will iterate over the members of u.
 func (u *Unicode) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(u))
 	if ret == nil {
@@ -166,6 +164,7 @@ func (u *Unicode) Iter() (Iterator, error) {
 	return newIterator(ret)
 }
 
+// Size returns the size of u. The equivalent Python is "len(u)".
 func (u *Unicode) Size() int {
 	ret := C.PyObject_Size(c(u))
 	if ret < 0 {

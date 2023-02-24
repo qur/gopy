@@ -100,4 +100,9 @@ var basic = map[string]typeSettings{
 		New:   false,
 		Type:  false,
 	},
+	"FrozenSet": {
+		Check: true,
+		New:   true,
+		Type:  true,
+	},
 }

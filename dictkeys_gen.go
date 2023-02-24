@@ -99,10 +99,7 @@ func (d *DictKeys) Repr() (*Unicode, error) {
 // to the Python "hasattr(d, name)".
 func (d *DictKeys) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(d), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "d" with the name "name".  This is
@@ -124,14 +121,15 @@ func (d *DictKeys) RichCompare(obj Object, op Op) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
-// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// RichCompare compares "d" with "obj" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "d op obj",
 // where op is the corresponding Python operator for op.
 func (d *DictKeys) RichCompareBool(obj Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c(d), c(obj), C.int(op))
 	return int2BoolErr(ret)
 }
 
+// Iter returns an Iterator that will iterate over the members of d.
 func (d *DictKeys) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(d))
 	if ret == nil {
@@ -140,6 +138,7 @@ func (d *DictKeys) Iter() (Iterator, error) {
 	return newIterator(ret)
 }
 
+// Size returns the size of d. The equivalent Python is "len(d)".
 func (d *DictKeys) Size() int {
 	ret := C.PyObject_Size(c(d))
 	if ret < 0 {

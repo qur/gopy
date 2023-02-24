@@ -109,10 +109,7 @@ func (s *Set) Hash() (int, error) {
 // to the Python "hasattr(s, name)".
 func (s *Set) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(s), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "s" with the name "name".  This is
@@ -134,14 +131,15 @@ func (s *Set) RichCompare(obj Object, op Op) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
-// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// RichCompare compares "s" with "obj" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "s op obj",
 // where op is the corresponding Python operator for op.
 func (s *Set) RichCompareBool(obj Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c(s), c(obj), C.int(op))
 	return int2BoolErr(ret)
 }
 
+// Iter returns an Iterator that will iterate over the members of s.
 func (s *Set) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(s))
 	if ret == nil {
@@ -150,6 +148,7 @@ func (s *Set) Iter() (Iterator, error) {
 	return newIterator(ret)
 }
 
+// Size returns the size of s. The equivalent Python is "len(s)".
 func (s *Set) Size() int {
 	ret := C.PyObject_Size(c(s))
 	if ret < 0 {

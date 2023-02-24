@@ -133,10 +133,7 @@ func (i *InstanceMethod) CallGo(args []any, kwds map[string]any) (Object, error)
 // to the Python "hasattr(i, name)".
 func (i *InstanceMethod) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(i), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "i" with the name "name".  This is
@@ -172,8 +169,8 @@ func (i *InstanceMethod) RichCompare(obj Object, op Op) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
-// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// RichCompare compares "i" with "obj" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "i op obj",
 // where op is the corresponding Python operator for op.
 func (i *InstanceMethod) RichCompareBool(obj Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c(i), c(obj), C.int(op))

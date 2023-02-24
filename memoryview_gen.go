@@ -113,10 +113,7 @@ func (m *MemoryView) Hash() (int, error) {
 // to the Python "hasattr(m, name)".
 func (m *MemoryView) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(m), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "m" with the name "name".  This is
@@ -138,14 +135,15 @@ func (m *MemoryView) RichCompare(obj Object, op Op) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// RichCompare compares "obj" with "obj2" using the specified operation (LE, GE
-// etc.), and returns true or false.  The equivalent Python is "obj op obj2",
+// RichCompare compares "m" with "obj" using the specified operation (LE, GE
+// etc.), and returns true or false.  The equivalent Python is "m op obj",
 // where op is the corresponding Python operator for op.
 func (m *MemoryView) RichCompareBool(obj Object, op Op) (bool, error) {
 	ret := C.PyObject_RichCompareBool(c(m), c(obj), C.int(op))
 	return int2BoolErr(ret)
 }
 
+// Iter returns an Iterator that will iterate over the members of m.
 func (m *MemoryView) Iter() (Iterator, error) {
 	ret := C.PyObject_GetIter(c(m))
 	if ret == nil {
@@ -154,6 +152,7 @@ func (m *MemoryView) Iter() (Iterator, error) {
 	return newIterator(ret)
 }
 
+// Size returns the size of m. The equivalent Python is "len(m)".
 func (m *MemoryView) Size() int {
 	ret := C.PyObject_Size(c(m))
 	if ret < 0 {

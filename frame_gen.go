@@ -99,10 +99,7 @@ func (f *Frame) Repr() (*Unicode, error) {
 // to the Python "hasattr(f, name)".
 func (f *Frame) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(f), c(name))
-	if ret == 1 {
-		return true
-	}
-	return false
+	return ret == 1
 }
 
 // GetAttr returns the attribute of "f" with the name "name".  This is
