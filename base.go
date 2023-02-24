@@ -239,13 +239,7 @@ func (obj *BaseObject) CallGo(args []any, kwds map[string]any) (Object, error) {
 //
 // Return value: New Reference.
 func (obj *BaseObject) CallGoArgs(args ...any) (Object, error) {
-	obj1, err := NewTupleFromValues(args...)
-	if err != nil {
-		return nil, err
-	}
-	defer obj1.Decref()
-	ret := C.PyObject_CallObject(c(obj), c(obj1))
-	return obj2ObjErr(ret)
+	return obj.CallGo(args, nil)
 }
 
 // CallObject calls obj with the given args.  args may be nil.  Returns the
@@ -322,6 +316,56 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, e
 
 	ret := C.PyObject_CallObject(f, c(t))
 	return obj2ObjErr(ret)
+}
+
+// CallMethodGo calls the method of obj called name with the given args and
+// kwds, either may be nil. Returns the result of the call, or an Error on
+// failure. This is equivalent to "obj.name(*args, **kwds)" in Python.
+//
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
+// Return value: New Reference.
+func (obj *BaseObject) CallMethodGo(name string, args []any, kwds map[string]any) (Object, error) {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+
+	f := C.PyObject_GetAttrString(c(obj), cname)
+	if f == nil {
+		return nil, AttributeError.Err(name)
+	}
+	defer C.decref(f)
+
+	if C.PyCallable_Check(f) == 0 {
+		return nil, TypeError.Err("attribute of type '%s' is not callable", name)
+	}
+
+	obj1, err := NewTupleFromValues(args...)
+	if err != nil {
+		return nil, err
+	}
+	defer obj1.Decref()
+
+	obj2, err := NewDictFromValuesString(kwds)
+	if err != nil {
+		return nil, err
+	}
+	defer obj2.Decref()
+
+	ret := C.PyObject_Call(f, c(obj1), c(obj2))
+	return obj2ObjErr(ret)
+}
+
+// CallMethodGoArgs calls the method of obj called name with the given args.
+// Returns the result of the call, or an Error on failure. This is equivalent
+// to "obj.name(*args)" in Python.
+//
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
+// Return value: New Reference.
+func (obj *BaseObject) CallMethodGoArgs(name string, args ...any) (Object, error) {
+	return obj.CallMethodGo(name, args, nil)
 }
 
 // PyObject_Hash : TODO

@@ -14,13 +14,12 @@ func runCmd(command string, args []string, bg bool) error {
 	}
 
 	if cmdFunc == nil {
-		return fmt.Errorf("Unknown Command: %s", command)
+		return fmt.Errorf("unknown Command: %s", command)
 	}
 
 	if bg {
 		go func() {
-			err := cmdFunc(args)
-			if err != nil {
+			if err := cmdFunc(args); err != nil {
 				fmt.Printf("Error: %s\n", err)
 			}
 		}()

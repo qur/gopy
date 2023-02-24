@@ -17,7 +17,7 @@ func (e *ExceptionClass) ErrV(obj Object) *Error {
 }
 
 // Err returns a new Error of the specified kind (e), and with the value being a
-// new String containing the string created the given format and args.
+// new String containing the string created with the given format and args.
 func (e *ExceptionClass) Err(format string, args ...interface{}) *Error {
 	return NewError(e, format, args...)
 }
