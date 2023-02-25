@@ -135,19 +135,6 @@ func NewValue(value any) (Object, error) {
 	}
 }
 
-// None is the Python equivalent to nil.
-var None = (*NoneObject)(unsafe.Pointer(&C._Py_NoneStruct))
-
-// NoneObject is the type of the None value.  The only value of this type is
-// None.
-type NoneObject struct {
-	BaseObject
-}
-
-func (n *NoneObject) String() string {
-	return "None"
-}
-
 // Decref decrements obj's reference count, obj may be nil.
 func Decref(obj Object) {
 	if obj != nil {
@@ -160,6 +147,26 @@ func Incref(obj Object) {
 	if obj != nil {
 		C.incref(c(obj))
 	}
+}
+
+// NewRef increments obj's reference count, and then returns obj. Obj may not be
+// nil.
+//
+// This is a convenience function for returning a new reference from a function.
+func NewRef(obj Object) Object {
+	obj.Incref()
+	return obj
+}
+
+// NewRefWithErr increments obj's reference count, and then returns obj and err.
+// Obj may be nil.
+//
+// This is a convenience function for returning a new reference from a function.
+func NewRefWithErr(obj Object, err error) (Object, error) {
+	if obj == nil {
+		return obj, err
+	}
+	return NewRef(obj), err
 }
 
 func c(obj Object) *C.PyObject {
