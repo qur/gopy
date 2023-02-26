@@ -59,7 +59,6 @@ func ExampleClass() {
 		return
 	}
 	defer o.Decref()
-
 	// Output:
 	// hello world
 }

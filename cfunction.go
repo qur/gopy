@@ -8,6 +8,26 @@ import (
 	"unsafe"
 )
 
+// NewCFunction creates a CFunction object from the supplied function.
+//
+// The supplied function can take one of several forms, which map to different
+// calling conventions supported by Python:
+//
+//	func() (py.Object, error)
+//	func(py.Object) (py.Object, error)
+//	func(*py.Tuple) (py.Object, error)
+//	func(*py.Tuple, *py.Dict) (py.Object, error)
+//
+// These map to the following PYTHON calling conventions:
+//
+//   - METH_NOARGS: A function with no arguments
+//   - METH_O: A function with a single argument, passed directly
+//   - METH_VARARGS: A function with positional arguments only, passed as a
+//     Tuple
+//   - METH_VARARGS | METH_KEYWORDS: A function with positional and keyword
+//     arguments, passed as a Tuple and Dict
+//
+// Return value: New Reference.
 func NewCFunction(name string, fn interface{}, doc string) (*CFunction, error) {
 	return makeCFunction(name, fn, doc, nil)
 }
@@ -53,16 +73,16 @@ func makeCFunction(name string, fn interface{}, doc string, mod_name *C.PyObject
 
 // PyCFunction_GetFunction
 
-func (f *CFunction) Self() (Object, error) {
-	ret := C.PyCFunction_GetSelf(c(f))
+func (cf *CFunction) Self() (Object, error) {
+	ret := C.PyCFunction_GetSelf(c(cf))
 	if ret == nil {
 		return nil, exception()
 	}
 	return newObject(ret), nil
 }
 
-func (f *CFunction) Flags() (int, error) {
-	ret := C.PyCFunction_GetFlags(c(f))
+func (cf *CFunction) Flags() (int, error) {
+	ret := C.PyCFunction_GetFlags(c(cf))
 	return int(ret), exception()
 }
 
@@ -70,20 +90,7 @@ func (f *CFunction) Flags() (int, error) {
 // the function in Python, Doc is the docstring to be used, and Func is the
 // function to be called.
 //
-// Multiple signatures for the function are supported:
-//
-//	func() (py.Object, error)
-//	func(py.Object) (py.Object, error)
-//	func(*py.Tuple) (py.Object, error)
-//	func(*py.Tuple, *py.Dict) (py.Object, error)
-//
-// These map to the following behaviours:
-//
-//   - A function with no arguments
-//   - A function with a single argument, passed directly
-//   - A function with positional arguments only, passed as a Tuple
-//   - A function with positional and keyword arguments, passed as a Tuple and
-//     Dict
+// See NewCFunction for details of the supported function signatures.
 type GoMethod struct {
 	Name string
 	Func interface{}
