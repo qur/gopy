@@ -250,15 +250,10 @@ func goClassSlot_tp_getattro(obj, arg *C.PyObject) *C.PyObject {
 	return ce(co.GetAttr(newObject(arg)))
 }
 //export goClassSlot_tp_setattro
-func goClassSlot_tp_setattro(obj, arg1, arg2 *C.PyObject) int {
+func goClassSlot_tp_setattro(obj, arg1, arg2 *C.PyObject) C.int {
 	co := newObject(obj).(tp_setattro)
 
-	if err := co.SetAttr(newObject(arg1), newObject(arg2)); err != nil {
-		raise(err)
-		return -1
-	}
-
-	return 0
+	return err2Int(co.SetAttr(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_tp_richcompare
 func goClassSlot_tp_richcompare(obj, arg1 *C.PyObject, arg2 C.int) *C.PyObject {
@@ -285,26 +280,16 @@ func goClassSlot_tp_descr_get(obj, arg1, arg2 *C.PyObject) *C.PyObject {
 	return ce(co.DescrGet(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_tp_descr_set
-func goClassSlot_tp_descr_set(obj, arg1, arg2 *C.PyObject) int {
+func goClassSlot_tp_descr_set(obj, arg1, arg2 *C.PyObject) C.int {
 	co := newObject(obj).(tp_descr_set)
 
-	if err := co.DescrSet(newObject(arg1), newObject(arg2)); err != nil {
-		raise(err)
-		return -1
-	}
-
-	return 0
+	return err2Int(co.DescrSet(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_tp_init
-func goClassSlot_tp_init(obj, args, kwds *C.PyObject) int {
+func goClassSlot_tp_init(obj, args, kwds *C.PyObject) C.int {
 	co := newObject(obj).(tp_init)
 
-	if err := co.Init(newTuple(args), newDict(kwds)); err != nil {
-		raise(err)
-		return -1
-	}
-
-	return 0
+	return err2Int(co.Init(newTuple(args), newDict(kwds)))
 }
 //export goClassSlot_am_await
 func goClassSlot_am_await(obj *C.PyObject) *C.PyObject {
@@ -424,20 +409,10 @@ func goClassSlot_nb_absolute(obj *C.PyObject) *C.PyObject {
 	return ce(co.Absolute())
 }
 //export goClassSlot_nb_bool
-func goClassSlot_nb_bool(obj *C.PyObject) int {
+func goClassSlot_nb_bool(obj *C.PyObject) C.int {
 	co := newObject(obj).(nb_bool)
 
-	ret, err := co.Bool()
-	if err != nil {
-		raise(err)
-		return -1
-	}
-
-	if ret {
-		return 1
-	}
-
-	return 0
+	return boolErr2Int(co.Bool())
 }
 //export goClassSlot_nb_invert
 func goClassSlot_nb_invert(obj *C.PyObject) *C.PyObject {
@@ -572,15 +547,10 @@ func goClassSlot_mp_subscript(obj, arg *C.PyObject) *C.PyObject {
 	return ce(co.Subscript(newObject(arg)))
 }
 //export goClassSlot_mp_ass_subscript
-func goClassSlot_mp_ass_subscript(obj, arg1, arg2 *C.PyObject) int {
+func goClassSlot_mp_ass_subscript(obj, arg1, arg2 *C.PyObject) C.int {
 	co := newObject(obj).(mp_ass_subscript)
 
-	if err := co.AssSubscript(newObject(arg1), newObject(arg2)); err != nil {
-		raise(err)
-		return -1
-	}
-
-	return 0
+	return err2Int(co.AssSubscript(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_sq_length
 func goClassSlot_sq_length(obj *C.PyObject) C.Py_ssize_t {
@@ -610,28 +580,13 @@ func goClassSlot_sq_item(obj *C.PyObject, arg1 C.Py_ssize_t) *C.PyObject {
 func goClassSlot_sq_ass_item(obj *C.PyObject, arg1 C.Py_ssize_t, arg2 *C.PyObject) C.int {
 	co := newObject(obj).(sq_ass_item)
 
-	if err := co.SetIndex(int(arg1), newObject(arg2)); err != nil {
-		raise(err)
-		return -1
-	}
-
-	return 0
+	return err2Int(co.SetIndex(int(arg1), newObject(arg2)))
 }
 //export goClassSlot_sq_contains
-func goClassSlot_sq_contains(obj, arg *C.PyObject) int {
+func goClassSlot_sq_contains(obj, arg *C.PyObject) C.int {
 	co := newObject(obj).(sq_contains)
 
-	ret, err := co.Contains(newObject(arg))
-	if err != nil {
-		raise(err)
-		return -1
-	}
-
-	if ret {
-		return 1
-	}
-
-	return 0
+	return boolErr2Int(co.Contains(newObject(arg)))
 }
 //export goClassSlot_sq_inplace_concat
 func goClassSlot_sq_inplace_concat(obj, arg *C.PyObject) *C.PyObject {
@@ -646,15 +601,10 @@ func goClassSlot_sq_inplace_repeat(obj, arg1 *C.PyObject, arg2 C.Py_ssize_t) *C.
 	return ce(co.InPlaceRepeat(newObject(arg1), int(arg2)))
 }
 //export goClassSlot_bf_getbuffer
-func goClassSlot_bf_getbuffer(obj, arg1 *C.PyObject, arg2 C.int) int {
+func goClassSlot_bf_getbuffer(obj, arg1 *C.PyObject, arg2 C.int) C.int {
 	co := newObject(obj).(bf_getbuffer)
 
-	if err := co.GetBuffer(newObject(arg1), int(arg2)); err != nil {
-		raise(err)
-		return -1
-	}
-
-	return 0
+	return err2Int(co.GetBuffer(newObject(arg1), int(arg2)))
 }
 //export goClassSlot_bf_releasebuffer
 func goClassSlot_bf_releasebuffer(obj, arg *C.PyObject) {

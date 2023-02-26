@@ -103,11 +103,11 @@ func saveFunc(f interface{}) *C.PyObject {
 	return C.PyLong_FromLong(C.long(len(funcs) - 1))
 }
 
-func getFunc(self unsafe.Pointer) interface{} {
+func getFunc(self *C.PyObject) interface{} {
 	funcLock.RLock()
 	defer funcLock.RUnlock()
 
-	idx := int(C.PyLong_AsLong((*C.PyObject)(self)))
+	idx := int(C.PyLong_AsLong(self))
 
 	if idx >= len(funcs) {
 		return nil
@@ -117,65 +117,41 @@ func getFunc(self unsafe.Pointer) interface{} {
 }
 
 //export callWithoutArgs
-func callWithoutArgs(self, args unsafe.Pointer) unsafe.Pointer {
+func callWithoutArgs(self, args *C.PyObject) *C.PyObject {
 	f, ok := getFunc(self).(func() (Object, error))
 	if !ok {
 		raise(AssertionError.Err("callWithoutArgs: wrong function type!!!"))
 		return nil
 	}
-	ret, err := f()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-	return unsafe.Pointer(c(ret))
+	return ce(f())
 }
 
 //export callWithSingle
-func callWithSingle(self, arg unsafe.Pointer) unsafe.Pointer {
+func callWithSingle(self, arg *C.PyObject) *C.PyObject {
 	f, ok := getFunc(self).(func(a Object) (Object, error))
 	if !ok {
 		raise(AssertionError.Err("callWithArgs: wrong function type!!!"))
 		return nil
 	}
-	a := newObject((*C.PyObject)(arg))
-	ret, err := f(a)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-	return unsafe.Pointer(c(ret))
+	return ce(f(newObject(arg)))
 }
 
 //export callWithArgs
-func callWithArgs(self, args unsafe.Pointer) unsafe.Pointer {
+func callWithArgs(self, args *C.PyObject) *C.PyObject {
 	f, ok := getFunc(self).(func(a *Tuple) (Object, error))
 	if !ok {
 		raise(AssertionError.Err("callWithArgs: wrong function type!!!"))
 		return nil
 	}
-	a := newTuple((*C.PyObject)(args))
-	ret, err := f(a)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-	return unsafe.Pointer(c(ret))
+	return ce(f(newTuple(args)))
 }
 
 //export callWithKeywords
-func callWithKeywords(self, args, kw unsafe.Pointer) unsafe.Pointer {
+func callWithKeywords(self, args, kw *C.PyObject) *C.PyObject {
 	f, ok := getFunc(self).(func(a *Tuple, k *Dict) (Object, error))
 	if !ok {
 		raise(AssertionError.Err("callWithKeywords: wrong function type!!!"))
 		return nil
 	}
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kw))
-	ret, err := f(a, k)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-	return unsafe.Pointer(c(ret))
+	return ce(f(newTuple(args), newDict(kw)))
 }

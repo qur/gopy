@@ -112,19 +112,9 @@ callbacks = {
         ],
     ),
     "() (bool, error)": (
-        "(obj *C.PyObject) int",
+        "(obj *C.PyObject) C.int",
         [
-            '	ret, err := co.%(fn)s()',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return -1',
-            '	}',
-            '',
-            '	if ret {',
-            '		return 1',
-            '	}',
-            '',
-            '	return 0',
+            '	return boolErr2Int(co.%(fn)s())',
         ],
     ),
     "() (Object, error)": (
@@ -184,19 +174,9 @@ callbacks = {
         ],
     ),
     "(Object) (bool, error)": (
-        "(obj, arg *C.PyObject) int",
+        "(obj, arg *C.PyObject) C.int",
         [
-            '	ret, err := co.%(fn)s(newObject(arg))',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return -1',
-            '	}',
-            '',
-            '	if ret {',
-            '		return 1',
-            '	}',
-            '',
-            '	return 0',
+            '	return boolErr2Int(co.%(fn)s(newObject(arg)))',
         ],
     ),
     "(Object) (Object, SendResult, error)": (
@@ -215,14 +195,9 @@ callbacks = {
         ],
     ),
     "(Object, int) error": (
-        "(obj, arg1 *C.PyObject, arg2 C.int) int",
+        "(obj, arg1 *C.PyObject, arg2 C.int) C.int",
         [
-            '	if err := co.%(fn)s(newObject(arg1), int(arg2)); err != nil {',
-            '		raise(err)',
-            '		return -1',
-            '	}',
-            '',
-            '	return 0',
+            '	return err2Int(co.%(fn)s(newObject(arg1), int(arg2)))',
         ],
     ),
     "(Object, int) (Object, error)": (
@@ -244,25 +219,15 @@ callbacks = {
         ],
     ),
     "(Object, Object) error": (
-        "(obj, arg1, arg2 *C.PyObject) int",
+        "(obj, arg1, arg2 *C.PyObject) C.int",
         [
-            '	if err := co.%(fn)s(newObject(arg1), newObject(arg2)); err != nil {',
-            '		raise(err)',
-            '		return -1',
-            '	}',
-            '',
-            '	return 0',
+            '	return err2Int(co.%(fn)s(newObject(arg1), newObject(arg2)))',
         ],
     ),
     "(*Tuple, *Dict) error": (
-        "(obj, args, kwds *C.PyObject) int",
+        "(obj, args, kwds *C.PyObject) C.int",
         [
-            '	if err := co.%(fn)s(newTuple(args), newDict(kwds)); err != nil {',
-            '		raise(err)',
-            '		return -1',
-            '	}',
-            '',
-            '	return 0',
+            '	return err2Int(co.%(fn)s(newTuple(args), newDict(kwds)))',
         ],
     ),
     "(*Tuple, *Dict) (Object, error)": (
@@ -274,12 +239,7 @@ callbacks = {
     "(int, Object) error": (
         "(obj *C.PyObject, arg1 C.Py_ssize_t, arg2 *C.PyObject) C.int",
         [
-            '	if err := co.%(fn)s(int(arg1), newObject(arg2)); err != nil {',
-            '		raise(err)',
-            '		return -1',
-            '	}',
-            '',
-            '	return 0',
+            '	return err2Int(co.%(fn)s(int(arg1), newObject(arg2)))',
         ],
     ),
 }

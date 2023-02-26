@@ -133,11 +133,30 @@ func int2Err(i C.int) error {
 	return nil
 }
 
+func err2Int(err error) C.int {
+	if err != nil {
+		raise(err)
+		return -1
+	}
+	return 0
+}
+
 func int2BoolErr(i C.int) (bool, error) {
 	if i < 0 {
 		return false, exception()
 	}
 	return i > 0, nil
+}
+
+func boolErr2Int(ret bool, err error) C.int {
+	if err != nil {
+		raise(err)
+		return -1
+	}
+	if ret {
+		return 1
+	}
+	return 0
 }
 
 func ssize_t2Int64Err(s C.Py_ssize_t) (int64, error) {
