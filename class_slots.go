@@ -212,20 +212,14 @@ type bf_releasebuffer interface {
 // ===============================================================
 
 //export goClassSlot_tp_repr
-func goClassSlot_tp_repr(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(tp_repr)
+func goClassSlot_tp_repr(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(tp_repr)
 
-	ret, err := co.Repr()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Repr())
 }
 //export goClassSlot_tp_hash
-func goClassSlot_tp_hash(obj unsafe.Pointer) C.long {
-	co := newObject((*C.PyObject)(obj)).(tp_hash)
+func goClassSlot_tp_hash(obj *C.PyObject) C.long {
+	co := newObject(obj).(tp_hash)
 
 	ret, err := co.Hash()
 	if err != nil {
@@ -238,51 +232,28 @@ func goClassSlot_tp_hash(obj unsafe.Pointer) C.long {
 	return C.long(ret)
 }
 //export goClassSlot_tp_call
-func goClassSlot_tp_call(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(tp_call)
+func goClassSlot_tp_call(obj, args, kwds *C.PyObject) *C.PyObject {
+	co := newObject(obj).(tp_call)
 
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kwds))
-	ret, err := co.Call(a, k)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Call(newTuple(args), newDict(kwds)))
 }
 //export goClassSlot_tp_str
-func goClassSlot_tp_str(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(tp_str)
+func goClassSlot_tp_str(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(tp_str)
 
-	ret, err := co.Str()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Str())
 }
 //export goClassSlot_tp_getattro
-func goClassSlot_tp_getattro(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(tp_getattro)
+func goClassSlot_tp_getattro(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(tp_getattro)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.GetAttr(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.GetAttr(newObject(arg)))
 }
 //export goClassSlot_tp_setattro
-func goClassSlot_tp_setattro(obj, arg1, arg2 unsafe.Pointer) int {
-	co := newObject((*C.PyObject)(obj)).(tp_setattro)
+func goClassSlot_tp_setattro(obj, arg1, arg2 *C.PyObject) int {
+	co := newObject(obj).(tp_setattro)
 
-	o1 := newObject((*C.PyObject)(arg1))
-	o2 := newObject((*C.PyObject)(arg2))
-	if err := co.SetAttr(o1, o2); err != nil {
+	if err := co.SetAttr(newObject(arg1), newObject(arg2)); err != nil {
 		raise(err)
 		return -1
 	}
@@ -290,63 +261,34 @@ func goClassSlot_tp_setattro(obj, arg1, arg2 unsafe.Pointer) int {
 	return 0
 }
 //export goClassSlot_tp_richcompare
-func goClassSlot_tp_richcompare(obj, arg1 unsafe.Pointer, arg2 C.int) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(tp_richcompare)
+func goClassSlot_tp_richcompare(obj, arg1 *C.PyObject, arg2 C.int) *C.PyObject {
+	co := newObject(obj).(tp_richcompare)
 
-	o := newObject((*C.PyObject)(arg1))
-	ret, err := co.RichCompare(o, Op(arg2))
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.RichCompare(newObject(arg1), Op(arg2)))
 }
 //export goClassSlot_tp_iter
-func goClassSlot_tp_iter(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(tp_iter)
+func goClassSlot_tp_iter(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(tp_iter)
 
-	ret, err := co.Iter()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Iter())
 }
 //export goClassSlot_tp_iternext
-func goClassSlot_tp_iternext(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(tp_iternext)
+func goClassSlot_tp_iternext(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(tp_iternext)
 
-	ret, err := co.Next()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Next())
 }
 //export goClassSlot_tp_descr_get
-func goClassSlot_tp_descr_get(obj, arg1, arg2 unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(tp_descr_get)
+func goClassSlot_tp_descr_get(obj, arg1, arg2 *C.PyObject) *C.PyObject {
+	co := newObject(obj).(tp_descr_get)
 
-	o1 := newObject((*C.PyObject)(arg1))
-	o2 := newObject((*C.PyObject)(arg2))
-	ret, err := co.DescrGet(o1, o2)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.DescrGet(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_tp_descr_set
-func goClassSlot_tp_descr_set(obj, arg1, arg2 unsafe.Pointer) int {
-	co := newObject((*C.PyObject)(obj)).(tp_descr_set)
+func goClassSlot_tp_descr_set(obj, arg1, arg2 *C.PyObject) int {
+	co := newObject(obj).(tp_descr_set)
 
-	o1 := newObject((*C.PyObject)(arg1))
-	o2 := newObject((*C.PyObject)(arg2))
-	if err := co.DescrSet(o1, o2); err != nil {
+	if err := co.DescrSet(newObject(arg1), newObject(arg2)); err != nil {
 		raise(err)
 		return -1
 	}
@@ -354,12 +296,10 @@ func goClassSlot_tp_descr_set(obj, arg1, arg2 unsafe.Pointer) int {
 	return 0
 }
 //export goClassSlot_tp_init
-func goClassSlot_tp_init(obj, args, kwds unsafe.Pointer) int {
-	co := newObject((*C.PyObject)(obj)).(tp_init)
+func goClassSlot_tp_init(obj, args, kwds *C.PyObject) int {
+	co := newObject(obj).(tp_init)
 
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kwds))
-	if err := co.Init(a, k); err != nil {
+	if err := co.Init(newTuple(args), newDict(kwds)); err != nil {
 		raise(err)
 		return -1
 	}
@@ -367,48 +307,29 @@ func goClassSlot_tp_init(obj, args, kwds unsafe.Pointer) int {
 	return 0
 }
 //export goClassSlot_am_await
-func goClassSlot_am_await(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(am_await)
+func goClassSlot_am_await(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(am_await)
 
-	ret, err := co.Await()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Await())
 }
 //export goClassSlot_am_aiter
-func goClassSlot_am_aiter(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(am_aiter)
+func goClassSlot_am_aiter(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(am_aiter)
 
-	ret, err := co.AsyncIter()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.AsyncIter())
 }
 //export goClassSlot_am_anext
-func goClassSlot_am_anext(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(am_anext)
+func goClassSlot_am_anext(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(am_anext)
 
-	ret, err := co.AsyncNext()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.AsyncNext())
 }
 //export goClassSlot_am_send
-func goClassSlot_am_send(obj, arg, out unsafe.Pointer) C.PySendResult {
-	co := newObject((*C.PyObject)(obj)).(am_send)
+func goClassSlot_am_send(obj, arg *C.PyObject, out unsafe.Pointer) C.PySendResult {
+	co := newObject(obj).(am_send)
 
-	o := newObject((*C.PyObject)(arg))
 	result := (**C.PyObject)(out)
-	ret, res, err := co.AsyncSend(o)
+	ret, res, err := co.AsyncSend(newObject(arg))
 	if err != nil {
 		raise(err)
 		*result = nil
@@ -419,189 +340,92 @@ func goClassSlot_am_send(obj, arg, out unsafe.Pointer) C.PySendResult {
 	return C.PySendResult(res)
 }
 //export goClassSlot_nb_add
-func goClassSlot_nb_add(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_add)
+func goClassSlot_nb_add(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_add)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Add(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Add(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_add
-func goClassSlot_nb_inplace_add(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_add)
+func goClassSlot_nb_inplace_add(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_add)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceAdd(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceAdd(newObject(arg)))
 }
 //export goClassSlot_nb_subtract
-func goClassSlot_nb_subtract(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_subtract)
+func goClassSlot_nb_subtract(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_subtract)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Subtract(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Subtract(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_subtract
-func goClassSlot_nb_inplace_subtract(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_subtract)
+func goClassSlot_nb_inplace_subtract(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_subtract)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceSubtract(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceSubtract(newObject(arg)))
 }
 //export goClassSlot_nb_multiply
-func goClassSlot_nb_multiply(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_multiply)
+func goClassSlot_nb_multiply(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_multiply)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Multiply(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Multiply(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_multiply
-func goClassSlot_nb_inplace_multiply(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_multiply)
+func goClassSlot_nb_inplace_multiply(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_multiply)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceMultiply(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceMultiply(newObject(arg)))
 }
 //export goClassSlot_nb_remainder
-func goClassSlot_nb_remainder(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_remainder)
+func goClassSlot_nb_remainder(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_remainder)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Remainder(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Remainder(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_remainder
-func goClassSlot_nb_inplace_remainder(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_remainder)
+func goClassSlot_nb_inplace_remainder(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_remainder)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceRemainder(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceRemainder(newObject(arg)))
 }
 //export goClassSlot_nb_divmod
-func goClassSlot_nb_divmod(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_divmod)
+func goClassSlot_nb_divmod(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_divmod)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Divmod(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Divmod(newObject(arg)))
 }
 //export goClassSlot_nb_power
-func goClassSlot_nb_power(obj, arg1, arg2 unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_power)
+func goClassSlot_nb_power(obj, arg1, arg2 *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_power)
 
-	o1 := newObject((*C.PyObject)(arg1))
-	o2 := newObject((*C.PyObject)(arg2))
-	ret, err := co.Power(o1, o2)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Power(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_nb_inplace_power
-func goClassSlot_nb_inplace_power(obj, arg1, arg2 unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_power)
+func goClassSlot_nb_inplace_power(obj, arg1, arg2 *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_power)
 
-	o1 := newObject((*C.PyObject)(arg1))
-	o2 := newObject((*C.PyObject)(arg2))
-	ret, err := co.InPlacePower(o1, o2)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlacePower(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_nb_negative
-func goClassSlot_nb_negative(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_negative)
+func goClassSlot_nb_negative(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_negative)
 
-	ret, err := co.Negative()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Negative())
 }
 //export goClassSlot_nb_positive
-func goClassSlot_nb_positive(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_positive)
+func goClassSlot_nb_positive(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_positive)
 
-	ret, err := co.Positive()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Positive())
 }
 //export goClassSlot_nb_absolute
-func goClassSlot_nb_absolute(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_absolute)
+func goClassSlot_nb_absolute(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_absolute)
 
-	ret, err := co.Absolute()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Absolute())
 }
 //export goClassSlot_nb_bool
-func goClassSlot_nb_bool(obj unsafe.Pointer) int {
-	co := newObject((*C.PyObject)(obj)).(nb_bool)
+func goClassSlot_nb_bool(obj *C.PyObject) int {
+	co := newObject(obj).(nb_bool)
 
 	ret, err := co.Bool()
 	if err != nil {
@@ -616,287 +440,142 @@ func goClassSlot_nb_bool(obj unsafe.Pointer) int {
 	return 0
 }
 //export goClassSlot_nb_invert
-func goClassSlot_nb_invert(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_invert)
+func goClassSlot_nb_invert(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_invert)
 
-	ret, err := co.Invert()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Invert())
 }
 //export goClassSlot_nb_lshift
-func goClassSlot_nb_lshift(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_lshift)
+func goClassSlot_nb_lshift(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_lshift)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.LShift(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.LShift(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_lshift
-func goClassSlot_nb_inplace_lshift(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_lshift)
+func goClassSlot_nb_inplace_lshift(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_lshift)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceLShift(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceLShift(newObject(arg)))
 }
 //export goClassSlot_nb_rshift
-func goClassSlot_nb_rshift(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_rshift)
+func goClassSlot_nb_rshift(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_rshift)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.RShift(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.RShift(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_rshift
-func goClassSlot_nb_inplace_rshift(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_rshift)
+func goClassSlot_nb_inplace_rshift(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_rshift)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceRShift(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceRShift(newObject(arg)))
 }
 //export goClassSlot_nb_and
-func goClassSlot_nb_and(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_and)
+func goClassSlot_nb_and(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_and)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.And(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.And(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_and
-func goClassSlot_nb_inplace_and(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_and)
+func goClassSlot_nb_inplace_and(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_and)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceAnd(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceAnd(newObject(arg)))
 }
 //export goClassSlot_nb_xor
-func goClassSlot_nb_xor(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_xor)
+func goClassSlot_nb_xor(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_xor)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Xor(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Xor(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_xor
-func goClassSlot_nb_inplace_xor(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_xor)
+func goClassSlot_nb_inplace_xor(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_xor)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInPlaceXor(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.PyInPlaceXor(newObject(arg)))
 }
 //export goClassSlot_nb_or
-func goClassSlot_nb_or(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_or)
+func goClassSlot_nb_or(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_or)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Or(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Or(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_or
-func goClassSlot_nb_inplace_or(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_or)
+func goClassSlot_nb_inplace_or(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_or)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.PyInPlaceOr(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.PyInPlaceOr(newObject(arg)))
 }
 //export goClassSlot_nb_int
-func goClassSlot_nb_int(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_int)
+func goClassSlot_nb_int(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_int)
 
-	ret, err := co.Long()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Long())
 }
 //export goClassSlot_nb_float
-func goClassSlot_nb_float(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_float)
+func goClassSlot_nb_float(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_float)
 
-	ret, err := co.Float()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Float())
 }
 //export goClassSlot_nb_floor_divide
-func goClassSlot_nb_floor_divide(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_floor_divide)
+func goClassSlot_nb_floor_divide(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_floor_divide)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.FloorDivide(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.FloorDivide(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_floor_divide
-func goClassSlot_nb_inplace_floor_divide(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_floor_divide)
+func goClassSlot_nb_inplace_floor_divide(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_floor_divide)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceFloorDivide(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceFloorDivide(newObject(arg)))
 }
 //export goClassSlot_nb_true_divide
-func goClassSlot_nb_true_divide(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_true_divide)
+func goClassSlot_nb_true_divide(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_true_divide)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.TrueDivide(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.TrueDivide(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_true_divide
-func goClassSlot_nb_inplace_true_divide(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_true_divide)
+func goClassSlot_nb_inplace_true_divide(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_true_divide)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceTrueDivide(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceTrueDivide(newObject(arg)))
 }
 //export goClassSlot_nb_index
-func goClassSlot_nb_index(obj unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_index)
+func goClassSlot_nb_index(obj *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_index)
 
-	ret, err := co.Index()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Index())
 }
 //export goClassSlot_nb_matrix_multiply
-func goClassSlot_nb_matrix_multiply(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_matrix_multiply)
+func goClassSlot_nb_matrix_multiply(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_matrix_multiply)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.MatrixMultiply(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.MatrixMultiply(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_matrix_multiply
-func goClassSlot_nb_inplace_matrix_multiply(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(nb_inplace_matrix_multiply)
+func goClassSlot_nb_inplace_matrix_multiply(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(nb_inplace_matrix_multiply)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceMatrixMultiply(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceMatrixMultiply(newObject(arg)))
 }
 //export goClassSlot_mp_length
-func goClassSlot_mp_length(obj unsafe.Pointer) C.Py_ssize_t {
-	co := newObject((*C.PyObject)(obj)).(mp_length)
+func goClassSlot_mp_length(obj *C.PyObject) C.Py_ssize_t {
+	co := newObject(obj).(mp_length)
 
 	return C.Py_ssize_t(co.PyMappingLen())
 }
 //export goClassSlot_mp_subscript
-func goClassSlot_mp_subscript(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(mp_subscript)
+func goClassSlot_mp_subscript(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(mp_subscript)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Subscript(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Subscript(newObject(arg)))
 }
 //export goClassSlot_mp_ass_subscript
-func goClassSlot_mp_ass_subscript(obj, arg1, arg2 unsafe.Pointer) int {
-	co := newObject((*C.PyObject)(obj)).(mp_ass_subscript)
+func goClassSlot_mp_ass_subscript(obj, arg1, arg2 *C.PyObject) int {
+	co := newObject(obj).(mp_ass_subscript)
 
-	o1 := newObject((*C.PyObject)(arg1))
-	o2 := newObject((*C.PyObject)(arg2))
-	if err := co.AssSubscript(o1, o2); err != nil {
+	if err := co.AssSubscript(newObject(arg1), newObject(arg2)); err != nil {
 		raise(err)
 		return -1
 	}
@@ -904,55 +583,34 @@ func goClassSlot_mp_ass_subscript(obj, arg1, arg2 unsafe.Pointer) int {
 	return 0
 }
 //export goClassSlot_sq_length
-func goClassSlot_sq_length(obj unsafe.Pointer) C.Py_ssize_t {
-	co := newObject((*C.PyObject)(obj)).(sq_length)
+func goClassSlot_sq_length(obj *C.PyObject) C.Py_ssize_t {
+	co := newObject(obj).(sq_length)
 
 	return C.Py_ssize_t(co.Len())
 }
 //export goClassSlot_sq_concat
-func goClassSlot_sq_concat(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(sq_concat)
+func goClassSlot_sq_concat(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(sq_concat)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Concat(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Concat(newObject(arg)))
 }
 //export goClassSlot_sq_repeat
-func goClassSlot_sq_repeat(obj, arg1 unsafe.Pointer, arg2 C.Py_ssize_t) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(sq_repeat)
+func goClassSlot_sq_repeat(obj, arg1 *C.PyObject, arg2 C.Py_ssize_t) *C.PyObject {
+	co := newObject(obj).(sq_repeat)
 
-	o := newObject((*C.PyObject)(arg1))
-	ret, err := co.Repeat(o, int(arg2))
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.Repeat(newObject(arg1), int(arg2)))
 }
 //export goClassSlot_sq_item
-func goClassSlot_sq_item(obj unsafe.Pointer, arg1 C.Py_ssize_t) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(sq_item)
+func goClassSlot_sq_item(obj *C.PyObject, arg1 C.Py_ssize_t) *C.PyObject {
+	co := newObject(obj).(sq_item)
 
-	ret, err := co.GetIndex(int(arg1))
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.GetIndex(int(arg1)))
 }
 //export goClassSlot_sq_ass_item
-func goClassSlot_sq_ass_item(obj unsafe.Pointer, arg1 C.Py_ssize_t, arg2 unsafe.Pointer) C.int {
-	co := newObject((*C.PyObject)(obj)).(sq_ass_item)
+func goClassSlot_sq_ass_item(obj *C.PyObject, arg1 C.Py_ssize_t, arg2 *C.PyObject) C.int {
+	co := newObject(obj).(sq_ass_item)
 
-	a := newObject((*C.PyObject)(arg2))
-	if err := co.SetIndex(int(arg1), a); err != nil {
+	if err := co.SetIndex(int(arg1), newObject(arg2)); err != nil {
 		raise(err)
 		return -1
 	}
@@ -960,11 +618,10 @@ func goClassSlot_sq_ass_item(obj unsafe.Pointer, arg1 C.Py_ssize_t, arg2 unsafe.
 	return 0
 }
 //export goClassSlot_sq_contains
-func goClassSlot_sq_contains(obj, arg unsafe.Pointer) int {
-	co := newObject((*C.PyObject)(obj)).(sq_contains)
+func goClassSlot_sq_contains(obj, arg *C.PyObject) int {
+	co := newObject(obj).(sq_contains)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.Contains(o)
+	ret, err := co.Contains(newObject(arg))
 	if err != nil {
 		raise(err)
 		return -1
@@ -977,37 +634,22 @@ func goClassSlot_sq_contains(obj, arg unsafe.Pointer) int {
 	return 0
 }
 //export goClassSlot_sq_inplace_concat
-func goClassSlot_sq_inplace_concat(obj, arg unsafe.Pointer) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(sq_inplace_concat)
+func goClassSlot_sq_inplace_concat(obj, arg *C.PyObject) *C.PyObject {
+	co := newObject(obj).(sq_inplace_concat)
 
-	o := newObject((*C.PyObject)(arg))
-	ret, err := co.InPlaceConcat(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceConcat(newObject(arg)))
 }
 //export goClassSlot_sq_inplace_repeat
-func goClassSlot_sq_inplace_repeat(obj, arg1 unsafe.Pointer, arg2 C.Py_ssize_t) unsafe.Pointer {
-	co := newObject((*C.PyObject)(obj)).(sq_inplace_repeat)
+func goClassSlot_sq_inplace_repeat(obj, arg1 *C.PyObject, arg2 C.Py_ssize_t) *C.PyObject {
+	co := newObject(obj).(sq_inplace_repeat)
 
-	o := newObject((*C.PyObject)(arg1))
-	ret, err := co.InPlaceRepeat(o, int(arg2))
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(co.InPlaceRepeat(newObject(arg1), int(arg2)))
 }
 //export goClassSlot_bf_getbuffer
-func goClassSlot_bf_getbuffer(obj, arg1 unsafe.Pointer, arg2 C.int) int {
-	co := newObject((*C.PyObject)(obj)).(bf_getbuffer)
+func goClassSlot_bf_getbuffer(obj, arg1 *C.PyObject, arg2 C.int) int {
+	co := newObject(obj).(bf_getbuffer)
 
-	o := newObject((*C.PyObject)(arg1))
-	if err := co.GetBuffer(o, int(arg2)); err != nil {
+	if err := co.GetBuffer(newObject(arg1), int(arg2)); err != nil {
 		raise(err)
 		return -1
 	}
@@ -1015,11 +657,10 @@ func goClassSlot_bf_getbuffer(obj, arg1 unsafe.Pointer, arg2 C.int) int {
 	return 0
 }
 //export goClassSlot_bf_releasebuffer
-func goClassSlot_bf_releasebuffer(obj, arg unsafe.Pointer) {
-	co := newObject((*C.PyObject)(obj)).(bf_releasebuffer)
+func goClassSlot_bf_releasebuffer(obj, arg *C.PyObject) {
+	co := newObject(obj).(bf_releasebuffer)
 
-	o := newObject((*C.PyObject)(arg))
-	co.ReleaseBuffer(o)
+	co.ReleaseBuffer(newObject(arg))
 }
 
 // ===============================================================

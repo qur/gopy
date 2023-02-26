@@ -106,13 +106,13 @@ slots = [
 
 callbacks = {
     "() int": (
-        "(obj unsafe.Pointer) C.Py_ssize_t",
+        "(obj *C.PyObject) C.Py_ssize_t",
         [
             '	return C.Py_ssize_t(co.%(fn)s())',
         ],
     ),
     "() (bool, error)": (
-        "(obj unsafe.Pointer) int",
+        "(obj *C.PyObject) int",
         [
             '	ret, err := co.%(fn)s()',
             '	if err != nil {',
@@ -128,55 +128,31 @@ callbacks = {
         ],
     ),
     "() (Object, error)": (
-        "(obj unsafe.Pointer) unsafe.Pointer",
+        "(obj *C.PyObject) *C.PyObject",
         [
-            '	ret, err := co.%(fn)s()',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s())',
         ],
     ),
     "() (Iterator, error)": (
-        "(obj unsafe.Pointer) unsafe.Pointer",
+        "(obj *C.PyObject) *C.PyObject",
         [
-            '	ret, err := co.%(fn)s()',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s())',
         ],
     ),
     "() (*Long, error)": (
-        "(obj unsafe.Pointer) unsafe.Pointer",
+        "(obj *C.PyObject) *C.PyObject",
         [
-            '	ret, err := co.%(fn)s()',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s())',
         ],
     ),
     "() (*Float, error)": (
-        "(obj unsafe.Pointer) unsafe.Pointer",
+        "(obj *C.PyObject) *C.PyObject",
         [
-            '	ret, err := co.%(fn)s()',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s())',
         ],
     ),
     "() (int, error)": (
-        "(obj unsafe.Pointer) C.long",
+        "(obj *C.PyObject) C.long",
         [
             '	ret, err := co.%(fn)s()',
             '	if err != nil {',
@@ -190,42 +166,27 @@ callbacks = {
         ],
     ),
     "(int) (Object, error)": (
-        "(obj unsafe.Pointer, arg1 C.Py_ssize_t) unsafe.Pointer",
+        "(obj *C.PyObject, arg1 C.Py_ssize_t) *C.PyObject",
         [
-            '	ret, err := co.%(fn)s(int(arg1))',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s(int(arg1)))',
         ],
     ),
     "(Object)": (
-        "(obj, arg unsafe.Pointer)",
+        "(obj, arg *C.PyObject)",
         [
-            '	o := newObject((*C.PyObject)(arg))',
-            '	co.%(fn)s(o)',
+            '	co.%(fn)s(newObject(arg))',
         ],
     ),
     "(Object) (Object, error)": (
-        "(obj, arg unsafe.Pointer) unsafe.Pointer",
+        "(obj, arg *C.PyObject) *C.PyObject",
         [
-            '	o := newObject((*C.PyObject)(arg))',
-            '	ret, err := co.%(fn)s(o)',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s(newObject(arg)))',
         ],
     ),
     "(Object) (bool, error)": (
-        "(obj, arg unsafe.Pointer) int",
+        "(obj, arg *C.PyObject) int",
         [
-            '	o := newObject((*C.PyObject)(arg))',
-            '	ret, err := co.%(fn)s(o)',
+            '	ret, err := co.%(fn)s(newObject(arg))',
             '	if err != nil {',
             '		raise(err)',
             '		return -1',
@@ -239,11 +200,10 @@ callbacks = {
         ],
     ),
     "(Object) (Object, SendResult, error)": (
-        "(obj, arg, out unsafe.Pointer) C.PySendResult",
+        "(obj, arg *C.PyObject, out unsafe.Pointer) C.PySendResult",
         [
-            '	o := newObject((*C.PyObject)(arg))',
             '	result := (**C.PyObject)(out)',
-            '	ret, res, err := co.%(fn)s(o)',
+            '	ret, res, err := co.%(fn)s(newObject(arg))',
             '	if err != nil {',
             '		raise(err)',
             '		*result = nil',
@@ -255,10 +215,9 @@ callbacks = {
         ],
     ),
     "(Object, int) error": (
-        "(obj, arg1 unsafe.Pointer, arg2 C.int) int",
+        "(obj, arg1 *C.PyObject, arg2 C.int) int",
         [
-            '	o := newObject((*C.PyObject)(arg1))',
-            '	if err := co.%(fn)s(o, int(arg2)); err != nil {',
+            '	if err := co.%(fn)s(newObject(arg1), int(arg2)); err != nil {',
             '		raise(err)',
             '		return -1',
             '	}',
@@ -267,51 +226,27 @@ callbacks = {
         ],
     ),
     "(Object, int) (Object, error)": (
-        "(obj, arg1 unsafe.Pointer, arg2 C.Py_ssize_t) unsafe.Pointer",
+        "(obj, arg1 *C.PyObject, arg2 C.Py_ssize_t) *C.PyObject",
         [
-            '	o := newObject((*C.PyObject)(arg1))',
-            '	ret, err := co.%(fn)s(o, int(arg2))',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s(newObject(arg1), int(arg2)))',
         ],
     ),
     "(Object, Op) (Object, error)": (
-        "(obj, arg1 unsafe.Pointer, arg2 C.int) unsafe.Pointer",
+        "(obj, arg1 *C.PyObject, arg2 C.int) *C.PyObject",
         [
-            '	o := newObject((*C.PyObject)(arg1))',
-            '	ret, err := co.%(fn)s(o, Op(arg2))',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s(newObject(arg1), Op(arg2)))',
         ],
     ),
     "(Object, Object) (Object, error)": (
-        "(obj, arg1, arg2 unsafe.Pointer) unsafe.Pointer",
+        "(obj, arg1, arg2 *C.PyObject) *C.PyObject",
         [
-            '	o1 := newObject((*C.PyObject)(arg1))',
-            '	o2 := newObject((*C.PyObject)(arg2))',
-            '	ret, err := co.%(fn)s(o1, o2)',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s(newObject(arg1), newObject(arg2)))',
         ],
     ),
     "(Object, Object) error": (
-        "(obj, arg1, arg2 unsafe.Pointer) int",
+        "(obj, arg1, arg2 *C.PyObject) int",
         [
-            '	o1 := newObject((*C.PyObject)(arg1))',
-            '	o2 := newObject((*C.PyObject)(arg2))',
-            '	if err := co.%(fn)s(o1, o2); err != nil {',
+            '	if err := co.%(fn)s(newObject(arg1), newObject(arg2)); err != nil {',
             '		raise(err)',
             '		return -1',
             '	}',
@@ -320,11 +255,9 @@ callbacks = {
         ],
     ),
     "(*Tuple, *Dict) error": (
-        "(obj, args, kwds unsafe.Pointer) int",
+        "(obj, args, kwds *C.PyObject) int",
         [
-            '	a := newTuple((*C.PyObject)(args))',
-            '	k := newDict((*C.PyObject)(kwds))',
-            '	if err := co.%(fn)s(a, k); err != nil {',
+            '	if err := co.%(fn)s(newTuple(args), newDict(kwds)); err != nil {',
             '		raise(err)',
             '		return -1',
             '	}',
@@ -333,24 +266,15 @@ callbacks = {
         ],
     ),
     "(*Tuple, *Dict) (Object, error)": (
-        "(obj, args, kwds unsafe.Pointer) unsafe.Pointer",
+        "(obj, args, kwds *C.PyObject) *C.PyObject",
         [
-            '	a := newTuple((*C.PyObject)(args))',
-            '	k := newDict((*C.PyObject)(kwds))',
-            '	ret, err := co.%(fn)s(a, k)',
-            '	if err != nil {',
-            '		raise(err)',
-            '		return nil',
-            '	}',
-            '',
-            '	return unsafe.Pointer(c(ret))',
+            '	return ce(co.%(fn)s(newTuple(args), newDict(kwds)))',
         ],
     ),
     "(int, Object) error": (
-        "(obj unsafe.Pointer, arg1 C.Py_ssize_t, arg2 unsafe.Pointer) C.int",
+        "(obj *C.PyObject, arg1 C.Py_ssize_t, arg2 *C.PyObject) C.int",
         [
-            '	a := newObject((*C.PyObject)(arg2))',
-            '	if err := co.%(fn)s(int(arg1), a); err != nil {',
+            '	if err := co.%(fn)s(int(arg1), newObject(arg2)); err != nil {',
             '		raise(err)',
             '		return -1',
             '	}',
@@ -555,7 +479,7 @@ def write_callbacks(f):
         print(f'//export goClassSlot_{slot}', file=f)
         print(
             f'func goClassSlot_{slot}{cbSig} {{', file=f)
-        print(f'	co := newObject((*C.PyObject)(obj)).({slot})', file=f)
+        print(f'	co := newObject(obj).({slot})', file=f)
         print('', file=f)
         for line in body:
             print(line % {'fn': fn}, file=f)

@@ -99,34 +99,49 @@ type Class struct {
 	base   *Type
 }
 
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
 func (cls *Class) Base() *BaseObject {
 	return cls.base.Base()
 }
 
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
 func (cls *Class) Type() *Type {
 	return cls.base.Type()
 }
 
+// RawType returns the Typo that represents this class in Python.
+//
+// Return value: Borrowed Reference.
 func (cls *Class) RawType() *Type {
 	return cls.base
 }
 
+// Decref decrements cls's reference count, cls may not be nil.
 func (cls *Class) Decref() {
 	cls.base.Decref()
 }
 
+// Incref increments cks's reference count, cls may not be nil.
 func (cls *Class) Incref() {
 	cls.base.Incref()
 }
 
+// IsTrue returns true if the value of cls is considered to be True.  This is
+// equivalent to "if cls:" in Python.
 func (cls *Class) IsTrue() bool {
 	return cls.base.IsTrue()
 }
 
+// Not returns true if the value of cls is considered to be False.  This is
+// equivalent to "if not cls:" in Python.
 func (cls *Class) Not() bool {
 	return cls.base.Not()
 }
 
+// Free deallocates the storage (in Python) for cls. After calling this method,
+// cls should no longer be used.
 func (cls *Class) Free() {
 	cls.base.Free()
 }
@@ -498,6 +513,7 @@ func (cls *Class) Create() error {
 		}
 		pyname := field.Tag.Get("py")
 		if pyname == "-" {
+			// tag explicitly set to ignore field
 			continue
 		}
 		pydoc := field.Tag.Get("pyDoc")
@@ -529,16 +545,19 @@ func (cls *Class) Create() error {
 			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), d, ro))
 			continue
 		}
-		if !exportable[field.Type.Kind()] {
-			C.free(unsafe.Pointer(ctxt))
-			C.free(unsafe.Pointer(pyType.tp_name))
-			C.free(unsafe.Pointer(pyType))
-			return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
+		if exportable[field.Type.Kind()] {
+			// field is a simple exportable native type, we can use the native
+			// member get/set code.
+			s := C.CString(pyname)
+			defer C.free(unsafe.Pointer(s))
+			d := C.CString(pydoc)
+			C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d, ro))
+			continue
 		}
-		s := C.CString(pyname)
-		defer C.free(unsafe.Pointer(s))
-		d := C.CString(pydoc)
-		C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d, ro))
+		C.free(unsafe.Pointer(ctxt))
+		C.free(unsafe.Pointer(pyType.tp_name))
+		C.free(unsafe.Pointer(pyType))
+		return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 	}
 
 	cls.base = newType(pyType)
