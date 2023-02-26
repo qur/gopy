@@ -115,6 +115,12 @@ func initAndLock(initsigs bool) *Lock {
 // Note: The Lock and Unlock methods will panic if Python is not initialised, so
 // Lock and Unlock should not be called before Python is initialised, or after
 // Python is finalized.
+//
+// The simplest way to embed and use Python is using the InitAndLock and
+// Lock.Finalize wrappers:
+//
+//	lock := py.InitAndLock()
+//	defer py.Finalize()
 type Lock struct {
 	gilState *GilState
 	thState  *C.PyThreadState
@@ -249,4 +255,36 @@ func (lock *Lock) BlockThreads() {
 		C.PyEval_RestoreThread(lock.thState)
 		lock.thState = nil
 	}
+}
+
+// Finalize shuts down the Python runtime.
+//
+// Finalize also unlocks the Lock, also calling Unlock will cause Python to
+// crash.
+//
+// If the Lock is not locked, or if this is not the outer-most lock of a nested
+// set then this function will panic.
+//
+// However, it is not necessary to call BlockThreads() before calling
+// Finalize(), even if UnblockThreads() has been called.
+func (lock *Lock) Finalize() {
+	if lock.gilState == nil {
+		panic("Lock.Finalize called when Lock is not locked")
+	}
+
+	if lock.thState != nil {
+		C.PyEval_RestoreThread(lock.thState)
+		lock.thState = nil
+	}
+
+	releaseOsThread := lock.dec()
+
+	if !releaseOsThread {
+		panic("Lock.Finalize called when Locks are still active")
+	}
+
+	C.Py_Finalize()
+
+	runtime.UnlockOSThread()
+	lock.gilState = nil
 }

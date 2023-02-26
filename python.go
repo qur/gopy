@@ -9,7 +9,6 @@ import "C"
 
 import (
 	"log"
-	"os"
 	"unsafe"
 )
 
@@ -44,22 +43,22 @@ func InitializeEx(initsigs bool) {
 	}
 }
 
+// Finalize shuts down the Python runtime.
+//
+// You probably want to call the Lock.Finalize method though, as it will ensure
+// that goroutines and threads are managed correctly.
 func Finalize() {
 	C.Py_Finalize()
 }
 
-func Exit(status int) {
-	C.Py_Finalize()
-	os.Exit(status)
-}
-
-func AddToPath(dir string) {
+// Add the given directory to sys.path
+func AddToPath(dir string) error {
 	p := C.CString("path")
 	defer C.free(unsafe.Pointer(p))
 
 	sys_path := C.PySys_GetObject(p)
 	if sys_path == nil {
-		return
+		return AttributeError.Err("path")
 	}
 
 	s := C.CString(dir)
@@ -67,12 +66,16 @@ func AddToPath(dir string) {
 
 	pDir := C.PyUnicode_FromString(s)
 	if pDir == nil {
-		return
+		return exception()
 	}
+	defer C.decref(pDir)
 
-	C.PyList_Append(sys_path, pDir)
+	return int2Err(C.PyList_Append(sys_path, pDir))
 }
 
+// Main is the main Python interpreter entrypoint.
+//
+// Once this function returns, the Python runtime is shutdown.
 func Main(args []string) int {
 	argv := make([]*C.char, len(args))
 
@@ -84,7 +87,7 @@ func Main(args []string) int {
 	return int(C.Py_BytesMain(C.int(len(argv)), &argv[0]))
 }
 
-// EnterRecusiveCall marks a point where a recursive Go-level call is about to
+// EnterRecursiveCall marks a point where a recursive Go-level call is about to
 // be performed.  It returns true if the recursive call is permitted, otherwise
 // a Python exception is set and false is returned.  where is a string that will
 // be appended to the RuntimeError set if the recursion limit has been exceeded
