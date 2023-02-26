@@ -15,10 +15,9 @@ import (
 //
 //////////////////////////////////////////////////////////////////////////////
 
-func getMethod(obj unsafe.Pointer) (any, error) {
-	t := (*C.PyObject)(obj)
-	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
-	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(t, 1)))
+func getMethod(obj *C.PyObject) (any, error) {
+	pyobj := unsafe.Pointer(C.PyTuple_GetItem(obj, 0))
+	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(obj, 1)))
 
 	o := getClassObject(pyobj)
 	if o == nil {
@@ -29,7 +28,7 @@ func getMethod(obj unsafe.Pointer) (any, error) {
 }
 
 //export goClassCallMethod
-func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
+func goClassCallMethod(obj, unused *C.PyObject) *C.PyObject {
 	// Unpack context and self pointer from obj
 	m, err := getMethod(obj)
 	if err != nil {
@@ -39,17 +38,11 @@ func goClassCallMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 
 	f := m.(func() (Object, error))
 
-	ret, err := f()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f())
 }
 
 //export goClassCallMethodSingle
-func goClassCallMethodSingle(obj, arg unsafe.Pointer) unsafe.Pointer {
+func goClassCallMethodSingle(obj, arg *C.PyObject) *C.PyObject {
 	// Unpack context and self pointer from obj
 	m, err := getMethod(obj)
 	if err != nil {
@@ -59,21 +52,15 @@ func goClassCallMethodSingle(obj, arg unsafe.Pointer) unsafe.Pointer {
 
 	// Get arg ready to use, by turning it into a pointer of the appropriate
 	// type
-	o := newObject((*C.PyObject)(arg))
+	o := newObject(arg)
 
 	f := m.(func(Object) (Object, error))
 
-	ret, err := f(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(o))
 }
 
 //export goClassCallMethodArgs
-func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
+func goClassCallMethodArgs(obj, args *C.PyObject) *C.PyObject {
 	// Unpack context and self pointer from obj
 	m, err := getMethod(obj)
 	if err != nil {
@@ -83,21 +70,15 @@ func goClassCallMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 
 	// Get args ready to use, by turning it into a pointer of the appropriate
 	// type
-	a := newTuple((*C.PyObject)(args))
+	a := newTuple(args)
 
 	f := m.(func(*Tuple) (Object, error))
 
-	ret, err := f(a)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(a))
 }
 
 //export goClassCallMethodKwds
-func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+func goClassCallMethodKwds(obj, args, kwds *C.PyObject) *C.PyObject {
 	// Unpack context and self pointer from obj
 	m, err := getMethod(obj)
 	if err != nil {
@@ -107,18 +88,12 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kwds))
+	a := newTuple(args)
+	k := newDict(kwds)
 
 	f := m.(func(*Tuple, *Dict) (Object, error))
 
-	ret, err := f(a, k)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(a, k))
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -127,15 +102,14 @@ func goClassCallMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-func getStaticMethod(obj unsafe.Pointer) any {
-	t := (*C.PyObject)(obj)
-	c := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(t, 0))))
-	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(t, 1)))
+func getStaticMethod(obj *C.PyObject) any {
+	c := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(obj, 0))))
+	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(obj, 1)))
 	return c.Static[name]
 }
 
 //export goClassCallStaticMethod
-func goClassCallStaticMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
+func goClassCallStaticMethod(obj, unused *C.PyObject) *C.PyObject {
 	// Unpack function from obj
 	m := getStaticMethod(obj)
 
@@ -143,80 +117,56 @@ func goClassCallStaticMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	// reflect.Type object stored in the context
 	f := m.(func() (Object, error))
 
-	ret, err := f()
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f())
 }
 
 //export goClassCallStaticMethodSingle
-func goClassCallStaticMethodSingle(obj, arg unsafe.Pointer) unsafe.Pointer {
+func goClassCallStaticMethodSingle(obj, arg *C.PyObject) *C.PyObject {
 	// Unpack function from obj
 	m := getStaticMethod(obj)
 
 	// Get arg ready to use, by turning it into a pointer of the appropriate
 	// type
-	o := newObject((*C.PyObject)(arg))
+	o := newObject(arg)
 
 	// Now call the actual static method by pulling the method out of the
 	// reflect.Type object stored in the context
 	f := m.(func(Object) (Object, error))
 
-	ret, err := f(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(o))
 }
 
 //export goClassCallStaticMethodArgs
-func goClassCallStaticMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
+func goClassCallStaticMethodArgs(obj, args *C.PyObject) *C.PyObject {
 	// Unpack function from obj
 	m := getStaticMethod(obj)
 
 	// Get args ready to use, by turning it into a pointer of the appropriate
 	// type
-	a := newTuple((*C.PyObject)(args))
+	a := newTuple(args)
 
 	// Now call the actual static method by pulling the method out of the
 	// reflect.Type object stored in the context
 	f := m.(func(a *Tuple) (Object, error))
 
-	ret, err := f(a)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(a))
 }
 
 //export goClassCallStaticMethodKwds
-func goClassCallStaticMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+func goClassCallStaticMethodKwds(obj, args, kwds *C.PyObject) *C.PyObject {
 	// Unpack function from obj
 	m := getStaticMethod(obj)
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kwds))
+	a := newTuple(args)
+	k := newDict(kwds)
 
 	// Now call the actual static method by pulling the method out of the
 	// reflect.Type object stored in the context
 	f := m.(func(a *Tuple, k *Dict) (Object, error))
 
-	ret, err := f(a, k)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(a, k))
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -225,7 +175,7 @@ func goClassCallStaticMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer 
 //
 //////////////////////////////////////////////////////////////////////////////
 
-func getMethodAndClass(obj unsafe.Pointer) (any, *Class, error) {
+func getMethodAndClass(obj *C.PyObject) (any, *Class, error) {
 	t := (*C.PyObject)(obj)
 	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
 
@@ -239,7 +189,7 @@ func getMethodAndClass(obj unsafe.Pointer) (any, *Class, error) {
 }
 
 //export goClassCallClassMethod
-func goClassCallClassMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
+func goClassCallClassMethod(obj, unused *C.PyObject) *C.PyObject {
 	// Unpack context and class pointer from obj
 	m, o, err := getMethodAndClass(obj)
 	if err != nil {
@@ -251,17 +201,11 @@ func goClassCallClassMethod(obj, unused unsafe.Pointer) unsafe.Pointer {
 	// reflect.Type object stored in the context
 	f := m.(func(p *Class) (Object, error))
 
-	ret, err := f(o)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(o))
 }
 
 //export goClassCallClassMethodSingle
-func goClassCallClassMethodSingle(obj, arg unsafe.Pointer) unsafe.Pointer {
+func goClassCallClassMethodSingle(obj, arg *C.PyObject) *C.PyObject {
 	// Unpack context and class pointer from obj
 	m, o, err := getMethodAndClass(obj)
 	if err != nil {
@@ -271,23 +215,17 @@ func goClassCallClassMethodSingle(obj, arg unsafe.Pointer) unsafe.Pointer {
 
 	// Get arg ready to use, by turning it into a pointer of the appropriate
 	// type
-	a := newObject((*C.PyObject)(arg))
+	a := newObject(arg)
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
 	f := m.(func(*Class, Object) (Object, error))
 
-	ret, err := f(o, a)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(o, a))
 }
 
 //export goClassCallClassMethodArgs
-func goClassCallClassMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
+func goClassCallClassMethodArgs(obj, args *C.PyObject) *C.PyObject {
 	// Unpack context and class pointer from obj
 	m, o, err := getMethodAndClass(obj)
 	if err != nil {
@@ -297,23 +235,17 @@ func goClassCallClassMethodArgs(obj, args unsafe.Pointer) unsafe.Pointer {
 
 	// Get args ready to use, by turning it into a pointer of the appropriate
 	// type
-	a := newTuple((*C.PyObject)(args))
+	a := newTuple(args)
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
 	f := m.(func(o *Class, a *Tuple) (Object, error))
 
-	ret, err := f(o, a)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(o, a))
 }
 
 //export goClassCallClassMethodKwds
-func goClassCallClassMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
+func goClassCallClassMethodKwds(obj, args, kwds *C.PyObject) *C.PyObject {
 	// Unpack context and class pointer from obj
 	m, o, err := getMethodAndClass(obj)
 	if err != nil {
@@ -323,18 +255,12 @@ func goClassCallClassMethodKwds(obj, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kwds))
+	a := newTuple(args)
+	k := newDict(kwds)
 
 	// Now call the actual struct method by pulling the method out of the
 	// reflect.Type object stored in the context
 	f := m.(func(o *Class, a *Tuple, k *Dict) (Object, error))
 
-	ret, err := f(o, a, k)
-	if err != nil {
-		raise(err)
-		return nil
-	}
-
-	return unsafe.Pointer(c(ret))
+	return ce(f(o, a, k))
 }
