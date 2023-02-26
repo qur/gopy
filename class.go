@@ -12,6 +12,9 @@ import (
 
 var otyp = reflect.TypeOf((*Object)(nil)).Elem()
 
+// Class flags. A subset of Python type flags that are supported for types
+// implemented in Go. These flags enable optional features, such as supporting
+// sub-types.
 type ClassFlags uint32
 
 const (
