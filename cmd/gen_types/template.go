@@ -94,30 +94,8 @@ func ({{ .name }} *{{ .type }}) Incref() {
 	C.incref(c({{ .name }}))
 }
 
-// IsTrue returns true if the value of {{ .name }} is considered to be True. This is
-// equivalent to "if {{ .name }}:" in Python.
-func ({{ .name }} *{{ .type }}) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c({{ .name }}))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of {{ .name }} is considered to be False. This is
-// equivalent to "if not {{ .name }}:" in Python.
-func ({{ .name }} *{{ .type }}) Not() bool {
-	ret := C.PyObject_Not(c({{ .name }}))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for {{ .name }}. After calling this method,
-// {{ .name }} should no longer be used.
-func ({{ .name }} *{{ .type }}) Free() {
-	free({{ .name }})
+func ({{ .name }} *{{ .type }}) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer({{ .name }}))
 }
 
 {{ if .funcs.tp_repr -}}

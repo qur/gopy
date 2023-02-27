@@ -103,6 +103,8 @@ type Class struct {
 	base   *Type
 }
 
+var _ Object = (*Class)(nil)
+
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func (cls *Class) Base() *BaseObject {
@@ -132,22 +134,8 @@ func (cls *Class) Incref() {
 	cls.base.Incref()
 }
 
-// IsTrue returns true if the value of cls is considered to be True.  This is
-// equivalent to "if cls:" in Python.
-func (cls *Class) IsTrue() bool {
-	return cls.base.IsTrue()
-}
-
-// Not returns true if the value of cls is considered to be False.  This is
-// equivalent to "if not cls:" in Python.
-func (cls *Class) Not() bool {
-	return cls.base.Not()
-}
-
-// Free deallocates the storage (in Python) for cls. After calling this method,
-// cls should no longer be used.
-func (cls *Class) Free() {
-	cls.base.Free()
+func (cls *Class) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(cls.base))
 }
 
 // Call calls cls with the given args and kwds. kwds may be nil, args may not

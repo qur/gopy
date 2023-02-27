@@ -59,30 +59,8 @@ func (cm *CMethod) Incref() {
 	C.incref(c(cm))
 }
 
-// IsTrue returns true if the value of cm is considered to be True. This is
-// equivalent to "if cm:" in Python.
-func (cm *CMethod) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(cm))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of cm is considered to be False. This is
-// equivalent to "if not cm:" in Python.
-func (cm *CMethod) Not() bool {
-	ret := C.PyObject_Not(c(cm))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for cm. After calling this method,
-// cm should no longer be used.
-func (cm *CMethod) Free() {
-	free(cm)
+func (cm *CMethod) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(cm))
 }
 
 

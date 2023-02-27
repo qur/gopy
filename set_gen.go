@@ -59,30 +59,8 @@ func (s *Set) Incref() {
 	C.incref(c(s))
 }
 
-// IsTrue returns true if the value of s is considered to be True. This is
-// equivalent to "if s:" in Python.
-func (s *Set) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(s))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of s is considered to be False. This is
-// equivalent to "if not s:" in Python.
-func (s *Set) Not() bool {
-	ret := C.PyObject_Not(c(s))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for s. After calling this method,
-// s should no longer be used.
-func (s *Set) Free() {
-	free(s)
+func (s *Set) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(s))
 }
 
 // Repr returns a String representation of "s". This is equivalent to the

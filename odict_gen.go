@@ -59,30 +59,8 @@ func (o *ODict) Incref() {
 	C.incref(c(o))
 }
 
-// IsTrue returns true if the value of o is considered to be True. This is
-// equivalent to "if o:" in Python.
-func (o *ODict) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(o))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of o is considered to be False. This is
-// equivalent to "if not o:" in Python.
-func (o *ODict) Not() bool {
-	ret := C.PyObject_Not(c(o))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for o. After calling this method,
-// o should no longer be used.
-func (o *ODict) Free() {
-	free(o)
+func (o *ODict) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(o))
 }
 
 // Repr returns a String representation of "o". This is equivalent to the

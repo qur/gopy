@@ -1,5 +1,8 @@
 package py
 
+// #include "utils.h"
+import "C"
+
 import (
 	"reflect"
 	"sync"
@@ -38,16 +41,8 @@ func (c *ClassBaseObject) Incref() {
 	c.base.Incref()
 }
 
-func (c *ClassBaseObject) IsTrue() bool {
-	return c.base.IsTrue()
-}
-
-func (c *ClassBaseObject) Not() bool {
-	return c.base.Not()
-}
-
-func (c *ClassBaseObject) Free() {
-	c.base.Free()
+func (c *ClassBaseObject) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(c.base))
 }
 
 func (c *ClassBaseObject) getCBO() *ClassBaseObject {

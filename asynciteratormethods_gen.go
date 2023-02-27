@@ -46,30 +46,8 @@ func (a *AsyncIteratorMethods) Incref() {
 	C.incref(c(a))
 }
 
-// IsTrue returns true if the value of a is considered to be True. This is
-// equivalent to "if a:" in Python.
-func (a *AsyncIteratorMethods) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(a))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of a is considered to be False. This is
-// equivalent to "if not a:" in Python.
-func (a *AsyncIteratorMethods) Not() bool {
-	ret := C.PyObject_Not(c(a))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for a. After calling this method,
-// a should no longer be used.
-func (a *AsyncIteratorMethods) Free() {
-	free(a)
+func (a *AsyncIteratorMethods) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(a))
 }
 
 

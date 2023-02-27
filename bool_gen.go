@@ -56,30 +56,8 @@ func (b *Bool) Incref() {
 	C.incref(c(b))
 }
 
-// IsTrue returns true if the value of b is considered to be True. This is
-// equivalent to "if b:" in Python.
-func (b *Bool) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(b))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of b is considered to be False. This is
-// equivalent to "if not b:" in Python.
-func (b *Bool) Not() bool {
-	ret := C.PyObject_Not(c(b))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for b. After calling this method,
-// b should no longer be used.
-func (b *Bool) Free() {
-	free(b)
+func (b *Bool) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(b))
 }
 
 

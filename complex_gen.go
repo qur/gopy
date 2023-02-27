@@ -61,30 +61,8 @@ func (co *Complex) Incref() {
 	C.incref(c(co))
 }
 
-// IsTrue returns true if the value of co is considered to be True. This is
-// equivalent to "if co:" in Python.
-func (co *Complex) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(co))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of co is considered to be False. This is
-// equivalent to "if not co:" in Python.
-func (co *Complex) Not() bool {
-	ret := C.PyObject_Not(c(co))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for co. After calling this method,
-// co should no longer be used.
-func (co *Complex) Free() {
-	free(co)
+func (co *Complex) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(co))
 }
 
 // Repr returns a String representation of "co". This is equivalent to the

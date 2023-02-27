@@ -59,30 +59,8 @@ func (ce *Cell) Incref() {
 	C.incref(c(ce))
 }
 
-// IsTrue returns true if the value of ce is considered to be True. This is
-// equivalent to "if ce:" in Python.
-func (ce *Cell) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(ce))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of ce is considered to be False. This is
-// equivalent to "if not ce:" in Python.
-func (ce *Cell) Not() bool {
-	ret := C.PyObject_Not(c(ce))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for ce. After calling this method,
-// ce should no longer be used.
-func (ce *Cell) Free() {
-	free(ce)
+func (ce *Cell) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(ce))
 }
 
 // Repr returns a String representation of "ce". This is equivalent to the

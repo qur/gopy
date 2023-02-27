@@ -46,30 +46,8 @@ func (i *IteratorMethods) Incref() {
 	C.incref(c(i))
 }
 
-// IsTrue returns true if the value of i is considered to be True. This is
-// equivalent to "if i:" in Python.
-func (i *IteratorMethods) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(i))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of i is considered to be False. This is
-// equivalent to "if not i:" in Python.
-func (i *IteratorMethods) Not() bool {
-	ret := C.PyObject_Not(c(i))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for i. After calling this method,
-// i should no longer be used.
-func (i *IteratorMethods) Free() {
-	free(i)
+func (i *IteratorMethods) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(i))
 }
 
 

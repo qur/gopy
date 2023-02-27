@@ -61,30 +61,8 @@ func (g *Gen) Incref() {
 	C.incref(c(g))
 }
 
-// IsTrue returns true if the value of g is considered to be True. This is
-// equivalent to "if g:" in Python.
-func (g *Gen) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(g))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of g is considered to be False. This is
-// equivalent to "if not g:" in Python.
-func (g *Gen) Not() bool {
-	ret := C.PyObject_Not(c(g))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for g. After calling this method,
-// g should no longer be used.
-func (g *Gen) Free() {
-	free(g)
+func (g *Gen) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(g))
 }
 
 // Repr returns a String representation of "g". This is equivalent to the

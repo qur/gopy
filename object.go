@@ -17,9 +17,6 @@ type Object interface {
 	Type() *Type
 	Decref()
 	Incref()
-	IsTrue() bool
-	Not() bool
-	Free()
 }
 
 // Op is the type for the Python comparison operators. Used by the RichCompare

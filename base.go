@@ -46,6 +46,10 @@ func (obj *BaseObject) Free() {
 	free(obj)
 }
 
+func (obj *BaseObject) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(obj))
+}
+
 // HasAttr returns true if "obj" has the attribute "name".  This is equivalent
 // to the Python "hasattr(obj, name)".
 func (obj *BaseObject) HasAttr(name Object) bool {

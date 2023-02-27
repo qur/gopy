@@ -50,30 +50,8 @@ func (e *ExceptionClass) Incref() {
 	C.incref(c(e))
 }
 
-// IsTrue returns true if the value of e is considered to be True. This is
-// equivalent to "if e:" in Python.
-func (e *ExceptionClass) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(e))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of e is considered to be False. This is
-// equivalent to "if not e:" in Python.
-func (e *ExceptionClass) Not() bool {
-	ret := C.PyObject_Not(c(e))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for e. After calling this method,
-// e should no longer be used.
-func (e *ExceptionClass) Free() {
-	free(e)
+func (e *ExceptionClass) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(e))
 }
 
 

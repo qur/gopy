@@ -59,30 +59,8 @@ func (m *Method) Incref() {
 	C.incref(c(m))
 }
 
-// IsTrue returns true if the value of m is considered to be True. This is
-// equivalent to "if m:" in Python.
-func (m *Method) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(m))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of m is considered to be False. This is
-// equivalent to "if not m:" in Python.
-func (m *Method) Not() bool {
-	ret := C.PyObject_Not(c(m))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for m. After calling this method,
-// m should no longer be used.
-func (m *Method) Free() {
-	free(m)
+func (m *Method) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(m))
 }
 
 // Repr returns a String representation of "m". This is equivalent to the

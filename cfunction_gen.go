@@ -59,30 +59,8 @@ func (cf *CFunction) Incref() {
 	C.incref(c(cf))
 }
 
-// IsTrue returns true if the value of cf is considered to be True. This is
-// equivalent to "if cf:" in Python.
-func (cf *CFunction) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(cf))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of cf is considered to be False. This is
-// equivalent to "if not cf:" in Python.
-func (cf *CFunction) Not() bool {
-	ret := C.PyObject_Not(c(cf))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for cf. After calling this method,
-// cf should no longer be used.
-func (cf *CFunction) Free() {
-	free(cf)
+func (cf *CFunction) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(cf))
 }
 
 // Repr returns a String representation of "cf". This is equivalent to the

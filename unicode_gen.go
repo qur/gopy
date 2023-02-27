@@ -63,30 +63,8 @@ func (u *Unicode) Incref() {
 	C.incref(c(u))
 }
 
-// IsTrue returns true if the value of u is considered to be True. This is
-// equivalent to "if u:" in Python.
-func (u *Unicode) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(u))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of u is considered to be False. This is
-// equivalent to "if not u:" in Python.
-func (u *Unicode) Not() bool {
-	ret := C.PyObject_Not(c(u))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for u. After calling this method,
-// u should no longer be used.
-func (u *Unicode) Free() {
-	free(u)
+func (u *Unicode) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(u))
 }
 
 // Repr returns a String representation of "u". This is equivalent to the

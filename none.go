@@ -44,6 +44,10 @@ func (n *NoneObject) Incref() {
 	C.incref(c(n))
 }
 
+func (n *NoneObject) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(n))
+}
+
 // IsTrue returns true if the value of n is considered to be True. This is
 // equivalent to "if n:" in Python.
 func (n *NoneObject) IsTrue() bool {

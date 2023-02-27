@@ -63,30 +63,8 @@ func (l *List) Incref() {
 	C.incref(c(l))
 }
 
-// IsTrue returns true if the value of l is considered to be True. This is
-// equivalent to "if l:" in Python.
-func (l *List) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(l))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of l is considered to be False. This is
-// equivalent to "if not l:" in Python.
-func (l *List) Not() bool {
-	ret := C.PyObject_Not(c(l))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for l. After calling this method,
-// l should no longer be used.
-func (l *List) Free() {
-	free(l)
+func (l *List) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(l))
 }
 
 // Repr returns a String representation of "l". This is equivalent to the

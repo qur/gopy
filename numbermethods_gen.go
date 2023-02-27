@@ -52,30 +52,8 @@ func (n *NumberMethods) Incref() {
 	C.incref(c(n))
 }
 
-// IsTrue returns true if the value of n is considered to be True. This is
-// equivalent to "if n:" in Python.
-func (n *NumberMethods) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(n))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of n is considered to be False. This is
-// equivalent to "if not n:" in Python.
-func (n *NumberMethods) Not() bool {
-	ret := C.PyObject_Not(c(n))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for n. After calling this method,
-// n should no longer be used.
-func (n *NumberMethods) Free() {
-	free(n)
+func (n *NumberMethods) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(n))
 }
 
 

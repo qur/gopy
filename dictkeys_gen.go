@@ -59,30 +59,8 @@ func (d *DictKeys) Incref() {
 	C.incref(c(d))
 }
 
-// IsTrue returns true if the value of d is considered to be True. This is
-// equivalent to "if d:" in Python.
-func (d *DictKeys) IsTrue() bool {
-	ret := C.PyObject_IsTrue(c(d))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Not returns true if the value of d is considered to be False. This is
-// equivalent to "if not d:" in Python.
-func (d *DictKeys) Not() bool {
-	ret := C.PyObject_Not(c(d))
-	if ret < 0 {
-		panic(exception())
-	}
-	return ret != 0
-}
-
-// Free deallocates the storage (in Python) for d. After calling this method,
-// d should no longer be used.
-func (d *DictKeys) Free() {
-	free(d)
+func (d *DictKeys) raw() *C.PyObject {
+	return (*C.PyObject)(unsafe.Pointer(d))
 }
 
 // Repr returns a String representation of "d". This is equivalent to the
