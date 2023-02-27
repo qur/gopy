@@ -78,6 +78,7 @@ func NewTupleFromValues(values ...any) (*Tuple, error) {
 	return t, nil
 }
 
+// CheckExact returns true if the object is actually a Tuple, not a subtype.
 func (t *Tuple) CheckExact() bool {
 	ret := C.tupleCheckE(c(t))
 	return int(ret) != 0
@@ -113,11 +114,14 @@ func (t *Tuple) SetIndexSteal(pos int, obj Object) error {
 
 // PyTuple_ClearFreeList()
 
+// Slice returns the Tuple contents as a slice of Object.
+//
+// Return value: Borrowed References.
 func (t *Tuple) Slice() []Object {
 	l := t.Size()
 	s := make([]Object, l)
 	for i := 0; i < l; i++ {
-		o, err := t.GetIndex(i)
+		o, err := t.BorrowIndex(i)
 		if err != nil {
 			panic(err)
 		}
@@ -126,6 +130,7 @@ func (t *Tuple) Slice() []Object {
 	return s
 }
 
+// String will return a string representation of t.
 func (t *Tuple) String() string {
 	if t == nil {
 		return "<nil>"

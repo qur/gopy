@@ -8,6 +8,11 @@ import (
 	"unsafe"
 )
 
+// CompileFile compiles the Python file at the given path.
+//
+// The returned Code can be turned into a Module using ExecCodeModule.
+//
+// Return value: New Reference.
 func CompileFile(name string) (*Code, error) {
 	data, err := os.ReadFile(name)
 	if err != nil {
@@ -30,13 +35,11 @@ func CompileFile(name string) (*Code, error) {
 	return newCode(ret), nil
 }
 
+// Eval is a simplified function for evaluating a Code object. The code is
+// executed in the environment of the given globals and locals.
+//
+// Return value: New Reference.
 func (co *Code) Eval(globals, locals Object) (Object, error) {
 	ret := C.PyEval_EvalCode(c(co), c(globals), c(locals))
 	return obj2ObjErr(ret)
-}
-
-func (co *Code) NumFree() int {
-	pyCode := (*C.PyCodeObject)(unsafe.Pointer(co))
-	n := C.PyCode_GetNumFree_(pyCode)
-	return int(n)
 }

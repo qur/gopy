@@ -73,7 +73,7 @@ func tryPyFile(cmd, filename string) (CmdFunc, error) {
 		return nil, err
 	}
 
-	fn, err := mod.Base().GetAttrString(cmd)
+	fn, err := mod.GetAttrString(cmd)
 	if err != nil {
 		return nil, err
 	}
