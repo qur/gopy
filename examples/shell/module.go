@@ -63,8 +63,7 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 		bg = py.False
 	}
 
-	err = runCmd(command, cArgs, bg.IsTrue())
-	if err != nil {
+	if err = runCmd(command, cArgs, bg.Base().IsTrue()); err != nil {
 		return nil, err
 	}
 
