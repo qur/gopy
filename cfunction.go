@@ -73,6 +73,10 @@ func makeCFunction(name string, fn interface{}, doc string, mod_name *C.PyObject
 
 // PyCFunction_GetFunction
 
+// Self returns the self Object stored in the CFunction. May return nil, e.g. if
+// the CFunction is a static method.
+//
+// Return Value: Borrowed Reference.
 func (cf *CFunction) Self() (Object, error) {
 	ret := C.PyCFunction_GetSelf(c(cf))
 	if ret == nil {
@@ -81,6 +85,10 @@ func (cf *CFunction) Self() (Object, error) {
 	return newObject(ret), nil
 }
 
+// Flags returns the flags stored in the CFunction. This will include the
+// calling convention to be used.
+//
+// Return Value: Borrowed Reference.
 func (cf *CFunction) Flags() (int, error) {
 	ret := C.PyCFunction_GetFlags(c(cf))
 	return int(ret), exception()

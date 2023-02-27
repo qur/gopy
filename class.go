@@ -17,6 +17,7 @@ var otyp = reflect.TypeOf((*Object)(nil)).Elem()
 // sub-types.
 type ClassFlags uint32
 
+// Flags to enable optional features of classes (types).
 const (
 	ClassHaveGC   = ClassFlags(C.Py_TPFLAGS_HAVE_GC)
 	ClassBaseType = ClassFlags(C.Py_TPFLAGS_BASETYPE)

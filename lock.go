@@ -7,33 +7,53 @@ import (
 	"runtime"
 )
 
-type GilState struct {
+// GILState holds the GIL state for the current thread.
+type GILState struct {
 	state C.PyGILState_STATE
 	set   bool
 }
 
-func GilState_Ensure() *GilState {
-	ret := C.PyGILState_Ensure()
-	return &GilState{ret, true}
+// GILStateEnsure will ensure that the current thread holds the GIL.
+//
+// Use of Lock is recommend over direct use of this function, as it will
+// correctly manage the interaction with goroutines.
+//
+// When the function returns, the current thread will hold the GIL and be able
+// to call arbitrary Python code. Failure is a fatal error.
+//
+// Note: This function is just a convenience for creating an empty GILState and
+// calling Ensure.
+func GILStateEnsure() *GILState {
+	g := &GILState{}
+	g.Ensure()
+	return g
 }
 
-func (g *GilState) Release() {
+// GILStateEnsure will ensure that the current thread holds the GIL.
+//
+// Use of Lock is recommend over direct use of this function, as it will
+// correctly manage the interaction with goroutines.
+//
+// When the function returns, the current thread will hold the GIL and be able
+// to call arbitrary Python code. Failure is a fatal error.
+func (g *GILState) Ensure() {
+	if !g.set {
+		g.state = C.PyGILState_Ensure()
+		g.set = true
+	}
+}
+
+// Release will release the GIL and restore the previously saved state.
+//
+// Use of Lock is recommend over direct use of this function, as it will
+// correctly manage the interaction with goroutines.
+//
+// No Python calls should be until the GIL is obtained again.
+func (g *GILState) Release() {
 	if g.set {
 		C.PyGILState_Release(g.state)
 		g.set = false
 	}
-}
-
-// InitAndLock is a convenience function.  It initializes Python, enables thread
-// support, and returns a locked Lock instance.
-func InitAndLock() *Lock {
-	return initAndLock(false)
-}
-
-// InitAndLockWithSignals is similar to InitAndLock, except that it initializes
-// the Python signal handling too.
-func InitAndLockWithSignals() *Lock {
-	return initAndLock(true)
 }
 
 func initAndLock(initsigs bool) *Lock {
@@ -55,6 +75,18 @@ func initAndLock(initsigs bool) *Lock {
 	// Now that Python is setup, we can return a locked Lock, ready for the
 	// calling code to use
 	return NewLock()
+}
+
+// InitAndLock is a convenience function.  It initializes Python, enables thread
+// support, and returns a locked Lock instance.
+func InitAndLock() *Lock {
+	return initAndLock(false)
+}
+
+// InitAndLockWithSignals is similar to InitAndLock, except that it initializes
+// the Python signal handling too.
+func InitAndLockWithSignals() *Lock {
+	return initAndLock(true)
 }
 
 // Lock is a high-level representation of the Python Global Interpreter Lock
@@ -122,7 +154,7 @@ func initAndLock(initsigs bool) *Lock {
 //	lock := py.InitAndLock()
 //	defer py.Finalize()
 type Lock struct {
-	gilState *GilState
+	gilState *GILState
 	thState  *C.PyThreadState
 }
 
@@ -131,26 +163,6 @@ func NewLock() (lock *Lock) {
 	lock = &Lock{}
 	lock.Lock()
 	return
-}
-
-// Lock locks the lock.  When it returns everything is setup for calling into
-// Python.  No other Python threads will run until either Unlock() or
-// UnblockThreads() are called.
-//
-// If the lock is already locked when this function is called, then nothing
-// happens, and the function will return immediately.
-func (lock *Lock) Lock() {
-	if lock.gilState != nil {
-		return
-	}
-
-	if lock.thState != nil {
-		panic("Lock() called with threads unblocked!")
-	}
-
-	runtime.LockOSThread()
-	lock.gilState = GilState_Ensure()
-	lock.inc()
 }
 
 func (lock *Lock) setCount(l int64) {
@@ -198,6 +210,26 @@ func (lock *Lock) dec() bool {
 	return count == 0
 }
 
+// Lock locks the lock.  When it returns everything is setup for calling into
+// Python.  No other Python threads will run until either Unlock() or
+// UnblockThreads() are called.
+//
+// If the lock is already locked when this function is called, then nothing
+// happens, and the function will return immediately.
+func (lock *Lock) Lock() {
+	if lock.gilState != nil {
+		return
+	}
+
+	if lock.thState != nil {
+		panic("Lock() called with threads unblocked!")
+	}
+
+	runtime.LockOSThread()
+	lock.gilState = GILStateEnsure()
+	lock.inc()
+}
+
 // Unlock unlocks the lock.  When it returns no calls into Python may be made.
 //
 // If the lock is not locked when this function is called, then nothing happens,
@@ -231,6 +263,8 @@ func (lock *Lock) Unlock() {
 //
 // Nothing happens if this function is called more than once, all calls but the
 // first will be ignored.
+//
+// If the lock is not locked, this function will panic.
 func (lock *Lock) UnblockThreads() {
 	if lock.gilState == nil {
 		panic("UnblockThreads() called on Unlocked Lock")
@@ -246,6 +280,8 @@ func (lock *Lock) UnblockThreads() {
 //
 // If this function is called without UnblockThreads() having been called, then
 // nothing happens and the function returns immediately.
+//
+// If the lock is not locked, this function will panic.
 func (lock *Lock) BlockThreads() {
 	if lock.gilState == nil {
 		panic("BlockThreads() called on Unlocked Lock")

@@ -125,6 +125,8 @@ func importerExecModule(mod Object) (Object, error) {
 	return None, nil
 }
 
+// importer is a class that is added to sys.meta_path to import builtin modules
+// implemented in Go.
 var importer = Class{
 	Name: "GoImporter",
 	Static: map[string]any{
