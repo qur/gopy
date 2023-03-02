@@ -79,11 +79,21 @@ func RichCompareNative[T constraints.Ordered](a, b T, op Op) (Object, error) {
 	return False, nil
 }
 
+// AsPython is an optional interface that types can implement to support
+// automatic conversion to Python using the Value methods.
+//
+// The AsPython function should return a new reference to the Python equivalent
+// of the value.
+type AsPython interface {
+	AsPython() (Object, error)
+}
+
 // NewValue will try to return an appropriate Python Object for the supplied
 // value. If the type can't be converted, then a TypeError will be returned.
 //
 // If an Object is supplied, then a new reference to that Object will be
-// returned.
+// returned. If value implements the AsPython interface, then the AsPython
+// method will be called to implement the conversion.
 //
 // Return value: New Reference.
 func NewValue(value any) (Object, error) {
@@ -91,6 +101,8 @@ func NewValue(value any) (Object, error) {
 	case Object:
 		v.Incref()
 		return v, nil
+	case AsPython:
+		return v.AsPython()
 	case bool:
 		return NewBool(v), nil
 	case int:
@@ -123,10 +135,16 @@ func NewValue(value any) (Object, error) {
 		return NewBytes(v), nil
 	case []Object:
 		return NewListFromObjects(v...)
+	case []any:
+		return NewListFromValues(v...)
 	case map[Object]Object:
 		return NewDictFromMap(v)
 	case map[string]Object:
 		return NewDictFromMapString(v)
+	case map[any]any:
+		return NewDictFromValues(v)
+	case map[string]any:
+		return NewDictFromValuesString(v)
 	default:
 		return nil, TypeError.Err("unsupported type %T", v)
 	}
