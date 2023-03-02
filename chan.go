@@ -41,7 +41,7 @@ func NewChan(buffer int) (*Chan, error) {
 		return nil, AssertionError.Err("go module has not been initialized!")
 	}
 
-	obj, err := chanClass.CallGo(nil, nil)
+	obj, err := chanClass.CallGo(A{buffer}, nil)
 	if err != nil {
 		return nil, err
 	}
