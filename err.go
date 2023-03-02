@@ -3,7 +3,10 @@ package py
 // #include "utils.h"
 import "C"
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // Error represents a Python exception as a Go struct that implements the
 // error interface.  It allows Go code to handle Python exceptions in an
@@ -86,6 +89,21 @@ func NewError(kind Object, format string, args ...interface{}) *Error {
 	Incref(kind)
 	val, _ := NewUnicode(msg)
 	return &Error{kind, val, nil}
+}
+
+// AsException returns the ExceptionClass if the error is a py.Error (uses
+// errors.As) with an ExceptionClass as the Kind, or nil otherwise.
+//
+// Return value: Borrowed reference.
+func AsExceptionClass(err error) *ExceptionClass {
+	var pyErr *Error
+	if !errors.As(err, &pyErr) {
+		return nil
+	}
+	if exc, ok := pyErr.Kind.(*ExceptionClass); ok {
+		return exc
+	}
+	return nil
 }
 
 func exceptionRaised() bool {
