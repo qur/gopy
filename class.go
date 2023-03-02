@@ -199,14 +199,16 @@ func Clear[T Object](f *T) {
 }
 
 // ClearClassObject clears any contained Objects in the given instance. This
-// function will correctly clear (i.e. decref and set to nil) any contained
-// Objects in the supplied ClassObject.
+// function will correctly clear (i.e. decref and set to nil) any exported
+// contained Objects in the supplied ClassObject. If the ClassObject contains
+// private Objects then they will need to Cleared explicitly using Clear from a
+// Dealloc method.
 func ClearClassObject(co ClassObject) {
 	v := reflect.ValueOf(co).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
-		if !f.Type().Implements(otyp) || f.IsNil() {
-			// only care about non-nil Object values
+		if !f.Type().Implements(otyp) || f.IsNil() || !v.Type().Field(i).IsExported() {
+			// only care about exported non-nil Object values
 			continue
 		}
 		// Copy the behaviour of Py_CLEAR to avoid issues with loops when
