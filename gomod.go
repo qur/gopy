@@ -37,45 +37,39 @@ func InitGoModule() (*Module, error) {
 		return goModule, nil
 	}
 
-	goModule, err := CreateModule(&modDef)
+	mod, err := CreateModule(&modDef)
 	if err != nil {
 		return nil, err
 	}
+	defer mod.Decref()
 
 	if err := chanClass.Create(); err != nil {
-		goModule.Decref()
-		goModule = nil
 		return nil, err
 	}
 
-	if err := goModule.AddObjectRef("Chan", &chanClass); err != nil {
-		goModule.Decref()
-		goModule = nil
+	if err := mod.AddObjectRef("Chan", &chanClass); err != nil {
 		return nil, err
 	}
 
 	chanClosedError, err := NewException("go.ChanClosedError", nil, nil)
 	if err != nil {
-		goModule.Decref()
-		goModule = nil
+		return nil, err
+	}
+	defer chanClosedError.Decref()
+
+	if err := mod.AddObjectRef("ChanClosedError", chanClosedError); err != nil {
 		return nil, err
 	}
 
-	if err := goModule.AddObjectRef("ChanClosedError", chanClosedError); err != nil {
-		goModule.Decref()
-		chanClosedError.Decref()
-		goModule = nil
-		return nil, err
-	}
-
-	if err := goModule.Register(); err != nil {
-		goModule.Decref()
-		chanClosedError.Decref()
-		goModule = nil
+	if err := mod.Register(); err != nil {
 		return nil, err
 	}
 
 	ChanClosedError = chanClosedError
+	chanClosedError.Incref()
 
-	return goModule, nil
+	goModule = mod
+	mod.Incref()
+
+	return mod, nil
 }

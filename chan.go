@@ -37,7 +37,7 @@ func NewChan(buffer int) (*Chan, error) {
 	goModLock.Lock()
 	defer goModLock.Unlock()
 
-	if goModule == nil {
+	if ChanClosedError == nil {
 		return nil, AssertionError.Err("go module has not been initialized!")
 	}
 
