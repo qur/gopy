@@ -368,10 +368,6 @@ func (cls *Class) Create() error {
 	typ := reflect.TypeOf(cls.Object)
 	btyp := typ.Elem()
 
-	if btyp.NumField() == 0 {
-		return fmt.Errorf("%s does not embed an Object", btyp.Name())
-	}
-
 	methods := make(map[string]method)
 	props := make(map[string]prop)
 
