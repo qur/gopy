@@ -37,11 +37,14 @@ func InitGoModule() (*Module, error) {
 		return goModule, nil
 	}
 
+	rm := NewRefManager()
+	defer rm.Decref()
+
 	mod, err := CreateModule(&modDef)
+	rm.Add(mod)
 	if err != nil {
 		return nil, err
 	}
-	defer mod.Decref()
 
 	if err := chanClass.Create(); err != nil {
 		return nil, err
@@ -52,10 +55,10 @@ func InitGoModule() (*Module, error) {
 	}
 
 	chanClosedError, err := NewException("go.ChanClosedError", nil, nil)
+	rm.Add(chanClosedError)
 	if err != nil {
 		return nil, err
 	}
-	defer chanClosedError.Decref()
 
 	if err := mod.AddObjectRef("ChanClosedError", chanClosedError); err != nil {
 		return nil, err
@@ -65,11 +68,9 @@ func InitGoModule() (*Module, error) {
 		return nil, err
 	}
 
+	rm.Clear()
 	ChanClosedError = chanClosedError
-	chanClosedError.Incref()
-
 	goModule = mod
-	mod.Incref()
 
 	return mod, nil
 }

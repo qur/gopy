@@ -50,6 +50,9 @@ type ModuleDef struct {
 //
 // Return value: New Reference.
 func CreateModule(md *ModuleDef) (*Module, error) {
+	rm := NewRefManager()
+	defer rm.Decref()
+
 	pyMD := C.newModuleDef()
 
 	pyMD.m_name = C.CString(md.Name)
@@ -62,18 +65,17 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 		return nil, exception()
 	}
 	mod := newModule(m)
+	rm.Add(mod)
 
 	if md.Package {
 		// mark module as package by adding an empty list as __path__
 		l, err := NewList(0)
+		rm.Add(l)
 		if err != nil {
-			mod.Decref()
 			return nil, err
 		}
-		defer l.Decref()
 
 		if err := mod.AddObjectRef("__path__", l); err != nil {
-			mod.Decref()
 			return nil, err
 		}
 	}
@@ -84,31 +86,28 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 
 	n := C.PyUnicode_FromString(pyMD.m_name)
 	if n == nil {
-		mod.Decref()
 		return nil, exception()
 	}
-	defer newObject(n).Decref()
+	rm.add(n)
 
 	d := C.PyModule_GetDict(m)
 	if d == nil {
-		mod.Decref()
 		return nil, exception()
 	}
 
 	for _, method := range md.Methods {
 		pyF, err := makeCFunction(method.Name, method.Func, method.Doc, n)
+		rm.Add(pyF)
 		if err != nil {
-			mod.Decref()
 			return nil, err
 		}
-		defer pyF.Decref()
 
 		if C.PyDict_SetItemString(d, C.CString(method.Name), c(pyF)) != 0 {
-			mod.Decref()
 			return nil, exception()
 		}
 	}
 
+	rm.Remove(mod)
 	return mod, nil
 }
 
