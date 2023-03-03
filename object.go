@@ -152,15 +152,15 @@ func NewValue(value any) (Object, error) {
 
 // Decref decrements obj's reference count, obj may be nil.
 func Decref(obj Object) {
-	if obj != nil {
-		C.decref(c(obj))
+	if o := c(obj); o != nil {
+		C.decref(o)
 	}
 }
 
 // Incref increments obj's reference count, obj may be nil.
 func Incref(obj Object) {
-	if obj != nil {
-		C.incref(c(obj))
+	if o := c(obj); o != nil {
+		C.incref(o)
 	}
 }
 
