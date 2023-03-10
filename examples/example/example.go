@@ -202,32 +202,32 @@ func main() {
 
 	m, err := py.CreateModule(&modDef)
 	if err != nil {
-		log.Fatalf("ERROR: %s", err)
+		log.Fatalf("ERROR CreateModule example: %s", err)
 	}
 
 	if err := exampleClass.Create(); err != nil {
-		log.Fatalf("ERROR: %s", err)
+		log.Fatalf("ERROR exampleClass.Create: %s", err)
 	}
 
 	if err = m.AddObjectRef("ExampleClass", &exampleClass); err != nil {
-		log.Fatalf("ERROR: %s", err)
+		log.Fatalf("ERROR Add ExampleClass: %s", err)
 	}
 
 	if err := m.Register(); err != nil {
-		log.Fatalf("ERROR: %s", err)
+		log.Fatalf("ERROR Register example: %s", err)
 	}
 
 	s, err := py.CreateModule(&subDef)
 	if err != nil {
-		log.Fatalf("ERROR: %s", err)
+		log.Fatalf("ERROR CreateModule sub: %s", err)
 	}
 
 	if err := s.Register(); err != nil {
-		log.Fatalf("ERROR: %s", err)
+		log.Fatalf("ERROR Register sub: %s", err)
 	}
 
 	if _, err := py.InitGoModule(); err != nil {
-		log.Fatalf("ERROR: %s", err)
+		log.Fatalf("ERROR InitGoModule: %s", err)
 	}
 
 	py.Main(os.Args)

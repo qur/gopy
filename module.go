@@ -81,6 +81,7 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 	}
 
 	if len(md.Methods) == 0 {
+		rm.Remove(mod)
 		return mod, nil
 	}
 

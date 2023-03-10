@@ -1,6 +1,7 @@
 package py
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -43,15 +44,15 @@ func InitGoModule() (*Module, error) {
 	mod, err := CreateModule(&modDef)
 	rm.Add(mod)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create go module: %w", err)
 	}
 
 	if err := chanClass.Create(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create chan class: %w", err)
 	}
 
 	if err := mod.AddObjectRef("Chan", &chanClass); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to add Chan to go module (%p%T): %w", mod, mod, err)
 	}
 
 	chanClosedError, err := NewException("go.ChanClosedError", nil, nil)
@@ -61,11 +62,11 @@ func InitGoModule() (*Module, error) {
 	}
 
 	if err := mod.AddObjectRef("ChanClosedError", chanClosedError); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to add ChanCloserError to go module: %w", err)
 	}
 
 	if err := mod.Register(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to register go module: %w", err)
 	}
 
 	rm.Clear()
