@@ -365,7 +365,7 @@ void storeContext(PyTypeObject *t, ClassContext *c) {
 int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {
   return PyDict_SetItemString(tp->tp_dict, name, o);
 }
-int doVisit(PyObject *o, void *v, void *a) {
+int doVisit(PyObject *o, visitproc v, void *a) {
   visitproc visit = v;
   return visit(o, a);
 }
@@ -413,6 +413,13 @@ size_t tupleItemSize(void) { return sizeof(PyObject *); }
 PyObject *typeAlloc(PyObject *t, Py_ssize_t n) {
   return ((PyTypeObject *)t)->tp_alloc((PyTypeObject *)t, n);
 }
+PyObject *typeNew(PyTypeObject *t, PyTypeObject *s, PyObject *a, PyObject *k) {
+  return t->tp_new(s, a, k);
+}
+int typeTraverse(PyTypeObject *t, PyObject *obj, visitproc visit, void *arg) {
+  return t->tp_traverse(obj, visit, arg);
+}
+int typeClear(PyTypeObject *t, PyObject *obj) { return t->tp_clear(obj); }
 int typeInit(PyObject *t, PyObject *o, PyObject *a, PyObject *k) {
   return ((PyTypeObject *)t)->tp_init(o, a, k);
 }

@@ -3,42 +3,53 @@ package py
 // #include "utils.h"
 import "C"
 import (
+	"log"
 	"reflect"
 	"unsafe"
 )
 
 //export goClassTraverse
-func goClassTraverse(obj, visit, arg unsafe.Pointer) int {
-	co := getClassObject(obj)
+func goClassTraverse(obj *C.PyObject, visit C.visitproc, arg unsafe.Pointer) C.int {
+	co := getClassObject(unsafe.Pointer(obj))
 	if co == nil {
 		raise(TypeError.Err("not a recognised type: %s", newObject((*C.PyObject)(obj)).Type()))
 		return -1
 	}
 
-	v := reflect.ValueOf(co)
+	v := reflect.ValueOf(co).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
-		if !f.Type().Implements(otyp) || f.IsNil() {
-			// only care about non-nil Object values
+		if !f.Type().Implements(otyp) || f.Type() == cboType || f.IsNil() {
+			// only care about non-nil Object values that aren't ClassBaseObject
 			continue
 		}
 		if ret := C.doVisit((*C.PyObject)(f.UnsafePointer()), visit, arg); ret != 0 {
-			return int(ret)
+			return ret
 		}
+	}
+
+	base := co.Type().o.tp_base
+	if base != nil {
+		return C.typeTraverse(base, obj, visit, arg)
 	}
 
 	return 0
 }
 
 //export goClassClear
-func goClassClear(obj unsafe.Pointer) int {
-	co := getClassObject(obj)
+func goClassClear(obj *C.PyObject) C.int {
+	co := getClassObject(unsafe.Pointer(obj))
 	if co == nil {
 		raise(TypeError.Err("not a recognised type: %s", newObject((*C.PyObject)(obj)).Type()))
 		return -1
 	}
 
 	ClearClassObject(co)
+
+	base := co.Type().o.tp_base
+	if base != nil {
+		return C.typeClear(base, obj)
+	}
 
 	return 0
 }
@@ -78,9 +89,11 @@ func goClassDealloc(obj unsafe.Pointer) {
 func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	// Get the Python type object
 	pyType := (*C.PyTypeObject)(typ)
+	base := pyType.tp_base
 
 	class := getClass(pyType)
 
+	// must be parent type that is a class
 	for class == nil && pyType.tp_base != nil {
 		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
 		class = getClass(pyType)
@@ -91,9 +104,6 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 		raise(TypeError.Err("Not a recognised type: %s", t))
 		return nil
 	}
-
-	// Get typ ready to use by turning into *Type
-	t := newType((*C.PyTypeObject)(typ))
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
@@ -108,7 +118,7 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 
 	// allocate the Python proxy object
-	pyObj := unsafe.Pointer(C.typeAlloc(c(t), C.Py_ssize_t(0)))
+	pyObj := unsafe.Pointer(C.typeNew(base, (*C.PyTypeObject)(typ), (*C.PyObject)(args), (*C.PyObject)(kwds)))
 	if pyObj == nil {
 		return nil
 	}

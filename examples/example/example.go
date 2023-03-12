@@ -180,6 +180,22 @@ var exampleClass = py.Class{
 	Object: (*Example)(nil),
 }
 
+type MyDict struct {
+	py.ClassBaseObject
+}
+
+func (d *MyDict) Init(args *py.Tuple, kwds *py.Dict) error {
+	fmt.Printf("MyDict.PyInit: e=%p args=%v, kwds=%v\n", d, args, kwds)
+	return nil
+}
+
+var dictClass = py.Class{
+	Name:     "example.MyDict",
+	BaseType: py.DictType,
+	Flags:    py.ClassHaveGC,
+	Object:   (*MyDict)(nil),
+}
+
 var modDef = py.ModuleDef{
 	Name:    "example",
 	Package: true,
@@ -211,6 +227,14 @@ func main() {
 
 	if err = m.AddObjectRef("ExampleClass", &exampleClass); err != nil {
 		log.Fatalf("ERROR Add ExampleClass: %s", err)
+	}
+
+	if err := dictClass.Create(); err != nil {
+		log.Fatalf("ERROR dictClass.Create: %s", err)
+	}
+
+	if err = m.AddObjectRef("MyDict", &dictClass); err != nil {
+		log.Fatalf("ERROR Add MyDict: %s", err)
 	}
 
 	if err := m.Register(); err != nil {

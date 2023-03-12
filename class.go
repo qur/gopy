@@ -38,6 +38,9 @@ const (
 // Python type instance for this class. Calling RawType will return the same
 // Python instance as a Type.
 //
+// BaseType is the base type of the class. Although it is an Object, this value
+// must be either a *Type or *Class (or nil for no base type).
+//
 // Object should be set to a pointer of the struct type that will represent an
 // instance of the Python class.  This struct must contain an embedded
 // py.ClassBaseObject.  The easiest ways to set Object are either to use a
@@ -92,15 +95,16 @@ const (
 // To create a new instance of the Class in Go, then use the Callable methods
 // (i.e. Call or CallGo), which map to the Python expression "cls(...)".
 type Class struct {
-	Name   string
-	Flags  ClassFlags
-	Doc    string
-	Object ClassObject
-	Static map[string]any
-	Class  map[string]any
-	New    func(*Class, *Tuple, *Dict) (ClassObject, error)
-	User   any
-	base   *Type
+	Name     string
+	Flags    ClassFlags
+	Doc      string
+	BaseType Object
+	Object   ClassObject
+	Static   map[string]any
+	Class    map[string]any
+	New      func(*Class, *Tuple, *Dict) (ClassObject, error)
+	User     any
+	base     *Type
 }
 
 var _ Object = (*Class)(nil)
@@ -117,7 +121,8 @@ func (cls *Class) Type() *Type {
 	return cls.base.Type()
 }
 
-// RawType returns the Typo that represents this class in Python.
+// RawType returns the Type that represents this class in Python. The returned
+// value is the same Python object, but as *Type instead of *Class.
 //
 // Return value: Borrowed Reference.
 func (cls *Class) RawType() *Type {
@@ -207,7 +212,7 @@ func ClearClassObject(co ClassObject) {
 	v := reflect.ValueOf(co).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
-		if !f.Type().Implements(otyp) || f.IsNil() || !v.Type().Field(i).IsExported() {
+		if !f.Type().Implements(otyp) || f.Type() == cboType || f.IsNil() || !v.Type().Field(i).IsExported() {
 			// only care about exported non-nil Object values
 			continue
 		}
@@ -360,6 +365,36 @@ func (cls *Class) Create() error {
 	pyType := C.newType()
 	pyType.tp_name = C.CString(cls.Name)
 	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(cls.Flags)
+	pyType.tp_basicsize = C.Py_ssize_t(unsafe.Sizeof(C.PyObject{}))
+	pyType.tp_itemsize = 0
+
+	// start by validating BaseType
+	switch b := cls.BaseType.(type) {
+	case nil:
+		// ok, no base type
+	case *Type:
+		// *Type is good, but shouldn't be nil
+		if b == nil {
+			return fmt.Errorf("BaseType set, but nil")
+		}
+		pyType.tp_base = b.c()
+		pyType.tp_basicsize = b.o.tp_basicsize
+		pyType.tp_basicsize = b.o.tp_itemsize
+	case *Class:
+		// *Class is good, but should be initialised and not nil
+		if b == nil {
+			return fmt.Errorf("BaseType set, but nil")
+		}
+		raw := b.RawType()
+		if raw == nil {
+			return fmt.Errorf("Can't use uninitialised *Class as BaseType")
+		}
+		pyType.tp_base = raw.c()
+		pyType.tp_basicsize = raw.o.tp_basicsize
+		pyType.tp_basicsize = raw.o.tp_itemsize
+	default:
+		return fmt.Errorf("%T is not a supported type for BaseType", b)
+	}
 
 	if cls.Object == nil {
 		cls.Object = &ClassBaseObject{}
@@ -440,8 +475,6 @@ func (cls *Class) Create() error {
 		}
 		methods[name] = method{key, flags | C.METH_CLASS}
 	}
-
-	pyType.tp_basicsize = C.Py_ssize_t(unsafe.Sizeof(C.PyObject{}))
 
 	ctxt := C.setSlots(pyType, slotFlags)
 
