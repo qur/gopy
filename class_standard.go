@@ -86,10 +86,9 @@ func goClassDealloc(obj unsafe.Pointer) {
 }
 
 //export goClassNew
-func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
+func goClassNew(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 	// Get the Python type object
-	pyType := (*C.PyTypeObject)(typ)
-	base := pyType.tp_base
+	pyType := typ
 
 	class := getClass(pyType)
 
@@ -107,8 +106,8 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
-	a := newTuple((*C.PyObject)(args))
-	k := newDict((*C.PyObject)(kwds))
+	a := newTuple(args)
+	k := newDict(kwds)
 
 	// allocate the go object
 	goObj, err := class.newObject(a, k)
@@ -118,7 +117,7 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 
 	// allocate the Python proxy object
-	pyObj := unsafe.Pointer(C.typeNew(base, (*C.PyTypeObject)(typ), (*C.PyObject)(args), (*C.PyObject)(kwds)))
+	pyObj := unsafe.Pointer(C.typeNew(pyType.tp_base, typ, args, kwds))
 	if pyObj == nil {
 		return nil
 	}
@@ -136,5 +135,5 @@ func goClassNew(typ, args, kwds unsafe.Pointer) unsafe.Pointer {
 	}
 	registerClassObject(pyObj, goObj)
 
-	return pyObj
+	return (*C.PyObject)(pyObj)
 }
