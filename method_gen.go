@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Method represents objects of the MethodType (or PyMethodType
+// Method represents objects of the MethodType (or PyMethod_Type
 // in the Python API) type.
 type Method struct {
 	o C.PyMethodObject

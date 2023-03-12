@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Set represents objects of the SetType (or PySetType
+// Set represents objects of the SetType (or PySet_Type
 // in the Python API) type.
 type Set struct {
 	o C.PySetObject

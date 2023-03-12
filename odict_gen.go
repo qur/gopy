@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// ODict represents objects of the ODictType (or PyODictType
+// ODict represents objects of the ODictType (or PyODict_Type
 // in the Python API) type.
 type ODict struct {
 	o C.PyODictObject

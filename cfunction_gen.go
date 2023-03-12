@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// CFunction represents objects of the CFunctionType (or PyCFunctionType
+// CFunction represents objects of the CFunctionType (or PyCFunction_Type
 // in the Python API) type.
 type CFunction struct {
 	o C.PyCFunctionObject

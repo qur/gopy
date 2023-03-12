@@ -105,4 +105,9 @@ var basic = map[string]typeSettings{
 		New:   true,
 		Type:  true,
 	},
+	"Super": {
+		Check: false,
+		New:   true,
+		Type:  true,
+	},
 }

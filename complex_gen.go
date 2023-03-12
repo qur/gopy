@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Complex represents objects of the ComplexType (or PyComplexType
+// Complex represents objects of the ComplexType (or PyComplex_Type
 // in the Python API) type.
 //
 // This type implements the Number protocol.

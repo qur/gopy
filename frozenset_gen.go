@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// FrozenSet represents objects of the FrozenSetType (or PyFrozenSetType
+// FrozenSet represents objects of the FrozenSetType (or PyFrozenSet_Type
 // in the Python API) type.
 type FrozenSet struct {
 	o C.PyObject

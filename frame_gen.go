@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Frame represents objects of the FrameType (or PyFrameType
+// Frame represents objects of the FrameType (or PyFrame_Type
 // in the Python API) type.
 type Frame struct {
 	o C.PyFrameObject

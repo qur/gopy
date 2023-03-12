@@ -186,7 +186,14 @@ type MyDict struct {
 
 func (d *MyDict) Init(args *py.Tuple, kwds *py.Dict) error {
 	fmt.Printf("MyDict.PyInit: e=%p args=%v, kwds=%v\n", d, args, kwds)
-	return nil
+	super, err := dictClass.Super(d)
+	if err != nil {
+		return err
+	}
+	o, err := super.CallMethod("__init__", args, kwds)
+	log.Printf("super.__init__: %T %v", o, err)
+	py.Decref(o)
+	return err
 }
 
 var dictClass = py.Class{

@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Unicode represents objects of the UnicodeType (or PyUnicodeType
+// Unicode represents objects of the UnicodeType (or PyUnicode_Type
 // in the Python API) type.
 //
 // This type implements the Mapping protocol.

@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Bytes represents objects of the BytesType (or PyBytesType
+// Bytes represents objects of the BytesType (or PyBytes_Type
 // in the Python API) type.
 //
 // This type implements the Mapping protocol.

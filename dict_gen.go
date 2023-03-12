@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Dict represents objects of the DictType (or PyDictType
+// Dict represents objects of the DictType (or PyDict_Type
 // in the Python API) type.
 //
 // This type implements the Mapping protocol.

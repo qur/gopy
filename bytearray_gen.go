@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// ByteArray represents objects of the ByteArrayType (or PyByteArrayType
+// ByteArray represents objects of the ByteArrayType (or PyByteArray_Type
 // in the Python API) type.
 //
 // This type implements the Mapping protocol.

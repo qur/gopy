@@ -177,6 +177,32 @@ func (cls *Class) CallGo(args []any, kwds map[string]any) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
+// Super returns a Super object for the Class. If obj is not nil, then it will
+// be a bound Super to that object.
+//
+// This is equivalent to `super(cls, obj)` in Python, or `super(cls)` if obj is
+// nil.
+//
+// Return value: New Reference.
+func (cls *Class) Super(obj Object) (*Super, error) {
+	args := make([]Object, 0, 2)
+	cls.Incref()
+	args = append(args, cls)
+	if obj != nil {
+		obj.Incref()
+		args = append(args, obj)
+	}
+	t, err := PackTuple(args...)
+	if err != nil {
+		return nil, err
+	}
+	o, err := SuperType.Call(t, nil)
+	if err != nil {
+		return nil, err
+	}
+	return newSuper(c(o)), nil
+}
+
 func (cls *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 	// simple case, a New method has been provided
 	if cls.New != nil {

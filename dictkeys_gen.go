@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// DictKeys represents objects of the DictKeysType (or PyDictKeysType
+// DictKeys represents objects of the DictKeysType (or PyDictKeys_Type
 // in the Python API) type.
 type DictKeys struct {
 	o C.PyDictKeysObject

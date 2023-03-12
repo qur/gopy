@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Code represents objects of the CodeType (or PyCodeType
+// Code represents objects of the CodeType (or PyCode_Type
 // in the Python API) type.
 type Code struct {
 	o C.PyCodeObject

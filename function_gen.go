@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Function represents objects of the FunctionType (or PyFunctionType
+// Function represents objects of the FunctionType (or PyFunction_Type
 // in the Python API) type.
 type Function struct {
 	o C.PyFunctionObject

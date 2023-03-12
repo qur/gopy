@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// InstanceMethod represents objects of the InstanceMethodType (or PyInstanceMethodType
+// InstanceMethod represents objects of the InstanceMethodType (or PyInstanceMethod_Type
 // in the Python API) type.
 type InstanceMethod struct {
 	o C.PyInstanceMethodObject

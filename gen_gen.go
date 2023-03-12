@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Gen represents objects of the GenType (or PyGenType
+// Gen represents objects of the GenType (or PyGen_Type
 // in the Python API) type.
 //
 // This type implements the Iterator protocol.

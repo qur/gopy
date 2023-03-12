@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// List represents objects of the ListType (or PyListType
+// List represents objects of the ListType (or PyList_Type
 // in the Python API) type.
 //
 // This type implements the Mapping protocol.

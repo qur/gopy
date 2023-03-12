@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Slice represents objects of the SliceType (or PySliceType
+// Slice represents objects of the SliceType (or PySlice_Type
 // in the Python API) type.
 type Slice struct {
 	o C.PySliceObject

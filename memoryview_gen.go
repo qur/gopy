@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// MemoryView represents objects of the MemoryViewType (or PyMemoryViewType
+// MemoryView represents objects of the MemoryViewType (or PyMemoryView_Type
 // in the Python API) type.
 //
 // This type implements the Mapping protocol.

@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// CMethod represents objects of the CMethodType (or PyCMethodType
+// CMethod represents objects of the CMethodType (or PyCMethod_Type
 // in the Python API) type.
 type CMethod struct {
 	o C.PyCMethodObject

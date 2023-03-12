@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Type represents objects of the TypeType (or PyTypeType
+// Type represents objects of the TypeType (or PyType_Type
 // in the Python API) type.
 type Type struct {
 	o C.PyTypeObject

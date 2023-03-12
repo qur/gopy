@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Tuple represents objects of the TupleType (or PyTupleType
+// Tuple represents objects of the TupleType (or PyTuple_Type
 // in the Python API) type.
 //
 // This type implements the Mapping protocol.

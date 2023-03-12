@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Float represents objects of the FloatType (or PyFloatType
+// Float represents objects of the FloatType (or PyFloat_Type
 // in the Python API) type.
 //
 // This type implements the Number protocol.

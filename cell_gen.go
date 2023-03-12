@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Cell represents objects of the CellType (or PyCellType
+// Cell represents objects of the CellType (or PyCell_Type
 // in the Python API) type.
 type Cell struct {
 	o C.PyCellObject

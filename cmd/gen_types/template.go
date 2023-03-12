@@ -16,7 +16,7 @@ import (
 {{ if .settings.Doc -}}
 {{ .settings.Doc -}}
 {{ else -}}
-// {{ .type }} represents objects of the {{ .type }}Type (or Py{{ .type }}Type
+// {{ .type }} represents objects of the {{ .type }}Type (or Py{{ .type }}_Type
 // in the Python API) type.{{ if .funcs.mp_subscript }}
 //
 // This type implements the Mapping protocol.

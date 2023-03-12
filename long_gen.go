@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Long represents objects of the LongType (or PyLongType
+// Long represents objects of the LongType (or PyLong_Type
 // in the Python API) type.
 //
 // This type implements the Number protocol.
