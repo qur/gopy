@@ -6,15 +6,17 @@ import "C"
 import (
 	"fmt"
 	"reflect"
+	"unsafe"
 )
 
 func getField(obj, arg *C.PyObject) (reflect.Value, reflect.StructField, error) {
-	o := getClassObject(obj)
+	pyType := unsafe.Pointer(C.PyTuple_GetItem(arg, 0))
+	o := getClassObjectByType(obj, (*C.PyTypeObject)(pyType))
 	if o == nil {
 		return reflect.Value{}, reflect.StructField{}, fmt.Errorf("unknown object")
 	}
 
-	idx := int(C.PyLong_AsLong(arg))
+	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(arg, 1)))
 
 	return reflect.ValueOf(o).Elem().Field(idx), reflect.TypeOf(o).Elem().Field(idx), nil
 }

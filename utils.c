@@ -225,14 +225,16 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
 PyObject *newObjMember(PyTypeObject *type, char *name, PyObject *idx, char *doc,
                        int ro) {
   PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
-
   if (gsp == NULL) return NULL;
+
+  PyObject *context = PyTuple_Pack(2, type, idx);
+  if (context == NULL) return NULL;
 
   gsp->name = name;
   gsp->get = (getter)goClassObjGet;
   gsp->set = NULL;
   gsp->doc = doc;
-  gsp->closure = idx;
+  gsp->closure = context;
 
   if (!ro) {
     gsp->set = (setter)goClassObjSet;
@@ -244,14 +246,16 @@ PyObject *newObjMember(PyTypeObject *type, char *name, PyObject *idx, char *doc,
 PyObject *newNatMember(PyTypeObject *type, char *name, PyObject *idx, char *doc,
                        int ro) {
   PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
-
   if (gsp == NULL) return NULL;
+
+  PyObject *context = PyTuple_Pack(2, type, idx);
+  if (context == NULL) return NULL;
 
   gsp->name = name;
   gsp->get = (getter)goClassNatGet;
   gsp->set = NULL;
   gsp->doc = doc;
-  gsp->closure = idx;
+  gsp->closure = context;
 
   if (!ro) {
     gsp->set = (setter)goClassNatSet;
