@@ -267,14 +267,16 @@ PyObject *newNatMember(PyTypeObject *type, char *name, PyObject *idx, char *doc,
 PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,
                       PyObject *set) {
   PyGetSetDef *gsp = calloc(1, sizeof(PyGetSetDef));
-
   if (gsp == NULL) return NULL;
+
+  PyObject *context = PyTuple_Pack(3, type, Py_None, Py_None);
+  if (context == NULL) return NULL;
 
   gsp->name = name;
   gsp->get = NULL;
   gsp->set = NULL;
   gsp->doc = "";
-  gsp->closure = PyTuple_Pack(3, type, Py_None, Py_None);
+  gsp->closure = context;
 
   if (get != NULL) {
     gsp->get = (getter)goClassGetProp;
