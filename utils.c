@@ -274,16 +274,18 @@ PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,
   gsp->get = NULL;
   gsp->set = NULL;
   gsp->doc = "";
-  gsp->closure = PyTuple_Pack(2, Py_None, Py_None);
+  gsp->closure = PyTuple_Pack(3, type, Py_None, Py_None);
 
   if (get != NULL) {
     gsp->get = (getter)goClassGetProp;
-    PyTuple_SetItem(gsp->closure, 0, get);
+    PyTuple_SetItem(gsp->closure, 1, get);
+    Py_DECREF(Py_None);
   }
 
   if (set != NULL) {
     gsp->set = (setter)goClassSetProp;
-    PyTuple_SetItem(gsp->closure, 1, set);
+    PyTuple_SetItem(gsp->closure, 2, set);
+    Py_DECREF(Py_None);
   }
 
   return PyDescr_NewGetSet(type, gsp);

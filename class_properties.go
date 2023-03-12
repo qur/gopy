@@ -5,15 +5,17 @@ import "C"
 
 import (
 	"reflect"
+	"unsafe"
 )
 
 //export goClassGetProp
 func goClassGetProp(obj, closure *C.PyObject) *C.PyObject {
 	// Unpack get function from closure
-	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(closure, 0)))
+	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(closure, 1)))
 
 	// Turn obj into the ClassObject instead of the proxy
-	co := newObject(obj).(ClassObject)
+	pyType := unsafe.Pointer(C.PyTuple_GetItem(closure, 0))
+	co := getClassObjectByType(obj, (*C.PyTypeObject)(pyType))
 	m := reflect.ValueOf(co).Method(idx).Interface()
 
 	// Turn the function into something we can call
@@ -25,10 +27,11 @@ func goClassGetProp(obj, closure *C.PyObject) *C.PyObject {
 //export goClassSetProp
 func goClassSetProp(obj, arg, closure *C.PyObject) C.int {
 	// Unpack set function from closure
-	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(closure, 1)))
+	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(closure, 2)))
 
 	// Turn obj into the ClassObject instead of the proxy
-	co := newObject(obj).(ClassObject)
+	pyType := unsafe.Pointer(C.PyTuple_GetItem(closure, 0))
+	co := getClassObjectByType(obj, (*C.PyTypeObject)(pyType))
 	m := reflect.ValueOf(co).Method(idx).Interface()
 
 	// Turn arg into something usable
