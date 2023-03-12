@@ -6,22 +6,21 @@ import "C"
 import (
 	"fmt"
 	"reflect"
-	"unsafe"
 )
 
-func getField(obj, arg unsafe.Pointer) (reflect.Value, reflect.StructField, error) {
+func getField(obj, arg *C.PyObject) (reflect.Value, reflect.StructField, error) {
 	o := getClassObject(obj)
 	if o == nil {
 		return reflect.Value{}, reflect.StructField{}, fmt.Errorf("unknown object")
 	}
 
-	idx := int(C.PyLong_AsLong((*C.PyObject)(arg)))
+	idx := int(C.PyLong_AsLong(arg))
 
 	return reflect.ValueOf(o).Elem().Field(idx), reflect.TypeOf(o).Elem().Field(idx), nil
 }
 
 //export goClassNatGet
-func goClassNatGet(obj, idx unsafe.Pointer) *C.PyObject {
+func goClassNatGet(obj, idx *C.PyObject) *C.PyObject {
 	f, _, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
@@ -48,7 +47,7 @@ func goClassNatGet(obj, idx unsafe.Pointer) *C.PyObject {
 }
 
 //export goClassNatSet
-func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
+func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 	f, t, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
@@ -56,8 +55,7 @@ func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
 	}
 
 	// This is the new value we are being asked to set
-	value := (*C.PyObject)(obj2)
-	o := newObject(value)
+	o := newObject(obj2)
 
 	switch f.Type().Kind() {
 	case reflect.Bool:
@@ -69,14 +67,14 @@ func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
 		f.SetBool(b.Bool())
 		return 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v := int64(C.PyLong_AsLong(value))
+		v := int64(C.PyLong_AsLong(obj2))
 		if exceptionRaised() {
 			return -1
 		}
 		f.SetInt(v)
 		return 0
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		v := int64(C.PyLong_AsLong(value))
+		v := int64(C.PyLong_AsLong(obj2))
 		if exceptionRaised() {
 			return -1
 		}
@@ -87,14 +85,14 @@ func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
 		f.SetUint(uint64(v))
 		return 0
 	case reflect.Float32, reflect.Float64:
-		v := float64(C.PyFloat_AsDouble(value))
+		v := float64(C.PyFloat_AsDouble(obj2))
 		if exceptionRaised() {
 			return -1
 		}
 		f.SetFloat(v)
 		return 0
 	case reflect.String:
-		v := C.PyUnicode_AsUTF8(value)
+		v := C.PyUnicode_AsUTF8(obj2)
 		if exceptionRaised() {
 			return -1
 		}
@@ -115,7 +113,7 @@ func goClassNatSet(obj, obj2, idx unsafe.Pointer) int {
 }
 
 //export goClassObjGet
-func goClassObjGet(obj, idx unsafe.Pointer) *C.PyObject {
+func goClassObjGet(obj, idx *C.PyObject) *C.PyObject {
 	f, _, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
@@ -133,14 +131,14 @@ func goClassObjGet(obj, idx unsafe.Pointer) *C.PyObject {
 }
 
 //export goClassObjSet
-func goClassObjSet(obj, obj2, idx unsafe.Pointer) int {
+func goClassObjSet(obj, obj2, idx *C.PyObject) int {
 	f, _, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
 		return -1
 	}
 
-	value := newObject((*C.PyObject)(obj2))
+	value := newObject(obj2)
 	v := reflect.ValueOf(value)
 
 	// If the given value wasn't assignable to the field - raise an error

@@ -210,7 +210,7 @@ func free(obj Object) {
 	}
 
 	// Make sure this instance isn't registered any more
-	clearClassObject(unsafe.Pointer(o))
+	clearClassObject(o)
 
 	// Call Python free function
 	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
@@ -246,7 +246,7 @@ func newObject(obj *C.PyObject) Object {
 		return None
 	}
 
-	if cObj := getClassObject(o); cObj != nil {
+	if cObj := getClassObject(obj); cObj != nil {
 		return cObj
 	}
 

@@ -203,6 +203,21 @@ var dictClass = py.Class{
 	Object:   (*MyDict)(nil),
 }
 
+type SubClass struct {
+	py.ClassBaseObject
+}
+
+func (s *SubClass) Init(args *py.Tuple, kwds *py.Dict) error {
+	fmt.Printf("SubClass.PyInit: e=%p args=%v, kwds=%v\n", s, args, kwds)
+	return nil
+}
+
+var subClass = py.Class{
+	Name:     "example.SubClass",
+	BaseType: &exampleClass,
+	Object:   (*SubClass)(nil),
+}
+
 var modDef = py.ModuleDef{
 	Name:    "example",
 	Package: true,
@@ -242,6 +257,14 @@ func main() {
 
 	if err = m.AddObjectRef("MyDict", &dictClass); err != nil {
 		log.Fatalf("ERROR Add MyDict: %s", err)
+	}
+
+	if err := subClass.Create(); err != nil {
+		log.Fatalf("ERROR subClass.Create: %s", err)
+	}
+
+	if err = m.AddObjectRef("SubClass", &subClass); err != nil {
+		log.Fatalf("ERROR Add SubClass: %s", err)
 	}
 
 	if err := m.Register(); err != nil {

@@ -16,7 +16,7 @@ import (
 //////////////////////////////////////////////////////////////////////////////
 
 func getMethod(obj *C.PyObject) (any, error) {
-	pyobj := unsafe.Pointer(C.PyTuple_GetItem(obj, 0))
+	pyobj := C.PyTuple_GetItem(obj, 0)
 	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(obj, 1)))
 
 	o := getClassObject(pyobj)

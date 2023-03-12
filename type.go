@@ -4,7 +4,7 @@ package py
 import "C"
 
 func (t *Type) Alloc(n int64) (Object, error) {
-	ret := C.typeAlloc(c(t), C.Py_ssize_t(n))
+	ret := C.typeAlloc(t.c(), C.Py_ssize_t(n))
 	return obj2ObjErr(ret)
 }
 

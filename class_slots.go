@@ -213,13 +213,25 @@ type bf_releasebuffer interface {
 
 //export goClassSlot_tp_repr
 func goClassSlot_tp_repr(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(tp_repr)
+	co, ok := getClassObject(obj).(tp_repr)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_repr)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_repr")
+	}
 
 	return ce(co.Repr())
 }
 //export goClassSlot_tp_hash
 func goClassSlot_tp_hash(obj *C.PyObject) C.long {
-	co := newObject(obj).(tp_hash)
+	co, ok := getClassObject(obj).(tp_hash)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_hash)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_hash")
+	}
 
 	ret, err := co.Hash()
 	if err != nil {
@@ -233,85 +245,169 @@ func goClassSlot_tp_hash(obj *C.PyObject) C.long {
 }
 //export goClassSlot_tp_call
 func goClassSlot_tp_call(obj, args, kwds *C.PyObject) *C.PyObject {
-	co := newObject(obj).(tp_call)
+	co, ok := getClassObject(obj).(tp_call)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_call)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_call")
+	}
 
 	return ce(co.Call(newTuple(args), newDict(kwds)))
 }
 //export goClassSlot_tp_str
 func goClassSlot_tp_str(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(tp_str)
+	co, ok := getClassObject(obj).(tp_str)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_str)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_str")
+	}
 
 	return ce(co.Str())
 }
 //export goClassSlot_tp_getattro
 func goClassSlot_tp_getattro(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(tp_getattro)
+	co, ok := getClassObject(obj).(tp_getattro)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_getattro)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_getattro")
+	}
 
 	return ce(co.GetAttr(newObject(arg)))
 }
 //export goClassSlot_tp_setattro
 func goClassSlot_tp_setattro(obj, arg1, arg2 *C.PyObject) C.int {
-	co := newObject(obj).(tp_setattro)
+	co, ok := getClassObject(obj).(tp_setattro)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_setattro)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_setattro")
+	}
 
 	return err2Int(co.SetAttr(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_tp_richcompare
 func goClassSlot_tp_richcompare(obj, arg1 *C.PyObject, arg2 C.int) *C.PyObject {
-	co := newObject(obj).(tp_richcompare)
+	co, ok := getClassObject(obj).(tp_richcompare)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_richcompare)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_richcompare")
+	}
 
 	return ce(co.RichCompare(newObject(arg1), Op(arg2)))
 }
 //export goClassSlot_tp_iter
 func goClassSlot_tp_iter(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(tp_iter)
+	co, ok := getClassObject(obj).(tp_iter)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_iter)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_iter")
+	}
 
 	return ce(co.Iter())
 }
 //export goClassSlot_tp_iternext
 func goClassSlot_tp_iternext(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(tp_iternext)
+	co, ok := getClassObject(obj).(tp_iternext)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_iternext)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_iternext")
+	}
 
 	return ce(co.Next())
 }
 //export goClassSlot_tp_descr_get
 func goClassSlot_tp_descr_get(obj, arg1, arg2 *C.PyObject) *C.PyObject {
-	co := newObject(obj).(tp_descr_get)
+	co, ok := getClassObject(obj).(tp_descr_get)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_descr_get)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_descr_get")
+	}
 
 	return ce(co.DescrGet(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_tp_descr_set
 func goClassSlot_tp_descr_set(obj, arg1, arg2 *C.PyObject) C.int {
-	co := newObject(obj).(tp_descr_set)
+	co, ok := getClassObject(obj).(tp_descr_set)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_descr_set)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_descr_set")
+	}
 
 	return err2Int(co.DescrSet(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_tp_init
 func goClassSlot_tp_init(obj, args, kwds *C.PyObject) C.int {
-	co := newObject(obj).(tp_init)
+	co, ok := getClassObject(obj).(tp_init)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(tp_init)
+	}
+	if !ok {
+		panic("failed to find valid type for tp_init")
+	}
 
 	return err2Int(co.Init(newTuple(args), newDict(kwds)))
 }
 //export goClassSlot_am_await
 func goClassSlot_am_await(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(am_await)
+	co, ok := getClassObject(obj).(am_await)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(am_await)
+	}
+	if !ok {
+		panic("failed to find valid type for am_await")
+	}
 
 	return ce(co.Await())
 }
 //export goClassSlot_am_aiter
 func goClassSlot_am_aiter(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(am_aiter)
+	co, ok := getClassObject(obj).(am_aiter)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(am_aiter)
+	}
+	if !ok {
+		panic("failed to find valid type for am_aiter")
+	}
 
 	return ce(co.AsyncIter())
 }
 //export goClassSlot_am_anext
 func goClassSlot_am_anext(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(am_anext)
+	co, ok := getClassObject(obj).(am_anext)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(am_anext)
+	}
+	if !ok {
+		panic("failed to find valid type for am_anext")
+	}
 
 	return ce(co.AsyncNext())
 }
 //export goClassSlot_am_send
 func goClassSlot_am_send(obj, arg *C.PyObject, out unsafe.Pointer) C.PySendResult {
-	co := newObject(obj).(am_send)
+	co, ok := getClassObject(obj).(am_send)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(am_send)
+	}
+	if !ok {
+		panic("failed to find valid type for am_send")
+	}
 
 	result := (**C.PyObject)(out)
 	ret, res, err := co.AsyncSend(newObject(arg))
@@ -326,289 +422,577 @@ func goClassSlot_am_send(obj, arg *C.PyObject, out unsafe.Pointer) C.PySendResul
 }
 //export goClassSlot_nb_add
 func goClassSlot_nb_add(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_add)
+	co, ok := getClassObject(obj).(nb_add)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_add)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_add")
+	}
 
 	return ce(co.Add(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_add
 func goClassSlot_nb_inplace_add(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_add)
+	co, ok := getClassObject(obj).(nb_inplace_add)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_add)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_add")
+	}
 
 	return ce(co.InPlaceAdd(newObject(arg)))
 }
 //export goClassSlot_nb_subtract
 func goClassSlot_nb_subtract(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_subtract)
+	co, ok := getClassObject(obj).(nb_subtract)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_subtract)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_subtract")
+	}
 
 	return ce(co.Subtract(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_subtract
 func goClassSlot_nb_inplace_subtract(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_subtract)
+	co, ok := getClassObject(obj).(nb_inplace_subtract)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_subtract)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_subtract")
+	}
 
 	return ce(co.InPlaceSubtract(newObject(arg)))
 }
 //export goClassSlot_nb_multiply
 func goClassSlot_nb_multiply(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_multiply)
+	co, ok := getClassObject(obj).(nb_multiply)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_multiply)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_multiply")
+	}
 
 	return ce(co.Multiply(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_multiply
 func goClassSlot_nb_inplace_multiply(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_multiply)
+	co, ok := getClassObject(obj).(nb_inplace_multiply)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_multiply)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_multiply")
+	}
 
 	return ce(co.InPlaceMultiply(newObject(arg)))
 }
 //export goClassSlot_nb_remainder
 func goClassSlot_nb_remainder(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_remainder)
+	co, ok := getClassObject(obj).(nb_remainder)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_remainder)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_remainder")
+	}
 
 	return ce(co.Remainder(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_remainder
 func goClassSlot_nb_inplace_remainder(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_remainder)
+	co, ok := getClassObject(obj).(nb_inplace_remainder)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_remainder)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_remainder")
+	}
 
 	return ce(co.InPlaceRemainder(newObject(arg)))
 }
 //export goClassSlot_nb_divmod
 func goClassSlot_nb_divmod(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_divmod)
+	co, ok := getClassObject(obj).(nb_divmod)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_divmod)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_divmod")
+	}
 
 	return ce(co.Divmod(newObject(arg)))
 }
 //export goClassSlot_nb_power
 func goClassSlot_nb_power(obj, arg1, arg2 *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_power)
+	co, ok := getClassObject(obj).(nb_power)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_power)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_power")
+	}
 
 	return ce(co.Power(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_nb_inplace_power
 func goClassSlot_nb_inplace_power(obj, arg1, arg2 *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_power)
+	co, ok := getClassObject(obj).(nb_inplace_power)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_power)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_power")
+	}
 
 	return ce(co.InPlacePower(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_nb_negative
 func goClassSlot_nb_negative(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_negative)
+	co, ok := getClassObject(obj).(nb_negative)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_negative)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_negative")
+	}
 
 	return ce(co.Negative())
 }
 //export goClassSlot_nb_positive
 func goClassSlot_nb_positive(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_positive)
+	co, ok := getClassObject(obj).(nb_positive)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_positive)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_positive")
+	}
 
 	return ce(co.Positive())
 }
 //export goClassSlot_nb_absolute
 func goClassSlot_nb_absolute(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_absolute)
+	co, ok := getClassObject(obj).(nb_absolute)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_absolute)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_absolute")
+	}
 
 	return ce(co.Absolute())
 }
 //export goClassSlot_nb_bool
 func goClassSlot_nb_bool(obj *C.PyObject) C.int {
-	co := newObject(obj).(nb_bool)
+	co, ok := getClassObject(obj).(nb_bool)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_bool)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_bool")
+	}
 
 	return boolErr2Int(co.Bool())
 }
 //export goClassSlot_nb_invert
 func goClassSlot_nb_invert(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_invert)
+	co, ok := getClassObject(obj).(nb_invert)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_invert)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_invert")
+	}
 
 	return ce(co.Invert())
 }
 //export goClassSlot_nb_lshift
 func goClassSlot_nb_lshift(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_lshift)
+	co, ok := getClassObject(obj).(nb_lshift)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_lshift)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_lshift")
+	}
 
 	return ce(co.LShift(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_lshift
 func goClassSlot_nb_inplace_lshift(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_lshift)
+	co, ok := getClassObject(obj).(nb_inplace_lshift)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_lshift)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_lshift")
+	}
 
 	return ce(co.InPlaceLShift(newObject(arg)))
 }
 //export goClassSlot_nb_rshift
 func goClassSlot_nb_rshift(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_rshift)
+	co, ok := getClassObject(obj).(nb_rshift)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_rshift)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_rshift")
+	}
 
 	return ce(co.RShift(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_rshift
 func goClassSlot_nb_inplace_rshift(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_rshift)
+	co, ok := getClassObject(obj).(nb_inplace_rshift)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_rshift)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_rshift")
+	}
 
 	return ce(co.InPlaceRShift(newObject(arg)))
 }
 //export goClassSlot_nb_and
 func goClassSlot_nb_and(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_and)
+	co, ok := getClassObject(obj).(nb_and)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_and)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_and")
+	}
 
 	return ce(co.And(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_and
 func goClassSlot_nb_inplace_and(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_and)
+	co, ok := getClassObject(obj).(nb_inplace_and)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_and)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_and")
+	}
 
 	return ce(co.InPlaceAnd(newObject(arg)))
 }
 //export goClassSlot_nb_xor
 func goClassSlot_nb_xor(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_xor)
+	co, ok := getClassObject(obj).(nb_xor)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_xor)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_xor")
+	}
 
 	return ce(co.Xor(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_xor
 func goClassSlot_nb_inplace_xor(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_xor)
+	co, ok := getClassObject(obj).(nb_inplace_xor)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_xor)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_xor")
+	}
 
 	return ce(co.PyInPlaceXor(newObject(arg)))
 }
 //export goClassSlot_nb_or
 func goClassSlot_nb_or(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_or)
+	co, ok := getClassObject(obj).(nb_or)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_or)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_or")
+	}
 
 	return ce(co.Or(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_or
 func goClassSlot_nb_inplace_or(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_or)
+	co, ok := getClassObject(obj).(nb_inplace_or)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_or)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_or")
+	}
 
 	return ce(co.PyInPlaceOr(newObject(arg)))
 }
 //export goClassSlot_nb_int
 func goClassSlot_nb_int(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_int)
+	co, ok := getClassObject(obj).(nb_int)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_int)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_int")
+	}
 
 	return ce(co.Long())
 }
 //export goClassSlot_nb_float
 func goClassSlot_nb_float(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_float)
+	co, ok := getClassObject(obj).(nb_float)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_float)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_float")
+	}
 
 	return ce(co.Float())
 }
 //export goClassSlot_nb_floor_divide
 func goClassSlot_nb_floor_divide(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_floor_divide)
+	co, ok := getClassObject(obj).(nb_floor_divide)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_floor_divide)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_floor_divide")
+	}
 
 	return ce(co.FloorDivide(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_floor_divide
 func goClassSlot_nb_inplace_floor_divide(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_floor_divide)
+	co, ok := getClassObject(obj).(nb_inplace_floor_divide)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_floor_divide)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_floor_divide")
+	}
 
 	return ce(co.InPlaceFloorDivide(newObject(arg)))
 }
 //export goClassSlot_nb_true_divide
 func goClassSlot_nb_true_divide(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_true_divide)
+	co, ok := getClassObject(obj).(nb_true_divide)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_true_divide)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_true_divide")
+	}
 
 	return ce(co.TrueDivide(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_true_divide
 func goClassSlot_nb_inplace_true_divide(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_true_divide)
+	co, ok := getClassObject(obj).(nb_inplace_true_divide)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_true_divide)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_true_divide")
+	}
 
 	return ce(co.InPlaceTrueDivide(newObject(arg)))
 }
 //export goClassSlot_nb_index
 func goClassSlot_nb_index(obj *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_index)
+	co, ok := getClassObject(obj).(nb_index)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_index)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_index")
+	}
 
 	return ce(co.Index())
 }
 //export goClassSlot_nb_matrix_multiply
 func goClassSlot_nb_matrix_multiply(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_matrix_multiply)
+	co, ok := getClassObject(obj).(nb_matrix_multiply)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_matrix_multiply)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_matrix_multiply")
+	}
 
 	return ce(co.MatrixMultiply(newObject(arg)))
 }
 //export goClassSlot_nb_inplace_matrix_multiply
 func goClassSlot_nb_inplace_matrix_multiply(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(nb_inplace_matrix_multiply)
+	co, ok := getClassObject(obj).(nb_inplace_matrix_multiply)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(nb_inplace_matrix_multiply)
+	}
+	if !ok {
+		panic("failed to find valid type for nb_inplace_matrix_multiply")
+	}
 
 	return ce(co.InPlaceMatrixMultiply(newObject(arg)))
 }
 //export goClassSlot_mp_length
 func goClassSlot_mp_length(obj *C.PyObject) C.Py_ssize_t {
-	co := newObject(obj).(mp_length)
+	co, ok := getClassObject(obj).(mp_length)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(mp_length)
+	}
+	if !ok {
+		panic("failed to find valid type for mp_length")
+	}
 
 	return C.Py_ssize_t(co.PyMappingLen())
 }
 //export goClassSlot_mp_subscript
 func goClassSlot_mp_subscript(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(mp_subscript)
+	co, ok := getClassObject(obj).(mp_subscript)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(mp_subscript)
+	}
+	if !ok {
+		panic("failed to find valid type for mp_subscript")
+	}
 
 	return ce(co.Subscript(newObject(arg)))
 }
 //export goClassSlot_mp_ass_subscript
 func goClassSlot_mp_ass_subscript(obj, arg1, arg2 *C.PyObject) C.int {
-	co := newObject(obj).(mp_ass_subscript)
+	co, ok := getClassObject(obj).(mp_ass_subscript)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(mp_ass_subscript)
+	}
+	if !ok {
+		panic("failed to find valid type for mp_ass_subscript")
+	}
 
 	return err2Int(co.AssSubscript(newObject(arg1), newObject(arg2)))
 }
 //export goClassSlot_sq_length
 func goClassSlot_sq_length(obj *C.PyObject) C.Py_ssize_t {
-	co := newObject(obj).(sq_length)
+	co, ok := getClassObject(obj).(sq_length)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(sq_length)
+	}
+	if !ok {
+		panic("failed to find valid type for sq_length")
+	}
 
 	return C.Py_ssize_t(co.Len())
 }
 //export goClassSlot_sq_concat
 func goClassSlot_sq_concat(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(sq_concat)
+	co, ok := getClassObject(obj).(sq_concat)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(sq_concat)
+	}
+	if !ok {
+		panic("failed to find valid type for sq_concat")
+	}
 
 	return ce(co.Concat(newObject(arg)))
 }
 //export goClassSlot_sq_repeat
 func goClassSlot_sq_repeat(obj, arg1 *C.PyObject, arg2 C.Py_ssize_t) *C.PyObject {
-	co := newObject(obj).(sq_repeat)
+	co, ok := getClassObject(obj).(sq_repeat)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(sq_repeat)
+	}
+	if !ok {
+		panic("failed to find valid type for sq_repeat")
+	}
 
 	return ce(co.Repeat(newObject(arg1), int(arg2)))
 }
 //export goClassSlot_sq_item
 func goClassSlot_sq_item(obj *C.PyObject, arg1 C.Py_ssize_t) *C.PyObject {
-	co := newObject(obj).(sq_item)
+	co, ok := getClassObject(obj).(sq_item)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(sq_item)
+	}
+	if !ok {
+		panic("failed to find valid type for sq_item")
+	}
 
 	return ce(co.GetIndex(int(arg1)))
 }
 //export goClassSlot_sq_ass_item
 func goClassSlot_sq_ass_item(obj *C.PyObject, arg1 C.Py_ssize_t, arg2 *C.PyObject) C.int {
-	co := newObject(obj).(sq_ass_item)
+	co, ok := getClassObject(obj).(sq_ass_item)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(sq_ass_item)
+	}
+	if !ok {
+		panic("failed to find valid type for sq_ass_item")
+	}
 
 	return err2Int(co.SetIndex(int(arg1), newObject(arg2)))
 }
 //export goClassSlot_sq_contains
 func goClassSlot_sq_contains(obj, arg *C.PyObject) C.int {
-	co := newObject(obj).(sq_contains)
+	co, ok := getClassObject(obj).(sq_contains)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(sq_contains)
+	}
+	if !ok {
+		panic("failed to find valid type for sq_contains")
+	}
 
 	return boolErr2Int(co.Contains(newObject(arg)))
 }
 //export goClassSlot_sq_inplace_concat
 func goClassSlot_sq_inplace_concat(obj, arg *C.PyObject) *C.PyObject {
-	co := newObject(obj).(sq_inplace_concat)
+	co, ok := getClassObject(obj).(sq_inplace_concat)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(sq_inplace_concat)
+	}
+	if !ok {
+		panic("failed to find valid type for sq_inplace_concat")
+	}
 
 	return ce(co.InPlaceConcat(newObject(arg)))
 }
 //export goClassSlot_sq_inplace_repeat
 func goClassSlot_sq_inplace_repeat(obj, arg1 *C.PyObject, arg2 C.Py_ssize_t) *C.PyObject {
-	co := newObject(obj).(sq_inplace_repeat)
+	co, ok := getClassObject(obj).(sq_inplace_repeat)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(sq_inplace_repeat)
+	}
+	if !ok {
+		panic("failed to find valid type for sq_inplace_repeat")
+	}
 
 	return ce(co.InPlaceRepeat(newObject(arg1), int(arg2)))
 }
 //export goClassSlot_bf_getbuffer
 func goClassSlot_bf_getbuffer(obj, arg1 *C.PyObject, arg2 C.int) C.int {
-	co := newObject(obj).(bf_getbuffer)
+	co, ok := getClassObject(obj).(bf_getbuffer)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(bf_getbuffer)
+	}
+	if !ok {
+		panic("failed to find valid type for bf_getbuffer")
+	}
 
 	return err2Int(co.GetBuffer(newObject(arg1), int(arg2)))
 }
 //export goClassSlot_bf_releasebuffer
 func goClassSlot_bf_releasebuffer(obj, arg *C.PyObject) {
-	co := newObject(obj).(bf_releasebuffer)
+	co, ok := getClassObject(obj).(bf_releasebuffer)
+	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {
+		co, ok = getClassObjectByType(obj, base).(bf_releasebuffer)
+	}
+	if !ok {
+		panic("failed to find valid type for bf_releasebuffer")
+	}
 
 	co.ReleaseBuffer(newObject(arg))
 }

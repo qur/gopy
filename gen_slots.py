@@ -439,7 +439,13 @@ def write_callbacks(f):
         print(f'//export goClassSlot_{slot}', file=f)
         print(
             f'func goClassSlot_{slot}{cbSig} {{', file=f)
-        print(f'	co := newObject(obj).({slot})', file=f)
+        print(f'	co, ok := getClassObject(obj).({slot})', file=f)
+        print('	for base := obj.ob_type.tp_base; !ok && base != nil; base = base.tp_base {', file=f)
+        print(f'		co, ok = getClassObjectByType(obj, base).({slot})', file=f)
+        print('	}', file=f)
+        print('	if !ok {', file=f)
+        print(f'		panic("failed to find valid type for {slot}")', file=f)
+        print('	}', file=f)
         print('', file=f)
         for line in body:
             print(line % {'fn': fn}, file=f)

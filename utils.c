@@ -410,8 +410,8 @@ size_t tupleItemSize(void) { return sizeof(PyObject *); }
 
 // --- type.go helper functions ---
 //
-PyObject *typeAlloc(PyObject *t, Py_ssize_t n) {
-  return ((PyTypeObject *)t)->tp_alloc((PyTypeObject *)t, n);
+PyObject *typeAlloc(PyTypeObject *t, Py_ssize_t n) {
+  return t->tp_alloc((PyTypeObject *)t, n);
 }
 PyObject *typeNew(PyTypeObject *t, PyTypeObject *s, PyObject *a, PyObject *k) {
   return t->tp_new(s, a, k);

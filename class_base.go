@@ -4,6 +4,7 @@ package py
 import "C"
 
 import (
+	"log"
 	"reflect"
 	"sync"
 	"unsafe"
@@ -55,35 +56,56 @@ func (c *ClassBaseObject) setBase(base *BaseObject) {
 
 var (
 	classObjLock sync.Mutex
-	classObjMap  = map[unsafe.Pointer]ClassObject{}
+	classObjMap  = map[*C.PyObject]map[*C.PyTypeObject]ClassObject{}
 )
 
-func registerClassObject(pyObj unsafe.Pointer, goObj ClassObject) {
+func registerClassObject(pyObj *C.PyObject, pyType *C.PyTypeObject, goObj ClassObject) {
 	classObjLock.Lock()
 	defer classObjLock.Unlock()
 
-	classObjMap[pyObj] = goObj
+	name := C.GoString(pyType.tp_name)
+	log.Printf("registerClassObject: %p %p(%s) %p(%T)", pyObj, pyType, name, goObj, goObj)
+
+	typeMap, found := classObjMap[pyObj]
+	if !found {
+		typeMap = make(map[*C.PyTypeObject]ClassObject)
+		classObjMap[pyObj] = typeMap
+	}
+
+	typeMap[pyType] = goObj
 }
 
-func getClassObject(pyObj unsafe.Pointer) ClassObject {
-	classObjLock.Lock()
-	defer classObjLock.Unlock()
-
-	return classObjMap[pyObj]
+func getClassObject(pyObj *C.PyObject) ClassObject {
+	if pyObj == nil {
+		return nil
+	}
+	return getClassObjectByType(pyObj, pyObj.ob_type)
 }
 
-func clearClassObject(pyObj unsafe.Pointer) {
+func getClassObjectByType(pyObj *C.PyObject, pyType *C.PyTypeObject) ClassObject {
+	name := C.GoString(pyType.tp_name)
+	log.Printf("getClassObjectByType: %p %p(%s)", pyObj, pyType, name)
+
 	classObjLock.Lock()
 	defer classObjLock.Unlock()
 
-	goObj := classObjMap[pyObj]
+	return classObjMap[pyObj][pyType]
+}
 
-	if goObj == nil {
+func clearClassObject(pyObj *C.PyObject) {
+	classObjLock.Lock()
+	defer classObjLock.Unlock()
+
+	typeMap := classObjMap[pyObj]
+
+	if typeMap == nil {
 		return
 	}
 
 	delete(classObjMap, pyObj)
-	goObj.setBase(nil)
+	for _, goObj := range typeMap {
+		goObj.setBase(nil)
+	}
 }
 
 type ClassIteratorProtocol struct {

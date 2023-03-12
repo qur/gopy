@@ -195,7 +195,7 @@ func (obj *BaseObject) IsSubclass(cls Object) (bool, error) {
 	return int2BoolErr(ret)
 }
 
-// Call calls obj with the given args and kwds.  kwds may be nil, args may not
+// Call calls obj with the given args and kwds. kwds may be nil, args may not
 // (an empty Tuple must be used if no arguments are wanted).  Returns the result
 // of the call, or an Error on failure.  This is equivalent to
 // "obj(*args, **kwds)" in Python.

@@ -10,7 +10,7 @@ import (
 
 //export goClassTraverse
 func goClassTraverse(obj *C.PyObject, visit C.visitproc, arg unsafe.Pointer) C.int {
-	co := getClassObject(unsafe.Pointer(obj))
+	co := getClassObject(obj)
 	if co == nil {
 		raise(TypeError.Err("not a recognised type: %s", newObject((*C.PyObject)(obj)).Type()))
 		return -1
@@ -38,7 +38,7 @@ func goClassTraverse(obj *C.PyObject, visit C.visitproc, arg unsafe.Pointer) C.i
 
 //export goClassClear
 func goClassClear(obj *C.PyObject) C.int {
-	co := getClassObject(unsafe.Pointer(obj))
+	co := getClassObject(obj)
 	if co == nil {
 		raise(TypeError.Err("not a recognised type: %s", newObject((*C.PyObject)(obj)).Type()))
 		return -1
@@ -59,7 +59,7 @@ type tpDealloc interface {
 }
 
 //export goClassDealloc
-func goClassDealloc(obj unsafe.Pointer) {
+func goClassDealloc(obj *C.PyObject) {
 	// Turn obj into the ClassObject instead of the proxy.
 	co := getClassObject(obj)
 	if co == nil {
@@ -92,7 +92,7 @@ func goClassNew(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 
 	class := getClass(pyType)
 
-	// must be parent type that is a class
+	// might be parent type that is a class
 	for class == nil && pyType.tp_base != nil {
 		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
 		class = getClass(pyType)
@@ -104,26 +104,40 @@ func goClassNew(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 		return nil
 	}
 
+	return class.new(typ, args, kwds)
+}
+
+func (cls *Class) new(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
+	log.Printf("class.new: %p(%s) %p %p %p", cls, cls.Name, typ, args, kwds)
+
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
 	a := newTuple(args)
 	k := newDict(kwds)
 
 	// allocate the go object
-	goObj, err := class.newObject(a, k)
+	goObj, err := cls.newObject(a, k)
 	if err != nil {
 		raise(err)
 		return nil
 	}
 
 	// allocate the Python proxy object
-	pyObj := unsafe.Pointer(C.typeNew(pyType.tp_base, typ, args, kwds))
+	var pyObj *C.PyObject
+	switch b := cls.BaseType.(type) {
+	case nil:
+		pyObj = C.typeAlloc(typ, 0)
+	case *Class:
+		pyObj = b.new(typ, args, kwds)
+	default:
+		pyObj = C.typeNew(cls.base.o.tp_base, typ, args, kwds)
+	}
 	if pyObj == nil {
 		return nil
 	}
 
 	// finalise the setup of the go object
-	goObj.setBase((*BaseObject)(pyObj))
+	goObj.setBase(newBaseObject(pyObj))
 	v := reflect.ValueOf(goObj).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
@@ -133,7 +147,11 @@ func goClassNew(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 			cp.setCBO(goObj.getCBO())
 		}
 	}
-	registerClassObject(pyObj, goObj)
 
-	return (*C.PyObject)(pyObj)
+	registerClassObject(pyObj, cls.base.c(), goObj)
+	if typ != cls.base.c() {
+		registerClassObject(pyObj, typ, goObj)
+	}
+
+	return pyObj
 }
