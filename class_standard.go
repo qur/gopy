@@ -3,7 +3,6 @@ package py
 // #include "utils.h"
 import "C"
 import (
-	"log"
 	"reflect"
 	"unsafe"
 )
@@ -108,8 +107,6 @@ func goClassNew(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 }
 
 func (cls *Class) new(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
-	log.Printf("class.new: %p(%s) %p %p %p", cls, cls.Name, typ, args, kwds)
-
 	// Get args and kwds ready to use, by turning them into pointers of the
 	// appropriate type
 	a := newTuple(args)

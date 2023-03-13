@@ -4,7 +4,6 @@ package py
 import "C"
 
 import (
-	"log"
 	"reflect"
 	"sync"
 	"unsafe"
@@ -63,9 +62,6 @@ func registerClassObject(pyObj *C.PyObject, pyType *C.PyTypeObject, goObj ClassO
 	classObjLock.Lock()
 	defer classObjLock.Unlock()
 
-	name := C.GoString(pyType.tp_name)
-	log.Printf("registerClassObject: %p %p(%s) %p(%T)", pyObj, pyType, name, goObj, goObj)
-
 	typeMap, found := classObjMap[pyObj]
 	if !found {
 		typeMap = make(map[*C.PyTypeObject]ClassObject)
@@ -83,9 +79,6 @@ func getClassObject(pyObj *C.PyObject) ClassObject {
 }
 
 func getClassObjectByType(pyObj *C.PyObject, pyType *C.PyTypeObject) ClassObject {
-	name := C.GoString(pyType.tp_name)
-	log.Printf("getClassObjectByType: %p %p(%s)", pyObj, pyType, name)
-
 	classObjLock.Lock()
 	defer classObjLock.Unlock()
 
