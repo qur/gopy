@@ -101,6 +101,7 @@ extern size_t tupleItemSize(void);
 // --- type.go helper functions ---
 //
 extern PyObject *typeAlloc(PyTypeObject *t, Py_ssize_t n);
+extern void typeDealloc(PyTypeObject *t, PyObject *obj);
 extern PyObject *typeNew(PyTypeObject *t, PyTypeObject *s, PyObject *a,
                          PyObject *k);
 extern int typeTraverse(PyTypeObject *t, PyObject *obj, visitproc visit,

@@ -15,6 +15,10 @@ func goClassTraverse(obj *C.PyObject, visit C.visitproc, arg unsafe.Pointer) C.i
 		return -1
 	}
 
+	return classTraverse(co, visit, arg)
+}
+
+func classTraverse(co ClassObject, visit C.visitproc, arg unsafe.Pointer) C.int {
 	v := reflect.ValueOf(co).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
@@ -27,9 +31,18 @@ func goClassTraverse(obj *C.PyObject, visit C.visitproc, arg unsafe.Pointer) C.i
 		}
 	}
 
-	base := co.Type().o.tp_base
-	if base != nil {
-		return C.typeTraverse(base, obj, visit, arg)
+	class := getClass(co.Type().c())
+	switch b := class.BaseType.(type) {
+	case *Class:
+		co = getClassObjectByType(c(co), b.Type().c())
+		if co != nil {
+			return classTraverse(co, visit, arg)
+		}
+	case *Type:
+		base := co.Type().o.tp_base
+		if base != nil {
+			return C.typeTraverse(base, c(co), visit, arg)
+		}
 	}
 
 	return 0
@@ -43,11 +56,24 @@ func goClassClear(obj *C.PyObject) C.int {
 		return -1
 	}
 
+	return classClear(co)
+}
+
+func classClear(co ClassObject) C.int {
 	ClearClassObject(co)
 
-	base := co.Type().o.tp_base
-	if base != nil {
-		return C.typeClear(base, obj)
+	class := getClass(co.Type().c())
+	switch b := class.BaseType.(type) {
+	case *Class:
+		co = getClassObjectByType(c(co), b.Type().c())
+		if co != nil {
+			return classClear(co)
+		}
+	case *Type:
+		base := co.Type().o.tp_base
+		if base != nil {
+			return C.typeClear(base, c(co))
+		}
 	}
 
 	return 0
@@ -66,6 +92,19 @@ func goClassDealloc(obj *C.PyObject) {
 		return
 	}
 
+	if classDealloc(co) {
+		// classDealloc has already freed the Python memory, but we need to
+		// unregister the Go instances
+		clearClassObject(obj)
+		return
+	}
+
+	// we always want Python to _actually_ free the object, any registered hook
+	// should just be tidying things up on the Go side.
+	free(co)
+}
+
+func classDealloc(co ClassObject) bool {
 	class := getClass(co.Type().c())
 	if class != nil && (class.Flags&ClassHaveGC != 0) {
 		C.PyObject_GC_UnTrack(unsafe.Pointer(c(co)))
@@ -79,9 +118,21 @@ func goClassDealloc(obj *C.PyObject) {
 		ClearClassObject(co)
 	}
 
-	// we always want Python to _actually_ free the object, any registered hook
-	// should just be tidying things up on the Go side.
-	free(co)
+	switch b := class.BaseType.(type) {
+	case *Class:
+		co = getClassObjectByType(c(co), b.Type().c())
+		if co != nil {
+			return classDealloc(co)
+		}
+	case *Type:
+		base := co.Type().o.tp_base
+		if base != nil {
+			C.typeDealloc(base, c(co))
+			return true
+		}
+	}
+
+	return false
 }
 
 //export goClassNew
