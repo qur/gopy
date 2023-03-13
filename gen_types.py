@@ -196,7 +196,14 @@ def write_type_table(f, checks, types, objects):
 
 
 def main():
-    root = sys.argv[1]
+    name = sys.argv[1]
+
+    root = os.path.join("/usr/include", name)
+    if not os.path.exists(root):
+        root = os.path.join("/usr/local/include", name)
+    if not os.path.exists(root):
+        print(f"Unable to find {name} include directory", file=sys.stderr)
+        sys.exit(1)
 
     files = get_includes(root, set(["Python.h", "frameobject.h"]))
 

@@ -1,8 +1,7 @@
 package py
 
 // #cgo CFLAGS: -Werror
-// #cgo LDFLAGS: -lpython3.11 -lm -lutil -ldl
-// #cgo pkg-config: libffi
+// #cgo pkg-config: python-3.11-embed libffi
 //
 // #include "utils.h"
 import "C"
@@ -15,7 +14,7 @@ import (
 // Code generation commands:
 //go:generate ./gen_exc.py exc.go
 //go:generate ./gen_slots.py
-//go:generate ./gen_types.py /usr/local/include/python3.11
+//go:generate ./gen_types.py python3.11
 
 // Initialize initialises the Python runtime.
 //
