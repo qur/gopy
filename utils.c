@@ -129,16 +129,17 @@ PyObject *doBuildValue(char *fmt, ArgValue values[], int c) {
 
 typedef struct {
   PyObject_HEAD PyObject *func;
+  PyTypeObject *type;
   PyMethodDef meth;
 } PyGoMethod;
 
 static PyObject *method_get(PyGoMethod *self, PyObject *obj, PyObject *type) {
   PyObject *o;
   if ((self->meth.ml_flags & METH_CLASS) || obj == NULL) {
-    o = PyTuple_Pack(2, type, self->func);
+    o = PyTuple_Pack(3, type, self->type, self->func);
   } else {
-    o = PyTuple_Pack(2, obj, self->func);
-  };
+    o = PyTuple_Pack(3, obj, self->type, self->func);
+  }
   PyObject *ret = PyCFunction_New(&self->meth, o);
   Py_DECREF(o);
   return ret;
@@ -154,7 +155,7 @@ static PyTypeObject goMethodType = {
 };
 static int goMethodInit = 0;
 
-PyObject *newMethod(char *name, PyObject *func, int flags) {
+PyObject *newMethod(PyTypeObject *type, char *name, PyObject *func, int flags) {
   PyGoMethod *self;
 
   if (!goMethodInit) {
@@ -164,60 +165,60 @@ PyObject *newMethod(char *name, PyObject *func, int flags) {
   }
 
   self = (PyGoMethod *)goMethodType.tp_alloc(&goMethodType, 0);
+  if (self == NULL) return NULL;
 
-  if (self != NULL) {
-    self->func = func;
-    self->meth.ml_name = name;
-    switch (flags) {
-      case METH_NOARGS:
-        self->meth.ml_meth = (PyCFunction)goClassCallMethod;
-        break;
-      case METH_O:
-        self->meth.ml_meth = (PyCFunction)goClassCallMethodSingle;
-        break;
-      case METH_VARARGS:
-        self->meth.ml_meth = (PyCFunction)goClassCallMethodArgs;
-        break;
-      case METH_VARARGS | METH_KEYWORDS:
-        self->meth.ml_meth = (PyCFunction)goClassCallMethodKwds;
-        break;
-      case METH_STATIC | METH_NOARGS:
-        self->meth.ml_meth = (PyCFunction)goClassCallStaticMethod;
-        break;
-      case METH_STATIC | METH_O:
-        self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodSingle;
-        break;
-      case METH_STATIC | METH_VARARGS:
-        self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodArgs;
-        break;
-      case METH_STATIC | METH_VARARGS | METH_KEYWORDS:
-        self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodKwds;
-        break;
-      case METH_CLASS | METH_NOARGS:
-        self->meth.ml_meth = (PyCFunction)goClassCallClassMethod;
-        break;
-      case METH_CLASS | METH_O:
-        self->meth.ml_meth = (PyCFunction)goClassCallClassMethodSingle;
-        break;
-      case METH_CLASS | METH_VARARGS:
-        self->meth.ml_meth = (PyCFunction)goClassCallClassMethodArgs;
-        break;
-      case METH_CLASS | METH_VARARGS | METH_KEYWORDS:
-        self->meth.ml_meth = (PyCFunction)goClassCallClassMethodKwds;
-        break;
-      default:
-        fprintf(stderr, "Invalid method flags: %x\n", flags);
-        return NULL;
-    }
-    // For static methods, tell Python they are class methods instead, otherwise
-    // it will call the Go function with NULL instead of the context we need to
-    // retrieve the function to call.
-    self->meth.ml_flags = flags & ~METH_STATIC;
-    if (flags & METH_STATIC) {
-      self->meth.ml_flags |= METH_CLASS;
-    }
-    self->meth.ml_doc = "";
+  self->type = type;
+  self->func = func;
+  self->meth.ml_name = name;
+  switch (flags) {
+    case METH_NOARGS:
+      self->meth.ml_meth = (PyCFunction)goClassCallMethod;
+      break;
+    case METH_O:
+      self->meth.ml_meth = (PyCFunction)goClassCallMethodSingle;
+      break;
+    case METH_VARARGS:
+      self->meth.ml_meth = (PyCFunction)goClassCallMethodArgs;
+      break;
+    case METH_VARARGS | METH_KEYWORDS:
+      self->meth.ml_meth = (PyCFunction)goClassCallMethodKwds;
+      break;
+    case METH_STATIC | METH_NOARGS:
+      self->meth.ml_meth = (PyCFunction)goClassCallStaticMethod;
+      break;
+    case METH_STATIC | METH_O:
+      self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodSingle;
+      break;
+    case METH_STATIC | METH_VARARGS:
+      self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodArgs;
+      break;
+    case METH_STATIC | METH_VARARGS | METH_KEYWORDS:
+      self->meth.ml_meth = (PyCFunction)goClassCallStaticMethodKwds;
+      break;
+    case METH_CLASS | METH_NOARGS:
+      self->meth.ml_meth = (PyCFunction)goClassCallClassMethod;
+      break;
+    case METH_CLASS | METH_O:
+      self->meth.ml_meth = (PyCFunction)goClassCallClassMethodSingle;
+      break;
+    case METH_CLASS | METH_VARARGS:
+      self->meth.ml_meth = (PyCFunction)goClassCallClassMethodArgs;
+      break;
+    case METH_CLASS | METH_VARARGS | METH_KEYWORDS:
+      self->meth.ml_meth = (PyCFunction)goClassCallClassMethodKwds;
+      break;
+    default:
+      fprintf(stderr, "Invalid method flags: %x\n", flags);
+      return NULL;
   }
+  // For static methods, tell Python they are class methods instead, otherwise
+  // it will call the Go function with NULL instead of the context we need to
+  // retrieve the function to call.
+  self->meth.ml_flags = flags & ~METH_STATIC;
+  if (flags & METH_STATIC) {
+    self->meth.ml_flags |= METH_CLASS;
+  }
+  self->meth.ml_doc = "";
 
   return (PyObject *)self;
 }

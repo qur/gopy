@@ -515,7 +515,7 @@ func (cls *Class) Create() error {
 
 	for name, method := range methods {
 		s := C.CString(name)
-		C.setTypeAttr(pyType, s, C.newMethod(s, c(method.f), C.int(method.flags)))
+		C.setTypeAttr(pyType, s, C.newMethod(pyType, s, c(method.f), method.flags))
 	}
 
 	for name, prop := range props {

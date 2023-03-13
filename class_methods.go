@@ -4,7 +4,6 @@ package py
 import "C"
 
 import (
-	"fmt"
 	"reflect"
 	"unsafe"
 )
@@ -16,12 +15,13 @@ import (
 //////////////////////////////////////////////////////////////////////////////
 
 func getMethod(obj *C.PyObject) (any, error) {
-	pyobj := C.PyTuple_GetItem(obj, 0)
-	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(obj, 1)))
+	pyObj := C.PyTuple_GetItem(obj, 0)
+	pyType := (*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(obj, 1)))
+	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(obj, 2)))
 
-	o := getClassObject(pyobj)
+	o := getClassObjectByType(pyObj, pyType)
 	if o == nil {
-		return nil, fmt.Errorf("unknown object")
+		return nil, TypeError.Err("unknown object")
 	}
 
 	return reflect.ValueOf(o).Method(idx).Interface(), nil
@@ -103,8 +103,8 @@ func goClassCallMethodKwds(obj, args, kwds *C.PyObject) *C.PyObject {
 //////////////////////////////////////////////////////////////////////////////
 
 func getStaticMethod(obj *C.PyObject) any {
-	c := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(obj, 0))))
-	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(obj, 1)))
+	c := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(obj, 1))))
+	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(obj, 2)))
 	return c.Static[name]
 }
 
@@ -176,16 +176,16 @@ func goClassCallStaticMethodKwds(obj, args, kwds *C.PyObject) *C.PyObject {
 //////////////////////////////////////////////////////////////////////////////
 
 func getMethodAndClass(obj *C.PyObject) (any, *Class, error) {
-	t := (*C.PyObject)(obj)
-	pyobj := unsafe.Pointer(C.PyTuple_GetItem(t, 0))
-
-	c := getClass((*C.PyTypeObject)(pyobj))
+	c := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(obj, 0))))
 	if c == nil {
-		return nil, nil, fmt.Errorf("unknown class")
+		return nil, nil, TypeError.Err("unknown class")
 	}
-
-	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(t, 1)))
-	return c.Class[name], c, nil
+	t := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(obj, 1))))
+	if t == nil {
+		return nil, nil, TypeError.Err("unknown type")
+	}
+	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(obj, 2)))
+	return t.Class[name], c, nil
 }
 
 //export goClassCallClassMethod
