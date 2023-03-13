@@ -29,6 +29,22 @@ func floatCheck(obj Object) bool {
 	return C.floatCheck(c(obj)) != 0
 }
 
+// AsFloat casts the given obj to a Float (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Float, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsFloat(obj Object) *Float {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.floatCheck(o) == 0 {
+		return nil
+	}
+	return (*Float)(unsafe.Pointer(o))
+}
+
 func newFloat(obj *C.PyObject) *Float {
 	return (*Float)(unsafe.Pointer(obj))
 }

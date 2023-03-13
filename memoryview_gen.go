@@ -31,6 +31,22 @@ func memoryViewCheck(obj Object) bool {
 	return C.memoryViewCheck(c(obj)) != 0
 }
 
+// AsMemoryView casts the given obj to a MemoryView (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a MemoryView, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsMemoryView(obj Object) *MemoryView {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.memoryViewCheck(o) == 0 {
+		return nil
+	}
+	return (*MemoryView)(unsafe.Pointer(o))
+}
+
 func newMemoryView(obj *C.PyObject) *MemoryView {
 	return (*MemoryView)(unsafe.Pointer(obj))
 }

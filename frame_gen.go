@@ -27,6 +27,22 @@ func frameCheck(obj Object) bool {
 	return C.frameCheck(c(obj)) != 0
 }
 
+// AsFrame casts the given obj to a Frame (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Frame, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsFrame(obj Object) *Frame {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.frameCheck(o) == 0 {
+		return nil
+	}
+	return (*Frame)(unsafe.Pointer(o))
+}
+
 func newFrame(obj *C.PyObject) *Frame {
 	return (*Frame)(unsafe.Pointer(obj))
 }

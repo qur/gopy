@@ -26,6 +26,22 @@ func moduleCheck(obj Object) bool {
 	return C.moduleCheck(c(obj)) != 0
 }
 
+// AsModule casts the given obj to a Module (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Module, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsModule(obj Object) *Module {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.moduleCheck(o) == 0 {
+		return nil
+	}
+	return (*Module)(unsafe.Pointer(o))
+}
+
 func newModule(obj *C.PyObject) *Module {
 	return (*Module)(unsafe.Pointer(obj))
 }

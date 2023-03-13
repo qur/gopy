@@ -27,6 +27,22 @@ func codeCheck(obj Object) bool {
 	return C.codeCheck(c(obj)) != 0
 }
 
+// AsCode casts the given obj to a Code (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Code, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsCode(obj Object) *Code {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.codeCheck(o) == 0 {
+		return nil
+	}
+	return (*Code)(unsafe.Pointer(o))
+}
+
 func newCode(obj *C.PyObject) *Code {
 	return (*Code)(unsafe.Pointer(obj))
 }

@@ -31,6 +31,22 @@ func unicodeCheck(obj Object) bool {
 	return C.unicodeCheck(c(obj)) != 0
 }
 
+// AsUnicode casts the given obj to a Unicode (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Unicode, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsUnicode(obj Object) *Unicode {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.unicodeCheck(o) == 0 {
+		return nil
+	}
+	return (*Unicode)(unsafe.Pointer(o))
+}
+
 func newUnicode(obj *C.PyObject) *Unicode {
 	return (*Unicode)(unsafe.Pointer(obj))
 }

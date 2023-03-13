@@ -27,6 +27,22 @@ func cellCheck(obj Object) bool {
 	return C.cellCheck(c(obj)) != 0
 }
 
+// AsCell casts the given obj to a Cell (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Cell, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsCell(obj Object) *Cell {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.cellCheck(o) == 0 {
+		return nil
+	}
+	return (*Cell)(unsafe.Pointer(o))
+}
+
 func newCell(obj *C.PyObject) *Cell {
 	return (*Cell)(unsafe.Pointer(obj))
 }

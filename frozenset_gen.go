@@ -27,6 +27,22 @@ func frozenSetCheck(obj Object) bool {
 	return C.frozenSetCheck(c(obj)) != 0
 }
 
+// AsFrozenSet casts the given obj to a FrozenSet (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a FrozenSet, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsFrozenSet(obj Object) *FrozenSet {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.frozenSetCheck(o) == 0 {
+		return nil
+	}
+	return (*FrozenSet)(unsafe.Pointer(o))
+}
+
 func newFrozenSet(obj *C.PyObject) *FrozenSet {
 	return (*FrozenSet)(unsafe.Pointer(obj))
 }

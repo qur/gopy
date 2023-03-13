@@ -27,6 +27,22 @@ func methodCheck(obj Object) bool {
 	return C.methodCheck(c(obj)) != 0
 }
 
+// AsMethod casts the given obj to a Method (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Method, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsMethod(obj Object) *Method {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.methodCheck(o) == 0 {
+		return nil
+	}
+	return (*Method)(unsafe.Pointer(o))
+}
+
 func newMethod(obj *C.PyObject) *Method {
 	return (*Method)(unsafe.Pointer(obj))
 }

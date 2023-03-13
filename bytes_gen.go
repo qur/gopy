@@ -31,6 +31,22 @@ func bytesCheck(obj Object) bool {
 	return C.bytesCheck(c(obj)) != 0
 }
 
+// AsBytes casts the given obj to a Bytes (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Bytes, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsBytes(obj Object) *Bytes {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.bytesCheck(o) == 0 {
+		return nil
+	}
+	return (*Bytes)(unsafe.Pointer(o))
+}
+
 func newBytes(obj *C.PyObject) *Bytes {
 	return (*Bytes)(unsafe.Pointer(obj))
 }

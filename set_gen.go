@@ -27,6 +27,22 @@ func setCheck(obj Object) bool {
 	return C.setCheck(c(obj)) != 0
 }
 
+// AsSet casts the given obj to a Set (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Set, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsSet(obj Object) *Set {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.setCheck(o) == 0 {
+		return nil
+	}
+	return (*Set)(unsafe.Pointer(o))
+}
+
 func newSet(obj *C.PyObject) *Set {
 	return (*Set)(unsafe.Pointer(obj))
 }

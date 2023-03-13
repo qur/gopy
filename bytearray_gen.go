@@ -31,6 +31,22 @@ func byteArrayCheck(obj Object) bool {
 	return C.byteArrayCheck(c(obj)) != 0
 }
 
+// AsByteArray casts the given obj to a ByteArray (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a ByteArray, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsByteArray(obj Object) *ByteArray {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.byteArrayCheck(o) == 0 {
+		return nil
+	}
+	return (*ByteArray)(unsafe.Pointer(o))
+}
+
 func newByteArray(obj *C.PyObject) *ByteArray {
 	return (*ByteArray)(unsafe.Pointer(obj))
 }

@@ -27,6 +27,22 @@ func cFunctionCheck(obj Object) bool {
 	return C.cFunctionCheck(c(obj)) != 0
 }
 
+// AsCFunction casts the given obj to a CFunction (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a CFunction, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsCFunction(obj Object) *CFunction {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.cFunctionCheck(o) == 0 {
+		return nil
+	}
+	return (*CFunction)(unsafe.Pointer(o))
+}
+
 func newCFunction(obj *C.PyObject) *CFunction {
 	return (*CFunction)(unsafe.Pointer(obj))
 }

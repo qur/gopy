@@ -53,6 +53,22 @@ func {{ .ltype }}Check(obj Object) bool {
 	return C.{{ .ltype }}Check(c(obj)) != 0
 }
 
+// As{{ .type }} casts the given obj to a {{ .type }} (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a {{ .type }}, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func As{{ .type }}(obj Object) *{{ .type }} {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.{{ .ltype }}Check(o) == 0 {
+		return nil
+	}
+	return (*{{ .type }})(unsafe.Pointer(o))
+}
+
 {{ end }}
 
 {{- if and .settings.New (ne .type "Type") -}}

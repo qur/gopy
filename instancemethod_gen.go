@@ -27,6 +27,22 @@ func instanceMethodCheck(obj Object) bool {
 	return C.instanceMethodCheck(c(obj)) != 0
 }
 
+// AsInstanceMethod casts the given obj to a InstanceMethod (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a InstanceMethod, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsInstanceMethod(obj Object) *InstanceMethod {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.instanceMethodCheck(o) == 0 {
+		return nil
+	}
+	return (*InstanceMethod)(unsafe.Pointer(o))
+}
+
 func newInstanceMethod(obj *C.PyObject) *InstanceMethod {
 	return (*InstanceMethod)(unsafe.Pointer(obj))
 }

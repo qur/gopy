@@ -31,6 +31,22 @@ func tupleCheck(obj Object) bool {
 	return C.tupleCheck(c(obj)) != 0
 }
 
+// AsTuple casts the given obj to a Tuple (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Tuple, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsTuple(obj Object) *Tuple {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.tupleCheck(o) == 0 {
+		return nil
+	}
+	return (*Tuple)(unsafe.Pointer(o))
+}
+
 func newTuple(obj *C.PyObject) *Tuple {
 	return (*Tuple)(unsafe.Pointer(obj))
 }

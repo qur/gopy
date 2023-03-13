@@ -31,6 +31,22 @@ func listCheck(obj Object) bool {
 	return C.listCheck(c(obj)) != 0
 }
 
+// AsList casts the given obj to a List (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a List, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsList(obj Object) *List {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.listCheck(o) == 0 {
+		return nil
+	}
+	return (*List)(unsafe.Pointer(o))
+}
+
 func newList(obj *C.PyObject) *List {
 	return (*List)(unsafe.Pointer(obj))
 }

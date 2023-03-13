@@ -29,6 +29,22 @@ func longCheck(obj Object) bool {
 	return C.longCheck(c(obj)) != 0
 }
 
+// AsLong casts the given obj to a Long (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Long, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsLong(obj Object) *Long {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.longCheck(o) == 0 {
+		return nil
+	}
+	return (*Long)(unsafe.Pointer(o))
+}
+
 func newLong(obj *C.PyObject) *Long {
 	return (*Long)(unsafe.Pointer(obj))
 }

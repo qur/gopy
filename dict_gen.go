@@ -29,6 +29,22 @@ func dictCheck(obj Object) bool {
 	return C.dictCheck(c(obj)) != 0
 }
 
+// AsDict casts the given obj to a Dict (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Dict, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsDict(obj Object) *Dict {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.dictCheck(o) == 0 {
+		return nil
+	}
+	return (*Dict)(unsafe.Pointer(o))
+}
+
 func newDict(obj *C.PyObject) *Dict {
 	return (*Dict)(unsafe.Pointer(obj))
 }

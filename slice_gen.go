@@ -27,6 +27,22 @@ func sliceCheck(obj Object) bool {
 	return C.sliceCheck(c(obj)) != 0
 }
 
+// AsSlice casts the given obj to a Slice (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Slice, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsSlice(obj Object) *Slice {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.sliceCheck(o) == 0 {
+		return nil
+	}
+	return (*Slice)(unsafe.Pointer(o))
+}
+
 func newSlice(obj *C.PyObject) *Slice {
 	return (*Slice)(unsafe.Pointer(obj))
 }

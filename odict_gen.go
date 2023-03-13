@@ -27,6 +27,22 @@ func oDictCheck(obj Object) bool {
 	return C.oDictCheck(c(obj)) != 0
 }
 
+// AsODict casts the given obj to a ODict (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a ODict, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsODict(obj Object) *ODict {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.oDictCheck(o) == 0 {
+		return nil
+	}
+	return (*ODict)(unsafe.Pointer(o))
+}
+
 func newODict(obj *C.PyObject) *ODict {
 	return (*ODict)(unsafe.Pointer(obj))
 }

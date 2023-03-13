@@ -29,6 +29,22 @@ func complexCheck(obj Object) bool {
 	return C.complexCheck(c(obj)) != 0
 }
 
+// AsComplex casts the given obj to a Complex (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Complex, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsComplex(obj Object) *Complex {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.complexCheck(o) == 0 {
+		return nil
+	}
+	return (*Complex)(unsafe.Pointer(o))
+}
+
 func newComplex(obj *C.PyObject) *Complex {
 	return (*Complex)(unsafe.Pointer(obj))
 }

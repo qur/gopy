@@ -28,6 +28,22 @@ func boolCheck(obj Object) bool {
 	return C.boolCheck(c(obj)) != 0
 }
 
+// AsBool casts the given obj to a Bool (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Bool, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsBool(obj Object) *Bool {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.boolCheck(o) == 0 {
+		return nil
+	}
+	return (*Bool)(unsafe.Pointer(o))
+}
+
 
 
 func (b *Bool) c() *C.PyObject {

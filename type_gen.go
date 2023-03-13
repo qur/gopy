@@ -27,6 +27,22 @@ func typeCheck(obj Object) bool {
 	return C.typeCheck(c(obj)) != 0
 }
 
+// AsType casts the given obj to a Type (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Type, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsType(obj Object) *Type {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.typeCheck(o) == 0 {
+		return nil
+	}
+	return (*Type)(unsafe.Pointer(o))
+}
+
 func newType(obj *C.PyTypeObject) *Type {
 	return (*Type)(unsafe.Pointer(obj))
 }

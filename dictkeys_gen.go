@@ -27,6 +27,22 @@ func dictKeysCheck(obj Object) bool {
 	return C.dictKeysCheck(c(obj)) != 0
 }
 
+// AsDictKeys casts the given obj to a DictKeys (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a DictKeys, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsDictKeys(obj Object) *DictKeys {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.dictKeysCheck(o) == 0 {
+		return nil
+	}
+	return (*DictKeys)(unsafe.Pointer(o))
+}
+
 func newDictKeys(obj *C.PyObject) *DictKeys {
 	return (*DictKeys)(unsafe.Pointer(obj))
 }

@@ -196,6 +196,20 @@ func (d *MyDict) Init(args *py.Tuple, kwds *py.Dict) error {
 	return err
 }
 
+func (d *MyDict) Py_foo(args *py.Tuple) (py.Object, error) {
+	var arg1, arg2 py.Object
+	if err := py.ParseTuple(args, "OO", &arg1, &arg2); err != nil {
+		return nil, err
+	}
+	dict := py.AsDict(d)
+	if dict != nil {
+		if err := dict.SetItem(arg1, arg2); err != nil {
+			return nil, err
+		}
+	}
+	return py.ReturnNone(), nil
+}
+
 var dictClass = py.Class{
 	Name:     "example.MyDict",
 	BaseType: py.DictType,

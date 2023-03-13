@@ -29,6 +29,22 @@ func genCheck(obj Object) bool {
 	return C.genCheck(c(obj)) != 0
 }
 
+// AsGen casts the given obj to a Gen (i.e. the underlying
+// Python Object is the same, just the type is changed). If the value cannot be
+// cast to a Gen, then nil is returned.
+//
+// Return value: Borrowed Reference.
+func AsGen(obj Object) *Gen {
+	if obj == nil {
+		return nil
+	}
+	o := c(obj)
+	if C.genCheck(o) == 0 {
+		return nil
+	}
+	return (*Gen)(unsafe.Pointer(o))
+}
+
 func newGen(obj *C.PyObject) *Gen {
 	return (*Gen)(unsafe.Pointer(obj))
 }
