@@ -215,6 +215,16 @@ func (cls *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 	return v.Interface().(ClassObject), nil
 }
 
+// Instance returns o as an instance of the Class, i.e. as the same type as
+// Class.Object. If o is not an instance of Class, an instance of a supertype of
+// Class, or an instance of a subtype of Class which was previously down-casted
+// from Class (or a superclass), then nil will be returned.
+//
+// Return value: Borrowed Reference.
+func (cls *Class) Instance(o Object) ClassObject {
+	return getClassObjectByType(c(o), cls.base.c())
+}
+
 // Clear clear the given Object field correctly. This is equivalent to Py_CLEAR
 // from the Python C API.
 //

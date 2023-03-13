@@ -147,7 +147,7 @@ func (e *Example) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 }
 
 func (e *Example) Py_doot(arg py.Object) (py.Object, error) {
-	log.Printf("arg: %T", arg)
+	log.Printf("ExampleClass.doot: arg: %T", arg)
 	l, ok := arg.(*py.Long)
 	if !ok {
 		return nil, py.TypeError.Err("expected int, not %s", arg.Type())
@@ -210,6 +210,17 @@ type SubClass struct {
 func (s *SubClass) Init(args *py.Tuple, kwds *py.Dict) error {
 	fmt.Printf("SubClass.PyInit: e=%p args=%v, kwds=%v\n", s, args, kwds)
 	return nil
+}
+
+func (s *SubClass) Py_doot(arg py.Object) (py.Object, error) {
+	log.Printf("SubClass.doot: arg: %T", arg)
+	l, ok := arg.(*py.Long)
+	if !ok {
+		return nil, py.TypeError.Err("expected int, not %s", arg.Type())
+	}
+	e := exampleClass.Instance(s).(*Example)
+	e.Foo = int(l.Int64())
+	return py.ReturnNone(), nil
 }
 
 var subClass = py.Class{
