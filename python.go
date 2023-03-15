@@ -50,7 +50,7 @@ func Finalize() {
 	C.Py_Finalize()
 }
 
-// Add the given directory to sys.path
+// AddToPath appends the given directory to sys.path
 func AddToPath(dir string) error {
 	p := C.CString("path")
 	defer C.free(unsafe.Pointer(p))
@@ -70,6 +70,28 @@ func AddToPath(dir string) error {
 	defer C.decref(pDir)
 
 	return int2Err(C.PyList_Append(sys_path, pDir))
+}
+
+// PrependToPath prepends the given directory to sys.path
+func PrependToPath(dir string) error {
+	p := C.CString("path")
+	defer C.free(unsafe.Pointer(p))
+
+	sys_path := C.PySys_GetObject(p)
+	if sys_path == nil {
+		return AttributeError.Err("path")
+	}
+
+	s := C.CString(dir)
+	defer C.free(unsafe.Pointer(s))
+
+	pDir := C.PyUnicode_FromString(s)
+	if pDir == nil {
+		return exception()
+	}
+	defer C.decref(pDir)
+
+	return int2Err(C.PyList_Insert(sys_path, 0, pDir))
 }
 
 // Main is the main Python interpreter entrypoint.
