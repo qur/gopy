@@ -86,6 +86,13 @@ func msg() (py.Object, error) {
 	return print.Base().CallGo(py.A{"this is a message"}, py.K{"file": stderr})
 }
 
+func showType(obj py.Object) (py.Object, error) {
+	name := obj.Type().Name()
+	defer name.Decref()
+	log.Printf("Name: Go:%T Python:%s", obj, name)
+	return py.ReturnNone(), nil
+}
+
 type Example struct {
 	py.ClassBaseObject
 	wibble int64
@@ -250,6 +257,7 @@ var modDef = py.ModuleDef{
 		{"example", example, "example function"},
 		{"iterate", iterate, "iterate any iterable"},
 		{"msg", msg, "print messages using Python's print function"},
+		{"tname", showType, "show the type name of the argument"},
 	},
 }
 

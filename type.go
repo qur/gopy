@@ -24,6 +24,21 @@ func (t *Type) String() string {
 	return C.GoString(C.PyUnicode_AsUTF8(pyS))
 }
 
+// Name returns the name of the type. Equivalent to `t.__name__` in Python.
+//
+// Return value: New Reference.
+func (t *Type) Name() *Unicode {
+	return newObject(C.PyType_GetName(t.c())).(*Unicode)
+}
+
+// Name returns the qualified name of the type. Equivalent to `t.__qualname__`
+// in Python.
+//
+// Return value: New Reference.
+func (t *Type) QualName() *Unicode {
+	return newObject(C.PyType_GetQualName(t.c())).(*Unicode)
+}
+
 // CheckExact returns true when "t" is an actual Type object, and not some form
 // of subclass.
 func (t *Type) CheckExact() bool {
