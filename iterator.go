@@ -37,7 +37,7 @@ func GetIterator(obj Object) (Iterator, error) {
 		i.Incref()
 		return i, nil
 	}
-	if n, ok := obj.(Iterable); ok {
+	if n := AsIterable(obj); n != nil {
 		return n.Iter()
 	}
 	return nil, TypeError.Err("cannot get iterator from %T", obj)

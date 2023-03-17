@@ -49,6 +49,14 @@ var basic = map[string]typeSettings{
 		New:   false,
 		Type:  false,
 	},
+	"IterableMethods": {
+		Doc: strings.TrimSpace(`
+// IterableMethods represents an arbitrary Python iterable.
+		`),
+		Check: false,
+		New:   false,
+		Type:  false,
+	},
 	"MappingMethods": {
 		Doc: strings.TrimSpace(`
 // MappingMethods is a concrete realisation of the full set of Mapping Protocol
