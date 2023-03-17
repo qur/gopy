@@ -122,3 +122,17 @@ func (s *SequenceMethods) Tuple() (*Tuple, error) {
 	}
 	return newTuple(ret), nil
 }
+
+func (s *SequenceMethods) Iter() (Iterator, error) {
+	ret := C.PyObject_GetIter(c(s))
+	obj, err := obj2ObjErr(ret)
+	if err != nil {
+		return nil, err
+	}
+	it := AsIterator(obj)
+	if it == nil {
+		Decref(obj)
+		return nil, TypeError.Err("__iter__ did not return iterator")
+	}
+	return it, nil
+}

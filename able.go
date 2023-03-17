@@ -19,6 +19,10 @@ func AsIterable(obj Object) Iterable {
 	if obj.Type().o.tp_iter != nil {
 		return (*IterableMethods)(unsafe.Pointer(obj.Base()))
 	}
+	// Sequences are always iterable, there is actually a dedicated iterator
+	if s := AsSequenceMethods(obj); s != nil {
+		return s
+	}
 	return nil
 }
 
