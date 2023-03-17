@@ -393,6 +393,38 @@ var (
 	pyKeywordsFunc = (func(*Tuple, *Dict) (Object, error))(nil)
 )
 
+const subclassFlags = (C.Py_TPFLAGS_LONG_SUBCLASS |
+	C.Py_TPFLAGS_LIST_SUBCLASS |
+	C.Py_TPFLAGS_TUPLE_SUBCLASS |
+	C.Py_TPFLAGS_BYTES_SUBCLASS |
+	C.Py_TPFLAGS_UNICODE_SUBCLASS |
+	C.Py_TPFLAGS_DICT_SUBCLASS |
+	C.Py_TPFLAGS_TYPE_SUBCLASS |
+	C.Py_TPFLAGS_BASE_EXC_SUBCLASS)
+
+func fastSubclassFlags(t *Type) C.ulong {
+	switch t {
+	case LongType:
+		return C.Py_TPFLAGS_LONG_SUBCLASS
+	case ListType:
+		return C.Py_TPFLAGS_LIST_SUBCLASS
+	case TupleType:
+		return C.Py_TPFLAGS_TUPLE_SUBCLASS
+	case BytesType:
+		return C.Py_TPFLAGS_BYTES_SUBCLASS
+	case UnicodeType:
+		return C.Py_TPFLAGS_UNICODE_SUBCLASS
+	case DictType:
+		return C.Py_TPFLAGS_DICT_SUBCLASS
+	case TypeType:
+		return C.Py_TPFLAGS_TYPE_SUBCLASS
+	}
+	if t.o.tp_flags&subclassFlags != 0 {
+		return t.o.tp_flags & subclassFlags
+	}
+	return 0
+}
+
 // Create completes the initialisation of the Class by creating the Python type.
 // The created type is then stored in the Class and accessible via the Type
 // method. A Class is not a valid Python object until Create has been
@@ -416,6 +448,7 @@ func (cls *Class) Create() error {
 		pyType.tp_base = b.c()
 		pyType.tp_basicsize = b.o.tp_basicsize
 		pyType.tp_basicsize = b.o.tp_itemsize
+		pyType.tp_flags |= fastSubclassFlags(b)
 	case *Class:
 		// *Class is good, but should be initialised and not nil
 		if b == nil {
@@ -423,11 +456,12 @@ func (cls *Class) Create() error {
 		}
 		raw := b.RawType()
 		if raw == nil {
-			return fmt.Errorf("Can't use uninitialised *Class as BaseType")
+			return fmt.Errorf("can't use uninitialised *Class as BaseType")
 		}
 		pyType.tp_base = raw.c()
 		pyType.tp_basicsize = raw.o.tp_basicsize
 		pyType.tp_basicsize = raw.o.tp_itemsize
+		pyType.tp_flags |= fastSubclassFlags(raw)
 	default:
 		return fmt.Errorf("%T is not a supported type for BaseType", b)
 	}
