@@ -31,7 +31,7 @@ func classTraverse(co ClassObject, visit C.visitproc, arg unsafe.Pointer) C.int 
 		}
 	}
 
-	class := getClass(co.Type().c())
+	class := co.getCBO().class
 	switch b := class.BaseType.(type) {
 	case *Class:
 		co = getClassObjectByType(c(co), b.Type().c())
@@ -62,14 +62,7 @@ func goClassClear(obj *C.PyObject) C.int {
 func classClear(co ClassObject) C.int {
 	ClearClassObject(co)
 
-	class := getClass(co.Type().c())
-
-	// might be parent type that is a class
-	pyType := co.Type().c()
-	for class == nil && pyType.tp_base != nil {
-		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
-		class = getClass(pyType)
-	}
+	class := co.getCBO().class
 
 	switch b := class.BaseType.(type) {
 	case *Class:
@@ -107,22 +100,24 @@ func goClassDealloc(obj *C.PyObject) {
 		return
 	}
 
+	// Do these lookups before we free the Python memory
+	coType := co.Type()
+	class := co.getCBO().class
+
 	// we always want Python to _actually_ free the object, any registered hook
 	// should just be tidying things up on the Go side.
 	free(co)
+
+	// Decref type for heap types
+	if class.Flags&ClassHeapType != 0 {
+		coType.Decref()
+	}
 }
 
 func classDealloc(co ClassObject) bool {
-	class := getClass(co.Type().c())
+	class := co.getCBO().class
 
-	// might be parent type that is a class
-	pyType := co.Type().c()
-	for class == nil && pyType.tp_base != nil {
-		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
-		class = getClass(pyType)
-	}
-
-	if class != nil && (class.Flags&ClassHaveGC != 0) {
+	if class.Flags&ClassHaveGC != 0 {
 		C.PyObject_GC_UnTrack(unsafe.Pointer(c(co)))
 	}
 
@@ -143,7 +138,17 @@ func classDealloc(co ClassObject) bool {
 	case *Type:
 		base := co.Type().o.tp_base
 		if base != nil {
+			// if this type is heap allocated, but base isn't, then we need to
+			// decref co.Type() (if base is also heap allocated, then it's
+			// dealloc will do it for us).
+			shouldDecref := class.Flags&ClassHeapType != 0 && base.tp_flags&C.Py_TPFLAGS_HEAPTYPE == 0
+			// we lookup co.Type() before calling typeDealloc, as we shouldn't
+			// use co afterwards since the Python object will have been freed.
+			coType := co.Type()
 			C.typeDealloc(base, c(co))
+			if shouldDecref {
+				coType.Decref()
+			}
 			return true
 		}
 	}
@@ -201,7 +206,7 @@ func (cls *Class) new(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 	}
 
 	// finalise the setup of the go object
-	goObj.setBase(newBaseObject(pyObj))
+	goObj.setBase(newBaseObject(pyObj), cls)
 	v := reflect.ValueOf(goObj).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)

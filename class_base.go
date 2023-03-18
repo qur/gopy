@@ -12,13 +12,14 @@ import (
 type ClassObject interface {
 	Object
 	getCBO() *ClassBaseObject
-	setBase(base *BaseObject)
+	setBase(base *BaseObject, class *Class)
 }
 
 // ClassBaseObject should be embedded into structs that want to implement
 // ClassObject to be the instance type of a Class.
 type ClassBaseObject struct {
-	base *BaseObject
+	base  *BaseObject
+	class *Class
 }
 
 var _ ClassObject = (*ClassBaseObject)(nil)
@@ -49,8 +50,9 @@ func (c *ClassBaseObject) getCBO() *ClassBaseObject {
 	return c
 }
 
-func (c *ClassBaseObject) setBase(base *BaseObject) {
+func (c *ClassBaseObject) setBase(base *BaseObject, class *Class) {
 	c.base = base
+	c.class = class
 }
 
 var (
@@ -97,7 +99,7 @@ func clearClassObject(pyObj *C.PyObject) {
 
 	delete(classObjMap, pyObj)
 	for _, goObj := range typeMap {
-		goObj.setBase(nil)
+		goObj.setBase(nil, nil)
 	}
 }
 
