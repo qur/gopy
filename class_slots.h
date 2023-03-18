@@ -88,23 +88,7 @@
 // ===============================================================
 // ===============================================================
 
-typedef struct {
-  // Protective NULL pointer
-  void *zero;
-
-  // The concrete Methods structs for the protocols (PyTypeObjects only stores
-  // a pointer).
-  PyAsyncMethods am_meth;
-  PyNumberMethods nb_meth;
-  PyMappingMethods mp_meth;
-  PySequenceMethods sq_meth;
-  PyBufferProcs bf_meth;
-} ClassContext;
-
-// ===============================================================
-// ===============================================================
-
-extern ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags);
+extern void setSlots(PyHeapTypeObject *htype, uint64_t slotFlags);
 
 // ===============================================================
 

@@ -6,9 +6,8 @@
 
 // ===============================================================
 
-ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
-  ClassContext *ctxt = calloc(1, sizeof(ClassContext));
-  ctxt->zero = NULL;
+void setSlots(PyHeapTypeObject *htype, uint64_t slotFlags) {
+  PyTypeObject *type = &htype->ht_type;
 
   type->tp_new = (newfunc)goClassNew;
   type->tp_dealloc = (destructor)goClassDealloc;
@@ -35,7 +34,7 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
   }
 
   if (slotFlags & CLASS_HAS_AM) {
-    PyAsyncMethods *m = &ctxt->am_meth;
+    PyAsyncMethods *m = &htype->as_async;
     type->tp_as_async = m;
     if (slotFlags & CLASS_HAS_AM_AWAIT) m->am_await = (unaryfunc)goClassSlot_am_await;
     if (slotFlags & CLASS_HAS_AM_AITER) m->am_aiter = (unaryfunc)goClassSlot_am_aiter;
@@ -44,7 +43,7 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
   }
 
   if (slotFlags & CLASS_HAS_NB) {
-    PyNumberMethods *m = &ctxt->nb_meth;
+    PyNumberMethods *m = &htype->as_number;
     type->tp_as_number = m;
     if (slotFlags & CLASS_HAS_NB_ADD) m->nb_add = (binaryfunc)goClassSlot_nb_add;
     if (slotFlags & CLASS_HAS_NB_INPLACE_ADD) m->nb_inplace_add = (binaryfunc)goClassSlot_nb_inplace_add;
@@ -84,7 +83,7 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
   }
 
   if (slotFlags & CLASS_HAS_MP) {
-    PyMappingMethods *m = &ctxt->mp_meth;
+    PyMappingMethods *m = &htype->as_mapping;
     type->tp_as_mapping = m;
     if (slotFlags & CLASS_HAS_MP_LENGTH) m->mp_length = (lenfunc)goClassSlot_mp_length;
     if (slotFlags & CLASS_HAS_MP_SUBSCRIPT) m->mp_subscript = (binaryfunc)goClassSlot_mp_subscript;
@@ -92,7 +91,7 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
   }
 
   if (slotFlags & CLASS_HAS_SQ) {
-    PySequenceMethods *m = &ctxt->sq_meth;
+    PySequenceMethods *m = &htype->as_sequence;
     type->tp_as_sequence = m;
     if (slotFlags & CLASS_HAS_SQ_LENGTH) m->sq_length = (lenfunc)goClassSlot_sq_length;
     if (slotFlags & CLASS_HAS_SQ_CONCAT) m->sq_concat = (binaryfunc)goClassSlot_sq_concat;
@@ -105,13 +104,11 @@ ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {
   }
 
   if (slotFlags & CLASS_HAS_BF) {
-    PyBufferProcs *m = &ctxt->bf_meth;
+    PyBufferProcs *m = &htype->as_buffer;
     type->tp_as_buffer = m;
     if (slotFlags & CLASS_HAS_BF_GETBUFFER) m->bf_getbuffer = (getbufferproc)goClassSlot_bf_getbuffer;
     if (slotFlags & CLASS_HAS_BF_RELEASEBUFFER) m->bf_releasebuffer = (releasebufferproc)goClassSlot_bf_releasebuffer;
   }
-
-  return ctxt;
 }
 
 // ===============================================================

@@ -357,19 +357,21 @@ void set_call_keywords(PyCFunction *f) { *f = (PyCFunction)callWithKeywords; }
 
 // --- class.go helper functions ---
 //
-PyTypeObject *newType(void) { return calloc(1, sizeof(PyTypeObject)); }
+PyHeapTypeObject *newType(unsigned long flags) {
+  if (flags & Py_TPFLAGS_HEAPTYPE)
+    return (PyHeapTypeObject *)PyType_GenericAlloc(&PyType_Type, 0);
+  return calloc(1, sizeof(PyHeapTypeObject));
+}
+char *copyName(char *name) {
+  Py_ssize_t len = strlen(name) + 1;
+  char *buf = PyMem_Malloc(len);
+  return memcpy(buf, name, len);
+}
 int typeReady(PyTypeObject *o) {
   if (o->tp_new == NULL && o->tp_base == NULL) {
     o->tp_new = PyType_GenericNew;
   }
   return PyType_Ready(o);
-}
-void storeContext(PyTypeObject *t, ClassContext *c) {
-  // We don't use tp_methods, and it is only read when calling PyType_Ready, so
-  // we use it to hide a ClassContext struct.  The ClassContext starts with a
-  // NULL pointer just in case, so it looks like an empty methods list if Python
-  // does try to process it.
-  t->tp_methods = (void *)c;
 }
 int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o) {
   return PyDict_SetItemString(tp->tp_dict, name, o);

@@ -47,14 +47,12 @@ func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 	// If this is a sub-package, we will only import it if we also own the
 	// parent.
 	if path != None && getParent(name) == nil {
-		None.Incref()
-		return None, nil
+		return ReturnNone(), nil
 	}
 
 	if getImport(name) == nil {
 		// we don't have the requested module
-		None.Incref()
-		return None, nil
+		return ReturnNone(), nil
 	}
 
 	util, err := Import("importlib.util")

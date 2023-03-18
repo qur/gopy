@@ -21,6 +21,7 @@ type ClassFlags uint32
 const (
 	ClassHaveGC   = ClassFlags(C.Py_TPFLAGS_HAVE_GC)
 	ClassBaseType = ClassFlags(C.Py_TPFLAGS_BASETYPE)
+	ClassHeapType = ClassFlags(C.Py_TPFLAGS_HEAPTYPE)
 )
 
 // A Class struct instance is used to define a Python class that has been
@@ -116,7 +117,7 @@ func (cls *Class) Base() *BaseObject {
 }
 
 // Type returns a pointer to the Type that represents the type of this object in
-// Python.
+// Python. This will always be TypeType.
 func (cls *Class) Type() *Type {
 	return cls.base.Type()
 }
@@ -129,12 +130,14 @@ func (cls *Class) RawType() *Type {
 	return cls.base
 }
 
-// Decref decrements cls's reference count, cls may not be nil.
+// Decref decrements cls's reference count, cls may not be nil. This should only
+// be used when the ClassHeapType flag is set.
 func (cls *Class) Decref() {
 	cls.base.Decref()
 }
 
-// Incref increments cks's reference count, cls may not be nil.
+// Incref increments cls's reference count, cls may not be nil. This should only
+// be used when the ClassHeapType flag is set.
 func (cls *Class) Incref() {
 	cls.base.Incref()
 }
@@ -148,18 +151,22 @@ func (cls *Class) raw() *C.PyObject {
 // of the call, or an Error on failure. This is equivalent to
 // "cls(*args, **kwds)" in Python.
 //
+// The returned value will be a instance of the Class's Object type.
+//
 // Return value: New Reference.
 func (cls *Class) Call(args *Tuple, kwds *Dict) (Object, error) {
 	ret := C.PyObject_Call(c(cls), c(args), c(kwds))
 	return obj2ObjErr(ret)
 }
 
-// CallGo calls cf with the given args and kwds, either may be nil. Returns the
-// result of the call, or an Error on failure. This is equivalent to
-// "cf(*args, **kwds)" in Python.
+// CallGo calls cls with the given args and kwds, either may be nil. Returns the
+// result of the call, or an Error on failure. This is equivalent to "cls(*args,
+// **kwds)" in Python.
 //
 // The values are converted to Objects using NewValue. A TypeError will be
 // returned if a value cannot be converted.
+//
+// The returned value will be a instance of the Class's Object type.
 //
 // Return value: New Reference.
 func (cls *Class) CallGo(args []any, kwds map[string]any) (Object, error) {
@@ -426,15 +433,30 @@ func fastSubclassFlags(t *Type) C.ulong {
 }
 
 // Create completes the initialisation of the Class by creating the Python type.
-// The created type is then stored in the Class and accessible via the Type
+// The created type is then stored in the Class and accessible via the RawType
 // method. A Class is not a valid Python object until Create has been
 // successfully called.
-func (cls *Class) Create() error {
-	pyType := C.newType()
-	pyType.tp_name = C.CString(cls.Name)
+func (cls *Class) Create() (err error) {
+	name := C.CString(cls.Name)
+	defer C.free(unsafe.Pointer(name))
+
+	pyHeapType := C.newType(C.ulong(cls.Flags))
+	pyHeapType._ht_tpname = C.copyName(name)
+	pyType := &pyHeapType.ht_type
+	pyType.tp_name = pyHeapType._ht_tpname
 	pyType.tp_flags = C.Py_TPFLAGS_DEFAULT | C.ulong(cls.Flags)
 	pyType.tp_basicsize = C.Py_ssize_t(unsafe.Sizeof(C.PyObject{}))
 	pyType.tp_itemsize = 0
+
+	defer func() {
+		if err != nil {
+			if cls.Flags&ClassHeapType != 0 {
+				C.PyObject_Free(unsafe.Pointer(pyHeapType))
+			} else {
+				C.free(unsafe.Pointer(pyHeapType))
+			}
+		}
+	}()
 
 	// start by validating BaseType
 	switch b := cls.BaseType.(type) {
@@ -447,7 +469,7 @@ func (cls *Class) Create() error {
 		}
 		pyType.tp_base = b.c()
 		pyType.tp_basicsize = b.o.tp_basicsize
-		pyType.tp_basicsize = b.o.tp_itemsize
+		pyType.tp_itemsize = b.o.tp_itemsize
 		pyType.tp_flags |= fastSubclassFlags(b)
 	case *Class:
 		// *Class is good, but should be initialised and not nil
@@ -460,7 +482,7 @@ func (cls *Class) Create() error {
 		}
 		pyType.tp_base = raw.c()
 		pyType.tp_basicsize = raw.o.tp_basicsize
-		pyType.tp_basicsize = raw.o.tp_itemsize
+		pyType.tp_itemsize = raw.o.tp_itemsize
 		pyType.tp_flags |= fastSubclassFlags(raw)
 	default:
 		return fmt.Errorf("%T is not a supported type for BaseType", b)
@@ -501,7 +523,6 @@ func (cls *Class) Create() error {
 			methods[parts[1]] = method{NewLong(int64(i)), flags}
 		case "PySet":
 			if err := methSigMatches(t, (func(Object) error)(nil)); err != nil {
-				C.free(unsafe.Pointer(pyType))
 				return fmt.Errorf("%s: %s", fn, err)
 			}
 			p := props[parts[1]]
@@ -509,7 +530,6 @@ func (cls *Class) Create() error {
 			props[parts[1]] = p
 		case "PyGet":
 			if err := methSigMatches(t, (func() (Object, error))(nil)); err != nil {
-				C.free(unsafe.Pointer(pyType))
 				return fmt.Errorf("%s: %s", fn, err)
 			}
 			p := props[parts[1]]
@@ -546,16 +566,11 @@ func (cls *Class) Create() error {
 		methods[name] = method{key, flags | C.METH_CLASS}
 	}
 
-	ctxt := C.setSlots(pyType, slotFlags)
+	C.setSlots(pyHeapType, slotFlags)
 
 	if C.typeReady(pyType) < 0 {
-		C.free(unsafe.Pointer(ctxt))
-		C.free(unsafe.Pointer(pyType.tp_name))
-		C.free(unsafe.Pointer(pyType))
 		return exception()
 	}
-
-	C.storeContext(pyType, ctxt)
 
 	for name, method := range methods {
 		s := C.CString(name)
@@ -573,25 +588,16 @@ func (cls *Class) Create() error {
 		switch field.Type {
 		case cipType:
 			if _, ok := cls.Object.(tp_iternext); !ok {
-				C.free(unsafe.Pointer(ctxt))
-				C.free(unsafe.Pointer(pyType.tp_name))
-				C.free(unsafe.Pointer(pyType))
 				return fmt.Errorf("%T claimed to implement IteratorProtocol by embedding ClassIteratorProtocol, but doesn't have required methods", cls.Object)
 			}
 			pyEmbed = true
 		case cspType:
 			if _, ok := cls.Object.(sq_item); !ok {
-				C.free(unsafe.Pointer(ctxt))
-				C.free(unsafe.Pointer(pyType.tp_name))
-				C.free(unsafe.Pointer(pyType))
 				return fmt.Errorf("%T claimed to implement SequenceProtocol by embedding ClassSequenceProtocol, but doesn't have required methods", cls.Object)
 			}
 			pyEmbed = true
 		case cmpType:
 			if _, ok := cls.Object.(mp_subscript); !ok {
-				C.free(unsafe.Pointer(ctxt))
-				C.free(unsafe.Pointer(pyType.tp_name))
-				C.free(unsafe.Pointer(pyType))
 				return fmt.Errorf("%T claimed to implement MappingProtocol by embedding ClassMappingProtocol, but doesn't have required methods", cls.Object)
 			}
 			pyEmbed = true
@@ -619,9 +625,6 @@ func (cls *Class) Create() error {
 				case "ro":
 					ro = C.int(1)
 				default:
-					C.free(unsafe.Pointer(ctxt))
-					C.free(unsafe.Pointer(pyType.tp_name))
-					C.free(unsafe.Pointer(pyType))
 					return fmt.Errorf("unknown tag option: %s", opt)
 				}
 			}
@@ -647,14 +650,10 @@ func (cls *Class) Create() error {
 			C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d, ro))
 			continue
 		}
-		C.free(unsafe.Pointer(ctxt))
-		C.free(unsafe.Pointer(pyType.tp_name))
-		C.free(unsafe.Pointer(pyType))
 		return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 	}
 
 	cls.base = newType(pyType)
-
 	registerClass(pyType, cls)
 
 	return nil

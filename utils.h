@@ -53,9 +53,9 @@ extern void set_call_keywords(PyCFunction *f);
 
 // --- class.go helper functions ---
 //
-extern PyTypeObject *newType(void);
+extern PyHeapTypeObject *newType(unsigned long flags);
+extern char *copyName(char *name);
 extern int typeReady(PyTypeObject *o);
-extern void storeContext(PyTypeObject *t, ClassContext *c);
 extern int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o);
 extern int doVisit(PyObject *o, visitproc v, void *a);
 extern PyObject *newMethod(PyTypeObject *type, char *name, PyObject *func,

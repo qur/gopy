@@ -324,28 +324,11 @@ def write_constants(f):
     print("// ===============================================================", file=f)
 
 
-def write_ClassContext(f):
-    print("// ===============================================================", file=f)
-    print("", file=f)
-    print("typedef struct {", file=f)
-    print("  // Protective NULL pointer", file=f)
-    print("  void *zero;", file=f)
-    print("", file=f)
-    print("  // The concrete Methods structs for the protocols (PyTypeObjects only stores", file=f)
-    print("  // a pointer).", file=f)
-    for prefix, (method_set, method_type) in methods.items():
-        if method_set is not None:
-            print(f"  {method_type} {prefix}_meth;", file=f)
-    print("} ClassContext;", file=f)
-    print("", file=f)
-    print("// ===============================================================", file=f)
-
-
 def write_extern_setSlots(f):
     print("// ===============================================================", file=f)
     print("", file=f)
     print(
-        "extern ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags);", file=f)
+        "extern void setSlots(PyHeapTypeObject *htype, uint64_t slotFlags);", file=f)
     print("", file=f)
     print("// ===============================================================", file=f)
 
@@ -363,9 +346,8 @@ def write_setSlots(f):
     print("// ===============================================================", file=f)
     print("", file=f)
     print(
-        "ClassContext *setSlots(PyTypeObject *type, uint64_t slotFlags) {", file=f)
-    print("  ClassContext *ctxt = calloc(1, sizeof(ClassContext));", file=f)
-    print("  ctxt->zero = NULL;", file=f)
+        "void setSlots(PyHeapTypeObject *htype, uint64_t slotFlags) {", file=f)
+    print("  PyTypeObject *type = &htype->ht_type;", file=f)
     print("", file=f)
     print("  type->tp_new = (newfunc)goClassNew;", file=f)
     print("  type->tp_dealloc = (destructor)goClassDealloc;", file=f)
@@ -386,14 +368,12 @@ def write_setSlots(f):
             print(f"  if (slotFlags & CLASS_HAS_{prefix.upper()}) {{", file=f)
             (method_set, method_type) = methods.get(prefix, (None, None))
             if method_set is not None:
-                print(f"    {method_type} *m = &ctxt->{prefix}_meth;", file=f)
+                print(f"    {method_type} *m = &htype->as_{method_set};", file=f)
                 print(f"    type->tp_as_{method_set} = m;", file=f)
             current_prefix = prefix
         print(
             f"    if (slotFlags & CLASS_HAS_{slot.upper()}) m->{slot} = ({pySig})goClassSlot_{slot};", file=f)
     print("  }", file=f)
-    print("", file=f)
-    print("  return ctxt;", file=f)
     print("}", file=f)
     print("", file=f)
     print("// ===============================================================", file=f)
@@ -476,7 +456,6 @@ def main():
     with open("class_slots.h", "w", encoding='utf-8') as output:
         write_h_header(output)
         write_constants(output)
-        write_ClassContext(output)
         write_extern_setSlots(output)
         write_h_footer(output)
 
