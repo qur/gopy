@@ -59,6 +59,10 @@ func (c *ClassBaseObject) Super() (*Super, error) {
 	return c.class.Super(c)
 }
 
+func (c *ClassBaseObject) Class() *Class {
+	return c.class
+}
+
 var (
 	classObjLock sync.Mutex
 	classObjMap  = map[*C.PyObject]map[*C.PyTypeObject]ClassObject{}
