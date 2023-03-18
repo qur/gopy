@@ -164,6 +164,16 @@ func Incref(obj Object) {
 	}
 }
 
+// RefCount returns a copy of the reference count of the Object. This is
+// intended to help with debugging reference count issues, and should not
+// normally be needed.
+func RefCount(obj Object) int {
+	if obj == nil {
+		return 0
+	}
+	return int(c(obj).ob_refcnt)
+}
+
 // NewRef increments obj's reference count, and then returns obj. Obj may not be
 // nil.
 //
