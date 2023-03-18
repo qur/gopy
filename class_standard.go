@@ -63,6 +63,14 @@ func classClear(co ClassObject) C.int {
 	ClearClassObject(co)
 
 	class := getClass(co.Type().c())
+
+	// might be parent type that is a class
+	pyType := co.Type().c()
+	for class == nil && pyType.tp_base != nil {
+		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
+		class = getClass(pyType)
+	}
+
 	switch b := class.BaseType.(type) {
 	case *Class:
 		co = getClassObjectByType(c(co), b.Type().c())
@@ -106,6 +114,14 @@ func goClassDealloc(obj *C.PyObject) {
 
 func classDealloc(co ClassObject) bool {
 	class := getClass(co.Type().c())
+
+	// might be parent type that is a class
+	pyType := co.Type().c()
+	for class == nil && pyType.tp_base != nil {
+		pyType = (*C.PyTypeObject)(unsafe.Pointer(pyType.tp_base))
+		class = getClass(pyType)
+	}
+
 	if class != nil && (class.Flags&ClassHaveGC != 0) {
 		C.PyObject_GC_UnTrack(unsafe.Pointer(c(co)))
 	}
