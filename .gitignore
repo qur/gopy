@@ -5,4 +5,5 @@ _cgo_export.h
 /extension.so
 /extension.h
 /examples/shell/shell
+/examples/loader/loader
 __pycache__/
