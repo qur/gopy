@@ -9,6 +9,11 @@ import (
 	"unsafe"
 )
 
+// ClassObject is the interface that has to be implemented by types that are the
+// Go instance type of a Class.
+//
+// This interface should be implemented by embedding a ClassBaseObject in a
+// struct.
 type ClassObject interface {
 	Object
 	getCBO() *ClassBaseObject
@@ -26,18 +31,24 @@ var _ ClassObject = (*ClassBaseObject)(nil)
 
 var cboType = reflect.TypeOf((*ClassBaseObject)(nil)).Elem()
 
+// Base returns a BaseObject pointer that gives access to the generic methods on
+// that type for this object.
 func (c *ClassBaseObject) Base() *BaseObject {
 	return c.base
 }
 
+// Type returns a pointer to the Type that represents the type of this object in
+// Python.
 func (c *ClassBaseObject) Type() *Type {
 	return c.base.Type()
 }
 
+// Decref decrements c's reference count, c may not be nil.
 func (c *ClassBaseObject) Decref() {
 	c.base.Decref()
 }
 
+// Incref increments c's reference count, c may not be nil.
 func (c *ClassBaseObject) Incref() {
 	c.base.Incref()
 }
@@ -55,10 +66,16 @@ func (c *ClassBaseObject) setBase(base *BaseObject, class *Class) {
 	c.class = class
 }
 
+// Super returns a Super object for the instance.
+//
+// This is equivalent to `super(type(c), c)` in Python.
+//
+// Return value: New Reference.
 func (c *ClassBaseObject) Super() (*Super, error) {
 	return c.class.Super(c)
 }
 
+// Class returns the *Class for this object.
 func (c *ClassBaseObject) Class() *Class {
 	return c.class
 }
