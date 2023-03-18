@@ -14,17 +14,11 @@ type Wibble struct {
 
 func (w *Wibble) Py_do(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	log.Printf("GO DO: %s %s", args, kwds)
-	super, err := wibbleType.Super(w)
+	super, err := w.Super()
 	if err != nil {
 		return nil, err
 	}
 	return super.CallMethod("do", args, kwds)
-}
-
-var wibbleType = py.Class{
-	Name:   "Wibble",
-	Flags:  py.ClassBaseType | py.ClassHeapType,
-	Object: (*Wibble)(nil),
 }
 
 func main() {
@@ -59,7 +53,12 @@ func main() {
 		log.Fatalf("failed to get loadertest.Wibble: %s", err)
 	}
 
-	wibbleType.BaseType = w
+	var wibbleType = &py.Class{
+		Name:     "Wibble",
+		Flags:    py.ClassBaseType | py.ClassHeapType,
+		Object:   (*Wibble)(nil),
+		BaseType: w,
+	}
 
 	if err := wibbleType.Create(); err != nil {
 		log.Fatalf("failed to create subclass of loadertest.Wibble: %s", err)
@@ -70,7 +69,7 @@ func main() {
 		log.Fatalf("failed to get loadertest.foobar: %s", err)
 	}
 
-	o, err := foobar.Base().CallGo(py.A{&wibbleType}, nil)
+	o, err := foobar.Base().CallGo(py.A{wibbleType}, nil)
 	if err != nil {
 		log.Fatalf("failed to call loadertest.foobar: %s", err)
 	}

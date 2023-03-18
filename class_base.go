@@ -55,6 +55,10 @@ func (c *ClassBaseObject) setBase(base *BaseObject, class *Class) {
 	c.class = class
 }
 
+func (c *ClassBaseObject) Super() (*Super, error) {
+	return c.class.Super(c)
+}
+
 var (
 	classObjLock sync.Mutex
 	classObjMap  = map[*C.PyObject]map[*C.PyTypeObject]ClassObject{}
