@@ -367,6 +367,11 @@ char *copyName(char *name) {
   char *buf = PyMem_Malloc(len);
   return memcpy(buf, name, len);
 }
+PyObject *typeName(char *name) {
+  const char *s = strrchr(name, '.');
+  if (s == NULL) return PyUnicode_FromString(name);
+  return PyUnicode_FromString(++s);
+}
 int typeReady(PyTypeObject *o) {
   if (o->tp_new == NULL && o->tp_base == NULL) {
     o->tp_new = PyType_GenericNew;

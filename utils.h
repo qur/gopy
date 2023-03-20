@@ -55,6 +55,7 @@ extern void set_call_keywords(PyCFunction *f);
 //
 extern PyHeapTypeObject *newType(unsigned long flags);
 extern char *copyName(char *name);
+extern PyObject *typeName(char *name);
 extern int typeReady(PyTypeObject *o);
 extern int setTypeAttr(PyTypeObject *tp, char *name, PyObject *o);
 extern int doVisit(PyObject *o, visitproc v, void *a);

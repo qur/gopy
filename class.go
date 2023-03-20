@@ -451,12 +451,24 @@ func (cls *Class) Create() (err error) {
 	defer func() {
 		if err != nil {
 			if cls.Flags&ClassHeapType != 0 {
+				C.xdecref(pyHeapType.ht_name)
 				C.PyObject_Free(unsafe.Pointer(pyHeapType))
 			} else {
 				C.free(unsafe.Pointer(pyHeapType))
 			}
 		}
 	}()
+
+	if cls.Flags&ClassHeapType != 0 {
+		// for heap allocated types we need to setup the ht_name and ht_qualname
+		// members.
+		pyHeapType.ht_name = C.typeName(pyHeapType._ht_tpname)
+		if pyHeapType.ht_name == nil {
+			return exception()
+		}
+		C.incref(pyHeapType.ht_name)
+		pyHeapType.ht_qualname = pyHeapType.ht_name
+	}
 
 	// start by validating BaseType
 	switch b := cls.BaseType.(type) {
