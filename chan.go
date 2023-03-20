@@ -119,6 +119,41 @@ func (c *Chan) Py_close(args *Tuple, kw *Dict) (ret Object, err error) {
 	return
 }
 
+// Py_monitor calls item with items from the channel in a background goroutine.
+// If closed is provided then it will be called when the channel is closed.
+func (c *Chan) Py_monitor(args *Tuple, kw *Dict) (Object, error) {
+	var itemCB, closeCB Object
+	if err := ParseTupleAndKeywords(args, kw, "O|$O", []string{"item", "closed"}, &itemCB, &closeCB); err != nil {
+		return nil, err
+	}
+
+	if itemCB == nil || itemCB == None {
+		return nil, ValueError.Err("item must not be None")
+	}
+
+	// we ignore errors from the calls in the goroutine, since we have nothing
+	// we can do with the errors.
+	go func() {
+		lock := NewLock()
+		defer lock.Unlock()
+
+		lock.UnblockThreads()
+		for obj := range c.c {
+			lock.BlockThreads()
+			ret, _ := itemCB.Base().CallFunctionObjArgs(obj)
+			Decref(ret)
+			lock.UnblockThreads()
+		}
+		lock.BlockThreads()
+		if closeCB != nil && closeCB != None {
+			ret, _ := closeCB.Base().CallFunctionObjArgs()
+			Decref(ret)
+		}
+	}()
+
+	return ReturnNone(), nil
+}
+
 // Iter is called to get an iterator for the item. This is used when running
 // "for ... in c" in Python.
 func (c *Chan) Iter() (Iterator, error) {
