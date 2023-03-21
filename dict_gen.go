@@ -69,16 +69,17 @@ func (d *Dict) Type() *Type {
 
 // Decref decrements d's reference count, d may not be nil.
 func (d *Dict) Decref() {
-	C.decref(c(d))
+	obj := (*C.PyObject)(unsafe.Pointer(d))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments d's reference count, d may not be nil.
 func (d *Dict) Incref() {
-	C.incref(c(d))
-}
-
-func (d *Dict) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(d))
+	obj := (*C.PyObject)(unsafe.Pointer(d))
+	obj.ob_refcnt++
 }
 
 // Repr returns a String representation of "d". This is equivalent to the

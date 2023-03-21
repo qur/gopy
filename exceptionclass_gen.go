@@ -42,16 +42,17 @@ func (e *ExceptionClass) Type() *Type {
 
 // Decref decrements e's reference count, e may not be nil.
 func (e *ExceptionClass) Decref() {
-	C.decref(c(e))
+	obj := (*C.PyObject)(unsafe.Pointer(e))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments e's reference count, e may not be nil.
 func (e *ExceptionClass) Incref() {
-	C.incref(c(e))
-}
-
-func (e *ExceptionClass) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(e))
+	obj := (*C.PyObject)(unsafe.Pointer(e))
+	obj.ob_refcnt++
 }
 
 

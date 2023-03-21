@@ -3,6 +3,19 @@ package main
 import "strings"
 
 var basic = map[string]typeSettings{
+	"BaseObject": {
+		Doc: strings.TrimSpace(`
+// BaseObject is the concrete representation of the Python "Object *".  It is
+// used less than in the C API, as the Object interface is mostly used when the
+// type is not fixed.  Any Object "o" can be turned into a *BaseObject using the
+// Base() method (i.e. o.Base() returns a *BaseObject that refers to the same
+// underlying Python object as "o").  This allows the Python functions that
+// accept any type of object to be defined as methods on *BaseObject.
+		`),
+		Check: false,
+		New:   true,
+		Type:  false,
+	},
 	"Bool": {
 		Doc: strings.TrimSpace(`
 // Bool is the representation of the Python bool type. There are only two

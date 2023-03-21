@@ -5,40 +5,8 @@ import "C"
 
 import "unsafe"
 
-// BaseObject is the concrete representation of the Python "Object *".  It is
-// used less than in the C API, as the Object interface is mostly used when the
-// type is not fixed.  Any Object "o" can be turned into a *BaseObject using the
-// Base() method (i.e. o.Base() returns a *BaseObject that refers to the same
-// underlying Python object as "o").  This allows the Python functions that
-// accept any type of object to be defined as methods on *BaseObject.
-type BaseObject struct {
-	o C.PyObject
-}
-
-var _ Object = (*BaseObject)(nil)
-
 // BaseType is the Type object that represents the BaseObject type.
 var BaseType = newType(&C.PyBaseObject_Type)
-
-func newBaseObject(obj *C.PyObject) *BaseObject {
-	return (*BaseObject)(unsafe.Pointer(obj))
-}
-
-// Base returns a BaseObject pointer that gives access to the generic methods on
-// that type for this object.
-func (obj *BaseObject) Base() *BaseObject {
-	return obj
-}
-
-// Decref decrements obj's reference count, obj may not be nil.
-func (obj *BaseObject) Decref() {
-	C.decref(c(obj))
-}
-
-// Incref increments obj's reference count, obj may not be nil.
-func (obj *BaseObject) Incref() {
-	C.incref(c(obj))
-}
 
 // Free deallocates the storage (in Python) for obj.  After calling this method,
 // obj should no longer be used.
@@ -395,12 +363,6 @@ func (obj *BaseObject) Not() bool {
 		panic(exception())
 	}
 	return ret != 0
-}
-
-// Type returns a pointer to the Type that represents the type of this object in
-// Python.
-func (obj *BaseObject) Type() *Type {
-	return newType(c(obj).ob_type)
 }
 
 // PyObject_TypeCheck : TODO

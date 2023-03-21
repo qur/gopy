@@ -67,16 +67,17 @@ func (cm *CMethod) Type() *Type {
 
 // Decref decrements cm's reference count, cm may not be nil.
 func (cm *CMethod) Decref() {
-	C.decref(c(cm))
+	obj := (*C.PyObject)(unsafe.Pointer(cm))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments cm's reference count, cm may not be nil.
 func (cm *CMethod) Incref() {
-	C.incref(c(cm))
-}
-
-func (cm *CMethod) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(cm))
+	obj := (*C.PyObject)(unsafe.Pointer(cm))
+	obj.ob_refcnt++
 }
 
 

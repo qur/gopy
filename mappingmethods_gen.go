@@ -44,16 +44,17 @@ func (m *MappingMethods) Type() *Type {
 
 // Decref decrements m's reference count, m may not be nil.
 func (m *MappingMethods) Decref() {
-	C.decref(c(m))
+	obj := (*C.PyObject)(unsafe.Pointer(m))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments m's reference count, m may not be nil.
 func (m *MappingMethods) Incref() {
-	C.incref(c(m))
-}
-
-func (m *MappingMethods) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(m))
+	obj := (*C.PyObject)(unsafe.Pointer(m))
+	obj.ob_refcnt++
 }
 
 

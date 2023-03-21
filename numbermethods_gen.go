@@ -44,16 +44,17 @@ func (n *NumberMethods) Type() *Type {
 
 // Decref decrements n's reference count, n may not be nil.
 func (n *NumberMethods) Decref() {
-	C.decref(c(n))
+	obj := (*C.PyObject)(unsafe.Pointer(n))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments n's reference count, n may not be nil.
 func (n *NumberMethods) Incref() {
-	C.incref(c(n))
-}
-
-func (n *NumberMethods) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(n))
+	obj := (*C.PyObject)(unsafe.Pointer(n))
+	obj.ob_refcnt++
 }
 
 

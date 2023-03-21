@@ -71,16 +71,17 @@ func (m *MemoryView) Type() *Type {
 
 // Decref decrements m's reference count, m may not be nil.
 func (m *MemoryView) Decref() {
-	C.decref(c(m))
+	obj := (*C.PyObject)(unsafe.Pointer(m))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments m's reference count, m may not be nil.
 func (m *MemoryView) Incref() {
-	C.incref(c(m))
-}
-
-func (m *MemoryView) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(m))
+	obj := (*C.PyObject)(unsafe.Pointer(m))
+	obj.ob_refcnt++
 }
 
 // Repr returns a String representation of "m". This is equivalent to the

@@ -91,7 +91,11 @@ func ({{ .name }} *{{ .type }}) c() *C.{{ .ctype }} {
 // Base returns a BaseObject pointer that gives access to the generic methods on
 // that type for this object.
 func ({{ .name }} *{{ .type }}) Base() *BaseObject {
+{{- if eq .type "BaseObject" }}
+	return {{ .name }}
+{{- else }}
 	return (*BaseObject)(unsafe.Pointer({{ .name }}))
+{{- end }}
 }
 
 // Type returns a pointer to the Type that represents the type of this object in
@@ -102,16 +106,17 @@ func ({{ .name }} *{{ .type }}) Type() *Type {
 
 // Decref decrements {{ .name }}'s reference count, {{ .name }} may not be nil.
 func ({{ .name }} *{{ .type }}) Decref() {
-	C.decref(c({{ .name }}))
+	obj := (*C.PyObject)(unsafe.Pointer({{ .name }}))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments {{ .name }}'s reference count, {{ .name }} may not be nil.
 func ({{ .name }} *{{ .type }}) Incref() {
-	C.incref(c({{ .name }}))
-}
-
-func ({{ .name }} *{{ .type }}) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer({{ .name }}))
+	obj := (*C.PyObject)(unsafe.Pointer({{ .name }}))
+	obj.ob_refcnt++
 }
 
 {{ if .funcs.tp_repr -}}

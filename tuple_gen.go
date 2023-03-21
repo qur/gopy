@@ -71,16 +71,17 @@ func (t *Tuple) Type() *Type {
 
 // Decref decrements t's reference count, t may not be nil.
 func (t *Tuple) Decref() {
-	C.decref(c(t))
+	obj := (*C.PyObject)(unsafe.Pointer(t))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments t's reference count, t may not be nil.
 func (t *Tuple) Incref() {
-	C.incref(c(t))
-}
-
-func (t *Tuple) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(t))
+	obj := (*C.PyObject)(unsafe.Pointer(t))
+	obj.ob_refcnt++
 }
 
 // Repr returns a String representation of "t". This is equivalent to the

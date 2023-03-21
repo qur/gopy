@@ -67,16 +67,17 @@ func (s *Slice) Type() *Type {
 
 // Decref decrements s's reference count, s may not be nil.
 func (s *Slice) Decref() {
-	C.decref(c(s))
+	obj := (*C.PyObject)(unsafe.Pointer(s))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments s's reference count, s may not be nil.
 func (s *Slice) Incref() {
-	C.incref(c(s))
-}
-
-func (s *Slice) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(s))
+	obj := (*C.PyObject)(unsafe.Pointer(s))
+	obj.ob_refcnt++
 }
 
 // Repr returns a String representation of "s". This is equivalent to the

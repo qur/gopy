@@ -67,16 +67,17 @@ func (i *InstanceMethod) Type() *Type {
 
 // Decref decrements i's reference count, i may not be nil.
 func (i *InstanceMethod) Decref() {
-	C.decref(c(i))
+	obj := (*C.PyObject)(unsafe.Pointer(i))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments i's reference count, i may not be nil.
 func (i *InstanceMethod) Incref() {
-	C.incref(c(i))
-}
-
-func (i *InstanceMethod) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(i))
+	obj := (*C.PyObject)(unsafe.Pointer(i))
+	obj.ob_refcnt++
 }
 
 // Repr returns a String representation of "i". This is equivalent to the

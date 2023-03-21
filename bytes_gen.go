@@ -71,16 +71,17 @@ func (b *Bytes) Type() *Type {
 
 // Decref decrements b's reference count, b may not be nil.
 func (b *Bytes) Decref() {
-	C.decref(c(b))
+	obj := (*C.PyObject)(unsafe.Pointer(b))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments b's reference count, b may not be nil.
 func (b *Bytes) Incref() {
-	C.incref(c(b))
-}
-
-func (b *Bytes) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(b))
+	obj := (*C.PyObject)(unsafe.Pointer(b))
+	obj.ob_refcnt++
 }
 
 // Repr returns a String representation of "b". This is equivalent to the

@@ -44,16 +44,17 @@ func (s *SequenceMethods) Type() *Type {
 
 // Decref decrements s's reference count, s may not be nil.
 func (s *SequenceMethods) Decref() {
-	C.decref(c(s))
+	obj := (*C.PyObject)(unsafe.Pointer(s))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments s's reference count, s may not be nil.
 func (s *SequenceMethods) Incref() {
-	C.incref(c(s))
-}
-
-func (s *SequenceMethods) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(s))
+	obj := (*C.PyObject)(unsafe.Pointer(s))
+	obj.ob_refcnt++
 }
 
 

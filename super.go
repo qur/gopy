@@ -15,7 +15,7 @@ func (s *Super) CallMethod(name string, args *Tuple, kwds *Dict) (Object, error)
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	f := C.PyObject_GetAttrString(s.raw(), cname)
+	f := C.PyObject_GetAttrString(s.c(), cname)
 	if f == nil {
 		return nil, AttributeError.Err(name)
 	}
@@ -41,7 +41,7 @@ func (s *Super) CallMethodGo(name string, args []any, kwds map[string]any) (Obje
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	f := C.PyObject_GetAttrString(s.raw(), cname)
+	f := C.PyObject_GetAttrString(s.c(), cname)
 	if f == nil {
 		return nil, AttributeError.Err(name)
 	}

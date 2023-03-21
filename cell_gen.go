@@ -67,16 +67,17 @@ func (ce *Cell) Type() *Type {
 
 // Decref decrements ce's reference count, ce may not be nil.
 func (ce *Cell) Decref() {
-	C.decref(c(ce))
+	obj := (*C.PyObject)(unsafe.Pointer(ce))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments ce's reference count, ce may not be nil.
 func (ce *Cell) Incref() {
-	C.incref(c(ce))
-}
-
-func (ce *Cell) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(ce))
+	obj := (*C.PyObject)(unsafe.Pointer(ce))
+	obj.ob_refcnt++
 }
 
 // Repr returns a String representation of "ce". This is equivalent to the

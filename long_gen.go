@@ -69,16 +69,17 @@ func (l *Long) Type() *Type {
 
 // Decref decrements l's reference count, l may not be nil.
 func (l *Long) Decref() {
-	C.decref(c(l))
+	obj := (*C.PyObject)(unsafe.Pointer(l))
+	obj.ob_refcnt--
+	if obj.ob_refcnt == 0 {
+		C._Py_Dealloc(obj)
+	}
 }
 
 // Incref increments l's reference count, l may not be nil.
 func (l *Long) Incref() {
-	C.incref(c(l))
-}
-
-func (l *Long) raw() *C.PyObject {
-	return (*C.PyObject)(unsafe.Pointer(l))
+	obj := (*C.PyObject)(unsafe.Pointer(l))
+	obj.ob_refcnt++
 }
 
 // Repr returns a String representation of "l". This is equivalent to the
