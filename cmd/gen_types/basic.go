@@ -26,6 +26,15 @@ var basic = map[string]typeSettings{
 		New:   false,
 		Type:  true,
 	},
+	"NoneObject": {
+		Doc: strings.TrimSpace(`
+// NoneObject is the type of the None value.  The only value of this type is
+// None.
+		`),
+		Check: false,
+		New:   true,
+		Type:  false,
+	},
 	"Module": {
 		Doc: strings.TrimSpace(`
 // Bool is the representation of the Python module type.

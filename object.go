@@ -153,14 +153,17 @@ func NewValue(value any) (Object, error) {
 // Decref decrements obj's reference count, obj may be nil.
 func Decref(obj Object) {
 	if o := c(obj); o != nil {
-		C.decref(o)
+		o.ob_refcnt--
+		if o.ob_refcnt == 0 {
+			C._Py_Dealloc(o)
+		}
 	}
 }
 
 // Incref increments obj's reference count, obj may be nil.
 func Incref(obj Object) {
 	if o := c(obj); o != nil {
-		C.incref(o)
+		o.ob_refcnt++
 	}
 }
 
