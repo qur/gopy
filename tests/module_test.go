@@ -1,22 +1,32 @@
 package pytesting
 
 import (
+	"fmt"
 	"testing"
 
 	"gopython.xyz/py/v3"
 )
 
 func TestFunction(t *testing.T) {
-	py.Initialize()
+	lock := py.InitAndLock()
+	defer lock.Finalize()
 
 	called := false
 	f := func() (py.Object, error) {
 		called = true
 		return py.None, nil
 	}
-	if m, err := py.InitModule("test", []py.GoMethod{{"test", f, ""}}); err != nil {
+
+	modDef := py.ModuleDef{
+		Name: "test",
+		Methods: []py.GoMethod{
+			{"test", f, ""},
+		},
+	}
+
+	if m, err := py.CreateModule(&modDef); err != nil {
 		t.Fatal(err)
-	} else if t2, err := m.Dict().GetItemString("test"); err != nil {
+	} else if t2, err := m.GetAttrString("test"); err != nil {
 		t.Fatal(err)
 	} else {
 		t2.Base().CallObject(nil)
@@ -27,7 +37,7 @@ func TestFunction(t *testing.T) {
 }
 
 type ExampleClass struct {
-	py.BaseObject
+	py.ClassBaseObject
 	called bool
 }
 
@@ -36,17 +46,17 @@ func (e *ExampleClass) Py_Test() (py.Object, error) {
 }
 
 func (e *ExampleClass) Py_Test2(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
-	if v, err := args.GetItem(0); err != nil {
+	if v, err := args.GetIndex(0); err != nil {
 		panic(err)
-	} else if i, ok := v.(*py.Int); !ok {
+	} else if i, ok := v.(*py.Long); !ok {
 		panic(v)
-	} else if i.Int() != 10 {
+	} else if i.Int64() != 10 {
 		panic(i)
 	}
 	panic("called2")
 }
 
-func (e *ExampleClass) PyStr() string {
+func (e *ExampleClass) Str() (py.Object, error) {
 	panic("strcalled")
 }
 
@@ -56,43 +66,59 @@ var exampleClass = py.Class{
 }
 
 func TestMethod(t *testing.T) {
-	py.Initialize()
+	lock := py.InitAndLock()
+	defer lock.Finalize()
+
+	modDef := py.ModuleDef{
+		Name: "test",
+	}
 
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
-	} else if m, err := py.InitModule("test", nil); err != nil {
+	} else if m, err := py.CreateModule(&modDef); err != nil {
 		t.Fatal(err)
-	} else if c, err := exampleClass.Create(); err != nil {
+	} else if err := m.Register(); err != nil {
+		t.Fatal(err)
+	} else if err := exampleClass.Create(); err != nil {
 		t.Fatal(err)
 	} else if g, err := py.GetBuiltins(); err != nil {
 		t.Fatal(err)
 	} else if err := main.SetItemString("__builtins__", g); err != nil {
 		t.Fatal(err)
-	} else if err := m.AddObject("test", c); err != nil {
+	} else if err := m.AddObjectRef("test", &exampleClass); err != nil {
 		t.Fatal(err)
 	} else if _, err := py.RunString("import test; a = test.test()", py.SingleInput, main, nil); err != nil {
 		t.Fatal(err)
 	} else if a, err := main.GetItemString("a"); err != nil {
 		t.Fatal(err)
-	} else if a == py.None || a.Type().String() != "<type 'test.test'>" {
+	} else if a == py.None || a.Type().String() != "<class 'test.test'>" {
 		t.Error(a.Type().String())
+	} else if _, ok := a.(*ExampleClass); !ok {
+		t.Error(fmt.Sprintf("wanted *ExampleClass, got %T", a))
 	}
 }
 
 func TestMethod2(t *testing.T) {
-	py.Initialize()
+	lock := py.InitAndLock()
+	defer lock.Finalize()
+
+	modDef := py.ModuleDef{
+		Name: "test",
+	}
 
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
-	} else if m, err := py.InitModule("test", nil); err != nil {
+	} else if m, err := py.CreateModule(&modDef); err != nil {
 		t.Fatal(err)
-	} else if c, err := exampleClass.Create(); err != nil {
+	} else if err := m.Register(); err != nil {
+		t.Fatal(err)
+	} else if err := exampleClass.Create(); err != nil {
 		t.Fatal(err)
 	} else if g, err := py.GetBuiltins(); err != nil {
 		t.Fatal(err)
 	} else if err := main.SetItemString("__builtins__", g); err != nil {
 		t.Fatal(err)
-	} else if err := m.AddObject("test", c); err != nil {
+	} else if err := m.AddObjectRef("test", &exampleClass); err != nil {
 		t.Fatal(err)
 	} else if _, err := py.RunString("import test; a = test.test()", py.SingleInput, main, nil); err != nil {
 		t.Fatal(err)
@@ -111,14 +137,14 @@ func TestMethod2(t *testing.T) {
 			{"__str__", "strcalled", "", nil},
 		}
 		for _, test := range tests {
-			func() {
+			t.Run(test.m, func(t *testing.T) {
 				defer func() {
 					if i := recover(); i != test.pan {
-						t.Error("Paniced for some other reason:", i)
+						t.Error("Panicked for some other reason:", i)
 					}
 				}()
 				a.Base().CallMethod(test.m, test.f, test.args...)
-			}()
+			})
 		}
 	}
 }

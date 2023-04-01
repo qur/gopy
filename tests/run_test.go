@@ -1,12 +1,14 @@
 package pytesting
 
 import (
-	"gopython.xyz/py/v3"
 	"testing"
+
+	"gopython.xyz/py/v3"
 )
 
 func TestRunString(t *testing.T) {
-	py.Initialize()
+	lock := py.InitAndLock()
+	defer lock.Finalize()
 
 	if main, err := py.NewDict(); err != nil {
 		t.Fatal(err)
@@ -18,7 +20,7 @@ func TestRunString(t *testing.T) {
 		t.Fatal(err)
 	} else if a, err := main.GetItemString("a"); err != nil {
 		t.Fatal(err)
-	} else if b, ok := a.(*py.String); !ok || b.String() != "hello world!" {
+	} else if b, ok := a.(*py.Unicode); !ok || b.String() != "hello world!" {
 		t.Error(b, err)
 	}
 }

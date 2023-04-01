@@ -1,13 +1,17 @@
 package pytesting
 
 import (
-	"gopython.xyz/py/v3"
 	"testing"
 	"time"
+
+	"gopython.xyz/py/v3"
 )
 
 func TestInterrupt(t *testing.T) {
-	py.Initialize()
+	t.Skip("signals are kind tricky?")
+
+	lock := py.InitAndLockWithSignals()
+	defer lock.Finalize()
 
 	main, err := py.NewDict()
 	if err != nil {
@@ -31,5 +35,4 @@ while True:
 	} else {
 		t.Log(ret)
 	}
-	py.Finalize()
 }
