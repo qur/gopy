@@ -13,7 +13,7 @@ import (
 // Note: If size > 0, then the objects in the returned list are initialised to
 // nil. Thus you cannot use Abstract API functions, or expose the object to
 // Python code without first filling in all the created slots with
-// list.SetItem().
+// list.SetItem() or list.SetItemSteal().
 //
 // Return value: New Reference.
 func NewList(size int) (*List, error) {
@@ -47,21 +47,56 @@ func NewListFromObjects(objects ...Object) (*List, error) {
 //
 // Return value: New Reference.
 func NewListFromValues(values ...any) (*List, error) {
+	rm := NewRefManager()
+	defer rm.Decref()
+
 	l, err := NewList(len(values))
 	if err != nil {
 		return nil, err
 	}
+	rm.Add(l)
+
 	for i, v := range values {
 		o, err := NewValue(v)
 		if err != nil {
-			l.Decref()
 			return nil, err
 		}
 		if err := l.SetIndexSteal(i, o); err != nil {
-			l.Decref()
+			rm.Add(o)
 			return nil, err
 		}
 	}
+
+	rm.Clear()
+	return l, nil
+}
+
+// NewListFromSlice creates a new Python List from the supplied slice. The
+// values are converted to Objects using NewValue.
+//
+// Return value: New Reference.
+func NewListFromSlice[T any](values []T) (*List, error) {
+	rm := NewRefManager()
+	defer rm.Decref()
+
+	l, err := NewList(len(values))
+	if err != nil {
+		return nil, err
+	}
+	rm.Add(l)
+
+	for i, v := range values {
+		o, err := NewValue(v)
+		if err != nil {
+			return nil, err
+		}
+		if err := l.SetIndexSteal(i, o); err != nil {
+			rm.Add(o)
+			return nil, err
+		}
+	}
+
+	rm.Clear()
 	return l, nil
 }
 

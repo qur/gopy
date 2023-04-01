@@ -62,26 +62,70 @@ func NewDictFromMapString(m map[string]Object) (*Dict, error) {
 //
 // Return value: New Reference.
 func NewDictFromValues(m map[any]any) (*Dict, error) {
+	rm := NewRefManager()
+	defer rm.Decref()
+
 	d, err := NewDict()
 	if err != nil {
 		return nil, err
 	}
+	rm.Add(d)
+
 	for k, v := range m {
 		key, err := NewValue(k)
 		if err != nil {
 			return nil, err
 		}
-		defer key.Decref()
+		rm.Add(key)
 		value, err := NewValue(v)
 		if err != nil {
 			return nil, err
 		}
-		defer value.Decref()
+		rm.Add(value)
 		if err := d.SetItem(key, value); err != nil {
-			d.Decref()
 			return nil, err
 		}
 	}
+
+	rm.Forget(d)
+	return d, nil
+}
+
+// NewDictFromValuesGeneric creates a new dictionary containing the values from
+// the given map. This is very similar to NewDictFromValues except that the
+// provided map can use specific types rather than having to be map[any]any.
+//
+// The values are converted to Objects using NewValue. A TypeError will be
+// returned if a value cannot be converted.
+//
+// Return value: New Reference.
+func NewDictFromValuesGeneric[K comparable, V any](m map[K]V) (*Dict, error) {
+	rm := NewRefManager()
+	defer rm.Decref()
+
+	d, err := NewDict()
+	if err != nil {
+		return nil, err
+	}
+	rm.Add(d)
+
+	for k, v := range m {
+		key, err := NewValue(k)
+		if err != nil {
+			return nil, err
+		}
+		rm.Add(key)
+		value, err := NewValue(v)
+		if err != nil {
+			return nil, err
+		}
+		rm.Add(value)
+		if err := d.SetItem(key, value); err != nil {
+			return nil, err
+		}
+	}
+
+	rm.Forget(d)
 	return d, nil
 }
 
@@ -92,22 +136,28 @@ func NewDictFromValues(m map[any]any) (*Dict, error) {
 // returned if a value cannot be converted.
 //
 // Return value: New Reference.
-func NewDictFromValuesString(m map[string]any) (*Dict, error) {
+func NewDictFromValuesString[V any](m map[string]V) (*Dict, error) {
+	rm := NewRefManager()
+	defer rm.Decref()
+
 	d, err := NewDict()
 	if err != nil {
 		return nil, err
 	}
+	rm.Add(d)
+
 	for key, v := range m {
 		value, err := NewValue(v)
 		if err != nil {
 			return nil, err
 		}
-		defer value.Decref()
+		rm.Add(value)
 		if err := d.SetItemString(key, value); err != nil {
-			d.Decref()
 			return nil, err
 		}
 	}
+
+	rm.Forget(d)
 	return d, nil
 }
 

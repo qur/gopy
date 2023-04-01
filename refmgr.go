@@ -100,7 +100,7 @@ func (r *RefManager) AllAllRef(objects ...Object) {
 
 // Decref will call decref on all of the Objects stored in the RefManager. The
 // RefManager will also be emptied, so it is ok to keep using it after the call
-// as only object added after the call will be tracked.
+// as only objects added after the call will be tracked.
 func (r *RefManager) Decref() {
 	for obj := range r.objects {
 		obj.Decref()
@@ -131,4 +131,15 @@ func (r *RefManager) Remove(obj Object) Object {
 	}
 	Incref(obj)
 	return obj
+}
+
+// Forget removes the given object from the manager. The reference held by the
+// RefManager is forgotten (the assumption is that the caller was sharing the
+// reference).
+//
+// If obj was not in RefManager, then nothing happens.
+func (r *RefManager) Forget(obj Object) {
+	if r.objects[obj] {
+		delete(r.objects, obj)
+	}
 }
