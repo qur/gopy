@@ -25,7 +25,13 @@ type ClassObject interface {
 type ClassBaseObject struct {
 	base  *BaseObject
 	class *Class
+	flags uint64
 }
+
+const (
+	classBaseClear uint64 = 1 << iota
+	classBaseTypeRefCountOdd
+)
 
 var _ ClassObject = (*ClassBaseObject)(nil)
 

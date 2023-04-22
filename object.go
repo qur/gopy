@@ -171,7 +171,7 @@ func Incref(obj Object) {
 // intended to help with debugging reference count issues, and should not
 // normally be needed.
 func RefCount(obj Object) int {
-	if obj == nil {
+	if obj == nil || obj.Base() == nil {
 		return 0
 	}
 	return int(c(obj).ob_refcnt)
