@@ -77,6 +77,11 @@ func (c *Chan) Py_put(args *Tuple, kw *Dict) (ret Object, err error) {
 		}
 	}()
 
+	// channel operations can block, so we want to unblock python threads whilst
+	// we perform the channel operation.
+	blockThreads := UnblockThreads()
+	defer blockThreads()
+
 	c.c <- obj
 
 	return
@@ -88,7 +93,13 @@ func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, error) {
 		return nil, err
 	}
 
+	// channel operations can block, so we want to unblock python threads whilst
+	// we perform the channel operation.
+	blockThreads := UnblockThreads()
+
 	obj := <-c.c
+
+	blockThreads()
 
 	if obj == nil {
 		return nil, ChanClosedError.Err("Chan closed")
@@ -164,6 +175,11 @@ func (c *Chan) Iter() (Iterator, error) {
 // Next is the iterator API. This function will get called to return the next
 // value.
 func (c *Chan) Next() (Object, error) {
+	// channel operations can block, so we want to unblock python threads whilst
+	// we perform the channel operation.
+	blockThreads := UnblockThreads()
+	defer blockThreads()
+
 	obj := <-c.c
 
 	return obj, nil

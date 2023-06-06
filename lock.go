@@ -246,12 +246,10 @@ func (lock *Lock) Unlock() {
 		lock.thState = nil
 	}
 
-	releaseOsThread := lock.dec()
-
+	lock.dec()
 	lock.gilState.Release()
-	if releaseOsThread {
-		runtime.UnlockOSThread()
-	}
+	runtime.UnlockOSThread()
+
 	lock.gilState = nil
 }
 
@@ -275,7 +273,7 @@ func (lock *Lock) UnblockThreads() {
 	}
 }
 
-// BlockThreads() reclaims the GIL (and restores per-thread state), after is has
+// BlockThreads() reclaims the GIL (and restores per-thread state), after it has
 // been released by UnblockThreads().
 //
 // If this function is called without UnblockThreads() having been called, then
@@ -313,9 +311,8 @@ func (lock *Lock) Finalize() {
 		lock.thState = nil
 	}
 
-	releaseOsThread := lock.dec()
-
-	if !releaseOsThread {
+	locksActive := lock.dec()
+	if !locksActive {
 		panic("Lock.Finalize called when Locks are still active")
 	}
 
@@ -323,4 +320,28 @@ func (lock *Lock) Finalize() {
 
 	runtime.UnlockOSThread()
 	lock.gilState = nil
+}
+
+// UnblockThreads will release the GIL to allow other threads to run. It it
+// intended only for uses where using a Lock to ensure the GIL is held is not
+// needed. The return value is a niladic function to call to regain the GIL.
+//
+// No check is made that the GIL is currently held.
+//
+// An example usage might be:
+//
+//	// Call Python code ...
+//
+//	blockThreads := py.UnblockThreads()
+//
+//	// Slow or blocking Go operation
+//
+//	blockThreads()
+//
+//	// Call Python code ...
+func UnblockThreads() func() {
+	thState := C.PyEval_SaveThread()
+	return func() {
+		C.PyEval_RestoreThread(thState)
+	}
 }
