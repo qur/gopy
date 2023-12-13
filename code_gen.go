@@ -70,6 +70,9 @@ func (co *Code) Type() *Type {
 func (co *Code) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(co))
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
 	*refcnt--
 	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
@@ -79,6 +82,9 @@ func (co *Code) Decref() {
 // Incref increments co's reference count, co may not be nil.
 func (co *Code) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(co)).anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
 	*refcnt++
 }
 

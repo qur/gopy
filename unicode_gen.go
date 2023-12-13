@@ -74,6 +74,9 @@ func (u *Unicode) Type() *Type {
 func (u *Unicode) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(u))
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
 	*refcnt--
 	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
@@ -83,6 +86,9 @@ func (u *Unicode) Decref() {
 // Incref increments u's reference count, u may not be nil.
 func (u *Unicode) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(u)).anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
 	*refcnt++
 }
 

@@ -70,6 +70,9 @@ func (s *Slice) Type() *Type {
 func (s *Slice) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(s))
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
 	*refcnt--
 	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
@@ -79,6 +82,9 @@ func (s *Slice) Decref() {
 // Incref increments s's reference count, s may not be nil.
 func (s *Slice) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(s)).anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
 	*refcnt++
 }
 

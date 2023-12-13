@@ -45,6 +45,9 @@ func (e *ExceptionClass) Type() *Type {
 func (e *ExceptionClass) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(e))
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
 	*refcnt--
 	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
@@ -54,6 +57,9 @@ func (e *ExceptionClass) Decref() {
 // Incref increments e's reference count, e may not be nil.
 func (e *ExceptionClass) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(e)).anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
 	*refcnt++
 }
 
