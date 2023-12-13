@@ -65,13 +65,11 @@ func (c *Chan) Py_put(args *Tuple, kw *Dict) (ret Object, err error) {
 	}
 
 	obj.Incref()
-	None.Incref()
 	ret = None
 
 	defer func() {
 		if p := recover(); p != nil {
 			obj.Decref()
-			ret.Decref()
 			ret = nil
 			err = ChanClosedError.Err("Chan closed")
 		}
@@ -114,12 +112,10 @@ func (c *Chan) Py_close(args *Tuple, kw *Dict) (ret Object, err error) {
 		return nil, err
 	}
 
-	None.Incref()
 	ret = None
 
 	defer func() {
 		if p := recover(); p != nil {
-			ret.Decref()
 			ret = nil
 			err = ChanClosedError.Err("Chan already closed")
 		}
@@ -162,7 +158,7 @@ func (c *Chan) Py_monitor(args *Tuple, kw *Dict) (Object, error) {
 		}
 	}()
 
-	return ReturnNone(), nil
+	return None, nil
 }
 
 // Iter is called to get an iterator for the item. This is used when running

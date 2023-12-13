@@ -67,7 +67,6 @@ func pyRun(args *py.Tuple, kw *py.Dict) (py.Object, error) {
 		return nil, err
 	}
 
-	py.None.Incref()
 	return py.None, nil
 }
 

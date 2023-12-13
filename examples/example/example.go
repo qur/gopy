@@ -52,7 +52,6 @@ func iterate(o py.Object) (py.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	py.None.Incref()
 	return py.None, nil
 }
 
@@ -90,7 +89,7 @@ func showType(obj py.Object) (py.Object, error) {
 	name := obj.Type().Name()
 	defer name.Decref()
 	log.Printf("Name: Go:%T Python:%s", obj, name)
-	return py.ReturnNone(), nil
+	return py.None, nil
 }
 
 type Example struct {
@@ -116,7 +115,6 @@ func (e *Example) Str() (*py.Unicode, error) {
 
 func (e *Example) Call(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 	fmt.Printf("ExampleClass.PyCall(self=%p, args=%v, kwds=%v)\n", e, args, kwds)
-	py.None.Incref()
 	return py.None, nil
 }
 
@@ -149,7 +147,6 @@ func (e *Example) Py_bar(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 			}
 		}
 	}
-	py.None.Incref()
 	return py.None, nil
 }
 
@@ -160,7 +157,6 @@ func (e *Example) Py_doot(arg py.Object) (py.Object, error) {
 		return nil, py.TypeError.Err("expected int, not %s", arg.Type())
 	}
 	e.Foo = int(l.Int64())
-	py.None.Incref()
 	return py.None, nil
 }
 
@@ -214,7 +210,7 @@ func (d *MyDict) Py_foo(args *py.Tuple) (py.Object, error) {
 			return nil, err
 		}
 	}
-	return py.ReturnNone(), nil
+	return py.None, nil
 }
 
 var dictClass = py.Class{
@@ -241,7 +237,7 @@ func (s *SubClass) Py_doot(arg py.Object) (py.Object, error) {
 	}
 	e := exampleClass.Instance(s).(*Example)
 	e.Foo = int(l.Int64())
-	return py.ReturnNone(), nil
+	return py.None, nil
 }
 
 var subClass = py.Class{

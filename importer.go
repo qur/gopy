@@ -47,12 +47,12 @@ func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 	// If this is a sub-package, we will only import it if we also own the
 	// parent.
 	if path != None && getParent(name) == nil {
-		return ReturnNone(), nil
+		return None, nil
 	}
 
 	if getImport(name) == nil {
 		// we don't have the requested module
-		return ReturnNone(), nil
+		return None, nil
 	}
 
 	util, err := Import("importlib.util")
@@ -85,7 +85,6 @@ func importerCreateModule(spec Object) (Object, error) {
 	mod := getImport(name)
 	if mod == nil {
 		// we don't have the requested module
-		None.Incref()
 		return None, nil
 	}
 
@@ -98,20 +97,17 @@ func importerCreateModule(spec Object) (Object, error) {
 func importerExecModule(mod Object) (Object, error) {
 	if _, ok := mod.(*Module); !ok {
 		// not actually a module, ignore it
-		None.Incref()
 		return None, nil
 	}
 
 	def := C.PyModule_GetDef(c(mod))
 	if def == nil {
-		None.Incref()
 		return None, nil
 	}
 
 	state := C.PyModule_GetState(c(mod))
 	if state != nil {
 		// already initialised
-		None.Incref()
 		return None, nil
 	}
 
@@ -119,7 +115,6 @@ func importerExecModule(mod Object) (Object, error) {
 		return nil, exception()
 	}
 
-	None.Incref()
 	return None, nil
 }
 

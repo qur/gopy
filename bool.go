@@ -30,10 +30,8 @@ func newBool(obj *C.PyObject) *Bool {
 // Return value: New Reference.
 func NewBool(b bool) *Bool {
 	if b {
-		True.Incref()
 		return True
 	}
-	False.Incref()
 	return False
 }
 

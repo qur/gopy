@@ -72,10 +72,8 @@ func RichCompareNative[T constraints.Ordered](a, b T, op Op) (Object, error) {
 		return NotImplemented, nil
 	}
 	if ret {
-		True.Incref()
 		return True, nil
 	}
-	False.Incref()
 	return False, nil
 }
 

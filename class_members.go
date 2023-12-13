@@ -123,7 +123,6 @@ func goClassObjGet(obj, idx *C.PyObject) *C.PyObject {
 	}
 
 	if f.IsNil() {
-		None.Incref()
 		return c(None)
 	}
 

@@ -224,7 +224,6 @@ func (l *Long) Divmod(obj Object) (Object, error) {
 // Return value: New Reference.
 func (l *Long) Power(obj1, obj2 Object) (Object, error) {
 	if obj2 == nil {
-		None.Incref()
 		obj2 = None
 	}
 	ret := C.PyNumber_Power(c(l), c(obj1), c(obj2))

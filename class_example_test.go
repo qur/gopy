@@ -23,7 +23,7 @@ func (m *myClass) Call(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
 
 	fmt.Printf("hello %s", s)
 
-	return py.ReturnNone(), nil
+	return py.None, nil
 }
 
 // myClassType is a py.Class value that is the Type of myClass.

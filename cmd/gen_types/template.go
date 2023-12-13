@@ -618,7 +618,6 @@ func ({{ .name }} *{{ .type }}) Divmod(obj Object) (Object, error) {
 // Return value: New Reference.
 func ({{ .name }} *{{ .type }}) Power(obj1, obj2 Object) (Object, error) {
 	if obj2 == nil {
-		None.Incref()
 		obj2 = None
 	}
 	ret := C.PyNumber_Power(c({{ .name }}), c(obj1), c(obj2))
