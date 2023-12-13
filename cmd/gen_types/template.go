@@ -104,6 +104,13 @@ func ({{ .name }} *{{ .type }}) Type() *Type {
 	return newType(c({{ .name }}).ob_type)
 }
 
+{{ if .settings.Immortal -}}
+// Decref is a nop, since {{ .type }} values are immortal.
+func ({{ .name }} *{{ .type }}) Decref() {}
+
+// Incref is a nop, since {{ .type }} values are immortal.
+func ({{ .name }} *{{ .type }}) Incref() {}
+{{- else }}
 // Decref decrements {{ .name }}'s reference count, {{ .name }} may not be nil.
 func ({{ .name }} *{{ .type }}) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer({{ .name }}))
@@ -119,6 +126,7 @@ func ({{ .name }} *{{ .type }}) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer({{ .name }})).anon0[0]))
 	*refcnt++
 }
+{{- end }}
 
 {{ if .funcs.tp_repr -}}
 // Repr returns a String representation of "{{ .name }}". This is equivalent to the

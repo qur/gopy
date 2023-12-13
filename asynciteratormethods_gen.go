@@ -36,6 +36,7 @@ func (a *AsyncIteratorMethods) Type() *Type {
 	return newType(c(a).ob_type)
 }
 
+
 // Decref decrements a's reference count, a may not be nil.
 func (a *AsyncIteratorMethods) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(a))

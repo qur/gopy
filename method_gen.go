@@ -65,6 +65,7 @@ func (m *Method) Type() *Type {
 	return newType(c(m).ob_type)
 }
 
+
 // Decref decrements m's reference count, m may not be nil.
 func (m *Method) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(m))

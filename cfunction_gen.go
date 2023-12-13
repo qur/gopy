@@ -65,6 +65,7 @@ func (cf *CFunction) Type() *Type {
 	return newType(c(cf).ob_type)
 }
 
+
 // Decref decrements cf's reference count, cf may not be nil.
 func (cf *CFunction) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(cf))

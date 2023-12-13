@@ -69,6 +69,7 @@ func (u *Unicode) Type() *Type {
 	return newType(c(u).ob_type)
 }
 
+
 // Decref decrements u's reference count, u may not be nil.
 func (u *Unicode) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(u))

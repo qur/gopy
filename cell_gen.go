@@ -65,6 +65,7 @@ func (ce *Cell) Type() *Type {
 	return newType(c(ce).ob_type)
 }
 
+
 // Decref decrements ce's reference count, ce may not be nil.
 func (ce *Cell) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(ce))

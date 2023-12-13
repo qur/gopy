@@ -40,6 +40,7 @@ func (e *ExceptionClass) Type() *Type {
 	return newType(c(e).ob_type)
 }
 
+
 // Decref decrements e's reference count, e may not be nil.
 func (e *ExceptionClass) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(e))

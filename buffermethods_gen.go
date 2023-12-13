@@ -37,6 +37,7 @@ func (b *BufferMethods) Type() *Type {
 	return newType(c(b).ob_type)
 }
 
+
 // Decref decrements b's reference count, b may not be nil.
 func (b *BufferMethods) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(b))

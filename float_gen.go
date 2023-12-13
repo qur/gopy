@@ -67,6 +67,7 @@ func (f *Float) Type() *Type {
 	return newType(c(f).ob_type)
 }
 
+
 // Decref decrements f's reference count, f may not be nil.
 func (f *Float) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(f))

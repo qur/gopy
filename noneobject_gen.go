@@ -41,21 +41,11 @@ func (n *NoneObject) Type() *Type {
 	return newType(c(n).ob_type)
 }
 
-// Decref decrements n's reference count, n may not be nil.
-func (n *NoneObject) Decref() {
-	obj := (*C.PyObject)(unsafe.Pointer(n))
-	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
-	*refcnt--
-	if *refcnt == 0 {
-		C._Py_Dealloc(obj)
-	}
-}
+// Decref is a nop, since NoneObject values are immortal.
+func (n *NoneObject) Decref() {}
 
-// Incref increments n's reference count, n may not be nil.
-func (n *NoneObject) Incref() {
-	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(n)).anon0[0]))
-	*refcnt++
-}
+// Incref is a nop, since NoneObject values are immortal.
+func (n *NoneObject) Incref() {}
 
 
 

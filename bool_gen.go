@@ -62,21 +62,11 @@ func (b *Bool) Type() *Type {
 	return newType(c(b).ob_type)
 }
 
-// Decref decrements b's reference count, b may not be nil.
-func (b *Bool) Decref() {
-	obj := (*C.PyObject)(unsafe.Pointer(b))
-	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
-	*refcnt--
-	if *refcnt == 0 {
-		C._Py_Dealloc(obj)
-	}
-}
+// Decref is a nop, since Bool values are immortal.
+func (b *Bool) Decref() {}
 
-// Incref increments b's reference count, b may not be nil.
-func (b *Bool) Incref() {
-	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(b)).anon0[0]))
-	*refcnt++
-}
+// Incref is a nop, since Bool values are immortal.
+func (b *Bool) Incref() {}
 
 
 

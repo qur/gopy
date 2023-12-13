@@ -12,9 +12,10 @@ var basic = map[string]typeSettings{
 // underlying Python object as "o").  This allows the Python functions that
 // accept any type of object to be defined as methods on *BaseObject.
 		`),
-		Check: false,
-		New:   true,
-		Type:  false,
+		Check:    false,
+		New:      true,
+		Type:     false,
+		Immortal: false,
 	},
 	"Bool": {
 		Doc: strings.TrimSpace(`
@@ -22,26 +23,29 @@ var basic = map[string]typeSettings{
 // possible values for a Bool, True and False. Every True value refers to the
 // same instance, and every False value refers to the same value.
 		`),
-		Check: true,
-		New:   false,
-		Type:  true,
+		Check:    true,
+		New:      false,
+		Type:     true,
+		Immortal: true,
 	},
 	"NoneObject": {
 		Doc: strings.TrimSpace(`
 // NoneObject is the type of the None value.  The only value of this type is
 // None.
 		`),
-		Check: false,
-		New:   true,
-		Type:  false,
+		Check:    false,
+		New:      true,
+		Type:     false,
+		Immortal: true,
 	},
 	"Module": {
 		Doc: strings.TrimSpace(`
 // Bool is the representation of the Python module type.
 		`),
-		Check: true,
-		New:   true,
-		Type:  true,
+		Check:    true,
+		New:      true,
+		Type:     true,
+		Immortal: false,
 	},
 	"ExceptionClass": {
 		Doc: strings.TrimSpace(`
@@ -51,33 +55,37 @@ var basic = map[string]typeSettings{
 // The Err and ErrV methods can be used to generate an error of a particular
 // exception type.
 		`),
-		Check: false,
-		New:   false,
-		Type:  false,
+		Check:    false,
+		New:      false,
+		Type:     false,
+		Immortal: false,
 	},
 	"IteratorMethods": {
 		Doc: strings.TrimSpace(`
 // IteratorMethods represents an arbitrary Python iterator.
 		`),
-		Check: false,
-		New:   false,
-		Type:  false,
+		Check:    false,
+		New:      false,
+		Type:     false,
+		Immortal: false,
 	},
 	"AsyncIteratorMethods": {
 		Doc: strings.TrimSpace(`
 // AsyncIteratorMethods represents an arbitrary async Python iterator.
 		`),
-		Check: false,
-		New:   false,
-		Type:  false,
+		Check:    false,
+		New:      false,
+		Type:     false,
+		Immortal: false,
 	},
 	"IterableMethods": {
 		Doc: strings.TrimSpace(`
 // IterableMethods represents an arbitrary Python iterable.
 		`),
-		Check: false,
-		New:   false,
-		Type:  false,
+		Check:    false,
+		New:      false,
+		Type:     false,
+		Immortal: false,
 	},
 	"MappingMethods": {
 		Doc: strings.TrimSpace(`
@@ -89,9 +97,10 @@ var basic = map[string]typeSettings{
 // an error, as not all methods are implemented by all types that support the
 // protocol.
 		`),
-		Check: false,
-		New:   false,
-		Type:  false,
+		Check:    false,
+		New:      false,
+		Type:     false,
+		Immortal: false,
 	},
 	"SequenceMethods": {
 		Doc: strings.TrimSpace(`
@@ -103,9 +112,10 @@ var basic = map[string]typeSettings{
 // an error, as not all methods are implemented by all types that support the
 // protocol.
 		`),
-		Check: false,
-		New:   false,
-		Type:  false,
+		Check:    false,
+		New:      false,
+		Type:     false,
+		Immortal: false,
 	},
 	"NumberMethods": {
 		Doc: strings.TrimSpace(`
@@ -117,27 +127,31 @@ var basic = map[string]typeSettings{
 // an error, as not all methods are implemented by all types that support the
 // protocol.
 		`),
-		Check: false,
-		New:   false,
-		Type:  false,
+		Check:    false,
+		New:      false,
+		Type:     false,
+		Immortal: false,
 	},
 	"BufferMethods": {
 		Doc: strings.TrimSpace(`
 // BufferMethods represents an arbitrary Python type that implements the Buffer
 // Protocol.
 		`),
-		Check: false,
-		New:   false,
-		Type:  false,
+		Check:    false,
+		New:      false,
+		Type:     false,
+		Immortal: false,
 	},
 	"FrozenSet": {
-		Check: true,
-		New:   true,
-		Type:  true,
+		Check:    true,
+		New:      true,
+		Type:     true,
+		Immortal: false,
 	},
 	"Super": {
-		Check: false,
-		New:   true,
-		Type:  true,
+		Check:    false,
+		New:      true,
+		Type:     true,
+		Immortal: false,
 	},
 }

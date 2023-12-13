@@ -67,6 +67,7 @@ func (co *Complex) Type() *Type {
 	return newType(c(co).ob_type)
 }
 
+
 // Decref decrements co's reference count, co may not be nil.
 func (co *Complex) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(co))

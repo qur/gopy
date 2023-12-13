@@ -12,10 +12,11 @@ import (
 )
 
 type typeSettings struct {
-	Doc   string
-	Check bool
-	New   bool
-	Type  bool
+	Doc      string
+	Check    bool
+	New      bool
+	Type     bool
+	Immortal bool
 }
 
 func doExamine(v reflect.Value, prefix string, funcs map[string]bool) {
@@ -89,9 +90,10 @@ func generate(name string, funcs map[string]bool) {
 		"name":  shortName(name),
 		"funcs": funcs,
 		"settings": typeSettings{
-			Check: true,
-			New:   true,
-			Type:  true,
+			Check:    true,
+			New:      true,
+			Type:     true,
+			Immortal: false,
 		},
 	}); err != nil {
 		log.Fatalf("Failed to generate template: %s", err)

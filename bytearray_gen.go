@@ -69,6 +69,7 @@ func (b *ByteArray) Type() *Type {
 	return newType(c(b).ob_type)
 }
 
+
 // Decref decrements b's reference count, b may not be nil.
 func (b *ByteArray) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(b))
