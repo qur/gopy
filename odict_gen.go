@@ -68,16 +68,17 @@ func (o *ODict) Type() *Type {
 // Decref decrements o's reference count, o may not be nil.
 func (o *ODict) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(o))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments o's reference count, o may not be nil.
 func (o *ODict) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(o))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(o)).anon0[0]))
+	*refcnt++
 }
 
 // Repr returns a String representation of "o". This is equivalent to the

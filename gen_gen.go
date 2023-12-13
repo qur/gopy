@@ -70,16 +70,17 @@ func (g *Gen) Type() *Type {
 // Decref decrements g's reference count, g may not be nil.
 func (g *Gen) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(g))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments g's reference count, g may not be nil.
 func (g *Gen) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(g))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(g)).anon0[0]))
+	*refcnt++
 }
 
 // Repr returns a String representation of "g". This is equivalent to the

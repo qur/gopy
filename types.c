@@ -54,6 +54,7 @@ int unicodeCheck(PyObject *o) { return PyUnicode_Check(o); }
 int weakrefCheck(PyObject *o) { return PyWeakref_Check(o); }
 int anySetCheckE(PyObject *o) { return PyAnySet_CheckExact(o); }
 int asyncGenCheckE(PyObject *o) { return PyAsyncGen_CheckExact(o); }
+int asyncGenASendCheckE(PyObject *o) { return PyAsyncGenASend_CheckExact(o); }
 int byteArrayCheckE(PyObject *o) { return PyByteArray_CheckExact(o); }
 int bytesCheckE(PyObject *o) { return PyBytes_CheckExact(o); }
 int cFunctionCheckE(PyObject *o) { return PyCFunction_CheckExact(o); }

@@ -3,6 +3,9 @@
 import sys
 
 
+PYTHON_INCLUDE_DIR="python3.12"
+
+
 methods = {
     "tp": (None, None),
     "am": ("async", "PyAsyncMethods"),
@@ -291,8 +294,8 @@ def write_h_header(f):
     print("#define _GO_PYTHON_CLASS_SLOTS_H_", file=f)
     print("", file=f)
     print("#include <ffi.h>", file=f)
-    print("#include <python3.11/Python.h>", file=f)
-    print("#include <python3.11/frameobject.h>", file=f)
+    print(f"#include <{PYTHON_INCLUDE_DIR}/Python.h>", file=f)
+    print(f"#include <{PYTHON_INCLUDE_DIR}/frameobject.h>", file=f)
     print("", file=f)
 
 

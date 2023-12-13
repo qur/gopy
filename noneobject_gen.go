@@ -44,16 +44,17 @@ func (n *NoneObject) Type() *Type {
 // Decref decrements n's reference count, n may not be nil.
 func (n *NoneObject) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(n))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments n's reference count, n may not be nil.
 func (n *NoneObject) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(n))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(n)).anon0[0]))
+	*refcnt++
 }
 
 

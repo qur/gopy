@@ -68,16 +68,17 @@ func (co *Code) Type() *Type {
 // Decref decrements co's reference count, co may not be nil.
 func (co *Code) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(co))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments co's reference count, co may not be nil.
 func (co *Code) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(co))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(co)).anon0[0]))
+	*refcnt++
 }
 
 // Repr returns a String representation of "co". This is equivalent to the

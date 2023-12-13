@@ -18,7 +18,7 @@ package py
 import "C"
 """
 
-exc_re = re.compile('^extern .* PyExc_(?P<name>\w+);$')
+exc_re = re.compile(r'^extern .* PyExc_(?P<name>\w+);$')
 
 
 def get_ffi_flags():

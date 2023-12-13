@@ -68,16 +68,17 @@ func (f *FrozenSet) Type() *Type {
 // Decref decrements f's reference count, f may not be nil.
 func (f *FrozenSet) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(f))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments f's reference count, f may not be nil.
 func (f *FrozenSet) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(f))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(f)).anon0[0]))
+	*refcnt++
 }
 
 

@@ -1,7 +1,7 @@
 default = "dev"
 
 [crates.dev]
-  image = "qurx/gopy-dev:1.20"
+  image = "qurx/gopy-dev:1.20-py3.12"
   env-blacklist = ["GOPATH"]
   volumes = ["/tmp:/tmp"]
   network = "host"

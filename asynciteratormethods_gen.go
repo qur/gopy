@@ -39,16 +39,17 @@ func (a *AsyncIteratorMethods) Type() *Type {
 // Decref decrements a's reference count, a may not be nil.
 func (a *AsyncIteratorMethods) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(a))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments a's reference count, a may not be nil.
 func (a *AsyncIteratorMethods) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(a))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(a)).anon0[0]))
+	*refcnt++
 }
 
 

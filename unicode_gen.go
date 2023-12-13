@@ -72,16 +72,17 @@ func (u *Unicode) Type() *Type {
 // Decref decrements u's reference count, u may not be nil.
 func (u *Unicode) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(u))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments u's reference count, u may not be nil.
 func (u *Unicode) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(u))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(u)).anon0[0]))
+	*refcnt++
 }
 
 // Repr returns a String representation of "u". This is equivalent to the

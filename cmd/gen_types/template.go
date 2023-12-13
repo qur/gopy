@@ -107,16 +107,17 @@ func ({{ .name }} *{{ .type }}) Type() *Type {
 // Decref decrements {{ .name }}'s reference count, {{ .name }} may not be nil.
 func ({{ .name }} *{{ .type }}) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer({{ .name }}))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments {{ .name }}'s reference count, {{ .name }} may not be nil.
 func ({{ .name }} *{{ .type }}) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer({{ .name }}))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer({{ .name }})).anon0[0]))
+	*refcnt++
 }
 
 {{ if .funcs.tp_repr -}}

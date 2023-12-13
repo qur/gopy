@@ -153,8 +153,10 @@ func NewValue(value any) (Object, error) {
 // Decref decrements obj's reference count, obj may be nil.
 func Decref(obj Object) {
 	if o := c(obj); o != nil {
-		o.ob_refcnt--
-		if o.ob_refcnt == 0 {
+		// TODO: look into handling of the new immortal stuff ...
+		refcnt := (*int)(unsafe.Pointer(&o.anon0[0]))
+		*refcnt--
+		if *refcnt == 0 {
 			C._Py_Dealloc(o)
 		}
 	}
@@ -163,7 +165,8 @@ func Decref(obj Object) {
 // Incref increments obj's reference count, obj may be nil.
 func Incref(obj Object) {
 	if o := c(obj); o != nil {
-		o.ob_refcnt++
+		refcnt := (*int)(unsafe.Pointer(&o.anon0[0]))
+		*refcnt++
 	}
 }
 
@@ -174,7 +177,7 @@ func RefCount(obj Object) int {
 	if obj == nil || obj.Base() == nil {
 		return 0
 	}
-	return int(c(obj).ob_refcnt)
+	return *(*int)(unsafe.Pointer(&c(obj).anon0[0]))
 }
 
 // NewRef increments obj's reference count, and then returns obj. Obj may not be

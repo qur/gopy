@@ -40,16 +40,17 @@ func (b *BufferMethods) Type() *Type {
 // Decref decrements b's reference count, b may not be nil.
 func (b *BufferMethods) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(b))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments b's reference count, b may not be nil.
 func (b *BufferMethods) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(b))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(b)).anon0[0]))
+	*refcnt++
 }
 
 

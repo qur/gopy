@@ -3,10 +3,10 @@
 package main
 
 // #cgo CFLAGS: -Werror
-// #cgo LDFLAGS: -lpython3.11 -lm -lutil -ldl
+// #cgo LDFLAGS: -lpython3.12 -lm -lutil -ldl
 // #cgo pkg-config: libffi
 //
-// #include <python3.11/Python.h>
+// #include <python3.12/Python.h>
 import "C"
 
 // ===============================================================

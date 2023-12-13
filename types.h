@@ -4,8 +4,8 @@
 #define _GO_PYTHON_TYPES_H_
 
 #include <ffi.h>
-#include <python3.11/Python.h>
-#include <python3.11/frameobject.h>
+#include <python3.12/Python.h>
+#include <python3.12/frameobject.h>
 
 // ===============================================================
 
@@ -57,6 +57,7 @@ extern int unicodeCheck(PyObject *o);
 extern int weakrefCheck(PyObject *o);
 extern int anySetCheckE(PyObject *o);
 extern int asyncGenCheckE(PyObject *o);
+extern int asyncGenASendCheckE(PyObject *o);
 extern int byteArrayCheckE(PyObject *o);
 extern int bytesCheckE(PyObject *o);
 extern int cFunctionCheckE(PyObject *o);

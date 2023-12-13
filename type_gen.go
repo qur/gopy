@@ -66,16 +66,17 @@ func (t *Type) Type() *Type {
 // Decref decrements t's reference count, t may not be nil.
 func (t *Type) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(t))
-	obj.ob_refcnt--
-	if obj.ob_refcnt == 0 {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	*refcnt--
+	if *refcnt == 0 {
 		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments t's reference count, t may not be nil.
 func (t *Type) Incref() {
-	obj := (*C.PyObject)(unsafe.Pointer(t))
-	obj.ob_refcnt++
+	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(t)).anon0[0]))
+	*refcnt++
 }
 
 // Repr returns a String representation of "t". This is equivalent to the
