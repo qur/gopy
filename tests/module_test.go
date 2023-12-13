@@ -136,8 +136,15 @@ func TestMethod2(t *testing.T) {
 			{"Test2", "called2", "i", []interface{}{10}},
 			{"__str__", "strcalled", "", nil},
 		}
+		// t.Run uses goroutines, so we need to allow other goroutines to grab
+		// the GIL ...
+		lock.UnblockThreads()
+		defer lock.BlockThreads()
 		for _, test := range tests {
 			t.Run(test.m, func(t *testing.T) {
+				// make sure that we have the GIL before doing anything else.
+				lock := py.NewLock()
+				defer lock.Unlock()
 				defer func() {
 					if i := recover(); i != test.pan {
 						t.Error("Panicked for some other reason:", i)
