@@ -4,8 +4,8 @@
 #define _GO_PYTHON_CLASS_SLOTS_H_
 
 #include <ffi.h>
-#include <python3.12/Python.h>
-#include <python3.12/frameobject.h>
+#include <python3.13/Python.h>
+#include <python3.13/frameobject.h>
 
 // ===============================================================
 

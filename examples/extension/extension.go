@@ -2,7 +2,7 @@
 
 package main
 
-// #include <python3.12/Python.h>
+// #include <python3.13/Python.h>
 import "C"
 
 import (

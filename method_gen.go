@@ -200,6 +200,7 @@ set fields:
   tp_basicsize
   tp_call
   tp_dealloc
+  tp_descr_get
   tp_doc
   tp_flags
   tp_getattro

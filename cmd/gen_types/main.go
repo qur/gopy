@@ -1,6 +1,6 @@
 package main
 
-// #include <python3.12/Python.h>
+// #include <python3.13/Python.h>
 import "C"
 
 import (
@@ -26,11 +26,9 @@ func doExamine(v reflect.Value, prefix string, funcs map[string]bool) {
 		fv := v.Field(i)
 		f := t.Field(i)
 		funcs[f.Name] = !fv.IsZero()
-		// special case for being set to _PyObject_NextNotImplemented, as
-		// PyIter_Check doesn't consider that to be a "valid" value
 		if f.Type.Kind() == reflect.Func && !fv.IsNil() {
 			switch fv.UnsafePointer() {
-			case C._PyObject_NextNotImplemented, C.PyObject_HashNotImplemented:
+			case C.PyObject_HashNotImplemented:
 				funcs[f.Name] = false
 			}
 		}

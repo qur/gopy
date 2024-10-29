@@ -21,8 +21,8 @@ import "C"
 exc_re = re.compile(r'^extern .* PyExc_(?P<name>\w+);$')
 
 
-def get_ffi_flags():
-    cmd = ['pkg-config', '--cflags', 'libffi']
+def get_ffi_flags(name):
+    cmd = ['pkg-config', '--cflags', f'{name.replace('python', 'python-')}-embed', 'libffi']
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out, err = p.communicate()
     args = out.decode('utf-8').strip()
@@ -59,7 +59,7 @@ def main():
     with open("_cgo_export.h", 'w', encoding='utf-8') as output:
         output.write("// stub file")
     with open(sys.argv[1], 'w', encoding='utf-8') as output:
-        cmd = ["gcc", "-E", "-o", "-", "utils.c"] + get_ffi_flags()
+        cmd = ["gcc", "-E", "-o", "-", "utils.c"] + get_ffi_flags(sys.argv[2])
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         t = threading.Thread(target=process, args=(p.stdout, output))
         t.start()

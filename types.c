@@ -27,6 +27,7 @@ int exceptionClassCheck(PyObject *o) { return PyExceptionClass_Check(o); }
 int exceptionInstanceCheck(PyObject *o) { return PyExceptionInstance_Check(o); }
 int floatCheck(PyObject *o) { return PyFloat_Check(o); }
 int frameCheck(PyObject *o) { return PyFrame_Check(o); }
+int frameLocalsProxyCheck(PyObject *o) { return PyFrameLocalsProxy_Check(o); }
 int frozenSetCheck(PyObject *o) { return PyFrozenSet_Check(o); }
 int functionCheck(PyObject *o) { return PyFunction_Check(o); }
 int genCheck(PyObject *o) { return PyGen_Check(o); }
@@ -99,6 +100,7 @@ PyTypeObject *getBasePyType(PyObject *o) {
   if (PyDictValues_Check(o)) return &PyDictValues_Type;
   if (PyFloat_Check(o)) return &PyFloat_Type;
   if (PyFrame_Check(o)) return &PyFrame_Type;
+  if (PyFrameLocalsProxy_Check(o)) return &PyFrameLocalsProxy_Type;
   if (PyFrozenSet_Check(o)) return &PyFrozenSet_Type;
   if (PyFunction_Check(o)) return &PyFunction_Type;
   if (PyGen_Check(o)) return &PyGen_Type;

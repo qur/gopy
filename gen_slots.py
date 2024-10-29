@@ -3,7 +3,7 @@
 import sys
 
 
-PYTHON_INCLUDE_DIR="python3.12"
+PYTHON_INCLUDE_DIR="python3.13"
 
 
 methods = {

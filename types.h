@@ -4,8 +4,8 @@
 #define _GO_PYTHON_TYPES_H_
 
 #include <ffi.h>
-#include <python3.12/Python.h>
-#include <python3.12/frameobject.h>
+#include <python3.13/Python.h>
+#include <python3.13/frameobject.h>
 
 // ===============================================================
 
@@ -30,6 +30,7 @@ extern int exceptionClassCheck(PyObject *o);
 extern int exceptionInstanceCheck(PyObject *o);
 extern int floatCheck(PyObject *o);
 extern int frameCheck(PyObject *o);
+extern int frameLocalsProxyCheck(PyObject *o);
 extern int frozenSetCheck(PyObject *o);
 extern int functionCheck(PyObject *o);
 extern int genCheck(PyObject *o);

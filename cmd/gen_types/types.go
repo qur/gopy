@@ -3,10 +3,9 @@
 package main
 
 // #cgo CFLAGS: -Werror
-// #cgo LDFLAGS: -lpython3.12 -lm -lutil -ldl
-// #cgo pkg-config: libffi
+// #cgo pkg-config: python-3.13-embed libffi
 //
-// #include <python3.12/Python.h>
+// #include <python3.13/Python.h>
 import "C"
 
 // ===============================================================
@@ -23,6 +22,7 @@ var types = map[string]any{
 	"DictKeys": C.PyDictKeys_Type,
 	"Float": C.PyFloat_Type,
 	"Frame": C.PyFrame_Type,
+	"FrameLocalsProxy": C.PyFrameLocalsProxy_Type,
 	"Function": C.PyFunction_Type,
 	"Gen": C.PyGen_Type,
 	"InstanceMethod": C.PyInstanceMethod_Type,

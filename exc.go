@@ -77,4 +77,5 @@ var (
 	BytesWarning              = newException(C.PyExc_BytesWarning)
 	EncodingWarning           = newException(C.PyExc_EncodingWarning)
 	ResourceWarning           = newException(C.PyExc_ResourceWarning)
+	PythonFinalizationError   = newException(C.PyExc_PythonFinalizationError)
 )

@@ -40,6 +40,8 @@ func getNativeType(obj *C.PyObject) Object {
 		return newFloat(obj)
 	case &C.PyFrame_Type:
 		return newFrame(obj)
+	case &C.PyFrameLocalsProxy_Type:
+		return newFrameLocalsProxy(obj)
 	case &C.PyFrozenSet_Type:
 		return newFrozenSet(obj)
 	case &C.PyFunction_Type:
