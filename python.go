@@ -112,6 +112,14 @@ func Main(args []string) int {
 	return int(C.Py_BytesMain(C.int(len(argv)), &argv[0]))
 }
 
+// Main is the main Python interpreter entrypoint used when using the newer
+// Config based initialisation.
+//
+// Once this function returns, the Python runtime is shutdown.
+func RunMain() int {
+	return int(C.Py_RunMain())
+}
+
 // EnterRecursiveCall marks a point where a recursive Go-level call is about to
 // be performed.  It returns true if the recursive call is permitted, otherwise
 // a Python exception is set and false is returned.  where is a string that will
