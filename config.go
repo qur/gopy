@@ -29,9 +29,36 @@ func (f ConfigFlag) set(v *C.int) {
 	}
 }
 
+type AllocatorMode int
+
+const (
+	AllocatorNotSet        AllocatorMode = C.PYMEM_ALLOCATOR_NOT_SET
+	AllocatorDefault       AllocatorMode = C.PYMEM_ALLOCATOR_DEFAULT
+	AllocatorDebug         AllocatorMode = C.PYMEM_ALLOCATOR_DEBUG
+	AllocatorMalloc        AllocatorMode = C.PYMEM_ALLOCATOR_MALLOC
+	AllocatorMallocDebug   AllocatorMode = C.PYMEM_ALLOCATOR_MALLOC_DEBUG
+	AllocatorPyMalloc      AllocatorMode = C.PYMEM_ALLOCATOR_PYMALLOC
+	AllocatorPyMallocDebug AllocatorMode = C.PYMEM_ALLOCATOR_PYMALLOC_DEBUG
+	AllocatorMiMalloc      AllocatorMode = C.PYMEM_ALLOCATOR_MIMALLOC
+	AllocatorMiMallocDebug AllocatorMode = C.PYMEM_ALLOCATOR_MIMALLOC_DEBUG
+)
+
+func (f AllocatorMode) set(v *C.int) {
+	*v = C.int(f)
+}
+
 type PreConfig struct {
-	Args     []string
-	Isolated ConfigFlag
+	Args              []string
+	Allocator         AllocatorMode
+	ConfigureLocale   ConfigFlag
+	CoerceCLocale     ConfigFlag
+	CoerceCLocaleWarn ConfigFlag
+	DevMode           ConfigFlag
+	Isolated          ConfigFlag
+	// LegacyWindowsFSEncoding ConfigFlag - TODO: only available on Windows ...
+	ParseArgv      ConfigFlag
+	UseEnvironment ConfigFlag
+	UTF8Mode       ConfigFlag
 }
 
 func PythonPreConfig(args ...string) *PreConfig {
@@ -55,7 +82,16 @@ func (c *PreConfig) PreInitialize() error {
 		C.PyPreConfig_InitPythonConfig(&cfg)
 	}
 
+	c.Allocator.set(&cfg.allocator)
+	c.ConfigureLocale.set(&cfg.configure_locale)
+	c.CoerceCLocale.set(&cfg.coerce_c_locale)
+	c.CoerceCLocaleWarn.set(&cfg.coerce_c_locale_warn)
+	c.DevMode.set(&cfg.dev_mode)
 	c.Isolated.set(&cfg.isolated)
+	// c.LegacyWindowsFSEncoding.set(&cfg.legacy_windows_fs_encoding)
+	c.ParseArgv.set(&cfg.parse_argv)
+	c.UseEnvironment.set(&cfg.use_environment)
+	c.UTF8Mode.set(&cfg.utf8_mode)
 
 	if c.Args == nil {
 		return status2Err(C.Py_PreInitialize(&cfg))
