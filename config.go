@@ -17,6 +17,14 @@ const (
 	Disabled
 )
 
+func (f *ConfigFlag) Set(v bool) {
+	if v {
+		*f = Enabled
+	} else {
+		*f = Disabled
+	}
+}
+
 func (f ConfigFlag) set(v *C.int) {
 	switch f {
 	case defaultFlag:
@@ -174,7 +182,7 @@ type Config struct {
 	PerfProfiling     ConfigFlag
 	UseEnvironment    ConfigFlag
 	UserSiteDirectory ConfigFlag
-	Verbose           ConfigFlag
+	Verbose           ConfigFlag // TODO: this isn't actually a bool flag
 	// warnoptions
 	WriteBytecode ConfigFlag
 	// xoptions

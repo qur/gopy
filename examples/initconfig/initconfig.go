@@ -8,9 +8,13 @@ import (
 )
 
 func main() {
-	if err := py.PythonPreConfig(os.Args...).PreInitialize(); err != nil {
-		log.Fatalf("Failed to preinit Python: %s", err)
-	}
+	// Shouldn't need explicit preconfig if we are going to use the default
+	// settings. I think that should happen automatically inside Python.
+	//
+	// if err := py.PythonPreConfig(os.Args...).PreInitialize(); err
+	// != nil {
+	// 	log.Fatalf("Failed to preinit Python: %s", err)
+	// }
 
 	// We don't want to call unlock, as Python will not be initialised after
 	// RunMain returns, and that will cause Unlock to panic. For the same
