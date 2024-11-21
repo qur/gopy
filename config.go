@@ -124,10 +124,60 @@ type Config struct {
 	// base_exec_prefix
 	// base_executable
 	// base_prefix
-
-	Isolated ConfigFlag
-
+	BufferedStdio       ConfigFlag
+	BytesWarning        ConfigFlag
+	WarnDefaultEncoding ConfigFlag
+	CodeDebugRanges     ConfigFlag
+	// check_hash_pycs_mode
+	ConfigureCStdio ConfigFlag
+	DevMode         ConfigFlag
+	DumpRefs        ConfigFlag
+	// exec_prefix
+	// executable
+	FaultHandler ConfigFlag
+	// filesystem_encoding
+	// filesystem_errors
+	HashSeed    uint64
+	UseHashSeed ConfigFlag
+	// home
+	ImportTime            ConfigFlag
+	Inspect               ConfigFlag
 	InstallSignalHandlers ConfigFlag
+	Interactive           ConfigFlag
+	// int_max_str_digits
+	// cpu_count
+	Isolated ConfigFlag
+	// LegacyWindowStdio ConfigFlag - TODO: Windows only
+	MallocStats ConfigFlag
+	// platlibdir
+	// pythonpath_env
+	// module_search_paths
+	ModuleSearchPathSet ConfigFlag
+	OptimizationLevel   int
+	// orig_argv
+	ParseArgv          ConfigFlag
+	ParserDebug        ConfigFlag
+	PathConfigWarnings ConfigFlag
+	// prefix
+	// program_name
+	// pycache_prefix
+	Quiet ConfigFlag
+	// run_command
+	// run_filename
+	// run_module
+	// run_presite
+	ShowRefCount        ConfigFlag
+	SiteImport          ConfigFlag
+	SkipSourceFirstTime ConfigFlag
+	// stdio_encoding
+	TraceMalloc       ConfigFlag
+	PerfProfiling     ConfigFlag
+	UseEnvironment    ConfigFlag
+	UserSiteDirectory ConfigFlag
+	Verbose           ConfigFlag
+	// warnoptions
+	WriteBytecode ConfigFlag
+	// xoptions
 }
 
 func PythonConfig(args ...string) *Config {
@@ -159,8 +209,42 @@ func (c *Config) Initialize() error {
 	}
 
 	c.SafePath.set(&cfg.safe_path)
-	c.Isolated.set(&cfg.isolated)
+	c.BufferedStdio.set(&cfg.buffered_stdio)
+	c.BytesWarning.set(&cfg.bytes_warning)
+	c.WarnDefaultEncoding.set(&cfg.warn_default_encoding)
+	c.CodeDebugRanges.set(&cfg.code_debug_ranges)
+	c.ConfigureCStdio.set(&cfg.configure_c_stdio)
+	c.DevMode.set(&cfg.dev_mode)
+	c.DumpRefs.set(&cfg.dump_refs)
+	c.FaultHandler.set(&cfg.faulthandler)
+	if c.HashSeed > 0 {
+		cfg.hash_seed = C.ulong(c.HashSeed)
+	}
+	c.UseHashSeed.set(&cfg.use_hash_seed)
+	c.ImportTime.set(&cfg.import_time)
+	c.Inspect.set(&cfg.inspect)
 	c.InstallSignalHandlers.set(&cfg.install_signal_handlers)
+	c.Interactive.set(&cfg.interactive)
+	c.Isolated.set(&cfg.isolated)
+	// c.LegacyWindowStdio.set(&cfg.legacy_windows_stdio) - TODO: windows
+	c.MallocStats.set(&cfg.malloc_stats)
+	c.ModuleSearchPathSet.set(&cfg.module_search_paths_set)
+	if c.OptimizationLevel > 0 {
+		cfg.optimization_level = C.int(c.OptimizationLevel)
+	}
+	c.ParseArgv.set(&cfg.parse_argv)
+	c.ParserDebug.set(&cfg.parser_debug)
+	c.PathConfigWarnings.set(&cfg.pathconfig_warnings)
+	c.Quiet.set(&cfg.quiet)
+	c.ShowRefCount.set(&cfg.show_ref_count)
+	c.SiteImport.set(&cfg.site_import)
+	c.SkipSourceFirstTime.set(&cfg.skip_source_first_line)
+	c.TraceMalloc.set(&cfg.tracemalloc)
+	c.PerfProfiling.set(&cfg.perf_profiling)
+	c.UseEnvironment.set(&cfg.use_environment)
+	c.UserSiteDirectory.set(&cfg.user_site_directory)
+	c.Verbose.set(&cfg.verbose)
+	c.WriteBytecode.set(&cfg.write_bytecode)
 
 	return status2Err(C.Py_InitializeFromConfig(&cfg))
 }
