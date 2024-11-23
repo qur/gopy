@@ -25,7 +25,7 @@ func (f *ConfigFlag) Set(v bool) {
 	}
 }
 
-func (f ConfigFlag) set(v *C.int) {
+func (f ConfigFlag) apply(v *C.int) {
 	switch f {
 	case defaultFlag:
 	case Enabled:
@@ -51,7 +51,7 @@ const (
 	AllocatorMiMallocDebug AllocatorMode = C.PYMEM_ALLOCATOR_MIMALLOC_DEBUG
 )
 
-func (f AllocatorMode) set(v *C.int) {
+func (f AllocatorMode) apply(v *C.int) {
 	*v = C.int(f)
 }
 
@@ -90,16 +90,16 @@ func (c *PreConfig) PreInitialize() error {
 		C.PyPreConfig_InitPythonConfig(&cfg)
 	}
 
-	c.Allocator.set(&cfg.allocator)
-	c.ConfigureLocale.set(&cfg.configure_locale)
-	c.CoerceCLocale.set(&cfg.coerce_c_locale)
-	c.CoerceCLocaleWarn.set(&cfg.coerce_c_locale_warn)
-	c.DevMode.set(&cfg.dev_mode)
-	c.Isolated.set(&cfg.isolated)
+	c.Allocator.apply(&cfg.allocator)
+	c.ConfigureLocale.apply(&cfg.configure_locale)
+	c.CoerceCLocale.apply(&cfg.coerce_c_locale)
+	c.CoerceCLocaleWarn.apply(&cfg.coerce_c_locale_warn)
+	c.DevMode.apply(&cfg.dev_mode)
+	c.Isolated.apply(&cfg.isolated)
 	// c.LegacyWindowsFSEncoding.set(&cfg.legacy_windows_fs_encoding)
-	c.ParseArgv.set(&cfg.parse_argv)
-	c.UseEnvironment.set(&cfg.use_environment)
-	c.UTF8Mode.set(&cfg.utf8_mode)
+	c.ParseArgv.apply(&cfg.parse_argv)
+	c.UseEnvironment.apply(&cfg.use_environment)
+	c.UTF8Mode.apply(&cfg.utf8_mode)
 
 	if c.Args == nil {
 		return status2Err(C.Py_PreInitialize(&cfg))
@@ -126,28 +126,52 @@ func setArgs(args []string, cfg *C.PyConfig) error {
 	return status2Err(C.PyConfig_SetBytesArgv(cfg, C.Py_ssize_t(len(argv)), &argv[0]))
 }
 
+func setString(s string, cfg *C.PyConfig, target **C.wchar_t) error {
+	if len(s) == 0 {
+		return nil
+	}
+	src := C.CString(s)
+	defer C.free(unsafe.Pointer(src))
+	return status2Err(C.PyConfig_SetBytesString(cfg, target, src))
+}
+
+type CheckHashPYCsMode string
+
+const (
+	AlwaysCheckHash CheckHashPYCsMode = "always"
+	NeverCheckHash  CheckHashPYCsMode = "never"
+)
+
+type EncodingErrorHandler string
+
+const (
+	StrictErrorHandler          EncodingErrorHandler = "strict"
+	SurrogateEscapeErrorHandler EncodingErrorHandler = "surrogateescape"
+	SurrogatePassErrorHandler   EncodingErrorHandler = "surrogatepass"
+)
+
 type Config struct {
-	Args     []string
-	SafePath ConfigFlag
-	// base_exec_prefix
-	// base_executable
-	// base_prefix
-	BufferedStdio       ConfigFlag
-	BytesWarning        ConfigFlag
-	WarnDefaultEncoding ConfigFlag
-	CodeDebugRanges     ConfigFlag
-	// check_hash_pycs_mode
-	ConfigureCStdio ConfigFlag
-	DevMode         ConfigFlag
-	DumpRefs        ConfigFlag
-	// exec_prefix
-	// executable
-	FaultHandler ConfigFlag
-	// filesystem_encoding
-	// filesystem_errors
-	HashSeed    uint64
-	UseHashSeed ConfigFlag
-	// home
+	Args                  []string
+	SafePath              ConfigFlag
+	BaseExecPrefix        string
+	BaseExecutable        string
+	BasePrefix            string
+	BufferedStdio         ConfigFlag
+	BytesWarning          ConfigFlag
+	WarnDefaultEncoding   ConfigFlag
+	CodeDebugRanges       ConfigFlag
+	CheckHashPVCsMode     CheckHashPYCsMode
+	ConfigureCStdio       ConfigFlag
+	DevMode               ConfigFlag
+	DumpRefs              ConfigFlag
+	ExecPrefix            string
+	Executable            string
+	FaultHandler          ConfigFlag
+	FilesystemEncoding    string
+	FilesystemErrors      EncodingErrorHandler
+	HashSeed              uint64
+	UseHashSeed           ConfigFlag
+	Home                  string
 	ImportTime            ConfigFlag
 	Inspect               ConfigFlag
 	InstallSignalHandlers ConfigFlag
@@ -156,9 +180,9 @@ type Config struct {
 	// cpu_count
 	Isolated ConfigFlag
 	// LegacyWindowStdio ConfigFlag - TODO: Windows only
-	MallocStats ConfigFlag
-	// platlibdir
-	// pythonpath_env
+	MallocStats   ConfigFlag
+	PlatLibDir    string
+	PythonPathEnv string
 	// module_search_paths
 	ModuleSearchPathSet ConfigFlag
 	OptimizationLevel   int
@@ -166,23 +190,24 @@ type Config struct {
 	ParseArgv          ConfigFlag
 	ParserDebug        ConfigFlag
 	PathConfigWarnings ConfigFlag
-	// prefix
-	// program_name
-	// pycache_prefix
-	Quiet ConfigFlag
-	// run_command
-	// run_filename
-	// run_module
-	// run_presite
+	Prefix             string
+	ProgramName        string
+	PyCachePrefix      string
+	Quiet              ConfigFlag
+	RunCommand         string
+	RunFilename        string
+	RunModule          string
+	// RunPreSite          string // TODO: debug build only
 	ShowRefCount        ConfigFlag
 	SiteImport          ConfigFlag
 	SkipSourceFirstTime ConfigFlag
-	// stdio_encoding
-	TraceMalloc       ConfigFlag
-	PerfProfiling     ConfigFlag
-	UseEnvironment    ConfigFlag
-	UserSiteDirectory ConfigFlag
-	Verbose           ConfigFlag // TODO: this isn't actually a bool flag
+	StdioEncoding       string
+	StdioErrors         EncodingErrorHandler
+	TraceMalloc         ConfigFlag
+	PerfProfiling       ConfigFlag
+	UseEnvironment      ConfigFlag
+	UserSiteDirectory   ConfigFlag
+	Verbose             ConfigFlag // TODO: this isn't actually a bool flag
 	// warnoptions
 	WriteBytecode ConfigFlag
 	// xoptions
@@ -216,43 +241,63 @@ func (c *Config) Initialize() error {
 		}
 	}
 
-	c.SafePath.set(&cfg.safe_path)
-	c.BufferedStdio.set(&cfg.buffered_stdio)
-	c.BytesWarning.set(&cfg.bytes_warning)
-	c.WarnDefaultEncoding.set(&cfg.warn_default_encoding)
-	c.CodeDebugRanges.set(&cfg.code_debug_ranges)
-	c.ConfigureCStdio.set(&cfg.configure_c_stdio)
-	c.DevMode.set(&cfg.dev_mode)
-	c.DumpRefs.set(&cfg.dump_refs)
-	c.FaultHandler.set(&cfg.faulthandler)
+	c.SafePath.apply(&cfg.safe_path)
+	setString(c.BaseExecPrefix, &cfg, &cfg.base_exec_prefix)
+	setString(c.BaseExecutable, &cfg, &cfg.base_executable)
+	setString(c.BasePrefix, &cfg, &cfg.base_prefix)
+	c.BufferedStdio.apply(&cfg.buffered_stdio)
+	c.BytesWarning.apply(&cfg.bytes_warning)
+	c.WarnDefaultEncoding.apply(&cfg.warn_default_encoding)
+	c.CodeDebugRanges.apply(&cfg.code_debug_ranges)
+	setString(string(c.CheckHashPVCsMode), &cfg, &cfg.check_hash_pycs_mode)
+	c.ConfigureCStdio.apply(&cfg.configure_c_stdio)
+	c.DevMode.apply(&cfg.dev_mode)
+	c.DumpRefs.apply(&cfg.dump_refs)
+	setString(c.ExecPrefix, &cfg, &cfg.exec_prefix)
+	setString(c.Executable, &cfg, &cfg.executable)
+	c.FaultHandler.apply(&cfg.faulthandler)
+	setString(c.FilesystemEncoding, &cfg, &cfg.filesystem_encoding)
+	setString(string(c.FilesystemErrors), &cfg, &cfg.filesystem_errors)
 	if c.HashSeed > 0 {
 		cfg.hash_seed = C.ulong(c.HashSeed)
 	}
-	c.UseHashSeed.set(&cfg.use_hash_seed)
-	c.ImportTime.set(&cfg.import_time)
-	c.Inspect.set(&cfg.inspect)
-	c.InstallSignalHandlers.set(&cfg.install_signal_handlers)
-	c.Interactive.set(&cfg.interactive)
-	c.Isolated.set(&cfg.isolated)
+	c.UseHashSeed.apply(&cfg.use_hash_seed)
+	setString(c.Home, &cfg, &cfg.home)
+	c.ImportTime.apply(&cfg.import_time)
+	c.Inspect.apply(&cfg.inspect)
+	c.InstallSignalHandlers.apply(&cfg.install_signal_handlers)
+	c.Interactive.apply(&cfg.interactive)
+	c.Isolated.apply(&cfg.isolated)
 	// c.LegacyWindowStdio.set(&cfg.legacy_windows_stdio) - TODO: windows
-	c.MallocStats.set(&cfg.malloc_stats)
-	c.ModuleSearchPathSet.set(&cfg.module_search_paths_set)
+	c.MallocStats.apply(&cfg.malloc_stats)
+	setString(c.PlatLibDir, &cfg, &cfg.platlibdir)
+	setString(c.PythonPathEnv, &cfg, &cfg.pythonpath_env)
+	c.ModuleSearchPathSet.apply(&cfg.module_search_paths_set)
 	if c.OptimizationLevel > 0 {
 		cfg.optimization_level = C.int(c.OptimizationLevel)
 	}
-	c.ParseArgv.set(&cfg.parse_argv)
-	c.ParserDebug.set(&cfg.parser_debug)
-	c.PathConfigWarnings.set(&cfg.pathconfig_warnings)
-	c.Quiet.set(&cfg.quiet)
-	c.ShowRefCount.set(&cfg.show_ref_count)
-	c.SiteImport.set(&cfg.site_import)
-	c.SkipSourceFirstTime.set(&cfg.skip_source_first_line)
-	c.TraceMalloc.set(&cfg.tracemalloc)
-	c.PerfProfiling.set(&cfg.perf_profiling)
-	c.UseEnvironment.set(&cfg.use_environment)
-	c.UserSiteDirectory.set(&cfg.user_site_directory)
-	c.Verbose.set(&cfg.verbose)
-	c.WriteBytecode.set(&cfg.write_bytecode)
+	c.ParseArgv.apply(&cfg.parse_argv)
+	c.ParserDebug.apply(&cfg.parser_debug)
+	c.PathConfigWarnings.apply(&cfg.pathconfig_warnings)
+	setString(c.Prefix, &cfg, &cfg.prefix)
+	setString(c.ProgramName, &cfg, &cfg.program_name)
+	setString(c.PyCachePrefix, &cfg, &cfg.pycache_prefix)
+	c.Quiet.apply(&cfg.quiet)
+	setString(c.RunCommand, &cfg, &cfg.run_command)
+	setString(c.RunFilename, &cfg, &cfg.run_filename)
+	setString(c.RunModule, &cfg, &cfg.run_module)
+	// setString(c.RunPreSite, &cfg, &cfg.run_presite)
+	c.ShowRefCount.apply(&cfg.show_ref_count)
+	c.SiteImport.apply(&cfg.site_import)
+	c.SkipSourceFirstTime.apply(&cfg.skip_source_first_line)
+	setString(c.StdioEncoding, &cfg, &cfg.stdio_encoding)
+	setString(string(c.StdioErrors), &cfg, &cfg.stdio_errors)
+	c.TraceMalloc.apply(&cfg.tracemalloc)
+	c.PerfProfiling.apply(&cfg.perf_profiling)
+	c.UseEnvironment.apply(&cfg.use_environment)
+	c.UserSiteDirectory.apply(&cfg.user_site_directory)
+	c.Verbose.apply(&cfg.verbose)
+	c.WriteBytecode.apply(&cfg.write_bytecode)
 
 	return status2Err(C.Py_InitializeFromConfig(&cfg))
 }
