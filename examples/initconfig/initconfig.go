@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"gopython.xyz/py/v3"
+	"gopython.xyz/py/v3/examples/example/pkg/example"
 )
 
 func main() {
@@ -27,6 +28,10 @@ func main() {
 			os.Exit(0)
 		}
 		log.Fatalf("Failed to init Python: %s", err)
+	}
+
+	if err := example.Init(); err != nil {
+		log.Fatalf("ERROR: %s", err)
 	}
 
 	if ret := py.RunMain(); ret != 0 {

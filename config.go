@@ -282,7 +282,7 @@ func IsolatedConfig() *Config {
 	}
 }
 
-func (c *Config) Initialize() error {
+func (c *Config) initialize() error {
 	cfg := C.PyConfig{}
 	if c.Isolated == Enabled {
 		C.PyConfig_InitIsolatedConfig(&cfg)
@@ -373,6 +373,18 @@ func (c *Config) Initialize() error {
 	setStringList(c.XOptions, &cfg, &cfg.xoptions)
 
 	return status2Err(C.Py_InitializeFromConfig(&cfg))
+}
+
+func (c *Config) Initialize() error {
+	if err := c.initialize(); err != nil {
+		return err
+	}
+
+	if err := setupImporter(); err != nil {
+		return fmt.Errorf("failed to setup importer: %s", err)
+	}
+
+	return nil
 }
 
 func (c *Config) InitAndLock() (*Lock, error) {
