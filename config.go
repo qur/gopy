@@ -17,6 +17,14 @@ const (
 	Disabled
 )
 
+func (f *ConfigFlag) Enable() {
+	*f = Enabled
+}
+
+func (f *ConfigFlag) Disable() {
+	*f = Disabled
+}
+
 func (f *ConfigFlag) Set(v bool) {
 	if v {
 		*f = Enabled
@@ -53,6 +61,30 @@ const (
 
 func (f AllocatorMode) apply(v *C.int) {
 	*v = C.int(f)
+}
+
+type IntMaxStrDigits int
+
+const UnlimitedMaxStrDigits IntMaxStrDigits = -1
+
+func (i *IntMaxStrDigits) SetUnlimited() {
+	*i = UnlimitedMaxStrDigits
+}
+
+func (i *IntMaxStrDigits) Set(max int) error {
+	if max < 640 {
+		return fmt.Errorf("max digits must be >= 640")
+	}
+	*i = IntMaxStrDigits(max)
+	return nil
+}
+
+func (i IntMaxStrDigits) apply(v *C.int) {
+	if i == UnlimitedMaxStrDigits {
+		*v = 0
+		return
+	}
+	*v = C.int(i)
 }
 
 type PreConfig struct {
@@ -136,7 +168,7 @@ func setString(s string, cfg *C.PyConfig, target **C.wchar_t) error {
 }
 
 func setStringList(s []string, cfg *C.PyConfig, target *C.PyWideStringList) error {
-	if len(s) == 0 {
+	if s == nil {
 		return nil
 	}
 
@@ -201,17 +233,16 @@ type Config struct {
 	Inspect               ConfigFlag
 	InstallSignalHandlers ConfigFlag
 	Interactive           ConfigFlag
-	// int_max_str_digits
-	// cpu_count
-	Isolated ConfigFlag
+	IntMaxStrDigits       IntMaxStrDigits
+	CpuCount              int
+	Isolated              ConfigFlag
 	// LegacyWindowStdio ConfigFlag - TODO: Windows only
-	MallocStats         ConfigFlag
-	PlatLibDir          string
-	PythonPathEnv       string
-	ModuleSearchPath    []string
-	ModuleSearchPathSet ConfigFlag // TODO: just use nil vs {} for set?
-	OptimizationLevel   int
-	// orig_argv
+	MallocStats       ConfigFlag
+	PlatLibDir        string
+	PythonPathEnv     string
+	ModuleSearchPath  []string
+	OptimizationLevel int
+	// orig_argv - this doesn't seem useful?
 	ParseArgv          ConfigFlag
 	ParserDebug        ConfigFlag
 	PathConfigWarnings ConfigFlag
@@ -232,7 +263,7 @@ type Config struct {
 	PerfProfiling       ConfigFlag
 	UseEnvironment      ConfigFlag
 	UserSiteDirectory   ConfigFlag
-	Verbose             ConfigFlag // TODO: this isn't actually a bool flag
+	Verbose             int
 	WarnOptions         []string
 	WriteBytecode       ConfigFlag
 	XOptions            []string
@@ -301,12 +332,18 @@ func (c *Config) Initialize() error {
 	c.Inspect.apply(&cfg.inspect)
 	c.InstallSignalHandlers.apply(&cfg.install_signal_handlers)
 	c.Interactive.apply(&cfg.interactive)
+	c.IntMaxStrDigits.apply(&cfg.int_max_str_digits)
+	if c.CpuCount > 0 {
+		cfg.cpu_count = C.int(c.CpuCount)
+	}
 	// c.LegacyWindowStdio.set(&cfg.legacy_windows_stdio) - TODO: windows
 	c.MallocStats.apply(&cfg.malloc_stats)
 	setString(c.PlatLibDir, &cfg, &cfg.platlibdir)
 	setString(c.PythonPathEnv, &cfg, &cfg.pythonpath_env)
 	setStringList(c.ModuleSearchPath, &cfg, &cfg.module_search_paths)
-	c.ModuleSearchPathSet.apply(&cfg.module_search_paths_set)
+	if c.ModuleSearchPath != nil {
+		cfg.module_search_paths_set = 1
+	}
 	if c.OptimizationLevel > 0 {
 		cfg.optimization_level = C.int(c.OptimizationLevel)
 	}
@@ -328,7 +365,9 @@ func (c *Config) Initialize() error {
 	c.TraceMalloc.apply(&cfg.tracemalloc)
 	c.PerfProfiling.apply(&cfg.perf_profiling)
 	c.UserSiteDirectory.apply(&cfg.user_site_directory)
-	c.Verbose.apply(&cfg.verbose)
+	if c.Verbose > 0 {
+		cfg.verbose = C.int(c.Verbose)
+	}
 	setStringList(c.WarnOptions, &cfg, &cfg.warnoptions)
 	c.WriteBytecode.apply(&cfg.write_bytecode)
 	setStringList(c.XOptions, &cfg, &cfg.xoptions)
