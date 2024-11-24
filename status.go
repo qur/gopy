@@ -4,6 +4,7 @@ package py
 import "C"
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -22,7 +23,12 @@ func status2Err(status C.PyStatus) error {
 	case C._PyStatus_TYPE_EXIT:
 		return StatusExit{ExitCode: int(status.exitcode)}
 	default:
-		// TODO(jp3): implement
-		panic("not implemented")
+		if status._func != nil {
+			f := C.GoString(status._func)
+			msg := C.GoString(status.err_msg)
+			return fmt.Errorf("%s: %s", f, msg)
+		}
+		msg := C.GoString(status.err_msg)
+		return errors.New(msg)
 	}
 }

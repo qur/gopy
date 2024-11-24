@@ -135,6 +135,31 @@ func setString(s string, cfg *C.PyConfig, target **C.wchar_t) error {
 	return status2Err(C.PyConfig_SetBytesString(cfg, target, src))
 }
 
+func setStringList(s []string, cfg *C.PyConfig, target *C.PyWideStringList) error {
+	if len(s) == 0 {
+		return nil
+	}
+
+	items := (**C.wchar_t)(C.PyMem_RawMalloc(C.size_t(len(s) * int(unsafe.Sizeof((*C.wchar_t)(nil))))))
+	src := unsafe.Slice(items, len(s))
+
+	for i, arg := range s {
+		cstr := C.CString(arg)
+		defer C.free(unsafe.Pointer(cstr))
+		src[i] = nil // PyConfig_SetBytesString will free the "old" entry
+		err := status2Err(C.PyConfig_SetBytesString(cfg, &src[i], cstr))
+		if err != nil {
+			// TODO: free memory for stringlist and strings
+			return err
+		}
+	}
+
+	target.length = C.Py_ssize_t(len(src))
+	target.items = items
+
+	return nil
+}
+
 type CheckHashPYCsMode string
 
 const (
@@ -180,11 +205,11 @@ type Config struct {
 	// cpu_count
 	Isolated ConfigFlag
 	// LegacyWindowStdio ConfigFlag - TODO: Windows only
-	MallocStats   ConfigFlag
-	PlatLibDir    string
-	PythonPathEnv string
-	// module_search_paths
-	ModuleSearchPathSet ConfigFlag
+	MallocStats         ConfigFlag
+	PlatLibDir          string
+	PythonPathEnv       string
+	ModuleSearchPath    []string
+	ModuleSearchPathSet ConfigFlag // TODO: just use nil vs {} for set?
 	OptimizationLevel   int
 	// orig_argv
 	ParseArgv          ConfigFlag
@@ -272,6 +297,7 @@ func (c *Config) Initialize() error {
 	c.MallocStats.apply(&cfg.malloc_stats)
 	setString(c.PlatLibDir, &cfg, &cfg.platlibdir)
 	setString(c.PythonPathEnv, &cfg, &cfg.pythonpath_env)
+	setStringList(c.ModuleSearchPath, &cfg, &cfg.module_search_paths)
 	c.ModuleSearchPathSet.apply(&cfg.module_search_paths_set)
 	if c.OptimizationLevel > 0 {
 		cfg.optimization_level = C.int(c.OptimizationLevel)

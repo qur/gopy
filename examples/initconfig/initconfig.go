@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
 
@@ -20,6 +21,11 @@ func main() {
 	// RunMain returns, and that will cause Unlock to panic. For the same
 	// reason, we don't defer any Decref calls here.
 	if _, err := py.PythonConfig(os.Args...).InitAndLock(); err != nil {
+		var exit py.StatusExit
+		if errors.As(err, &exit) && exit.ExitCode == 0 {
+			// no error, but the init wants to exit anyway
+			os.Exit(0)
+		}
 		log.Fatalf("Failed to init Python: %s", err)
 	}
 
