@@ -233,9 +233,9 @@ type Config struct {
 	UseEnvironment      ConfigFlag
 	UserSiteDirectory   ConfigFlag
 	Verbose             ConfigFlag // TODO: this isn't actually a bool flag
-	// warnoptions
-	WriteBytecode ConfigFlag
-	// xoptions
+	WarnOptions         []string
+	WriteBytecode       ConfigFlag
+	XOptions            []string
 }
 
 func PythonConfig(args ...string) *Config {
@@ -260,12 +260,22 @@ func (c *Config) Initialize() error {
 	}
 	defer C.PyConfig_Clear(&cfg)
 
+	// These values need to be set before we call any function that could
+	// trigger pre-initialisation.
+	c.DevMode.apply(&cfg.dev_mode)
+	c.Isolated.apply(&cfg.isolated)
+	c.ParseArgv.apply(&cfg.parse_argv)
+	c.UseEnvironment.apply(&cfg.use_environment)
+
+	// Setting the arguments needs to be the next thing that we do. As if we
+	// call PyConfig_SetBytesArgv then it should be called before other methods.
 	if c.Args != nil {
 		if err := setArgs(c.Args, &cfg); err != nil {
 			return err
 		}
 	}
 
+	// Now we set the rest of the values, in declaration order.
 	c.SafePath.apply(&cfg.safe_path)
 	setString(c.BaseExecPrefix, &cfg, &cfg.base_exec_prefix)
 	setString(c.BaseExecutable, &cfg, &cfg.base_executable)
@@ -276,7 +286,6 @@ func (c *Config) Initialize() error {
 	c.CodeDebugRanges.apply(&cfg.code_debug_ranges)
 	setString(string(c.CheckHashPVCsMode), &cfg, &cfg.check_hash_pycs_mode)
 	c.ConfigureCStdio.apply(&cfg.configure_c_stdio)
-	c.DevMode.apply(&cfg.dev_mode)
 	c.DumpRefs.apply(&cfg.dump_refs)
 	setString(c.ExecPrefix, &cfg, &cfg.exec_prefix)
 	setString(c.Executable, &cfg, &cfg.executable)
@@ -292,7 +301,6 @@ func (c *Config) Initialize() error {
 	c.Inspect.apply(&cfg.inspect)
 	c.InstallSignalHandlers.apply(&cfg.install_signal_handlers)
 	c.Interactive.apply(&cfg.interactive)
-	c.Isolated.apply(&cfg.isolated)
 	// c.LegacyWindowStdio.set(&cfg.legacy_windows_stdio) - TODO: windows
 	c.MallocStats.apply(&cfg.malloc_stats)
 	setString(c.PlatLibDir, &cfg, &cfg.platlibdir)
@@ -302,7 +310,6 @@ func (c *Config) Initialize() error {
 	if c.OptimizationLevel > 0 {
 		cfg.optimization_level = C.int(c.OptimizationLevel)
 	}
-	c.ParseArgv.apply(&cfg.parse_argv)
 	c.ParserDebug.apply(&cfg.parser_debug)
 	c.PathConfigWarnings.apply(&cfg.pathconfig_warnings)
 	setString(c.Prefix, &cfg, &cfg.prefix)
@@ -320,10 +327,11 @@ func (c *Config) Initialize() error {
 	setString(string(c.StdioErrors), &cfg, &cfg.stdio_errors)
 	c.TraceMalloc.apply(&cfg.tracemalloc)
 	c.PerfProfiling.apply(&cfg.perf_profiling)
-	c.UseEnvironment.apply(&cfg.use_environment)
 	c.UserSiteDirectory.apply(&cfg.user_site_directory)
 	c.Verbose.apply(&cfg.verbose)
+	setStringList(c.WarnOptions, &cfg, &cfg.warnoptions)
 	c.WriteBytecode.apply(&cfg.write_bytecode)
+	setStringList(c.XOptions, &cfg, &cfg.xoptions)
 
 	return status2Err(C.Py_InitializeFromConfig(&cfg))
 }
