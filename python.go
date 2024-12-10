@@ -33,7 +33,7 @@ func Initialize() {
 // If initsigs is true then the Python runtime will install signal handlers.
 //
 // You probably want InitAndLock or InitAndLockWithSignals though, as they
-// doesn't require the caller to worry about goroutines or threads.
+// don't require the caller to worry about goroutines or threads.
 func InitializeEx(initsigs bool) {
 	if initsigs {
 		C.Py_InitializeEx(1)

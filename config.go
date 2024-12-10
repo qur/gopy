@@ -9,22 +9,28 @@ import (
 	"unsafe"
 )
 
+// ConfigFlag is an int that represents a boolean config flag.
 type ConfigFlag int
 
+// The values for a ConfigFlag, Enabled maps to 1 in C Python, and Disabled maps
+// to 0.
 const (
 	defaultFlag ConfigFlag = iota
 	Enabled
 	Disabled
 )
 
+// Enable sets the ConfigFlag to Enabled.
 func (f *ConfigFlag) Enable() {
 	*f = Enabled
 }
 
+// Disable sets the ConfigFlag to Disabled.
 func (f *ConfigFlag) Disable() {
 	*f = Disabled
 }
 
+// Set sets the ConfigFlag based on the value of v.
 func (f *ConfigFlag) Set(v bool) {
 	if v {
 		*f = Enabled
@@ -80,13 +86,22 @@ func (i *IntMaxStrDigits) Set(max int) error {
 }
 
 func (i IntMaxStrDigits) apply(v *C.int) {
+	if i == 0 {
+		// no explicit value set, leave C version at default value
+		return
+	}
 	if i == UnlimitedMaxStrDigits {
+		// for the C version, unlimited means set to 0
 		*v = 0
 		return
 	}
+	// set other values directly
 	*v = C.int(i)
 }
 
+// PreConfig is a structure used to preinitialize Python.
+//
+// It corresponds to PyPreConfig in C Python.
 type PreConfig struct {
 	Args              []string
 	Allocator         AllocatorMode
@@ -101,6 +116,8 @@ type PreConfig struct {
 	UTF8Mode       ConfigFlag
 }
 
+// PythonPreConfig returns a PreConfig struct that is ready to be used for
+// pre-initialisation. Optionally with the provided command line arguments.
 func PythonPreConfig(args ...string) *PreConfig {
 	return &PreConfig{
 		Args:     args,
@@ -108,12 +125,16 @@ func PythonPreConfig(args ...string) *PreConfig {
 	}
 }
 
+// IsolatedPreConfig returns a PreConfig struct that is ready to used for
+// pre-initialisation in isolated mode.
 func IsolatedPreConfig() *PreConfig {
 	return &PreConfig{
 		Isolated: Enabled,
 	}
 }
 
+// PreInitialize performs Python pre-initialization based on the PreConfig
+// settings.
 func (c *PreConfig) PreInitialize() error {
 	cfg := C.PyPreConfig{}
 	if c.Isolated == Enabled {
@@ -207,6 +228,9 @@ const (
 	SurrogatePassErrorHandler   EncodingErrorHandler = "surrogatepass"
 )
 
+// Config contains most of the parameters used to configure Python.
+//
+// It corresponds to PyConfig in C Python.
 type Config struct {
 	Args                  []string
 	SafePath              ConfigFlag
@@ -269,6 +293,8 @@ type Config struct {
 	XOptions            []string
 }
 
+// PythonConfig returns a Config struct that is ready to be used for
+// initialisation. Optionally with the provided command line arguments.
 func PythonConfig(args ...string) *Config {
 	return &Config{
 		Args:     args,
@@ -276,6 +302,8 @@ func PythonConfig(args ...string) *Config {
 	}
 }
 
+// IsolatedConfig returns a Config struct that is ready to used for
+// initialisation in isolated mode.
 func IsolatedConfig() *Config {
 	return &Config{
 		Isolated: Enabled,
@@ -375,6 +403,10 @@ func (c *Config) initialize() error {
 	return status2Err(C.Py_InitializeFromConfig(&cfg))
 }
 
+// Initialize the Python interpreter using the settings in the Config struct.
+//
+// You probably want InitAndLock, as it doesn't require the caller to worry
+// about goroutines or threads.
 func (c *Config) Initialize() error {
 	if err := c.initialize(); err != nil {
 		return err
@@ -387,6 +419,11 @@ func (c *Config) Initialize() error {
 	return nil
 }
 
+// Initialize the Python interpreter using the settings in the Config struct.
+// Returns a Lock
+
+// InitAndLock is a convenience function.  It initializes Python, enables thread
+// support, and returns a locked Lock instance.
 func (c *Config) InitAndLock() (*Lock, error) {
 	// Lock the current goroutine to the current OS thread, until we have
 	// released the GIL (as CPython uses per-thread state)
