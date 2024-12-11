@@ -1,0 +1,48 @@
+linters:
+  enable-all: false
+  enable: []
+
+  disable-all: false
+  disable:
+    - exhaustruct
+    - err113
+    - gochecknoglobals
+    - varnamelen
+
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - sql
+    - style
+    - test
+    - unused
+
+
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - blank
+      - dot
+      - localmodule
+
+    skip-generated: false
+
+  ireturn:
+    allow:
+      - anon
+      - error
+      - empty
+      - stdlib
+      - gopython.xyz\/py\/v3\.Object
+
+issues:
+  exclude-generated: strict
