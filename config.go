@@ -336,26 +336,44 @@ func (c *Config) initialize() error {
 
 	// Now we set the rest of the values, in declaration order.
 	c.SafePath.apply(&cfg.safe_path)
-	setString(c.BaseExecPrefix, &cfg, &cfg.base_exec_prefix)
-	setString(c.BaseExecutable, &cfg, &cfg.base_executable)
-	setString(c.BasePrefix, &cfg, &cfg.base_prefix)
+	if err := setString(c.BaseExecPrefix, &cfg, &cfg.base_exec_prefix); err != nil {
+		return err
+	}
+	if err := setString(c.BaseExecutable, &cfg, &cfg.base_executable); err != nil {
+		return err
+	}
+	if err := setString(c.BasePrefix, &cfg, &cfg.base_prefix); err != nil {
+		return err
+	}
 	c.BufferedStdio.apply(&cfg.buffered_stdio)
 	c.BytesWarning.apply(&cfg.bytes_warning)
 	c.WarnDefaultEncoding.apply(&cfg.warn_default_encoding)
 	c.CodeDebugRanges.apply(&cfg.code_debug_ranges)
-	setString(string(c.CheckHashPVCsMode), &cfg, &cfg.check_hash_pycs_mode)
+	if err := setString(string(c.CheckHashPVCsMode), &cfg, &cfg.check_hash_pycs_mode); err != nil {
+		return err
+	}
 	c.ConfigureCStdio.apply(&cfg.configure_c_stdio)
 	c.DumpRefs.apply(&cfg.dump_refs)
-	setString(c.ExecPrefix, &cfg, &cfg.exec_prefix)
-	setString(c.Executable, &cfg, &cfg.executable)
+	if err := setString(c.ExecPrefix, &cfg, &cfg.exec_prefix); err != nil {
+		return err
+	}
+	if err := setString(c.Executable, &cfg, &cfg.executable); err != nil {
+		return err
+	}
 	c.FaultHandler.apply(&cfg.faulthandler)
-	setString(c.FilesystemEncoding, &cfg, &cfg.filesystem_encoding)
-	setString(string(c.FilesystemErrors), &cfg, &cfg.filesystem_errors)
+	if err := setString(c.FilesystemEncoding, &cfg, &cfg.filesystem_encoding); err != nil {
+		return err
+	}
+	if err := setString(string(c.FilesystemErrors), &cfg, &cfg.filesystem_errors); err != nil {
+		return err
+	}
 	if c.HashSeed > 0 {
 		cfg.hash_seed = C.ulong(c.HashSeed)
 	}
 	c.UseHashSeed.apply(&cfg.use_hash_seed)
-	setString(c.Home, &cfg, &cfg.home)
+	if err := setString(c.Home, &cfg, &cfg.home); err != nil {
+		return err
+	}
 	c.ImportTime.apply(&cfg.import_time)
 	c.Inspect.apply(&cfg.inspect)
 	c.InstallSignalHandlers.apply(&cfg.install_signal_handlers)
@@ -366,9 +384,15 @@ func (c *Config) initialize() error {
 	}
 	// c.LegacyWindowStdio.set(&cfg.legacy_windows_stdio) - TODO: windows
 	c.MallocStats.apply(&cfg.malloc_stats)
-	setString(c.PlatLibDir, &cfg, &cfg.platlibdir)
-	setString(c.PythonPathEnv, &cfg, &cfg.pythonpath_env)
-	setStringList(c.ModuleSearchPath, &cfg, &cfg.module_search_paths)
+	if err := setString(c.PlatLibDir, &cfg, &cfg.platlibdir); err != nil {
+		return err
+	}
+	if err := setString(c.PythonPathEnv, &cfg, &cfg.pythonpath_env); err != nil {
+		return err
+	}
+	if err := setStringList(c.ModuleSearchPath, &cfg, &cfg.module_search_paths); err != nil {
+		return err
+	}
 	if c.ModuleSearchPath != nil {
 		cfg.module_search_paths_set = 1
 	}
@@ -377,28 +401,48 @@ func (c *Config) initialize() error {
 	}
 	c.ParserDebug.apply(&cfg.parser_debug)
 	c.PathConfigWarnings.apply(&cfg.pathconfig_warnings)
-	setString(c.Prefix, &cfg, &cfg.prefix)
-	setString(c.ProgramName, &cfg, &cfg.program_name)
-	setString(c.PyCachePrefix, &cfg, &cfg.pycache_prefix)
+	if err := setString(c.Prefix, &cfg, &cfg.prefix); err != nil {
+		return err
+	}
+	if err := setString(c.ProgramName, &cfg, &cfg.program_name); err != nil {
+		return err
+	}
+	if err := setString(c.PyCachePrefix, &cfg, &cfg.pycache_prefix); err != nil {
+		return err
+	}
 	c.Quiet.apply(&cfg.quiet)
-	setString(c.RunCommand, &cfg, &cfg.run_command)
-	setString(c.RunFilename, &cfg, &cfg.run_filename)
-	setString(c.RunModule, &cfg, &cfg.run_module)
-	// setString(c.RunPreSite, &cfg, &cfg.run_presite)
+	if err := setString(c.RunCommand, &cfg, &cfg.run_command); err != nil {
+		return err
+	}
+	if err := setString(c.RunFilename, &cfg, &cfg.run_filename); err != nil {
+		return err
+	}
+	if err := setString(c.RunModule, &cfg, &cfg.run_module); err != nil {
+		return err
+	}
+	// if err := setString(c.RunPreSite, &cfg, &cfg.run_presite)
 	c.ShowRefCount.apply(&cfg.show_ref_count)
 	c.SiteImport.apply(&cfg.site_import)
 	c.SkipSourceFirstTime.apply(&cfg.skip_source_first_line)
-	setString(c.StdioEncoding, &cfg, &cfg.stdio_encoding)
-	setString(string(c.StdioErrors), &cfg, &cfg.stdio_errors)
+	if err := setString(c.StdioEncoding, &cfg, &cfg.stdio_encoding); err != nil {
+		return err
+	}
+	if err := setString(string(c.StdioErrors), &cfg, &cfg.stdio_errors); err != nil {
+		return err
+	}
 	c.TraceMalloc.apply(&cfg.tracemalloc)
 	c.PerfProfiling.apply(&cfg.perf_profiling)
 	c.UserSiteDirectory.apply(&cfg.user_site_directory)
 	if c.Verbose > 0 {
 		cfg.verbose = C.int(c.Verbose)
 	}
-	setStringList(c.WarnOptions, &cfg, &cfg.warnoptions)
+	if err := setStringList(c.WarnOptions, &cfg, &cfg.warnoptions); err != nil {
+		return err
+	}
 	c.WriteBytecode.apply(&cfg.write_bytecode)
-	setStringList(c.XOptions, &cfg, &cfg.xoptions)
+	if err := setStringList(c.XOptions, &cfg, &cfg.xoptions); err != nil {
+		return err
+	}
 
 	return status2Err(C.Py_InitializeFromConfig(&cfg))
 }
