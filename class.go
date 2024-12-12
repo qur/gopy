@@ -338,13 +338,13 @@ func funcSigMatches(got reflect.Type, _want interface{}) error {
 		return fmt.Errorf("function should have %d return values, not %d", want.NumOut(), got.NumOut())
 	}
 
-	for i := 0; i < want.NumIn(); i++ {
+	for i := range want.NumIn() {
 		if got.In(i) != want.In(i) {
 			return fmt.Errorf("function argument %d should be %v, not %v", i+1, want.In(i), got.In(i))
 		}
 	}
 
-	for i := 0; i < want.NumOut(); i++ {
+	for i := range want.NumOut() {
 		if got.Out(i) != want.Out(i) {
 			return fmt.Errorf("function return value %d should be %v, not %v", i+1, want.Out(i), got.Out(i))
 		}
@@ -365,6 +365,17 @@ func getStaticCallFlags(f reflect.Type) (C.int, error) {
 		return C.METH_VARARGS | C.METH_KEYWORDS, nil
 	default:
 		return 0, errors.New("invalid function signature")
+	}
+}
+
+func getCallFlags(f reflect.Type, kind C.int) (C.int, error) {
+	switch kind {
+	case C.METH_CLASS:
+		return getPythonCallFlags(f)
+	case C.METH_STATIC:
+		return getStaticCallFlags(f)
+	default:
+		return 0, fmt.Errorf("unsupported kind for getCallFlags: %d", kind)
 	}
 }
 
@@ -472,33 +483,8 @@ func (cls *Class) Create() (err error) {
 	}
 
 	// start by validating BaseType
-	switch b := cls.BaseType.(type) {
-	case nil:
-		// ok, no base type
-	case *Type:
-		// *Type is good, but shouldn't be nil
-		if b == nil {
-			return fmt.Errorf("BaseType set, but nil")
-		}
-		pyType.tp_base = b.c()
-		pyType.tp_basicsize = b.o.tp_basicsize
-		pyType.tp_itemsize = b.o.tp_itemsize
-		pyType.tp_flags |= fastSubclassFlags(b)
-	case *Class:
-		// *Class is good, but should be initialised and not nil
-		if b == nil {
-			return fmt.Errorf("BaseType set, but nil")
-		}
-		raw := b.RawType()
-		if raw == nil {
-			return fmt.Errorf("can't use uninitialised *Class as BaseType")
-		}
-		pyType.tp_base = raw.c()
-		pyType.tp_basicsize = raw.o.tp_basicsize
-		pyType.tp_itemsize = raw.o.tp_itemsize
-		pyType.tp_flags |= fastSubclassFlags(raw)
-	default:
-		return fmt.Errorf("%T is not a supported type for BaseType", b)
+	if err := cls.validateBaseType(pyType); err != nil {
+		return err
 	}
 
 	if cls.Object == nil {
@@ -508,9 +494,6 @@ func (cls *Class) Create() (err error) {
 	typ := reflect.TypeOf(cls.Object)
 	btyp := typ.Elem()
 
-	methods := make(map[string]method)
-	props := make(map[string]prop)
-
 	slotFlags := C.uint64_t(0)
 
 	for flag, slot := range slotMap {
@@ -519,7 +502,98 @@ func (cls *Class) Create() (err error) {
 		}
 	}
 
-	for i := 0; i < typ.NumMethod(); i++ {
+	C.setSlots(pyHeapType, slotFlags)
+
+	methods := make(map[string]method)
+	props := make(map[string]prop)
+
+	if err := addMethods(methods, cls.Static, C.METH_STATIC); err != nil {
+		return err
+	}
+
+	if err := addMethods(methods, cls.Class, C.METH_CLASS); err != nil {
+		return err
+	}
+
+	if err := extractMethodsAndProperties(methods, props, typ); err != nil {
+		return err
+	}
+
+	if C.typeReady(pyType) < 0 {
+		return exception()
+	}
+
+	for name, method := range methods {
+		s := C.CString(name)
+		C.setTypeAttr(pyType, s, C.newMethod(pyType, s, c(method.f), method.flags))
+	}
+
+	for name, prop := range props {
+		s := C.CString(name)
+		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, c(prop.get), c(prop.set)))
+	}
+
+	if err := cls.createFields(pyType, btyp); err != nil {
+		return err
+	}
+
+	cls.base = newType(pyType)
+	registerClass(pyType, cls)
+
+	return nil
+}
+
+func (cls *Class) validateBaseType(pyType *C.PyTypeObject) error {
+	switch b := cls.BaseType.(type) {
+	case nil:
+		// ok, no base type
+	case *Type:
+		// *Type is good, but shouldn't be nil
+		if b == nil {
+			return errors.New("BaseType set, but nil")
+		}
+		pyType.tp_base = b.c()
+		pyType.tp_basicsize = b.o.tp_basicsize
+		pyType.tp_itemsize = b.o.tp_itemsize
+		pyType.tp_flags |= fastSubclassFlags(b)
+	case *Class:
+		// *Class is good, but should be initialised and not nil
+		if b == nil {
+			return errors.New("BaseType set, but nil")
+		}
+		raw := b.RawType()
+		if raw == nil {
+			return errors.New("can't use uninitialised *Class as BaseType")
+		}
+		pyType.tp_base = raw.c()
+		pyType.tp_basicsize = raw.o.tp_basicsize
+		pyType.tp_itemsize = raw.o.tp_itemsize
+		pyType.tp_flags |= fastSubclassFlags(raw)
+	default:
+		return fmt.Errorf("%T is not a supported type for BaseType", b)
+	}
+	return nil
+}
+
+func addMethods(methods map[string]method, functions map[string]any, kind C.int) error {
+	for name, fn := range functions {
+		f := reflect.ValueOf(fn)
+		t := f.Type()
+		flags, err := getCallFlags(t, kind)
+		if err != nil {
+			return fmt.Errorf("static %s: %w", name, err)
+		}
+		key, err := NewUnicode(name)
+		if err != nil {
+			return fmt.Errorf("static %s: %w", name, err)
+		}
+		methods[name] = method{key, flags | kind}
+	}
+	return nil
+}
+
+func extractMethodsAndProperties(methods map[string]method, props map[string]prop, typ reflect.Type) error {
+	for i := range typ.NumMethod() {
 		m := typ.Method(i)
 		if !strings.HasPrefix(m.Name, "Py") {
 			continue
@@ -550,68 +624,30 @@ func (cls *Class) Create() (err error) {
 			props[parts[1]] = p
 		}
 	}
+	return nil
+}
 
-	for name, fn := range cls.Static {
-		f := reflect.ValueOf(fn)
-		t := f.Type()
-		flags, err := getStaticCallFlags(t)
-		if err != nil {
-			return fmt.Errorf("static %s: %s", name, err)
-		}
-		key, err := NewUnicode(name)
-		if err != nil {
-			return fmt.Errorf("static %s: %s", name, err)
-		}
-		methods[name] = method{key, flags | C.METH_STATIC}
-	}
-
-	for name, fn := range cls.Class {
-		f := reflect.ValueOf(fn)
-		t := f.Type()
-		flags, err := getPythonCallFlags(t)
-		if err != nil {
-			return fmt.Errorf("class %s: %s", name, err)
-		}
-		key, err := NewUnicode(name)
-		if err != nil {
-			return fmt.Errorf("class %s: %s", name, err)
-		}
-		methods[name] = method{key, flags | C.METH_CLASS}
-	}
-
-	C.setSlots(pyHeapType, slotFlags)
-
-	if C.typeReady(pyType) < 0 {
-		return exception()
-	}
-
-	for name, method := range methods {
-		s := C.CString(name)
-		C.setTypeAttr(pyType, s, C.newMethod(pyType, s, c(method.f), method.flags))
-	}
-
-	for name, prop := range props {
-		s := C.CString(name)
-		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, c(prop.get), c(prop.set)))
-	}
-
-	for i := 0; i < btyp.NumField(); i++ {
+func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error {
+	for i := range btyp.NumField() {
 		field := btyp.Field(i)
 		pyEmbed := false
 		switch field.Type {
 		case cipType:
 			if _, ok := cls.Object.(tp_iternext); !ok {
-				return fmt.Errorf("%T claimed to implement IteratorProtocol by embedding ClassIteratorProtocol, but doesn't have required methods", cls.Object)
+				return fmt.Errorf("%T claimed to implement IteratorProtocol "+
+					"by embedding ClassIteratorProtocol, but doesn't have required methods", cls.Object)
 			}
 			pyEmbed = true
 		case cspType:
 			if _, ok := cls.Object.(sq_item); !ok {
-				return fmt.Errorf("%T claimed to implement SequenceProtocol by embedding ClassSequenceProtocol, but doesn't have required methods", cls.Object)
+				return fmt.Errorf("%T claimed to implement SequenceProtocol "+
+					"by embedding ClassSequenceProtocol, but doesn't have required methods", cls.Object)
 			}
 			pyEmbed = true
 		case cmpType:
 			if _, ok := cls.Object.(mp_subscript); !ok {
-				return fmt.Errorf("%T claimed to implement MappingProtocol by embedding ClassMappingProtocol, but doesn't have required methods", cls.Object)
+				return fmt.Errorf("%T claimed to implement MappingProtocol "+
+					"by embedding ClassMappingProtocol, but doesn't have required methods", cls.Object)
 			}
 			pyEmbed = true
 		case cboType, cnpType:
@@ -665,9 +701,5 @@ func (cls *Class) Create() (err error) {
 		}
 		return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 	}
-
-	cls.base = newType(pyType)
-	registerClass(pyType, cls)
-
 	return nil
 }

@@ -47,5 +47,8 @@ linters-settings:
   paralleltest:
     ignore-missing: true
 
+  funlen:
+    ignore-comments: true
+
 issues:
   exclude-generated: strict
