@@ -16,6 +16,7 @@ func ExampleConfig_InitAndLock() {
 			// no error, but the init wants to exit anyway
 			os.Exit(0)
 		}
+
 		log.Fatalf("Failed to init Python: %s", err)
 	}
 	defer lock.Finalize()

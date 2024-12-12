@@ -26,9 +26,12 @@ func status2Err(status C.PyStatus) error {
 		if status._func != nil {
 			f := C.GoString(status._func)
 			msg := C.GoString(status.err_msg)
+
 			return fmt.Errorf("%s: %s", f, msg)
 		}
+
 		msg := C.GoString(status.err_msg)
+
 		return errors.New(msg)
 	}
 }

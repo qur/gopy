@@ -39,8 +39,8 @@ func (f *ConfigFlag) Set(v bool) {
 	}
 }
 
-func (f ConfigFlag) apply(v *C.int) {
-	switch f {
+func (f *ConfigFlag) apply(v *C.int) {
+	switch *f {
 	case defaultFlag:
 	case Enabled:
 		*v = 1
@@ -77,26 +77,30 @@ func (i *IntMaxStrDigits) SetUnlimited() {
 	*i = UnlimitedMaxStrDigits
 }
 
-func (i *IntMaxStrDigits) Set(max int) error {
-	if max < 640 {
-		return fmt.Errorf("max digits must be >= 640")
+func (i *IntMaxStrDigits) Set(value int) error {
+	if value < 640 {
+		return fmt.Errorf("max digits must be >= 640, not %d", value)
 	}
-	*i = IntMaxStrDigits(max)
+
+	*i = IntMaxStrDigits(value)
+
 	return nil
 }
 
-func (i IntMaxStrDigits) apply(v *C.int) {
-	if i == 0 {
+func (i *IntMaxStrDigits) apply(v *C.int) {
+	if *i == 0 {
 		// no explicit value set, leave C version at default value
 		return
 	}
-	if i == UnlimitedMaxStrDigits {
+
+	if *i == UnlimitedMaxStrDigits {
 		// for the C version, unlimited means set to 0
 		*v = 0
 		return
 	}
+
 	// set other values directly
-	*v = C.int(i)
+	*v = C.int(*i)
 }
 
 // PreConfig is a structure used to preinitialize Python.
@@ -162,7 +166,7 @@ func (c *PreConfig) PreInitialize() error {
 
 	for i, arg := range c.Args {
 		argv[i] = C.CString(arg)
-		defer C.free(unsafe.Pointer(argv[i]))
+		defer cfree(argv[i])
 	}
 
 	return status2Err(C.Py_PreInitializeFromBytesArgs(&cfg, C.Py_ssize_t(len(argv)), &argv[0]))
@@ -173,7 +177,7 @@ func setArgs(args []string, cfg *C.PyConfig) error {
 
 	for i, arg := range args {
 		argv[i] = C.CString(arg)
-		defer C.free(unsafe.Pointer(argv[i]))
+		defer cfree(argv[i])
 	}
 
 	return status2Err(C.PyConfig_SetBytesArgv(cfg, C.Py_ssize_t(len(argv)), &argv[0]))
@@ -183,9 +187,21 @@ func setString(s string, cfg *C.PyConfig, target **C.wchar_t) error {
 	if len(s) == 0 {
 		return nil
 	}
+
 	src := C.CString(s)
-	defer C.free(unsafe.Pointer(src))
+	defer cfree(src)
+
 	return status2Err(C.PyConfig_SetBytesString(cfg, target, src))
+}
+
+func freeStringList(src []*C.int, idx int) {
+	// free entries up to, but not including idx
+	for i := range idx {
+		cfree(src[i])
+	}
+
+	// free the whole underlying buffer
+	cfree(&src[0])
 }
 
 func setStringList(s []string, cfg *C.PyConfig, target *C.PyWideStringList) error {
@@ -198,11 +214,12 @@ func setStringList(s []string, cfg *C.PyConfig, target *C.PyWideStringList) erro
 
 	for i, arg := range s {
 		cstr := C.CString(arg)
-		defer C.free(unsafe.Pointer(cstr))
+		defer cfree(cstr)
+
 		src[i] = nil // PyConfig_SetBytesString will free the "old" entry
-		err := status2Err(C.PyConfig_SetBytesString(cfg, &src[i], cstr))
-		if err != nil {
-			// TODO: free memory for stringlist and strings
+
+		if err := status2Err(C.PyConfig_SetBytesString(cfg, &src[i], cstr)); err != nil {
+			freeStringList(src, i)
 			return err
 		}
 	}
@@ -258,7 +275,7 @@ type Config struct {
 	InstallSignalHandlers ConfigFlag
 	Interactive           ConfigFlag
 	IntMaxStrDigits       IntMaxStrDigits
-	CpuCount              int
+	CPUCount              int
 	Isolated              ConfigFlag
 	// LegacyWindowStdio ConfigFlag - TODO: Windows only
 	MallocStats       ConfigFlag
@@ -312,11 +329,13 @@ func IsolatedConfig() *Config {
 
 func (c *Config) initialize() error {
 	cfg := C.PyConfig{}
+
 	if c.Isolated == Enabled {
 		C.PyConfig_InitIsolatedConfig(&cfg)
 	} else {
 		C.PyConfig_InitPythonConfig(&cfg)
 	}
+
 	defer C.PyConfig_Clear(&cfg)
 
 	// These values need to be set before we call any function that could
@@ -336,110 +355,148 @@ func (c *Config) initialize() error {
 
 	// Now we set the rest of the values, in declaration order.
 	c.SafePath.apply(&cfg.safe_path)
+
 	if err := setString(c.BaseExecPrefix, &cfg, &cfg.base_exec_prefix); err != nil {
 		return err
 	}
+
 	if err := setString(c.BaseExecutable, &cfg, &cfg.base_executable); err != nil {
 		return err
 	}
+
 	if err := setString(c.BasePrefix, &cfg, &cfg.base_prefix); err != nil {
 		return err
 	}
+
 	c.BufferedStdio.apply(&cfg.buffered_stdio)
 	c.BytesWarning.apply(&cfg.bytes_warning)
 	c.WarnDefaultEncoding.apply(&cfg.warn_default_encoding)
 	c.CodeDebugRanges.apply(&cfg.code_debug_ranges)
+
 	if err := setString(string(c.CheckHashPVCsMode), &cfg, &cfg.check_hash_pycs_mode); err != nil {
 		return err
 	}
+
 	c.ConfigureCStdio.apply(&cfg.configure_c_stdio)
 	c.DumpRefs.apply(&cfg.dump_refs)
+
 	if err := setString(c.ExecPrefix, &cfg, &cfg.exec_prefix); err != nil {
 		return err
 	}
+
 	if err := setString(c.Executable, &cfg, &cfg.executable); err != nil {
 		return err
 	}
+
 	c.FaultHandler.apply(&cfg.faulthandler)
+
 	if err := setString(c.FilesystemEncoding, &cfg, &cfg.filesystem_encoding); err != nil {
 		return err
 	}
+
 	if err := setString(string(c.FilesystemErrors), &cfg, &cfg.filesystem_errors); err != nil {
 		return err
 	}
+
 	if c.HashSeed > 0 {
 		cfg.hash_seed = C.ulong(c.HashSeed)
 	}
+
 	c.UseHashSeed.apply(&cfg.use_hash_seed)
+
 	if err := setString(c.Home, &cfg, &cfg.home); err != nil {
 		return err
 	}
+
 	c.ImportTime.apply(&cfg.import_time)
 	c.Inspect.apply(&cfg.inspect)
 	c.InstallSignalHandlers.apply(&cfg.install_signal_handlers)
 	c.Interactive.apply(&cfg.interactive)
 	c.IntMaxStrDigits.apply(&cfg.int_max_str_digits)
-	if c.CpuCount > 0 {
-		cfg.cpu_count = C.int(c.CpuCount)
+
+	if c.CPUCount > 0 {
+		cfg.cpu_count = C.int(c.CPUCount)
 	}
+
 	// c.LegacyWindowStdio.set(&cfg.legacy_windows_stdio) - TODO: windows
 	c.MallocStats.apply(&cfg.malloc_stats)
+
 	if err := setString(c.PlatLibDir, &cfg, &cfg.platlibdir); err != nil {
 		return err
 	}
+
 	if err := setString(c.PythonPathEnv, &cfg, &cfg.pythonpath_env); err != nil {
 		return err
 	}
+
 	if err := setStringList(c.ModuleSearchPath, &cfg, &cfg.module_search_paths); err != nil {
 		return err
 	}
+
 	if c.ModuleSearchPath != nil {
 		cfg.module_search_paths_set = 1
 	}
+
 	if c.OptimizationLevel > 0 {
 		cfg.optimization_level = C.int(c.OptimizationLevel)
 	}
+
 	c.ParserDebug.apply(&cfg.parser_debug)
 	c.PathConfigWarnings.apply(&cfg.pathconfig_warnings)
+
 	if err := setString(c.Prefix, &cfg, &cfg.prefix); err != nil {
 		return err
 	}
+
 	if err := setString(c.ProgramName, &cfg, &cfg.program_name); err != nil {
 		return err
 	}
+
 	if err := setString(c.PyCachePrefix, &cfg, &cfg.pycache_prefix); err != nil {
 		return err
 	}
+
 	c.Quiet.apply(&cfg.quiet)
+
 	if err := setString(c.RunCommand, &cfg, &cfg.run_command); err != nil {
 		return err
 	}
+
 	if err := setString(c.RunFilename, &cfg, &cfg.run_filename); err != nil {
 		return err
 	}
+
 	if err := setString(c.RunModule, &cfg, &cfg.run_module); err != nil {
 		return err
 	}
+
 	// if err := setString(c.RunPreSite, &cfg, &cfg.run_presite)
 	c.ShowRefCount.apply(&cfg.show_ref_count)
 	c.SiteImport.apply(&cfg.site_import)
 	c.SkipSourceFirstTime.apply(&cfg.skip_source_first_line)
+
 	if err := setString(c.StdioEncoding, &cfg, &cfg.stdio_encoding); err != nil {
 		return err
 	}
+
 	if err := setString(string(c.StdioErrors), &cfg, &cfg.stdio_errors); err != nil {
 		return err
 	}
+
 	c.TraceMalloc.apply(&cfg.tracemalloc)
 	c.PerfProfiling.apply(&cfg.perf_profiling)
 	c.UserSiteDirectory.apply(&cfg.user_site_directory)
+
 	if c.Verbose > 0 {
 		cfg.verbose = C.int(c.Verbose)
 	}
+
 	if err := setStringList(c.WarnOptions, &cfg, &cfg.warnoptions); err != nil {
 		return err
 	}
+
 	c.WriteBytecode.apply(&cfg.write_bytecode)
+
 	if err := setStringList(c.XOptions, &cfg, &cfg.xoptions); err != nil {
 		return err
 	}
@@ -457,7 +514,7 @@ func (c *Config) Initialize() error {
 	}
 
 	if err := setupImporter(); err != nil {
-		return fmt.Errorf("failed to setup importer: %s", err)
+		return fmt.Errorf("failed to setup importer: %w", err)
 	}
 
 	return nil
