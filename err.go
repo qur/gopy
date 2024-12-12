@@ -126,7 +126,7 @@ func exception() error {
 
 func raise(err error) {
 	var val *C.PyObject
-	var exc = C.PyExc_Exception
+	exc := C.PyExc_Exception
 
 	e, ok := err.(*Error)
 	if ok {

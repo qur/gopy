@@ -28,7 +28,7 @@ func getMethod(obj *C.PyObject) (any, error) {
 }
 
 //export goClassCallMethod
-func goClassCallMethod(obj, unused *C.PyObject) *C.PyObject {
+func goClassCallMethod(obj, _ *C.PyObject) *C.PyObject {
 	// Unpack context and self pointer from obj
 	m, err := getMethod(obj)
 	if err != nil {
@@ -109,7 +109,7 @@ func getStaticMethod(obj *C.PyObject) any {
 }
 
 //export goClassCallStaticMethod
-func goClassCallStaticMethod(obj, unused *C.PyObject) *C.PyObject {
+func goClassCallStaticMethod(obj, _ *C.PyObject) *C.PyObject {
 	// Unpack function from obj
 	m := getStaticMethod(obj)
 
@@ -189,7 +189,7 @@ func getMethodAndClass(obj *C.PyObject) (any, *Class, error) {
 }
 
 //export goClassCallClassMethod
-func goClassCallClassMethod(obj, unused *C.PyObject) *C.PyObject {
+func goClassCallClassMethod(obj, _ *C.PyObject) *C.PyObject {
 	// Unpack context and class pointer from obj
 	m, o, err := getMethodAndClass(obj)
 	if err != nil {

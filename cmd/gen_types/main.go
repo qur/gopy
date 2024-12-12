@@ -48,7 +48,7 @@ func examine(value any) map[string]bool {
 func shortName(name string) string {
 	n := strings.ToLower(name[:1])
 	if n == "c" {
-		// using c would conflict with the the c() function that converts Object
+		// using c would conflict with the c() function that converts Object
 		// to *C.PyObject.
 		return strings.ToLower(name[:2])
 	}
@@ -56,7 +56,7 @@ func shortName(name string) string {
 }
 
 func generateBasic(name string, settings typeSettings) {
-	path := fmt.Sprintf("%s_gen.go", strings.ToLower(name))
+	path := strings.ToLower(name) + "_gen.go"
 	f, err := os.Create(path)
 	if err != nil {
 		log.Fatalf("Failed to create file %s: %s", path, err)
@@ -75,7 +75,7 @@ func generateBasic(name string, settings typeSettings) {
 }
 
 func generate(name string, funcs map[string]bool) {
-	path := fmt.Sprintf("%s_gen.go", strings.ToLower(name))
+	path := strings.ToLower(name) + "_gen.go"
 	f, err := os.Create(path)
 	if err != nil {
 		log.Fatalf("Failed to create file %s: %s", path, err)

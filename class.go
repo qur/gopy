@@ -4,6 +4,7 @@ package py
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -253,7 +254,7 @@ func Clear[T Object](f *T) {
 // Dealloc method.
 func ClearClassObject(co ClassObject) {
 	v := reflect.ValueOf(co).Elem()
-	for i := 0; i < v.NumField(); i++ {
+	for i := range v.NumField() {
 		f := v.Field(i)
 		if !f.Type().Implements(otyp) || f.Type() == cboType || f.IsNil() || !v.Type().Field(i).IsExported() {
 			// only care about exported non-nil Object values
@@ -283,7 +284,7 @@ func methSigMatches(got reflect.Type, _want interface{}) error {
 
 	if got.NumIn() == 0 {
 		// The receiver is missing!
-		return fmt.Errorf("method without receiver")
+		return errors.New("method without receiver")
 	}
 
 	want := reflect.TypeOf(_want)
@@ -296,13 +297,13 @@ func methSigMatches(got reflect.Type, _want interface{}) error {
 		return fmt.Errorf("method should have %d return values, not %d", want.NumOut(), got.NumOut())
 	}
 
-	for i := 0; i < want.NumIn(); i++ {
+	for i := range want.NumIn() {
 		if got.In(i+1) != want.In(i) {
 			return fmt.Errorf("method argument %d should be %v, not %v", i+1, want.In(i), got.In(i+1))
 		}
 	}
 
-	for i := 0; i < want.NumOut(); i++ {
+	for i := range want.NumOut() {
 		if got.Out(i) != want.Out(i) {
 			return fmt.Errorf("method return value %d should be %v, not %v", i+1, want.Out(i), got.Out(i))
 		}
@@ -322,7 +323,7 @@ func getPythonCallFlags(f reflect.Type) (C.int, error) {
 	case methSigMatches(f, pyKeywordsFunc) == nil:
 		return C.METH_VARARGS | C.METH_KEYWORDS, nil
 	default:
-		return 0, fmt.Errorf("invalid method signature")
+		return 0, errors.New("invalid method signature")
 	}
 }
 
@@ -363,7 +364,7 @@ func getStaticCallFlags(f reflect.Type) (C.int, error) {
 	case funcSigMatches(f, pyKeywordsFunc) == nil:
 		return C.METH_VARARGS | C.METH_KEYWORDS, nil
 	default:
-		return 0, fmt.Errorf("invalid function signature")
+		return 0, errors.New("invalid function signature")
 	}
 }
 
@@ -530,19 +531,19 @@ func (cls *Class) Create() (err error) {
 		case "Py":
 			flags, err := getPythonCallFlags(t)
 			if err != nil {
-				return fmt.Errorf("%s: %s", fn, err)
+				return fmt.Errorf("%s: %w", fn, err)
 			}
 			methods[parts[1]] = method{NewLong(int64(i)), flags}
 		case "PySet":
 			if err := methSigMatches(t, (func(Object) error)(nil)); err != nil {
-				return fmt.Errorf("%s: %s", fn, err)
+				return fmt.Errorf("%s: %w", fn, err)
 			}
 			p := props[parts[1]]
 			p.set = NewLong(int64(i))
 			props[parts[1]] = p
 		case "PyGet":
 			if err := methSigMatches(t, (func() (Object, error))(nil)); err != nil {
-				return fmt.Errorf("%s: %s", fn, err)
+				return fmt.Errorf("%s: %w", fn, err)
 			}
 			p := props[parts[1]]
 			p.get = NewLong(int64(i))

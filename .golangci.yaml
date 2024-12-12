@@ -44,5 +44,8 @@ linters-settings:
       - stdlib
       - gopython.xyz\/py\/v3\.Object
 
+  paralleltest:
+    ignore-missing: true
+
 issues:
   exclude-generated: strict

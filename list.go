@@ -100,7 +100,7 @@ func NewListFromSlice[T any](values []T) (*List, error) {
 	return l, nil
 }
 
-// CheckExact returns true if if l is an actual Python list, and not a sub type.
+// CheckExact returns true if l is an actual Python list, and not a sub type.
 func (l *List) CheckExact() bool {
 	ret := C.listCheckE(c(l))
 	return ret == 1

@@ -12,7 +12,7 @@ type Chan struct {
 
 // newChan is the New function for the Chan Class that is called as part of the
 // object initialisation.
-func newChan(c *Class, args *Tuple, kw *Dict) (ClassObject, error) {
+func newChan(c *Class, args *Tuple, _ *Dict) (ClassObject, error) {
 	var buffer int
 	if err := ParseTuple(args, "i", &buffer); err != nil {
 		return nil, err

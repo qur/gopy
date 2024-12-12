@@ -1,7 +1,6 @@
 package pytesting
 
 import (
-	"fmt"
 	"testing"
 
 	"gopython.xyz/py/v3"
@@ -20,7 +19,7 @@ func TestFunction(t *testing.T) {
 	modDef := py.ModuleDef{
 		Name: "test",
 		Methods: []py.GoMethod{
-			{"test", f, ""},
+			{Name: "test", Func: f, Doc: ""},
 		},
 	}
 
@@ -28,9 +27,10 @@ func TestFunction(t *testing.T) {
 		t.Fatal(err)
 	} else if t2, err := m.GetAttrString("test"); err != nil {
 		t.Fatal(err)
-	} else {
-		t2.Base().CallObject(nil)
+	} else if _, err := t2.Base().CallObject(nil); err != nil {
+		t.Fatal(err)
 	}
+
 	if !called {
 		t.Error("Function wasn't called")
 	}
@@ -53,6 +53,7 @@ func (e *ExampleClass) Py_Test2(args *py.Tuple, kwds *py.Dict) (py.Object, error
 	} else if i.Int64() != 10 {
 		panic(i)
 	}
+
 	panic("called2")
 }
 
@@ -94,7 +95,7 @@ func TestMethod(t *testing.T) {
 	} else if a == py.None || a.Type().String() != "<class 'test.test'>" {
 		t.Error(a.Type().String())
 	} else if _, ok := a.(*ExampleClass); !ok {
-		t.Error(fmt.Sprintf("wanted *ExampleClass, got %T", a))
+		t.Errorf("wanted *ExampleClass, got %T", a)
 	}
 }
 
@@ -131,15 +132,18 @@ func TestMethod2(t *testing.T) {
 			f    string
 			args []interface{}
 		}
+
 		tests := []Test{
 			{"Test", "called", "", nil},
 			{"Test2", "called2", "i", []interface{}{10}},
 			{"__str__", "strcalled", "", nil},
 		}
+
 		// t.Run uses goroutines, so we need to allow other goroutines to grab
 		// the GIL ...
 		lock.UnblockThreads()
 		defer lock.BlockThreads()
+
 		for _, test := range tests {
 			t.Run(test.m, func(t *testing.T) {
 				// make sure that we have the GIL before doing anything else.
@@ -150,7 +154,10 @@ func TestMethod2(t *testing.T) {
 						t.Error("Panicked for some other reason:", i)
 					}
 				}()
-				a.Base().CallMethod(test.m, test.f, test.args...)
+
+				if _, err := a.Base().CallMethod(test.m, test.f, test.args...); err != nil {
+					t.Error(err)
+				}
 			})
 		}
 	}

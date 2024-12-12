@@ -132,7 +132,7 @@ func getFunc(self *C.PyObject) interface{} {
 }
 
 //export callWithoutArgs
-func callWithoutArgs(self, args *C.PyObject) *C.PyObject {
+func callWithoutArgs(self, _ *C.PyObject) *C.PyObject {
 	f, ok := getFunc(self).(func() (Object, error))
 	if !ok {
 		raise(AssertionError.Err("callWithoutArgs: wrong function type!!!"))

@@ -2,6 +2,7 @@ package py
 
 // #include "utils.h"
 import "C"
+
 import (
 	"reflect"
 	"unsafe"
@@ -11,7 +12,7 @@ import (
 func goClassTraverse(obj *C.PyObject, visit C.visitproc, arg unsafe.Pointer) C.int {
 	co := getClassObject(obj)
 	if co == nil {
-		raise(TypeError.Err("not a recognised type: %s", newObject((*C.PyObject)(obj)).Type()))
+		raise(TypeError.Err("not a recognised type: %s", newObject(obj).Type()))
 		return -1
 	}
 
@@ -52,7 +53,7 @@ func classTraverse(co ClassObject, visit C.visitproc, arg unsafe.Pointer) C.int 
 func goClassClear(obj *C.PyObject) C.int {
 	co := getClassObject(obj)
 	if co == nil {
-		raise(TypeError.Err("not a recognised type: %s", newObject((*C.PyObject)(obj)).Type()))
+		raise(TypeError.Err("not a recognised type: %s", newObject(obj).Type()))
 		return -1
 	}
 
