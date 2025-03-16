@@ -52,14 +52,17 @@ func NewException(name string, base, dict Object) (*ExceptionClass, error) {
 func NewExceptionWithDoc(name, doc string, base, dict Object) (*ExceptionClass, error) {
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
+
 	var cDoc *C.char
 	if doc != "" {
 		cDoc = C.CString(doc)
 		defer C.free(unsafe.Pointer(cDoc))
 	}
+
 	ret := C.PyErr_NewExceptionWithDoc(cName, cDoc, c(base), c(dict))
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newException(ret), nil
 }

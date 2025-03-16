@@ -15,7 +15,7 @@ type myClass struct {
 //
 // This is one of many optional functions that can be implemented on the custom
 // class type to respond to actions in Python.
-func (m *myClass) Call(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
+func (m *myClass) Call(args *py.Tuple, _ *py.Dict) (py.Object, error) {
 	var s string
 	if err := py.ParseTuple(args, "s", &s); err != nil {
 		return nil, err

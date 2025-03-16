@@ -90,6 +90,6 @@ func main() {
 	defer f.Close()
 
 	if err := fileTemplate.Execute(f, v); err != nil {
-		log.Fatalf("Failed to write file: %s", err)
+		log.Printf("Failed to write file: %s", err)
 	}
 }

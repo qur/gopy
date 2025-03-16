@@ -85,8 +85,8 @@ func NewErrorV(kind Object, value Object) *Error {
 // NewError returns a new Error of the specified kind, and with the value
 // being a new Unicode containing the string created the given format and args.
 func NewError(kind Object, format string, args ...interface{}) *Error {
-	msg := fmt.Sprintf(format, args...)
 	Incref(kind)
+	msg := fmt.Sprintf(format, args...)
 	val, _ := NewUnicode(msg)
 	return &Error{kind, val, nil}
 }

@@ -4,10 +4,9 @@ package py
 import "C"
 
 import (
+	"cmp"
 	"sync"
 	"unsafe"
-
-	"golang.org/x/exp/constraints"
 )
 
 // Object is the generic interface that represents a Python object. All of the
@@ -41,7 +40,7 @@ var NotImplemented = newObject(&C._Py_NotImplementedStruct)
 // Given two comparable Go values it will compare them with the requested Op and
 // return true or false. If the op is unknown, then a ValueError will be
 // returned.
-func RichCompareNativeBool[T constraints.Ordered](a, b T, op Op) (bool, error) {
+func RichCompareNativeBool[T cmp.Ordered](a, b T, op Op) (bool, error) {
 	switch op {
 	case LT:
 		return a < b, nil
@@ -66,7 +65,7 @@ func RichCompareNativeBool[T constraints.Ordered](a, b T, op Op) (bool, error) {
 // returned.
 //
 // Return value: New Reference.
-func RichCompareNative[T constraints.Ordered](a, b T, op Op) (Object, error) {
+func RichCompareNative[T cmp.Ordered](a, b T, op Op) (Object, error) {
 	ret, err := RichCompareNativeBool(a, b, op)
 	if err != nil {
 		return NotImplemented, nil

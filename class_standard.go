@@ -21,7 +21,7 @@ func goClassTraverse(obj *C.PyObject, visit C.visitproc, arg unsafe.Pointer) C.i
 
 func classTraverse(co ClassObject, visit C.visitproc, arg unsafe.Pointer) C.int {
 	v := reflect.ValueOf(co).Elem()
-	for i := 0; i < v.NumField(); i++ {
+	for i := range v.NumField() {
 		f := v.Field(i)
 		if !f.Type().Implements(otyp) || f.Type() == cboType || f.IsNil() {
 			// only care about non-nil Object values that aren't ClassBaseObject
@@ -227,7 +227,7 @@ func (cls *Class) new(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 	// finalise the setup of the go object
 	goObj.setBase(newBaseObject(pyObj), cls)
 	v := reflect.ValueOf(goObj).Elem()
-	for i := 0; i < v.NumField(); i++ {
+	for i := range v.NumField() {
 		field := v.Field(i)
 		switch field.Type() {
 		case cipType, cnpType, cspType, cmpType:

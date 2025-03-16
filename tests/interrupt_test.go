@@ -21,10 +21,12 @@ func TestInterrupt(t *testing.T) {
 	} else if err := main.SetItemString("__builtins__", g); err != nil {
 		t.Fatal(err)
 	}
+
 	go func() {
 		<-time.After(3 * time.Second)
 		py.SetInterrupt()
 	}()
+
 	if ret, err := py.RunString(`import time
 while True:
 	time.sleep(1)

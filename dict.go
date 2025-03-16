@@ -45,12 +45,14 @@ func NewDictFromMapString(m map[string]Object) (*Dict, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	for key, value := range m {
 		if err := d.SetItemString(key, value); err != nil {
 			d.Decref()
 			return nil, err
 		}
 	}
+
 	return d, nil
 }
 
@@ -172,11 +174,7 @@ func NewDictProxy(obj Object) (*Dict, error) {
 // CheckExact returns true if d is an actual dictionary object, and not an
 // instance of a sub type.
 func (d *Dict) CheckExact() bool {
-	ret := C.dictCheckE(c(d))
-	if int(ret) != 0 {
-		return true
-	}
-	return false
+	return C.dictCheckE(c(d)) != 0
 }
 
 // Clear empties the dictionary d of all key-value pairs.
@@ -328,32 +326,41 @@ func (d *Dict) MergeFromSeq2(o Object, override bool) error {
 
 // Map returns a Go map that contains the values from the Python dictionary,
 // indexed by the keys.  The keys and values are the same as in the Python
-// dictionary, but changes to the Go map are not propogated back to the Python
+// dictionary, but changes to the Go map are not propagated back to the Python
 // dictionary.
 //
-// Note: the map holds borrowed references
+// Note: the map holds borrowed references.
 func (d *Dict) Map() map[Object]Object {
+	var (
+		p C.Py_ssize_t
+		k *C.PyObject
+		v *C.PyObject
+	)
+
 	m := make(map[Object]Object, d.Size())
-	var p C.Py_ssize_t
-	var k *C.PyObject
-	var v *C.PyObject
+
 	for int(C.PyDict_Next(c(d), &p, &k, &v)) != 0 {
 		key := newObject(k)
 		value := newObject(v)
 		m[key] = value
 	}
+
 	return m
 }
 
 // MapString is similar to Map, except that the keys are first converted to
 // strings.  If the keys are not all Python strings, then an error is returned.
 //
-// Note: the map holds borrowed references
+// Note: the map holds borrowed references.
 func (d *Dict) MapString() (map[string]Object, error) {
+	var (
+		p C.Py_ssize_t
+		k *C.PyObject
+		v *C.PyObject
+	)
+
 	m := make(map[string]Object, d.Size())
-	var p C.Py_ssize_t
-	var k *C.PyObject
-	var v *C.PyObject
+
 	for int(C.PyDict_Next(c(d), &p, &k, &v)) != 0 {
 		key := newObject(k)
 		value := newObject(v)
@@ -363,6 +370,7 @@ func (d *Dict) MapString() (map[string]Object, error) {
 		}
 		m[s.String()] = value
 	}
+
 	return m, nil
 }
 

@@ -8,6 +8,8 @@ linters:
     - err113
     - gochecknoglobals
     - varnamelen
+    - mnd
+    - forcetypeassert
 
   presets:
     - bugs
@@ -43,6 +45,24 @@ linters-settings:
       - empty
       - stdlib
       - gopython.xyz\/py\/v3\.Object
+      - gopython.xyz\/py\/v3\.ClassObject
+      - gopython.xyz\/py\/v3\.Iterator
+      - gopython.xyz\/py\/v3\.Iterable
+
+  gosec:
+    excludes:
+      # Using random numbers doesn't mean that they should be cryptographically secure
+      - G404
+
+  wsl:
+    allow-cuddle-used-in-block: true
+
+  nlreturn:
+    block-size: 2
+
+  testpackage:
+    allow-packages:
+      - pytesting
 
   paralleltest:
     ignore-missing: true

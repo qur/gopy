@@ -598,10 +598,11 @@ func extractMethodsAndProperties(methods map[string]method, props map[string]pro
 		if !strings.HasPrefix(m.Name, "Py") {
 			continue
 		}
+
 		t := m.Func.Type()
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
-		parts := strings.SplitN(m.Name, "_", 2)
-		switch parts[0] {
+
+		switch parts := strings.SplitN(m.Name, "_", 2); parts[0] {
 		case "Py":
 			flags, err := getPythonCallFlags(t)
 			if err != nil {
@@ -630,6 +631,7 @@ func extractMethodsAndProperties(methods map[string]method, props map[string]pro
 func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error {
 	for i := range btyp.NumField() {
 		field := btyp.Field(i)
+
 		pyEmbed := false
 		switch field.Type {
 		case cipType:
@@ -653,17 +655,20 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 		case cboType, cnpType:
 			pyEmbed = true
 		}
+
 		if pyEmbed || !field.IsExported() {
 			// We have some helper types that get embedded in the ClassObject
 			// implementation. Don't export these to Python. We also ignore
 			// anything that isn't exported.
 			continue
 		}
+
 		pyname := field.Tag.Get("py")
 		if pyname == "-" {
 			// tag explicitly set to ignore field
 			continue
 		}
+
 		pydoc := field.Tag.Get("pyDoc")
 		ro := C.int(0)
 		parts := strings.Split(pyname, ",")
@@ -678,9 +683,11 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 				}
 			}
 		}
+
 		if pyname == "" {
 			pyname = field.Name
 		}
+
 		if field.Type.Implements(otyp) {
 			// field is some type of object, so we can use the generic object
 			// member get/set code.
@@ -690,6 +697,7 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), d, ro))
 			continue
 		}
+
 		if exportable[field.Type.Kind()] {
 			// field is a simple exportable native type, we can use the native
 			// member get/set code.
@@ -699,6 +707,7 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 			C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d, ro))
 			continue
 		}
+
 		return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 	}
 	return nil

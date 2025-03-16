@@ -4,7 +4,7 @@ package py
 import "C"
 
 import (
-	"fmt"
+	"errors"
 	"reflect"
 	"unsafe"
 )
@@ -13,7 +13,7 @@ func getField(obj, arg *C.PyObject) (reflect.Value, reflect.StructField, error) 
 	pyType := unsafe.Pointer(C.PyTuple_GetItem(arg, 0))
 	o := getClassObjectByType(obj, (*C.PyTypeObject)(pyType))
 	if o == nil {
-		return reflect.Value{}, reflect.StructField{}, fmt.Errorf("unknown object")
+		return reflect.Value{}, reflect.StructField{}, errors.New("unknown object")
 	}
 
 	idx := int(C.PyLong_AsLong(C.PyTuple_GetItem(arg, 1)))
@@ -69,22 +69,18 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 		f.SetBool(b.Bool())
 		return 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v := int64(C.PyLong_AsLong(obj2))
+		v := int64(C.PyLong_AsLongLong(obj2))
 		if exceptionRaised() {
 			return -1
 		}
 		f.SetInt(v)
 		return 0
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		v := int64(C.PyLong_AsLong(obj2))
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		v := uint64(C.PyLong_AsUnsignedLongLong(obj2))
 		if exceptionRaised() {
 			return -1
 		}
-		if v < 0 {
-			raise(ValueError.Err("field %s is unsigned, can't set to negative value %d", t.Name, v))
-			return -1
-		}
-		f.SetUint(uint64(v))
+		f.SetUint(v)
 		return 0
 	case reflect.Float32, reflect.Float64:
 		v := float64(C.PyFloat_AsDouble(obj2))

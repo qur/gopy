@@ -38,14 +38,13 @@ func TestFunction(t *testing.T) {
 
 type ExampleClass struct {
 	py.ClassBaseObject
-	called bool
 }
 
 func (e *ExampleClass) Py_Test() (py.Object, error) {
 	panic("called")
 }
 
-func (e *ExampleClass) Py_Test2(args *py.Tuple, kwds *py.Dict) (py.Object, error) {
+func (e *ExampleClass) Py_Test2(args *py.Tuple, _ *py.Dict) (py.Object, error) {
 	if v, err := args.GetIndex(0); err != nil {
 		panic(err)
 	} else if i, ok := v.(*py.Long); !ok {

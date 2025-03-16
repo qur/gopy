@@ -72,6 +72,7 @@ func (i *IteratorMethods) Next() (Object, error) {
 // returned with all values collected so far.
 func Iterate(i Iterator) ([]Object, error) {
 	values := []Object{}
+
 	for {
 		item, err := i.Next()
 		if item != nil {

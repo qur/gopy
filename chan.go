@@ -145,13 +145,16 @@ func (c *Chan) Py_monitor(args *Tuple, kw *Dict) (Object, error) {
 		defer lock.Unlock()
 
 		lock.UnblockThreads()
+
 		for obj := range c.c {
 			lock.BlockThreads()
 			ret, _ := itemCB.Base().CallFunctionObjArgs(obj)
 			Decref(ret)
 			lock.UnblockThreads()
 		}
+
 		lock.BlockThreads()
+
 		if closeCB != nil && closeCB != None {
 			ret, _ := closeCB.Base().CallFunctionObjArgs()
 			Decref(ret)
