@@ -19,9 +19,11 @@ func newBool(obj *C.PyObject) *Bool {
 	if obj == c(True) {
 		return True
 	}
+
 	if obj == c(False) {
 		return False
 	}
+
 	panic(TypeError.Err("not a bool"))
 }
 

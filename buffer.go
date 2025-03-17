@@ -23,18 +23,22 @@ func AsBufferMethods(obj Object) *BufferMethods {
 	if n, ok := obj.(BufferProtocol); ok {
 		return n.AsBufferMethods()
 	}
+
 	if C.PyObject_CheckBuffer(c(obj)) > 0 {
 		return (*BufferMethods)(unsafe.Pointer(obj.Base()))
 	}
+
 	return nil
 }
 
 func (b *BufferMethods) GetBuffer(flags BufferFlags) (*Buffer, error) {
 	buf := newBuffer()
+
 	ret := C.PyObject_GetBuffer(c(b), buf.c(), C.int(flags))
 	if ret < 0 {
 		return nil, exception()
 	}
+
 	return buf, nil
 }
 
@@ -43,6 +47,7 @@ func GetBuffer(obj Object, flags BufferFlags) (*Buffer, error) {
 	if bm == nil {
 		return nil, TypeError.Err("%s does implement Buffer Protocol", obj.Type())
 	}
+
 	return bm.GetBuffer(flags)
 }
 
@@ -83,10 +88,12 @@ func (b *Buffer) GetPointer(indicies ...int) (*byte, error) {
 	if len(indicies) != int(b.buf.ndim) {
 		return nil, ValueError.Err("wrong number of indicies: %d (wanted %d)", len(indicies), b.buf.ndim)
 	}
+
 	ind := make([]C.Py_ssize_t, len(indicies))
 	for i, index := range indicies {
 		ind[i] = C.Py_ssize_t(index)
 	}
+
 	ret := C.PyBuffer_GetPointer(b.c(), &ind[0])
 	return (*byte)(ret), nil
 }
@@ -108,6 +115,7 @@ func (b *Buffer) FillInfo(exporter Object, buf []byte, readonly bool, flags Buff
 	if readonly {
 		ro = C.int(1)
 	}
+
 	ret := C.PyBuffer_FillInfo(b.c(), c(exporter), unsafe.Pointer(&buf[0]), C.Py_ssize_t(len(buf)), ro, C.int(flags))
 	return int2Err(ret)
 }

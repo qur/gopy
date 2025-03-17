@@ -158,11 +158,11 @@ type Lock struct {
 	thState  *C.PyThreadState
 }
 
-// NewLock returns a new locked Lock
-func NewLock() (lock *Lock) {
-	lock = &Lock{}
+// NewLock returns a new locked Lock.
+func NewLock() *Lock {
+	lock := &Lock{}
 	lock.Lock()
-	return
+	return lock
 }
 
 func (lock *Lock) setCount(l int64) {
@@ -341,6 +341,7 @@ func (lock *Lock) Finalize() {
 //	// Call Python code ...
 func UnblockThreads() func() {
 	thState := C.PyEval_SaveThread()
+
 	return func() {
 		C.PyEval_RestoreThread(thState)
 	}

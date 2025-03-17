@@ -41,12 +41,14 @@ func (b *ByteArray) Bytes() []byte {
 		// be possible.
 		return nil
 	}
+
 	length := C.PyByteArray_Size(c(b))
 	if length < 0 {
 		// Again, this should only happen if b fails PyByteArray_Check, which
 		// shouldn't be possible.
 		return nil
 	}
+
 	return unsafe.Slice((*byte)(unsafe.Pointer(data)), int(length))
 }
 
@@ -56,7 +58,7 @@ func (b *ByteArray) Resize(s int) error {
 	return int2Err(ret)
 }
 
-// String returns a string representation of the ByteArray
+// String returns a string representation of the ByteArray.
 func (b *ByteArray) String() string {
 	if b == nil {
 		return "<nil>"

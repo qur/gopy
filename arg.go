@@ -45,13 +45,16 @@ func calloc(v interface{}) unsafe.Pointer {
 
 func packValues(values []interface{}) ([]unsafe.Pointer, error) {
 	cValues := make([]unsafe.Pointer, len(values))
+
 	for i, value := range values {
 		p := calloc(value)
 		if p == nil {
 			return nil, TypeError.Err("Unsupported type: %T", value)
 		}
+
 		cValues[i] = p
 	}
+
 	return cValues, nil
 }
 
@@ -61,6 +64,7 @@ func unpackValues(cValues []unsafe.Pointer, values []interface{}) error {
 			C.free(v)
 		}
 	}()
+
 	for i, value := range values {
 		switch v := value.(type) {
 		case *string:
@@ -95,6 +99,7 @@ func unpackValues(cValues []unsafe.Pointer, values []interface{}) error {
 			return TypeError.Err("Unsupported type: %T", v)
 		}
 	}
+
 	return nil
 }
 
@@ -103,12 +108,12 @@ func ParseTuple(args *Tuple, format string, values ...interface{}) error {
 		return AssertionError.Err("ParseTuple: args was nil")
 	}
 
-	cv := (*unsafe.Pointer)(nil)
 	cValues, err := packValues(values)
 	if err != nil {
 		return nil
 	}
 
+	cv := (*unsafe.Pointer)(nil)
 	if len(cValues) > 0 {
 		cv = &cValues[0]
 	}
@@ -129,12 +134,12 @@ func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string
 		return AssertionError.Err("ParseTupleAndKeywords: args was nil")
 	}
 
-	cv := (*unsafe.Pointer)(nil)
 	cValues, err := packValues(values)
 	if err != nil {
 		return nil
 	}
 
+	cv := (*unsafe.Pointer)(nil)
 	if len(cValues) > 0 {
 		cv = &cValues[0]
 	}
@@ -159,6 +164,7 @@ func ParseTupleAndKeywords(args *Tuple, kw *Dict, format string, kwlist []string
 
 func BuildValue(format string, values ...interface{}) (Object, error) {
 	cValues := make([]C.ArgValue, len(values))
+
 	for i, value := range values {
 		switch v := value.(type) {
 		case string:
@@ -245,11 +251,14 @@ func BuildValue(format string, values ...interface{}) (Object, error) {
 			return nil, TypeError.Err("Unsupported type: %T", v)
 		}
 	}
+
 	f := C.CString(format)
 	defer C.free(unsafe.Pointer(f))
+
 	ret := C.doBuildValue(f, &cValues[0], C.int(len(cValues)))
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newObject(ret), nil
 }

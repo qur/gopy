@@ -30,8 +30,8 @@ func (obj *BaseObject) HasAttr(name Object) bool {
 func (obj *BaseObject) HasAttrString(name string) bool {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
-	ret := C.PyObject_HasAttrString(c(obj), s)
-	return ret == 1
+
+	return C.PyObject_HasAttrString(c(obj), s) == 1
 }
 
 // GetAttr returns the attribute of "obj" with the name "name".  This is
@@ -50,6 +50,7 @@ func (obj *BaseObject) GetAttr(name Object) (Object, error) {
 func (obj *BaseObject) GetAttrString(name string) (Object, error) {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
+
 	ret := C.PyObject_GetAttrString(c(obj), s)
 	return obj2ObjErr(ret)
 }
@@ -69,6 +70,7 @@ func (obj *BaseObject) SetAttr(name, value Object) error {
 func (obj *BaseObject) SetAttrString(name string, value Object) error {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
+
 	ret := C.PyObject_SetAttrString(c(obj), s, c(value))
 	return int2Err(ret)
 }
@@ -88,6 +90,7 @@ func (obj *BaseObject) DelAttr(name Object) error {
 func (obj *BaseObject) DelAttrString(name string) error {
 	s := C.CString(name)
 	defer C.free(unsafe.Pointer(s))
+
 	ret := C.PyObject_SetAttrString(c(obj), s, nil)
 	return int2Err(ret)
 }
@@ -119,6 +122,7 @@ func (obj *BaseObject) Repr() (*Unicode, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newObject(ret).(*Unicode), nil
 }
 
@@ -131,6 +135,7 @@ func (obj *BaseObject) Str() (*Unicode, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newObject(ret).(*Unicode), nil
 }
 
@@ -174,7 +179,7 @@ func (obj *BaseObject) Call(args *Tuple, kwds *Dict) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// Convenience types for using things like CallGo
+// Convenience types for using things like CallGo.
 type (
 	A []any
 	K map[string]any
@@ -194,11 +199,13 @@ func (obj *BaseObject) CallGo(args []any, kwds map[string]any) (Object, error) {
 		return nil, err
 	}
 	defer obj1.Decref()
+
 	obj2, err := NewDictFromValuesString(kwds)
 	if err != nil {
 		return nil, err
 	}
 	defer obj2.Decref()
+
 	ret := C.PyObject_Call(c(obj), c(obj1), c(obj2))
 	return obj2ObjErr(ret)
 }
@@ -230,6 +237,7 @@ func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object,
 		return nil, err
 	}
 	defer t.Decref()
+
 	return obj.CallObject(t)
 }
 
@@ -263,6 +271,7 @@ func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, error) {
 		return nil, err
 	}
 	defer t.Decref()
+
 	return obj.CallObject(t)
 }
 
@@ -352,6 +361,7 @@ func (obj *BaseObject) IsTrue() bool {
 	if ret < 0 {
 		panic(exception())
 	}
+
 	return ret != 0
 }
 
@@ -362,6 +372,7 @@ func (obj *BaseObject) Not() bool {
 	if ret < 0 {
 		panic(exception())
 	}
+
 	return ret != 0
 }
 

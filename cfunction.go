@@ -36,7 +36,6 @@ func makeCFunction(name string, fn interface{}, doc string, modName *C.PyObject)
 	ml := C.newMethodDef()
 
 	switch fn.(type) {
-
 	case func() (Object, error):
 		C.set_call_noargs(&ml.ml_meth)
 		ml.ml_flags = C.METH_NOARGS
@@ -56,7 +55,6 @@ func makeCFunction(name string, fn interface{}, doc string, modName *C.PyObject)
 	default:
 		C.free(unsafe.Pointer(ml))
 		return nil, TypeError.Err("CFunction_New: unknown func type for %s", name)
-
 	}
 
 	ret := C.PyCFunction_NewEx(ml, saveFunc(fn), modName)

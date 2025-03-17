@@ -49,6 +49,11 @@ linters-settings:
       - gopython.xyz\/py\/v3\.Iterator
       - gopython.xyz\/py\/v3\.Iterable
 
+  gocritic:
+    disabled-checks:
+      # This check doesn't play well with cgo, see https://github.com/go-critic/go-critic/issues/897
+      - dupSubExpr
+
   gosec:
     excludes:
       # Using random numbers doesn't mean that they should be cryptographically secure

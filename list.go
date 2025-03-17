@@ -133,7 +133,7 @@ func (l *List) Insert(idx int, obj Object) error {
 }
 
 // Append adds the Object obj to list l, by appending it to the end of the list.
-// This is equivalent to the Python "l.append(obj)"
+// This is equivalent to the Python "l.append(obj)".
 func (l *List) Append(obj Object) error {
 	ret := C.PyList_Append(c(l), c(obj))
 	return int2Err(ret)
@@ -171,15 +171,15 @@ func (l *List) Reverse() error {
 //
 // Note: The returned slice contains borrowed references to the values.
 func (l *List) Slice() []Object {
-	size := l.Size()
-	s := make([]Object, size)
-	for i := 0; i < size; i++ {
+	s := make([]Object, l.Size())
+	for i := range s {
 		o, err := l.GetIndex(i)
 		if err != nil {
 			panic(err)
 		}
 		s[i] = o
 	}
+
 	return s
 }
 

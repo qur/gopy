@@ -21,8 +21,10 @@ func AsAsyncIterator(obj Object) *AsyncIteratorMethods {
 	if n, ok := obj.(AsyncIterator); ok {
 		return n.AsAsyncIterator()
 	}
+
 	if C.aIterCheck(c(obj)) > 0 {
 		return (*AsyncIteratorMethods)(unsafe.Pointer(obj.Base()))
 	}
+
 	return nil
 }

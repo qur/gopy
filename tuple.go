@@ -11,14 +11,17 @@ func buildTuple(format string, args ...interface{}) (*Tuple, error) {
 	if format == "" {
 		return NewTuple(0)
 	}
+
 	bv, err := BuildValue(format, args...)
 	if err != nil {
 		return nil, err
 	}
+
 	t, ok := bv.(*Tuple)
 	if ok {
 		return t, nil
 	}
+
 	return PackTuple(bv)
 }
 
@@ -32,6 +35,7 @@ func NewTuple(size int) (*Tuple, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newTuple(ret), nil
 }
 
@@ -64,6 +68,7 @@ func NewTupleFromValues(values ...any) (*Tuple, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	for i, v := range values {
 		o, err := NewValue(v)
 		if err != nil {
@@ -75,6 +80,7 @@ func NewTupleFromValues(values ...any) (*Tuple, error) {
 			return nil, err
 		}
 	}
+
 	return t, nil
 }
 
@@ -118,15 +124,15 @@ func (t *Tuple) SetIndexSteal(pos int, obj Object) error {
 //
 // Return value: Borrowed References.
 func (t *Tuple) Slice() []Object {
-	l := t.Size()
-	s := make([]Object, l)
-	for i := 0; i < l; i++ {
+	s := make([]Object, t.Size())
+	for i := range s {
 		o, err := t.BorrowIndex(i)
 		if err != nil {
 			panic(err)
 		}
 		s[i] = o
 	}
+
 	return s
 }
 
