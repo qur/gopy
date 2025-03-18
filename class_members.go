@@ -70,30 +70,38 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 		return 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		v := int64(C.PyLong_AsLongLong(obj2))
+
 		if exceptionRaised() {
 			return -1
 		}
+
 		f.SetInt(v)
 		return 0
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		v := uint64(C.PyLong_AsUnsignedLongLong(obj2))
+
 		if exceptionRaised() {
 			return -1
 		}
+
 		f.SetUint(v)
 		return 0
 	case reflect.Float32, reflect.Float64:
 		v := float64(C.PyFloat_AsDouble(obj2))
+
 		if exceptionRaised() {
 			return -1
 		}
+
 		f.SetFloat(v)
 		return 0
 	case reflect.String:
 		v := C.PyUnicode_AsUTF8(obj2)
+
 		if exceptionRaised() {
 			return -1
 		}
+
 		f.SetString(C.GoString(v))
 		return 0
 	case reflect.Complex64, reflect.Complex128:
@@ -102,6 +110,7 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 			raise(TypeError.Err("field %s is complex, got %s", t.Name, o.Type()))
 			return -1
 		}
+
 		f.SetComplex(v.Complex128())
 		return 0
 	}

@@ -4,6 +4,7 @@ package py
 import "C"
 
 import (
+	"fmt"
 	"os"
 	"unsafe"
 )
@@ -16,7 +17,7 @@ import (
 func CompileFile(name string) (*Code, error) {
 	data, err := os.ReadFile(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read %s: %w", name, err)
 	}
 
 	// we need data to be NUL terminated, and using append might be able to use

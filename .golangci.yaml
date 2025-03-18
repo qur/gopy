@@ -61,6 +61,11 @@ linters-settings:
 
   wsl:
     allow-cuddle-used-in-block: true
+    force-err-cuddling: true
+
+  wrapcheck:
+    ignoreInterfaceRegexps:
+      - .*
 
   nlreturn:
     block-size: 2

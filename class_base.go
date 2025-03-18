@@ -129,6 +129,7 @@ func clearClassObject(pyObj *C.PyObject) {
 	}
 
 	delete(classObjMap, pyObj)
+
 	for _, goObj := range typeMap {
 		goObj.setBase(nil, nil)
 	}

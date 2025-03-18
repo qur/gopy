@@ -301,31 +301,51 @@ func (n *NumberMethods) InPlaceOr(obj Object) (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// PyNumber_Long: TODO
+// Long returns n converted to an integer object on success, or an error. This
+// is the equivalent of the Python expression "int(n)".
+//
+// Return value: New Reference.
 func (n *NumberMethods) Long() (*Long, error) {
 	ret := C.PyNumber_Long(c(n))
 	return newLong(ret), exception()
 }
 
-// PyNumber_Float: TODO
+// Float returns n converted to an float object on success, or an error. This
+// is the equivalent of the Python expression "float(n)".
+//
+// Return value: New Reference.
 func (n *NumberMethods) Float() (*Float, error) {
 	ret := C.PyNumber_Float(c(n))
 	return newFloat(ret), exception()
 }
 
-// PyNumber_Index: TODO
+// Index returns n converted to a Python int on success, or an error.
+//
+// Return value: New Reference.
 func (n *NumberMethods) Index() (*Long, error) {
 	ret := C.PyNumber_Index(c(n))
 	return newLong(ret), exception()
 }
 
-// PyNumber_ToBase: TODO
-func (n *NumberMethods) ToBase(base int) (*Long, error) {
+// ToBase returns the integer n converted to base as a string. The base argument
+// must be one of 2, 8, 10 or 16. For base 2, 8 or 16, the returned string is
+// prefixed with a base marker of `"0b"`, `"0o"`, or `"0x"`, respectively. If n
+// is not a Python int, it is converted with Index() first.
+//
+// Return value: New Reference.
+func (n *NumberMethods) ToBase(base int) (*Unicode, error) {
 	ret := C.PyNumber_ToBase(c(n), C.int(base))
-	return newLong(ret), exception()
+	return newUnicode(ret), exception()
 }
 
-// PyNumber_AsSsize_t: TODO
+// AsInt returns n converted to an int if n can be interpreted as an integer.
+// Otherwise an error is returned.
+//
+// If n can be converted to a Python int, but the attempt to convert to a
+// Py_ssize_t would cause an OverflowError, then the exc argument is the type of
+// exception that will be returned (usually IndexError or OverflowError). If exc
+// is nil, then no error is returned and the value is clipped to PY_SSIZE_T_MIN
+// for a negative integer, or PY_SSIZE_T_MAX for a positive integer.
 func (n *NumberMethods) AsInt(exc *ExceptionClass) (int, error) {
 	ret := C.PyNumber_AsSsize_t(c(n), c(exc))
 	return int(ret), exception()

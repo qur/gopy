@@ -38,8 +38,10 @@ func getParent(name string) *Module {
 }
 
 func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
-	var name string
-	var path, target Object
+	var (
+		name         string
+		path, target Object
+	)
 	if err := ParseTuple(args, "sO|O", &name, &path, &target); err != nil {
 		return nil, err
 	}

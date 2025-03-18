@@ -279,15 +279,15 @@ type method struct {
 }
 
 func methSigMatches(got reflect.Type, _want interface{}) error {
-	// Note: Methods take the receiver as the first argument, which the want
-	// signature doesn't include.
-
 	if got.NumIn() == 0 {
 		// The receiver is missing!
 		return errors.New("method without receiver")
 	}
 
 	want := reflect.TypeOf(_want)
+
+	// Note: Methods take the receiver as the first argument, which the want
+	// signature doesn't include.
 
 	if got.NumIn()-1 != want.NumIn() {
 		return fmt.Errorf("method should have %d arguments, not %d", want.NumIn(), got.NumIn()-1)
@@ -478,6 +478,7 @@ func (cls *Class) Create() (err error) {
 		if pyHeapType.ht_name == nil {
 			return exception()
 		}
+
 		C.incref(pyHeapType.ht_name)
 		pyHeapType.ht_qualname = pyHeapType.ht_name
 	}
