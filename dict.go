@@ -27,12 +27,14 @@ func NewDictFromMap(m map[Object]Object) (*Dict, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	for key, value := range m {
 		if err := d.SetItem(key, value); err != nil {
 			d.Decref()
 			return nil, err
 		}
 	}
+
 	return d, nil
 }
 

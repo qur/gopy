@@ -194,20 +194,26 @@ func (cls *Class) CallGo(args []any, kwds map[string]any) (Object, error) {
 // Return value: New Reference.
 func (cls *Class) Super(obj Object) (*Super, error) {
 	args := make([]Object, 0, 2)
+
 	cls.Incref()
+
 	args = append(args, cls)
+
 	if obj != nil {
 		obj.Incref()
 		args = append(args, obj)
 	}
+
 	t, err := PackTuple(args...)
 	if err != nil {
 		return nil, err
 	}
+
 	o, err := SuperType.Call(t, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	return newSuper(c(o)), nil
 }
 
@@ -438,9 +444,11 @@ func fastSubclassFlags(t *Type) C.ulong {
 	case TypeType:
 		return C.Py_TPFLAGS_TYPE_SUBCLASS
 	}
+
 	if t.o.tp_flags&subclassFlags != 0 {
 		return t.o.tp_flags & subclassFlags
 	}
+
 	return 0
 }
 
@@ -526,11 +534,13 @@ func (cls *Class) Create() (err error) {
 
 	for name, method := range methods {
 		s := C.CString(name)
+
 		C.setTypeAttr(pyType, s, C.newMethod(pyType, s, c(method.f), method.flags))
 	}
 
 	for name, prop := range props {
 		s := C.CString(name)
+
 		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, c(prop.get), c(prop.set)))
 	}
 
@@ -580,14 +590,17 @@ func addMethods(methods map[string]method, functions map[string]any, kind C.int)
 	for name, fn := range functions {
 		f := reflect.ValueOf(fn)
 		t := f.Type()
+
 		flags, err := getCallFlags(t, kind)
 		if err != nil {
 			return fmt.Errorf("static %s: %w", name, err)
 		}
+
 		key, err := NewUnicode(name)
 		if err != nil {
 			return fmt.Errorf("static %s: %w", name, err)
 		}
+
 		methods[name] = method{key, flags | kind}
 	}
 	return nil
@@ -631,9 +644,9 @@ func extractMethodsAndProperties(methods map[string]method, props map[string]pro
 
 func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error {
 	for i := range btyp.NumField() {
+		pyEmbed := false
 		field := btyp.Field(i)
 
-		pyEmbed := false
 		switch field.Type {
 		case cipType:
 			if _, ok := cls.Object.(tp_iternext); !ok {
@@ -672,9 +685,11 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 
 		pydoc := field.Tag.Get("pyDoc")
 		ro := C.int(0)
+
 		parts := strings.Split(pyname, ",")
 		if len(parts) > 0 {
 			pyname = parts[0]
+
 			for _, opt := range parts[1:] {
 				switch opt {
 				case "ro":
@@ -694,8 +709,9 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 			// member get/set code.
 			s := C.CString(pyname)
 			defer C.free(unsafe.Pointer(s))
-			d := C.CString(pydoc)
-			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), d, ro))
+
+			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), C.CString(pydoc), ro))
+
 			continue
 		}
 
@@ -704,8 +720,9 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 			// member get/set code.
 			s := C.CString(pyname)
 			defer C.free(unsafe.Pointer(s))
-			d := C.CString(pydoc)
-			C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), d, ro))
+
+			C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), C.CString(pydoc), ro))
+
 			continue
 		}
 

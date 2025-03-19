@@ -66,6 +66,7 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 			raise(TypeError.Err("field %s is bool, got %s", t.Name, o.Type()))
 			return -1
 		}
+
 		f.SetBool(b.Bool())
 		return 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

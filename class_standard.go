@@ -27,6 +27,7 @@ func classTraverse(co ClassObject, visit C.visitproc, arg unsafe.Pointer) C.int 
 			// only care about non-nil Object values that aren't ClassBaseObject
 			continue
 		}
+
 		if ret := C.doVisit((*C.PyObject)(f.UnsafePointer()), visit, arg); ret != 0 {
 			return ret
 		}
@@ -158,16 +159,20 @@ func classDealloc(co ClassObject) bool {
 			// dealloc will do it for us - unless it doesn't and calls us back,
 			// but the check above should catch that).
 			shouldDecref := class.Flags&ClassHeapType != 0 && base.tp_flags&C.Py_TPFLAGS_HEAPTYPE == 0
+
 			// we lookup co.Type() before calling typeDealloc, as we shouldn't
 			// use co afterwards since the Python object could have been freed.
 			coType := co.Type()
 			if RefCount(coType)%2 != 0 {
 				cbo.flags |= classBaseTypeRefCountOdd
 			}
+
 			C.typeDealloc(base, c(co))
+
 			if shouldDecref {
 				coType.Decref()
 			}
+
 			return true
 		}
 	}
@@ -226,6 +231,7 @@ func (cls *Class) new(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 
 	// finalise the setup of the go object
 	goObj.setBase(newBaseObject(pyObj), cls)
+
 	v := reflect.ValueOf(goObj).Elem()
 	for i := range v.NumField() {
 		field := v.Field(i)

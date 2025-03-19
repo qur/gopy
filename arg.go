@@ -170,6 +170,7 @@ func BuildValue(format string, values ...interface{}) (Object, error) {
 		case string:
 			s := C.CString(v)
 			defer C.free(unsafe.Pointer(s))
+
 			p := (**C.char)(calloc(&v))
 			*p = s
 			cValues[i]._type = &C.ffi_type_pointer
@@ -182,11 +183,13 @@ func BuildValue(format string, values ...interface{}) (Object, error) {
 		case int:
 			p := (*C.int)(calloc(&v))
 			*p = C.int(v)
+
 			if math.MaxInt == math.MaxInt64 {
 				cValues[i]._type = &C.ffi_type_sint64
 			} else {
 				cValues[i]._type = &C.ffi_type_sint32
 			}
+
 			cValues[i].value = unsafe.Pointer(p)
 		case int8:
 			p := (*C.int8_t)(calloc(&v))
@@ -211,11 +214,13 @@ func BuildValue(format string, values ...interface{}) (Object, error) {
 		case uint:
 			p := (*C.uint)(calloc(&v))
 			*p = C.uint(v)
+
 			if math.MaxUint == math.MaxUint64 {
 				cValues[i]._type = &C.ffi_type_uint64
 			} else {
 				cValues[i]._type = &C.ffi_type_uint32
 			}
+
 			cValues[i].value = unsafe.Pointer(p)
 		case uint8:
 			p := (*C.uint8_t)(calloc(&v))

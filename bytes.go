@@ -42,12 +42,14 @@ func (b *Bytes) Bytes() []byte {
 		// possible.
 		return nil
 	}
+
 	length := C.PyBytes_Size(c(b))
 	if length < 0 {
 		// Again, this should only happen if b fails PyBytes_Check, which
 		// shouldn't be possible.
 		return nil
 	}
+
 	return unsafe.Slice((*byte)(unsafe.Pointer(data)), int(length))
 }
 
