@@ -401,12 +401,12 @@ func ({{ .name }} *{{ .type }}) GetIndex(idx int) (Object, error) {
 
 func ({{ .name }} *{{ .type }}) Count(obj Object) (int, error) {
 	ret := C.PySequence_Count(c({{ .name }}), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func ({{ .name }} *{{ .type }}) Index(obj Object) (int, error) {
 	ret := C.PySequence_Index(c({{ .name }}), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 {{ end }}

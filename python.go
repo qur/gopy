@@ -15,6 +15,7 @@ import (
 //go:generate ./gen_exc.py exc.go python3.13
 //go:generate ./gen_slots.py
 //go:generate ./gen_types.py python3.13
+//go:generate ./gen_arg.py
 
 // Initialize initialises the Python runtime.
 //
