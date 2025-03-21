@@ -224,12 +224,12 @@ func (u *Unicode) GetIndex(idx int) (Object, error) {
 
 func (u *Unicode) Count(obj Object) (int, error) {
 	ret := C.PySequence_Count(c(u), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (u *Unicode) Index(obj Object) (int, error) {
 	ret := C.PySequence_Index(c(u), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (u *Unicode) List() (*List, error) {
@@ -309,4 +309,3 @@ set fields:
   tp_str
   tp_vectorcall
 */
-

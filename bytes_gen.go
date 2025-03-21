@@ -224,12 +224,12 @@ func (b *Bytes) GetIndex(idx int) (Object, error) {
 
 func (b *Bytes) Count(obj Object) (int, error) {
 	ret := C.PySequence_Count(c(b), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (b *Bytes) Index(obj Object) (int, error) {
 	ret := C.PySequence_Index(c(b), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (b *Bytes) List() (*List, error) {
@@ -329,4 +329,3 @@ set fields:
   tp_richcompare
   tp_str
 */
-

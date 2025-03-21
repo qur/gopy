@@ -212,12 +212,12 @@ func (t *Tuple) GetIndex(idx int) (Object, error) {
 
 func (t *Tuple) Count(obj Object) (int, error) {
 	ret := C.PySequence_Count(c(t), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (t *Tuple) Index(obj Object) (int, error) {
 	ret := C.PySequence_Index(c(t), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (t *Tuple) List() (*List, error) {
@@ -279,4 +279,3 @@ set fields:
   tp_traverse
   tp_vectorcall
 */
-

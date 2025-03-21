@@ -128,6 +128,8 @@ func raise(err error) {
 	var val *C.PyObject
 	exc := C.PyExc_Exception
 
+	// We only want to do this for actual *Error values, not wrapped errors
+	//nolint:errorlint
 	e, ok := err.(*Error)
 	if ok {
 		exc = c(e.Kind)
@@ -177,14 +179,14 @@ func boolErr2Int(ret bool, err error) C.int {
 	return 0
 }
 
-func ssize_t2Int64Err(s C.Py_ssize_t) (int64, error) {
+func ssizeT2Int64Err(s C.Py_ssize_t) (int64, error) {
 	if s < 0 {
 		return 0, exception()
 	}
 	return int64(s), nil
 }
 
-func ssize_t2IntErr(s C.Py_ssize_t) (int, error) {
+func ssizeT2IntErr(s C.Py_ssize_t) (int, error) {
 	if s < 0 {
 		return 0, exception()
 	}

@@ -10,6 +10,7 @@ linters:
     - varnamelen
     - mnd
     - forcetypeassert
+    - depguard
 
   presets:
     - bugs

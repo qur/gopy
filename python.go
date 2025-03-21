@@ -50,7 +50,7 @@ func Finalize() {
 	C.Py_Finalize()
 }
 
-// AddToPath appends the given directory to sys.path
+// AddToPath appends the given directory to sys.path.
 func AddToPath(dir string) error {
 	p := C.CString("path")
 	defer C.free(unsafe.Pointer(p))
@@ -72,7 +72,7 @@ func AddToPath(dir string) error {
 	return int2Err(C.PyList_Append(sysPath, pDir))
 }
 
-// PrependToPath prepends the given directory to sys.path
+// PrependToPath prepends the given directory to sys.path.
 func PrependToPath(dir string) error {
 	p := C.CString("path")
 	defer C.free(unsafe.Pointer(p))

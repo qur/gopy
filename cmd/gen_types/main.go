@@ -73,6 +73,8 @@ func generateBasic(name string, settings typeSettings) {
 		"funcs":    map[string]bool{},
 		"settings": settings,
 	}); err != nil {
+		// Don't care if the file isn't closed if we are exiting.
+		//nolint:gocritic
 		log.Fatalf("Failed to generate template: %s", err)
 	}
 }
@@ -99,6 +101,8 @@ func generate(name string, funcs map[string]bool) {
 			Immortal: false,
 		},
 	}); err != nil {
+		// Don't care if the file isn't closed if we are exiting.
+		//nolint:gocritic
 		log.Fatalf("Failed to generate template: %s", err)
 	}
 }

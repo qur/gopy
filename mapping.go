@@ -37,7 +37,7 @@ func (m *MappingMethods) AsMappingMethods() *MappingMethods {
 
 func (m *MappingMethods) Size() (int, error) {
 	ret := C.PyMapping_Size(c(m))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (m *MappingMethods) DelItemString(key string) error {

@@ -22,7 +22,7 @@ type Object interface {
 // functions.
 type Op int
 
-// Python comparison operators
+// Python comparison operators.
 const (
 	LT = Op(C.Py_LT)
 	LE = Op(C.Py_LE)
@@ -68,6 +68,9 @@ func RichCompareNativeBool[T cmp.Ordered](a, b T, op Op) (bool, error) {
 func RichCompareNative[T cmp.Ordered](a, b T, op Op) (Object, error) {
 	ret, err := RichCompareNativeBool(a, b, op)
 	if err != nil {
+		// We are converting an error into a sentinel value, and returning a nil
+		// error is intentional.
+		//nolint:nilerr
 		return NotImplemented, nil
 	}
 	if ret {

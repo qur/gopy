@@ -231,12 +231,12 @@ func (m *MemoryView) GetIndex(idx int) (Object, error) {
 
 func (m *MemoryView) Count(obj Object) (int, error) {
 	ret := C.PySequence_Count(c(m), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (m *MemoryView) Index(obj Object) (int, error) {
 	ret := C.PySequence_Index(c(m), c(obj))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (m *MemoryView) List() (*List, error) {
@@ -321,4 +321,3 @@ set fields:
   tp_traverse
   tp_weaklistoffset
 */
-

@@ -39,7 +39,7 @@ func (s *SequenceMethods) AsSequenceMethods() *SequenceMethods {
 
 func (s *SequenceMethods) Size() (int, error) {
 	ret := C.PySequence_Size(c(s))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (s *SequenceMethods) Concat(obj Object) (Object, error) {
@@ -94,7 +94,7 @@ func (s *SequenceMethods) DelSlice(i1, i2 int) error {
 
 func (s *SequenceMethods) Count(value Object) (int, error) {
 	ret := C.PySequence_Count(c(s), c(value))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (s *SequenceMethods) Contains(value Object) (bool, error) {
@@ -104,7 +104,7 @@ func (s *SequenceMethods) Contains(value Object) (bool, error) {
 
 func (s *SequenceMethods) Index(value Object) (int, error) {
 	ret := C.PySequence_Index(c(s), c(value))
-	return ssize_t2IntErr(ret)
+	return ssizeT2IntErr(ret)
 }
 
 func (s *SequenceMethods) List() (*List, error) {

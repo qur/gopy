@@ -153,7 +153,7 @@ func (u *Unicode) Find(substr Object, start, end int64, direction int) (int64, b
 
 func (u *Unicode) CountInRange(substr Object, start, end int64) (int64, error) {
 	ret := C.PyUnicode_Count(c(u), c(substr), C.Py_ssize_t(start), C.Py_ssize_t(end))
-	return ssize_t2Int64Err(ret)
+	return ssizeT2Int64Err(ret)
 }
 
 func (u *Unicode) Replace(substr, replstr Object, maxcount int64) (Object, error) {
