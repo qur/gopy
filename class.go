@@ -176,11 +176,13 @@ func (cls *Class) CallGo(args []any, kwds map[string]any) (Object, error) {
 		return nil, err
 	}
 	defer obj1.Decref()
+
 	obj2, err := NewDictFromValuesString(kwds)
 	if err != nil {
 		return nil, err
 	}
 	defer obj2.Decref()
+
 	ret := C.PyObject_Call(c(cls), c(obj1), c(obj2))
 	return obj2ObjErr(ret)
 }
@@ -563,6 +565,7 @@ func (cls *Class) validateBaseType(pyType *C.PyTypeObject) error {
 		if b == nil {
 			return errors.New("BaseType set, but nil")
 		}
+
 		pyType.tp_base = b.c()
 		pyType.tp_basicsize = b.o.tp_basicsize
 		pyType.tp_itemsize = b.o.tp_itemsize
@@ -572,10 +575,12 @@ func (cls *Class) validateBaseType(pyType *C.PyTypeObject) error {
 		if b == nil {
 			return errors.New("BaseType set, but nil")
 		}
+
 		raw := b.RawType()
 		if raw == nil {
 			return errors.New("can't use uninitialised *Class as BaseType")
 		}
+
 		pyType.tp_base = raw.c()
 		pyType.tp_basicsize = raw.o.tp_basicsize
 		pyType.tp_itemsize = raw.o.tp_itemsize
