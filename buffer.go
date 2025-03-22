@@ -95,6 +95,7 @@ func (b *Buffer) GetPointer(indicies ...int) (*byte, error) {
 	}
 
 	ret := C.PyBuffer_GetPointer(b.c(), &ind[0])
+
 	return (*byte)(ret), nil
 }
 
@@ -117,5 +118,6 @@ func (b *Buffer) FillInfo(exporter Object, buf []byte, readonly bool, flags Buff
 	}
 
 	ret := C.PyBuffer_FillInfo(b.c(), c(exporter), unsafe.Pointer(&buf[0]), C.Py_ssize_t(len(buf)), ro, C.int(flags))
+
 	return int2Err(ret)
 }

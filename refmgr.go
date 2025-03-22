@@ -32,6 +32,7 @@ func (r *RefManager) Add(obj Object) Object {
 func (r *RefManager) add(o *C.PyObject) Object {
 	obj := newObject(o)
 	r.objects[obj] = true
+
 	return obj
 }
 
@@ -56,19 +57,16 @@ func (r *RefManager) AddRef(obj Object) Object {
 	if r.objects[obj] {
 		return obj
 	}
+
 	Incref(obj)
+
 	r.objects[obj] = true
+
 	return obj
 }
 
 func (r *RefManager) addRef(o *C.PyObject) Object {
-	obj := newObject(o)
-	if r.objects[obj] {
-		return obj
-	}
-	Incref(obj)
-	r.objects[obj] = true
-	return obj
+	return r.AddRef(newObject(o))
 }
 
 // AddRefE adds the given object to RefManager. If the object is not already in
@@ -129,7 +127,9 @@ func (r *RefManager) Remove(obj Object) Object {
 		delete(r.objects, obj)
 		return obj
 	}
+
 	Incref(obj)
+
 	return obj
 }
 

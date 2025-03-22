@@ -22,9 +22,11 @@ func newIterator(o *C.PyObject) (Iterator, error) {
 	if n, ok := obj.(Iterator); ok {
 		return n, nil
 	}
+
 	if C.iterCheck(c(obj)) > 0 {
 		return (*IteratorMethods)(unsafe.Pointer(obj.Base())), nil
 	}
+
 	return nil, TypeError.Err("object of type '%T' is not an iterator", obj)
 }
 
@@ -37,9 +39,11 @@ func GetIterator(obj Object) (Iterator, error) {
 		i.Incref()
 		return i, nil
 	}
+
 	if n := AsIterable(obj); n != nil {
 		return n.Iter()
 	}
+
 	return nil, TypeError.Err("cannot get iterator from %T", obj)
 }
 
@@ -49,12 +53,15 @@ func AsIterator(obj Object) Iterator {
 	if n, ok := obj.(Iterator); ok {
 		return n
 	}
+
 	if n, ok := obj.(IteratorProtocol); ok {
 		return n.AsIteratorMethods()
 	}
+
 	if C.iterCheck(c(obj)) > 0 {
 		return (*IteratorMethods)(unsafe.Pointer(obj.Base()))
 	}
+
 	return nil
 }
 
@@ -78,6 +85,7 @@ func Iterate(i Iterator) ([]Object, error) {
 		if item != nil {
 			values = append(values, item)
 		}
+
 		if err != nil || item == nil {
 			return values, err
 		}

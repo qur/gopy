@@ -40,5 +40,6 @@ func (f *Float) String() string {
 	if f == nil {
 		return nilValue
 	}
+
 	return fmt.Sprintf("%v", f.Float64())
 }

@@ -21,6 +21,7 @@ func NewList(size int) (*List, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newList(ret), nil
 }
 
@@ -56,6 +57,7 @@ func NewListFromValues(values ...any) (*List, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	rm.Add(l)
 
 	for i, v := range values {
@@ -63,6 +65,7 @@ func NewListFromValues(values ...any) (*List, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		if err := l.SetIndexSteal(i, o); err != nil {
 			rm.Add(o)
 			return nil, err
@@ -70,6 +73,7 @@ func NewListFromValues(values ...any) (*List, error) {
 	}
 
 	rm.Clear()
+
 	return l, nil
 }
 
@@ -85,6 +89,7 @@ func NewListFromSlice[T any](values []T) (*List, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	rm.Add(l)
 
 	for i, v := range values {
@@ -92,6 +97,7 @@ func NewListFromSlice[T any](values []T) (*List, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		if err := l.SetIndexSteal(i, o); err != nil {
 			rm.Add(o)
 			return nil, err
@@ -99,6 +105,7 @@ func NewListFromSlice[T any](values []T) (*List, error) {
 	}
 
 	rm.Clear()
+
 	return l, nil
 }
 
@@ -179,6 +186,7 @@ func (l *List) Slice() []Object {
 		if err != nil {
 			panic(err)
 		}
+
 		s[i] = o
 	}
 
@@ -190,5 +198,6 @@ func (l *List) String() string {
 	if l == nil {
 		return nilValue
 	}
+
 	return fmt.Sprintf("%v", l.Slice())
 }

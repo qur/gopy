@@ -4,7 +4,7 @@ package py
 import "C"
 
 import (
-	"fmt"
+	"strconv"
 )
 
 // True is the true value of the Bool type.  It is a singleton value, all true
@@ -34,6 +34,7 @@ func NewBool(b bool) *Bool {
 	if b {
 		return True
 	}
+
 	return False
 }
 
@@ -55,5 +56,6 @@ func (b *Bool) String() string {
 	if b == nil {
 		return nilValue
 	}
-	return fmt.Sprintf("%v", b.Bool())
+
+	return strconv.FormatBool(b.Bool())
 }

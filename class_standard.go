@@ -133,6 +133,7 @@ func classDealloc(co ClassObject) bool {
 			// refcount should have been decremented, but doesn't seem to have changed, so we do it
 			co.Type().Decref()
 		}
+
 		return true
 	}
 
@@ -197,6 +198,7 @@ func goClassNew(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 	if class == nil {
 		t := newType(pyType)
 		raise(TypeError.Err("Not a recognised type: %s", t))
+
 		return nil
 	}
 

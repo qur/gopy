@@ -83,3 +83,6 @@ linters-settings:
 
 issues:
   exclude-generated: strict
+
+  max-issues-per-linter: 0
+  max-same-issues: 0

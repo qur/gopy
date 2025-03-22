@@ -105,6 +105,7 @@ func goClassCallMethodKwds(obj, args, kwds *C.PyObject) *C.PyObject {
 func getStaticMethod(obj *C.PyObject) any {
 	c := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(obj, 1))))
 	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(obj, 2)))
+
 	return c.Static[name]
 }
 
@@ -187,6 +188,7 @@ func getMethodAndClass(obj *C.PyObject) (any, *Class, error) {
 	}
 
 	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(obj, 2)))
+
 	return t.Class[name], c, nil
 }
 

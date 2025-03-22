@@ -196,6 +196,7 @@ func incref(obj *C.PyObject) {
 	if *refcnt == C._Py_IMMORTAL_REFCNT {
 		return
 	}
+
 	*refcnt++
 }
 
@@ -206,6 +207,7 @@ func RefCount(obj Object) int {
 	if obj == nil || obj.Base() == nil {
 		return 0
 	}
+
 	return *(*int)(unsafe.Pointer(&c(obj).anon0[0]))
 }
 
@@ -226,6 +228,7 @@ func NewRefWithErr(obj Object, err error) (Object, error) {
 	if obj == nil {
 		return obj, err
 	}
+
 	return NewRef(obj), err
 }
 
@@ -233,6 +236,7 @@ func c(obj Object) *C.PyObject {
 	if obj == nil {
 		return nil
 	}
+
 	return (*C.PyObject)(unsafe.Pointer(obj.Base()))
 }
 
@@ -241,6 +245,7 @@ func ce(obj Object, err error) *C.PyObject {
 		raise(err)
 		return nil
 	}
+
 	return c(obj)
 }
 

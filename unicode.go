@@ -50,6 +50,7 @@ func (u *Unicode) EncodeString(encoding, errors string) (Object, error) {
 	}
 
 	ret := C.PyUnicode_AsEncodedString(c(u), cEncoding, cErrors)
+
 	return obj2ObjErr(ret)
 }
 
@@ -106,6 +107,7 @@ func (u *Unicode) Encode(encoding, errors string) (Object, error) {
 	}
 
 	ret := C.PyUnicode_AsEncodedString(c(u), cEncoding, cErrors)
+
 	return obj2ObjErr(ret)
 }
 
@@ -126,6 +128,7 @@ func (u *Unicode) Splitlines(keepend bool) (Object, error) {
 	}
 
 	ret := C.PyUnicode_Splitlines(c(u), cKeepend)
+
 	return obj2ObjErr(ret)
 }
 
@@ -137,6 +140,7 @@ func (u *Unicode) Translate(table Object, errors string) (Object, error) {
 	}
 
 	ret := C.PyUnicode_Translate(c(u), c(table), cErrors)
+
 	return obj2ObjErr(ret)
 }
 
@@ -157,6 +161,7 @@ func (u *Unicode) Find(substr Object, start, end int64, direction int) (int64, b
 	} else if ret == -1 {
 		return 0, false, nil
 	}
+
 	return 0, false, exception()
 }
 
@@ -180,6 +185,7 @@ func (u *Unicode) Format(args *Tuple) (*Unicode, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newUnicode(ret), nil
 }
 

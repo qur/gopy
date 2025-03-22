@@ -13,6 +13,7 @@ func NewSet(o Object) (*Set, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newSet(ret), nil
 }
 

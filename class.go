@@ -184,6 +184,7 @@ func (cls *Class) CallGo(args []any, kwds map[string]any) (Object, error) {
 	defer obj2.Decref()
 
 	ret := C.PyObject_Call(c(cls), c(obj1), c(obj2))
+
 	return obj2ObjErr(ret)
 }
 
@@ -228,6 +229,7 @@ func (cls *Class) newObject(args *Tuple, kwds *Dict) (ClassObject, error) {
 	// no New provided, so we need to create an instance of the correct type
 	t := reflect.TypeOf(cls.Object).Elem()
 	v := reflect.New(t)
+
 	return v.Interface().(ClassObject), nil
 }
 
@@ -588,6 +590,7 @@ func (cls *Class) validateBaseType(pyType *C.PyTypeObject) error {
 	default:
 		return fmt.Errorf("%T is not a supported type for BaseType", b)
 	}
+
 	return nil
 }
 
@@ -608,6 +611,7 @@ func addMethods(methods map[string]method, functions map[string]any, kind C.int)
 
 		methods[name] = method{key, flags | kind}
 	}
+
 	return nil
 }
 
@@ -647,6 +651,7 @@ func extractMethodsAndProperties(methods map[string]method, props map[string]pro
 			props[parts[1]] = p
 		}
 	}
+
 	return nil
 }
 
@@ -739,5 +744,6 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 
 		return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 	}
+
 	return nil
 }

@@ -25,9 +25,11 @@ func AsSequenceMethods(obj Object) *SequenceMethods {
 	if n, ok := obj.(SequenceProtocol); ok {
 		return n.AsSequenceMethods()
 	}
+
 	if C.sequenceCheck(c(obj)) > 0 {
 		return (*SequenceMethods)(unsafe.Pointer(obj.Base()))
 	}
+
 	return nil
 }
 
@@ -112,6 +114,7 @@ func (s *SequenceMethods) List() (*List, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newList(ret), nil
 }
 
@@ -120,6 +123,7 @@ func (s *SequenceMethods) Tuple() (*Tuple, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newTuple(ret), nil
 }
 

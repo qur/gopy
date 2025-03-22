@@ -4,7 +4,7 @@ package py
 import "C"
 
 import (
-	"fmt"
+	"strconv"
 )
 
 func NewLong[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint8 | ~uint16 | ~uint32](i T) *Long {
@@ -19,5 +19,6 @@ func (l *Long) String() string {
 	if l == nil {
 		return nilValue
 	}
-	return fmt.Sprintf("%v", l.Int64())
+
+	return strconv.FormatInt(l.Int64(), 10)
 }

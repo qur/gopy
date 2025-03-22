@@ -15,6 +15,7 @@ func NewDict() (*Dict, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newDict(ret), nil
 }
 
@@ -73,6 +74,7 @@ func NewDictFromValues(m map[any]any) (*Dict, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	rm.Add(d)
 
 	for k, v := range m {
@@ -96,6 +98,7 @@ func NewDictFromValues(m map[any]any) (*Dict, error) {
 	}
 
 	rm.Forget(d)
+
 	return d, nil
 }
 
@@ -115,6 +118,7 @@ func NewDictFromValuesGeneric[K comparable, V any](m map[K]V) (*Dict, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	rm.Add(d)
 
 	for k, v := range m {
@@ -138,6 +142,7 @@ func NewDictFromValuesGeneric[K comparable, V any](m map[K]V) (*Dict, error) {
 	}
 
 	rm.Forget(d)
+
 	return d, nil
 }
 
@@ -156,6 +161,7 @@ func NewDictFromValuesString[V any](m map[string]V) (*Dict, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	rm.Add(d)
 
 	for key, v := range m {
@@ -172,6 +178,7 @@ func NewDictFromValuesString[V any](m map[string]V) (*Dict, error) {
 	}
 
 	rm.Forget(d)
+
 	return d, nil
 }
 
@@ -314,6 +321,7 @@ func (d *Dict) Merge(o Object, override bool) error {
 	}
 
 	ret := C.PyDict_Merge(c(d), c(o), C.int(over))
+
 	return int2Err(ret)
 }
 
@@ -336,6 +344,7 @@ func (d *Dict) MergeFromSeq2(o Object, override bool) error {
 	}
 
 	ret := C.PyDict_MergeFromSeq2(c(d), c(o), C.int(over))
+
 	return int2Err(ret)
 }
 
@@ -396,5 +405,6 @@ func (d *Dict) String() string {
 	if d == nil {
 		return nilValue
 	}
+
 	return fmt.Sprintf("%v", d.Map())
 }

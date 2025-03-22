@@ -30,9 +30,11 @@ func AsNumberMethods(obj Object) *NumberMethods {
 	if n, ok := obj.(NumberProtocol); ok {
 		return n.AsNumberMethods()
 	}
+
 	if C.numberCheck(c(obj)) > 0 {
 		return (*NumberMethods)(unsafe.Pointer(obj.Base()))
 	}
+
 	return nil
 }
 

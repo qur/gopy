@@ -26,6 +26,7 @@ func NewByteArrayFromObject(o Object) (*ByteArray, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newByteArray(ret), nil
 }
 
@@ -63,5 +64,6 @@ func (b *ByteArray) String() string {
 	if b == nil {
 		return nilValue
 	}
+
 	return fmt.Sprintf("%v", b.Bytes())
 }

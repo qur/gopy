@@ -26,6 +26,7 @@ type GILState struct {
 func GILStateEnsure() *GILState {
 	g := &GILState{}
 	g.Ensure()
+
 	return g
 }
 
@@ -162,6 +163,7 @@ type Lock struct {
 func NewLock() *Lock {
 	lock := &Lock{}
 	lock.Lock()
+
 	return lock
 }
 
@@ -233,7 +235,9 @@ func (lock *Lock) Lock() {
 	}
 
 	runtime.LockOSThread()
+
 	lock.gilState = GILStateEnsure()
+
 	lock.inc()
 }
 
@@ -250,6 +254,7 @@ func (lock *Lock) Unlock() {
 
 	if lock.thState != nil {
 		C.PyEval_RestoreThread(lock.thState)
+
 		lock.thState = nil
 	}
 
@@ -294,6 +299,7 @@ func (lock *Lock) BlockThreads() {
 
 	if lock.thState != nil {
 		C.PyEval_RestoreThread(lock.thState)
+
 		lock.thState = nil
 	}
 }
@@ -315,6 +321,7 @@ func (lock *Lock) Finalize() {
 
 	if lock.thState != nil {
 		C.PyEval_RestoreThread(lock.thState)
+
 		lock.thState = nil
 	}
 
@@ -326,6 +333,7 @@ func (lock *Lock) Finalize() {
 	C.Py_Finalize()
 
 	runtime.UnlockOSThread()
+
 	lock.gilState = nil
 }
 

@@ -33,6 +33,7 @@ func getParent(name string) *Module {
 	if parent := getParentName(name); parent != "" {
 		return getImport(parent)
 	}
+
 	return nil
 }
 
@@ -41,6 +42,7 @@ func importerFindSpec(cls *Class, args *Tuple) (Object, error) {
 		name         string
 		path, target Object
 	)
+
 	if err := ParseTuple(args, "sO|O", &name, &path, &target); err != nil {
 		return nil, err
 	}
@@ -137,6 +139,7 @@ func setupImporter() error {
 	if err != nil {
 		return err
 	}
+
 	importOrigin = origin
 
 	mp := C.CString("meta_path")

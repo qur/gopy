@@ -8,6 +8,7 @@ func NewMethod(function, self Object) (*Method, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newMethod(ret), nil
 }
 

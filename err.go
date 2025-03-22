@@ -87,6 +87,7 @@ func (e *Error) Normalize() {
 func NewErrorV(kind Object, value Object) *Error {
 	Incref(kind)
 	Incref(value)
+
 	return &Error{kind, value, nil}
 }
 

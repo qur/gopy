@@ -46,6 +46,7 @@ func goClassNatGet(obj, idx *C.PyObject) *C.PyObject {
 	}
 
 	raise(NotImplementedError.ErrV(None))
+
 	return nil
 }
 
@@ -69,6 +70,7 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 		}
 
 		f.SetBool(b.Bool())
+
 		return 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		v := int64(C.PyLong_AsLongLong(obj2))
@@ -78,6 +80,7 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 		}
 
 		f.SetInt(v)
+
 		return 0
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		v := uint64(C.PyLong_AsUnsignedLongLong(obj2))
@@ -87,6 +90,7 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 		}
 
 		f.SetUint(v)
+
 		return 0
 	case reflect.Float32, reflect.Float64:
 		v := float64(C.PyFloat_AsDouble(obj2))
@@ -96,6 +100,7 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 		}
 
 		f.SetFloat(v)
+
 		return 0
 	case reflect.String:
 		v := C.PyUnicode_AsUTF8(obj2)
@@ -105,6 +110,7 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 		}
 
 		f.SetString(C.GoString(v))
+
 		return 0
 	case reflect.Complex64, reflect.Complex128:
 		v, ok := o.(*Complex)
@@ -114,10 +120,12 @@ func goClassNatSet(obj, obj2, idx *C.PyObject) int {
 		}
 
 		f.SetComplex(v.Complex128())
+
 		return 0
 	}
 
 	raise(NotImplementedError.ErrV(None))
+
 	return -1
 }
 
@@ -135,6 +143,7 @@ func goClassObjGet(obj, idx *C.PyObject) *C.PyObject {
 
 	o := f.Interface().(Object)
 	o.Incref()
+
 	return c(o)
 }
 
@@ -153,6 +162,7 @@ func goClassObjSet(obj, obj2, idx *C.PyObject) int {
 	if !v.Type().AssignableTo(f.Type()) {
 		tn := f.Type().Elem().Name()
 		raise(TypeError.Err("Cannot assign '%T' to '*%v'", value, tn))
+
 		return -1
 	}
 
@@ -160,6 +170,7 @@ func goClassObjSet(obj, obj2, idx *C.PyObject) int {
 	if f.IsNil() {
 		Incref(value)
 		f.Set(v)
+
 		return 0
 	}
 

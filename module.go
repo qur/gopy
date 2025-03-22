@@ -63,16 +63,19 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 	if m == nil {
 		return nil, exception()
 	}
+
 	mod := newModule(m)
+
 	rm.Add(mod)
 
 	if md.Package {
 		// mark module as package by adding an empty list as __path__
 		l, err := NewList(0)
-		rm.Add(l)
 		if err != nil {
 			return nil, err
 		}
+
+		rm.Add(l)
 
 		if err := mod.AddObjectRef("__path__", l); err != nil {
 			return nil, err
@@ -88,6 +91,7 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 	if n == nil {
 		return nil, exception()
 	}
+
 	rm.add(n)
 
 	d := C.PyModule_GetDict(m)
@@ -97,10 +101,11 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 
 	for _, method := range md.Methods {
 		pyF, err := makeCFunction(method.Name, method.Func, method.Doc, n)
-		rm.Add(pyF)
 		if err != nil {
 			return nil, err
 		}
+
+		rm.Add(pyF)
 
 		if C.PyDict_SetItemString(d, C.CString(method.Name), c(pyF)) != 0 {
 			return nil, exception()
@@ -108,6 +113,7 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 	}
 
 	rm.Remove(mod)
+
 	return mod, nil
 }
 
@@ -148,6 +154,7 @@ func (m *Module) Register() error {
 	if err != nil {
 		return err
 	}
+
 	if parent := getParentName(name); parent != "" {
 		if pMod := getImport(parent); pMod == nil {
 			return fmt.Errorf("parent module '%s' isn't registered", parent)
@@ -155,7 +162,9 @@ func (m *Module) Register() error {
 			return fmt.Errorf("parent module '%s' is not a package", parent)
 		}
 	}
+
 	addImport(name, m)
+
 	return nil
 }
 
@@ -179,6 +188,7 @@ func (m *Module) Name() (string, error) {
 	if ret == nil {
 		return "", exception()
 	}
+
 	return C.GoString(ret), nil
 }
 
@@ -233,6 +243,7 @@ func (m *Module) AddObject(name string, obj Object) error {
 	defer cfree(cname)
 
 	ret := C.PyModule_AddObject(c(m), cname, c(obj))
+
 	return int2Err(ret)
 }
 
@@ -247,6 +258,7 @@ func (m *Module) AddObjectRef(name string, obj Object) error {
 	defer cfree(cname)
 
 	ret := C.PyModule_AddObjectRef(c(m), cname, c(obj))
+
 	return int2Err(ret)
 }
 
@@ -292,6 +304,7 @@ func getParentName(name string) string {
 	if i := strings.LastIndex(name, "."); i >= 0 {
 		return name[:i]
 	}
+
 	return ""
 }
 

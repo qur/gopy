@@ -13,6 +13,7 @@ func NewFrozenSet(o Object) (*FrozenSet, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newFrozenSet(ret), nil
 }
 
@@ -30,6 +31,7 @@ func (f *FrozenSet) Repr() (*Unicode, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newObject(ret).(*Unicode), nil
 }
 
@@ -40,6 +42,7 @@ func (f *FrozenSet) Hash() (int, error) {
 	if ret == -1 {
 		return 0, exception()
 	}
+
 	return int(ret), nil
 }
 
@@ -83,6 +86,7 @@ func (f *FrozenSet) Iter() (Iterator, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newIterator(ret)
 }
 
@@ -92,6 +96,7 @@ func (f *FrozenSet) Size() int {
 		clearErr()
 		return 0
 	}
+
 	return int(ret)
 }
 

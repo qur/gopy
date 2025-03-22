@@ -26,6 +26,7 @@ func NewBytesFromObject(o Object) (*Bytes, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newBytes(ret), nil
 }
 
@@ -57,5 +58,6 @@ func (b *Bytes) String() string {
 	if b == nil {
 		return nilValue
 	}
+
 	return fmt.Sprintf("%v", b.Bytes())
 }

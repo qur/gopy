@@ -52,6 +52,7 @@ func (obj *BaseObject) GetAttrString(name string) (Object, error) {
 	defer cfree(s)
 
 	ret := C.PyObject_GetAttrString(c(obj), s)
+
 	return obj2ObjErr(ret)
 }
 
@@ -72,6 +73,7 @@ func (obj *BaseObject) SetAttrString(name string, value Object) error {
 	defer cfree(s)
 
 	ret := C.PyObject_SetAttrString(c(obj), s, c(value))
+
 	return int2Err(ret)
 }
 
@@ -92,6 +94,7 @@ func (obj *BaseObject) DelAttrString(name string) error {
 	defer cfree(s)
 
 	ret := C.PyObject_SetAttrString(c(obj), s, nil)
+
 	return int2Err(ret)
 }
 
@@ -207,6 +210,7 @@ func (obj *BaseObject) CallGo(args []any, kwds map[string]any) (Object, error) {
 	defer obj2.Decref()
 
 	ret := C.PyObject_Call(c(obj), c(obj1), c(obj2))
+
 	return obj2ObjErr(ret)
 }
 
@@ -264,6 +268,7 @@ func (obj *BaseObject) CallMethod(name string, format string, args ...interface{
 	defer t.Decref()
 
 	ret := C.PyObject_CallObject(f, c(t))
+
 	return obj2ObjErr(ret)
 }
 
@@ -300,6 +305,7 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, e
 	defer t.Decref()
 
 	ret := C.PyObject_CallObject(f, c(t))
+
 	return obj2ObjErr(ret)
 }
 
@@ -341,6 +347,7 @@ func (obj *BaseObject) CallMethodGo(name string, args []any, kwds map[string]any
 	defer obj2.Decref()
 
 	ret := C.PyObject_Call(f, c(obj1), c(obj2))
+
 	return obj2ObjErr(ret)
 }
 

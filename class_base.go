@@ -108,6 +108,7 @@ func getClassObject(pyObj *C.PyObject) ClassObject {
 	if pyObj == nil {
 		return nil
 	}
+
 	return getClassObjectByType(pyObj, pyObj.ob_type)
 }
 

@@ -12,6 +12,7 @@ func GetFrame() (*Frame, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return (*Frame)(unsafe.Pointer(ret)), nil
 }
 

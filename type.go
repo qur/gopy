@@ -13,6 +13,7 @@ func (t *Type) Init(obj Object, args *Tuple, kw *Dict) error {
 	if ret < 0 {
 		return exception()
 	}
+
 	return nil
 }
 
@@ -21,6 +22,7 @@ func (t *Type) String() string {
 	if pyS == nil {
 		return "<unknown type>"
 	}
+
 	return C.GoString(C.PyUnicode_AsUTF8(pyS))
 }
 

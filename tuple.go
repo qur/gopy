@@ -75,6 +75,7 @@ func NewTupleFromValues(values ...any) (*Tuple, error) {
 			t.Decref()
 			return nil, err
 		}
+
 		if err := t.SetIndexSteal(i, o); err != nil {
 			t.Decref()
 			return nil, err
@@ -130,6 +131,7 @@ func (t *Tuple) Slice() []Object {
 		if err != nil {
 			panic(err)
 		}
+
 		s[i] = o
 	}
 
@@ -141,5 +143,6 @@ func (t *Tuple) String() string {
 	if t == nil {
 		return nilValue
 	}
+
 	return fmt.Sprintf("%v", t.Slice())
 }

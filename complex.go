@@ -21,6 +21,7 @@ func NewComplex[T ~complex64 | ~complex128](v T) (*Complex, error) {
 func (co *Complex) Complex128() complex128 {
 	r := float64(C.PyComplex_RealAsDouble(c(co)))
 	i := float64(C.PyComplex_ImagAsDouble(c(co)))
+
 	return complex(r, i)
 }
 
@@ -28,5 +29,6 @@ func (co *Complex) String() string {
 	if co == nil {
 		return nilValue
 	}
+
 	return fmt.Sprintf("%v", co.Complex128())
 }

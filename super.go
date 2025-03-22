@@ -24,6 +24,7 @@ func (s *Super) CallMethod(name string, args *Tuple, kwds *Dict) (Object, error)
 	}
 
 	ret := C.PyObject_Call(f, c(args), c(kwds))
+
 	return obj2ObjErr(ret)
 }
 
@@ -62,5 +63,6 @@ func (s *Super) CallMethodGo(name string, args []any, kwds map[string]any) (Obje
 	defer obj2.Decref()
 
 	ret := C.PyObject_Call(f, c(obj1), c(obj2))
+
 	return obj2ObjErr(ret)
 }

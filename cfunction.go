@@ -83,6 +83,7 @@ func (cf *CFunction) Self() (Object, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newObject(ret), nil
 }
 
@@ -116,6 +117,7 @@ func saveFunc(f interface{}) *C.PyObject {
 	defer funcLock.Unlock()
 
 	funcs = append(funcs, f)
+
 	return C.PyLong_FromLong(C.long(len(funcs) - 1))
 }
 
@@ -139,6 +141,7 @@ func callWithoutArgs(self, _ *C.PyObject) *C.PyObject {
 		raise(AssertionError.Err("callWithoutArgs: wrong function type!!!"))
 		return nil
 	}
+
 	return ce(f())
 }
 
@@ -149,6 +152,7 @@ func callWithSingle(self, arg *C.PyObject) *C.PyObject {
 		raise(AssertionError.Err("callWithArgs: wrong function type!!!"))
 		return nil
 	}
+
 	return ce(f(newObject(arg)))
 }
 
@@ -159,6 +163,7 @@ func callWithArgs(self, args *C.PyObject) *C.PyObject {
 		raise(AssertionError.Err("callWithArgs: wrong function type!!!"))
 		return nil
 	}
+
 	return ce(f(newTuple(args)))
 }
 
@@ -169,5 +174,6 @@ func callWithKeywords(self, args, kw *C.PyObject) *C.PyObject {
 		raise(AssertionError.Err("callWithKeywords: wrong function type!!!"))
 		return nil
 	}
+
 	return ce(f(newTuple(args), newDict(kw)))
 }
