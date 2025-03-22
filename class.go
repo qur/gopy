@@ -460,7 +460,7 @@ func fastSubclassFlags(t *Type) C.ulong {
 // successfully called.
 func (cls *Class) Create() (err error) {
 	name := C.CString(cls.Name)
-	defer C.free(unsafe.Pointer(name))
+	defer cfree(name)
 
 	pyHeapType := C.newType(C.ulong(cls.Flags))
 	pyHeapType._ht_tpname = C.copyName(name)
@@ -473,10 +473,10 @@ func (cls *Class) Create() (err error) {
 	defer func() {
 		if err != nil {
 			if cls.Flags&ClassHeapType != 0 {
-				C.xdecref(pyHeapType.ht_name)
+				xdecref(pyHeapType.ht_name)
 				C.PyObject_Free(unsafe.Pointer(pyHeapType))
 			} else {
-				C.free(unsafe.Pointer(pyHeapType))
+				cfree(pyHeapType)
 			}
 		}
 	}()
@@ -489,7 +489,7 @@ func (cls *Class) Create() (err error) {
 			return exception()
 		}
 
-		C.incref(pyHeapType.ht_name)
+		incref(pyHeapType.ht_name)
 		pyHeapType.ht_qualname = pyHeapType.ht_name
 	}
 
@@ -627,11 +627,13 @@ func extractMethodsAndProperties(methods map[string]method, props map[string]pro
 			if err != nil {
 				return fmt.Errorf("%s: %w", fn, err)
 			}
+
 			methods[parts[1]] = method{NewLong(int64(i)), flags}
 		case "PySet":
 			if err := methSigMatches(t, (func(Object) error)(nil)); err != nil {
 				return fmt.Errorf("%s: %w", fn, err)
 			}
+
 			p := props[parts[1]]
 			p.set = NewLong(int64(i))
 			props[parts[1]] = p
@@ -639,6 +641,7 @@ func extractMethodsAndProperties(methods map[string]method, props map[string]pro
 			if err := methSigMatches(t, (func() (Object, error))(nil)); err != nil {
 				return fmt.Errorf("%s: %w", fn, err)
 			}
+
 			p := props[parts[1]]
 			p.get = NewLong(int64(i))
 			props[parts[1]] = p
@@ -658,18 +661,21 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 				return fmt.Errorf("%T claimed to implement IteratorProtocol "+
 					"by embedding ClassIteratorProtocol, but doesn't have required methods", cls.Object)
 			}
+
 			pyEmbed = true
 		case cspType:
 			if _, ok := cls.Object.(sq_item); !ok {
 				return fmt.Errorf("%T claimed to implement SequenceProtocol "+
 					"by embedding ClassSequenceProtocol, but doesn't have required methods", cls.Object)
 			}
+
 			pyEmbed = true
 		case cmpType:
 			if _, ok := cls.Object.(mp_subscript); !ok {
 				return fmt.Errorf("%T claimed to implement MappingProtocol "+
 					"by embedding ClassMappingProtocol, but doesn't have required methods", cls.Object)
 			}
+
 			pyEmbed = true
 		case cboType, cnpType:
 			pyEmbed = true
@@ -713,7 +719,7 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 			// field is some type of object, so we can use the generic object
 			// member get/set code.
 			s := C.CString(pyname)
-			defer C.free(unsafe.Pointer(s))
+			defer cfree(s)
 
 			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), C.CString(pydoc), ro))
 
@@ -724,7 +730,7 @@ func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error 
 			// field is a simple exportable native type, we can use the native
 			// member get/set code.
 			s := C.CString(pyname)
-			defer C.free(unsafe.Pointer(s))
+			defer cfree(s)
 
 			C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), C.CString(pydoc), ro))
 

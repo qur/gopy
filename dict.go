@@ -80,12 +80,16 @@ func NewDictFromValues(m map[any]any) (*Dict, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		rm.Add(key)
+
 		value, err := NewValue(v)
 		if err != nil {
 			return nil, err
 		}
+
 		rm.Add(value)
+
 		if err := d.SetItem(key, value); err != nil {
 			return nil, err
 		}
@@ -118,12 +122,16 @@ func NewDictFromValuesGeneric[K comparable, V any](m map[K]V) (*Dict, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		rm.Add(key)
+
 		value, err := NewValue(v)
 		if err != nil {
 			return nil, err
 		}
+
 		rm.Add(value)
+
 		if err := d.SetItem(key, value); err != nil {
 			return nil, err
 		}
@@ -155,7 +163,9 @@ func NewDictFromValuesString[V any](m map[string]V) (*Dict, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		rm.Add(value)
+
 		if err := d.SetItemString(key, value); err != nil {
 			return nil, err
 		}
@@ -170,6 +180,7 @@ func NewDictProxy(obj Object) (*Dict, error) {
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newDict(ret), nil
 }
 
@@ -211,7 +222,7 @@ func (d *Dict) SetItem(key, val Object) error {
 // not hashable, then a TypeError will be returned.
 // func (d *Dict) SetItemString(key string, val Object) error {
 // 	s := C.CString(key)
-// 	defer C.free(unsafe.Pointer(s))
+// 	defer cfree(s)
 // 	ret := C.PyDict_SetItemString(c(d), s, c(val))
 // 	return int2Err(ret)
 // }
@@ -227,7 +238,7 @@ func (d *Dict) SetItem(key, val Object) error {
 // with the value of "key" as the key) from the dictionary d.
 // func (d *Dict) DelItemString(key string) error {
 // 	s := C.CString(key)
-// 	defer C.free(unsafe.Pointer(s))
+// 	defer cfree(s)
 // 	ret := C.PyDict_DelItemString(c(d), s)
 // 	return int2Err(ret)
 // }
@@ -248,7 +259,7 @@ func (d *Dict) GetItem(key Object) (Object, error) {
 // Return value: Borrowed Reference.
 // func (d *Dict) GetItemString(key string) (Object, error) {
 // 	s := C.CString(key)
-// 	defer C.free(unsafe.Pointer(s))
+// 	defer cfree(s)
 // 	ret := C.PyDict_GetItemString(c(d), s)
 // 	return obj2ObjErr(ret)
 // }
@@ -301,6 +312,7 @@ func (d *Dict) Merge(o Object, override bool) error {
 	if override {
 		over = 1
 	}
+
 	ret := C.PyDict_Merge(c(d), c(o), C.int(over))
 	return int2Err(ret)
 }
@@ -322,6 +334,7 @@ func (d *Dict) MergeFromSeq2(o Object, override bool) error {
 	if override {
 		over = 1
 	}
+
 	ret := C.PyDict_MergeFromSeq2(c(d), c(o), C.int(over))
 	return int2Err(ret)
 }
@@ -366,10 +379,12 @@ func (d *Dict) MapString() (map[string]Object, error) {
 	for int(C.PyDict_Next(c(d), &p, &k, &v)) != 0 {
 		key := newObject(k)
 		value := newObject(v)
+
 		s, ok := key.(*Unicode)
 		if !ok {
 			return nil, TypeError.Err("%v is not a string", key)
 		}
+
 		m[s.String()] = value
 	}
 
@@ -379,7 +394,7 @@ func (d *Dict) MapString() (map[string]Object, error) {
 // String returns a string representation of the contents of the dictionary d.
 func (d *Dict) String() string {
 	if d == nil {
-		return "<nil>"
+		return nilValue
 	}
 	return fmt.Sprintf("%v", d.Map())
 }

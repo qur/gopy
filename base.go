@@ -11,7 +11,7 @@ var BaseType = newType(&C.PyBaseObject_Type)
 // Free deallocates the storage (in Python) for obj.  After calling this method,
 // obj should no longer be used.
 func (obj *BaseObject) Free() {
-	free(obj)
+	freeObject(obj)
 }
 
 func (obj *BaseObject) raw() *C.PyObject {
@@ -29,7 +29,7 @@ func (obj *BaseObject) HasAttr(name Object) bool {
 // equivalent to the Python "hasattr(obj, name)".
 func (obj *BaseObject) HasAttrString(name string) bool {
 	s := C.CString(name)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
 
 	return C.PyObject_HasAttrString(c(obj), s) == 1
 }
@@ -49,7 +49,7 @@ func (obj *BaseObject) GetAttr(name Object) (Object, error) {
 // Return value: New Reference.
 func (obj *BaseObject) GetAttrString(name string) (Object, error) {
 	s := C.CString(name)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
 
 	ret := C.PyObject_GetAttrString(c(obj), s)
 	return obj2ObjErr(ret)
@@ -69,7 +69,7 @@ func (obj *BaseObject) SetAttr(name, value Object) error {
 // This is equivalent to the Python "obj.name = value".
 func (obj *BaseObject) SetAttrString(name string, value Object) error {
 	s := C.CString(name)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
 
 	ret := C.PyObject_SetAttrString(c(obj), s, c(value))
 	return int2Err(ret)
@@ -89,7 +89,7 @@ func (obj *BaseObject) DelAttr(name Object) error {
 // equivalent to the Python "del obj.name".
 func (obj *BaseObject) DelAttrString(name string) error {
 	s := C.CString(name)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
 
 	ret := C.PyObject_SetAttrString(c(obj), s, nil)
 	return int2Err(ret)
@@ -243,13 +243,14 @@ func (obj *BaseObject) CallFunction(format string, args ...interface{}) (Object,
 
 func (obj *BaseObject) CallMethod(name string, format string, args ...interface{}) (Object, error) {
 	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
+	defer cfree(cname)
 
 	f := C.PyObject_GetAttrString(c(obj), cname)
 	if f == nil {
 		return nil, AttributeError.Err(name)
 	}
-	defer C.decref(f)
+
+	defer decref(f)
 
 	if C.PyCallable_Check(f) == 0 {
 		return nil, TypeError.Err("attribute of type '%s' is not callable", name)
@@ -259,6 +260,7 @@ func (obj *BaseObject) CallMethod(name string, format string, args ...interface{
 	if err != nil {
 		return nil, err
 	}
+
 	defer t.Decref()
 
 	ret := C.PyObject_CallObject(f, c(t))
@@ -277,13 +279,14 @@ func (obj *BaseObject) CallFunctionObjArgs(args ...Object) (Object, error) {
 
 func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, error) {
 	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
+	defer cfree(cname)
 
 	f := C.PyObject_GetAttrString(c(obj), cname)
 	if f == nil {
 		return nil, AttributeError.Err(name)
 	}
-	defer C.decref(f)
+
+	defer decref(f)
 
 	if C.PyCallable_Check(f) == 0 {
 		return nil, TypeError.Err("attribute of type '%s' is not callable", name)
@@ -293,6 +296,7 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, e
 	if err != nil {
 		return nil, err
 	}
+
 	defer t.Decref()
 
 	ret := C.PyObject_CallObject(f, c(t))
@@ -309,13 +313,14 @@ func (obj *BaseObject) CallMethodObjArgs(name string, args ...Object) (Object, e
 // Return value: New Reference.
 func (obj *BaseObject) CallMethodGo(name string, args []any, kwds map[string]any) (Object, error) {
 	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
+	defer cfree(cname)
 
 	f := C.PyObject_GetAttrString(c(obj), cname)
 	if f == nil {
 		return nil, AttributeError.Err(name)
 	}
-	defer C.decref(f)
+
+	defer decref(f)
 
 	if C.PyCallable_Check(f) == 0 {
 		return nil, TypeError.Err("attribute of type '%s' is not callable", name)
@@ -325,12 +330,14 @@ func (obj *BaseObject) CallMethodGo(name string, args []any, kwds map[string]any
 	if err != nil {
 		return nil, err
 	}
+
 	defer obj1.Decref()
 
 	obj2, err := NewDictFromValuesString(kwds)
 	if err != nil {
 		return nil, err
 	}
+
 	defer obj2.Decref()
 
 	ret := C.PyObject_Call(f, c(obj1), c(obj2))

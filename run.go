@@ -5,7 +5,6 @@ import "C"
 
 import (
 	"fmt"
-	"unsafe"
 )
 
 type StartToken int
@@ -31,7 +30,7 @@ func (s StartToken) c() (C.int, error) {
 
 func RunString(code string, start StartToken, globals, locals Object) (Object, error) {
 	codestr := C.CString(code)
-	defer C.free(unsafe.Pointer(codestr))
+	defer cfree(codestr)
 
 	token, err := start.c()
 	if err != nil {
@@ -48,10 +47,10 @@ func RunString(code string, start StartToken, globals, locals Object) (Object, e
 
 func RunFile(filename string, start StartToken, globals, locals Object) (Object, error) {
 	name := C.CString(filename)
-	defer C.free(unsafe.Pointer(name))
+	defer cfree(name)
 
 	mode := C.CString("r")
-	defer C.free(unsafe.Pointer(mode))
+	defer cfree(mode)
 
 	token, err := start.c()
 	if err != nil {
@@ -62,6 +61,7 @@ func RunFile(filename string, start StartToken, globals, locals Object) (Object,
 	if file == nil {
 		return nil, err
 	}
+
 	defer C.fclose(file)
 
 	obj := C.PyRun_FileExFlags(file, name, token, c(globals), c(locals), 0, nil)

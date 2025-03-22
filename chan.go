@@ -57,19 +57,21 @@ func NewChan(buffer int) (*Chan, error) {
 
 // Py_put provides a c.put() method when this object is used in Python.
 func (c *Chan) Py_put(args *Tuple, kw *Dict) (ret Object, err error) {
-	var obj Object
-	kwlist := []string{"obj"}
+	var (
+		obj    Object
+		kwlist = []string{"obj"}
+	)
 
 	if err := ParseTupleAndKeywords(args, kw, "O", kwlist, &obj); err != nil {
 		return nil, err
 	}
 
 	obj.Incref()
-	ret = None
 
 	defer func() {
 		if p := recover(); p != nil {
 			obj.Decref()
+
 			ret = nil
 			err = ChanClosedError.Err("Chan closed")
 		}
@@ -82,7 +84,7 @@ func (c *Chan) Py_put(args *Tuple, kw *Dict) (ret Object, err error) {
 
 	c.c <- obj
 
-	return
+	return None, nil
 }
 
 // Py_get provides a c.get() method when this object is used in Python.
@@ -144,12 +146,17 @@ func (c *Chan) Py_monitor(args *Tuple, kw *Dict) (Object, error) {
 		lock := NewLock()
 		defer lock.Unlock()
 
+		// we want to unblock Python whilst we are in the range call, since it
+		// can block on the channel read and we don't want to block other Python
+		// threads whilst we are doing that.
 		lock.UnblockThreads()
 
 		for obj := range c.c {
 			lock.BlockThreads()
+
 			ret, _ := itemCB.Base().CallFunctionObjArgs(obj)
 			Decref(ret)
+
 			lock.UnblockThreads()
 		}
 

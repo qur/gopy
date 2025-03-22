@@ -17,7 +17,7 @@ func (l *Long) Int64() int64 {
 
 func (l *Long) String() string {
 	if l == nil {
-		return "<nil>"
+		return nilValue
 	}
 	return fmt.Sprintf("%v", l.Int64())
 }

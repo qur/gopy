@@ -179,7 +179,7 @@ func (f *FrameLocalsProxy) AsMappingMethods() *MappingMethods {
 
 func (f *FrameLocalsProxy) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_GetItemString(c(f), cKey)
 	return obj2ObjErr(ret)
 }
@@ -192,7 +192,7 @@ func (f *FrameLocalsProxy) HasKey(key Object) bool {
 
 func (f *FrameLocalsProxy) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_HasKeyString(c(f), cKey)
 	clearErr();
 	return ret > 0
@@ -205,14 +205,14 @@ func (f *FrameLocalsProxy) DelItem(key Object) error {
 
 func (f *FrameLocalsProxy) DelItemString(key string) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyObject_DelItemString(c(f), cKey)
 	return int2Err(ret)
 }
 
 func (f *FrameLocalsProxy) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_SetItemString(c(f), cKey, c(v))
 	return int2Err(ret)
 }

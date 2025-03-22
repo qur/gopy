@@ -3,26 +3,28 @@ package py
 // #include "utils.h"
 import "C"
 
-import "unsafe"
-
 func NewUnicode(s string) (*Unicode, error) {
 	cs := C.CString(s)
-	defer C.free(unsafe.Pointer(cs))
+	defer cfree(cs)
+
 	ret := C.PyUnicode_FromString(cs)
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newUnicode(ret), nil
 }
 
 func (u *Unicode) String() string {
 	if u == nil {
-		return "<nil>"
+		return nilValue
 	}
+
 	ret := C.PyUnicode_AsUTF8(c(u))
 	if ret == nil {
 		panic(exception())
 	}
+
 	return C.GoString(ret)
 }
 
@@ -31,6 +33,7 @@ func (u *Unicode) AsString() (string, error) {
 	if ret == nil {
 		return "", exception()
 	}
+
 	return C.GoString(ret), nil
 }
 
@@ -38,12 +41,14 @@ func (u *Unicode) EncodeString(encoding, errors string) (Object, error) {
 	var cEncoding, cErrors *C.char
 	if encoding == "" {
 		cEncoding = C.CString(encoding)
-		defer C.free(unsafe.Pointer(cEncoding))
+		defer cfree(cEncoding)
 	}
+
 	if errors != "" {
 		cErrors = C.CString(errors)
-		defer C.free(unsafe.Pointer(cErrors))
+		defer cfree(cErrors)
 	}
+
 	ret := C.PyUnicode_AsEncodedString(c(u), cEncoding, cErrors)
 	return obj2ObjErr(ret)
 }
@@ -92,12 +97,14 @@ func (u *Unicode) Encode(encoding, errors string) (Object, error) {
 	var cEncoding, cErrors *C.char
 	if encoding == "" {
 		cEncoding = C.CString(encoding)
-		defer C.free(unsafe.Pointer(cEncoding))
+		defer cfree(cEncoding)
 	}
+
 	if errors != "" {
 		cErrors = C.CString(errors)
-		defer C.free(unsafe.Pointer(cErrors))
+		defer cfree(cErrors)
 	}
+
 	ret := C.PyUnicode_AsEncodedString(c(u), cEncoding, cErrors)
 	return obj2ObjErr(ret)
 }
@@ -117,6 +124,7 @@ func (u *Unicode) Splitlines(keepend bool) (Object, error) {
 	if keepend {
 		cKeepend = 1
 	}
+
 	ret := C.PyUnicode_Splitlines(c(u), cKeepend)
 	return obj2ObjErr(ret)
 }
@@ -125,8 +133,9 @@ func (u *Unicode) Translate(table Object, errors string) (Object, error) {
 	var cErrors *C.char
 	if errors != "" {
 		cErrors = C.CString(errors)
-		defer C.free(unsafe.Pointer(cErrors))
+		defer cfree(cErrors)
 	}
+
 	ret := C.PyUnicode_Translate(c(u), c(table), cErrors)
 	return obj2ObjErr(ret)
 }

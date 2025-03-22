@@ -88,14 +88,22 @@ def ffi_type(c_type):
 
 
 def write_build():
-    print("func buildCValues(values []any) ([]C.ArgValue, error) {")
+    print("func buildCValues(values []any) ([]C.ArgValue, func(), error) {")
     print("\tcValues := make([]C.ArgValue, len(values))")
+    print()
+    print("\tvar strings []*C.char")
+    print()
+    print("\tcleanup := func(){")
+    print("\t\tfor _, s := range strings {")
+    print("\t\t\tcfree(s)")
+    print("\t\t}")
+    print("\t}")
     print()
     print("\tfor i, value := range values {")
     print("\t\tswitch v := value.(type) {")
     print("\t\tcase string:")
     print("\t\t\ts := C.CString(v)")
-    print("\t\t\tdefer C.free(unsafe.Pointer(s))")
+    print("\t\t\tstrings = append(strings, s)")
     print("\t\t\tp := (**C.char)(calloc(&v))")
     print("\t\t\t*p = s")
     print("\t\t\tcValues[i]._type = &C.ffi_type_pointer")
@@ -125,11 +133,11 @@ def write_build():
             print(f"\t\t\tcValues[i]._type = &C.{ffi_type(c)}")
         print(f"\t\t\tcValues[i].value = unsafe.Pointer(p)")
     print("\t\tdefault:")
-    print("\t\t\treturn nil, TypeError.Err(\"Unsupported type: %T\", v)")
+    print("\t\t\treturn nil, nil, TypeError.Err(\"Unsupported type: %T\", v)")
     print("\t\t}")
     print("\t}")
     print()
-    print("\treturn cValues, nil")
+    print("\treturn cValues, cleanup, nil")
     print("}")
 
 

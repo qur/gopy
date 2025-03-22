@@ -11,6 +11,7 @@ import (
 
 func getField(obj, arg *C.PyObject) (reflect.Value, reflect.StructField, error) {
 	pyType := unsafe.Pointer(C.PyTuple_GetItem(arg, 0))
+
 	o := getClassObjectByType(obj, (*C.PyTypeObject)(pyType))
 	if o == nil {
 		return reflect.Value{}, reflect.StructField{}, errors.New("unknown object")
@@ -165,8 +166,12 @@ func goClassObjSet(obj, obj2, idx *C.PyObject) int {
 	// If f is not nil, then we have to be careful with refcounts, as decref
 	// could invoke destructor code etc.
 	tmp := f.Interface().(Object)
+
 	Incref(value)
+
 	f.Set(v)
+
 	Decref(tmp)
+
 	return 0
 }

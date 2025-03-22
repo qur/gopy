@@ -42,7 +42,8 @@ func (m *MappingMethods) Size() (int, error) {
 
 func (m *MappingMethods) DelItemString(key string) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
+
 	ret := C.PyObject_DelItemString(c(m), cKey)
 	return int2Err(ret)
 }
@@ -54,7 +55,8 @@ func (m *MappingMethods) DelItem(key Object) error {
 
 func (m *MappingMethods) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
+
 	ret := C.PyMapping_HasKeyString(c(m), cKey)
 	return ret > 0
 }
@@ -81,14 +83,16 @@ func (m *MappingMethods) Items() (Object, error) {
 
 func (m *MappingMethods) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
+
 	ret := C.PyMapping_GetItemString(c(m), cKey)
 	return obj2ObjErr(ret)
 }
 
 func (m *MappingMethods) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
+
 	ret := C.PyMapping_SetItemString(c(m), cKey, c(v))
 	return int2Err(ret)
 }

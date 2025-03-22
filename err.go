@@ -29,19 +29,23 @@ func (e *Error) Error() string {
 
 	ts := ""
 	en := C.excName(c(e.Kind))
+
 	if en.c == nil {
 		tpyS := C.PyObject_Str(c(e.Kind))
-		defer C.decref(tpyS)
+		defer decref(tpyS)
+
 		ts = C.GoString(C.PyUnicode_AsUTF8(tpyS))
 	} else {
 		if en.m != nil {
 			ts = C.GoString(en.m) + "."
 		}
+
 		ts += C.GoString(en.c)
 	}
 
 	pyS := C.PyObject_Str(c(e.Value))
-	defer C.decref(pyS)
+	defer decref(pyS)
+
 	s := C.GoString(C.PyUnicode_AsUTF8(pyS))
 
 	return fmt.Sprintf("%s: %s", ts, s)
@@ -64,13 +68,17 @@ func (e *Error) Normalize() {
 	exc := c(e.Kind)
 	val := c(e.Value)
 	tb := e.tb
+
 	C.PyErr_NormalizeException(&exc, &val, &tb)
+
 	if exc != c(e.Kind) {
 		e.Kind = newObject(exc)
 	}
+
 	if val != c(e.Value) {
 		e.Value = newObject(val)
 	}
+
 	e.tb = tb
 }
 
@@ -86,8 +94,10 @@ func NewErrorV(kind Object, value Object) *Error {
 // being a new Unicode containing the string created the given format and args.
 func NewError(kind Object, format string, args ...interface{}) *Error {
 	Incref(kind)
+
 	msg := fmt.Sprintf(format, args...)
 	val, _ := NewUnicode(msg)
+
 	return &Error{kind, val, nil}
 }
 
@@ -100,9 +110,11 @@ func AsExceptionClass(err error) *ExceptionClass {
 	if !errors.As(err, &pyErr) {
 		return nil
 	}
+
 	if exc, ok := pyErr.Kind.(*ExceptionClass); ok {
 		return exc
 	}
+
 	return nil
 }
 
@@ -117,7 +129,7 @@ func exception() error {
 
 	var t, v, tb *C.PyObject
 
-	defer C.xdecref(v)
+	defer xdecref(v)
 
 	C.PyErr_Fetch(&t, &v, &tb)
 
@@ -125,8 +137,10 @@ func exception() error {
 }
 
 func raise(err error) {
-	var val *C.PyObject
-	exc := C.PyExc_Exception
+	var (
+		val *C.PyObject
+		exc = C.PyExc_Exception
+	)
 
 	// We only want to do this for actual *Error values, not wrapped errors
 	//nolint:errorlint
@@ -150,6 +164,7 @@ func int2Err(i C.int) error {
 	if i < 0 {
 		return exception()
 	}
+
 	return nil
 }
 
@@ -158,6 +173,7 @@ func err2Int(err error) C.int {
 		raise(err)
 		return -1
 	}
+
 	return 0
 }
 
@@ -165,6 +181,7 @@ func int2BoolErr(i C.int) (bool, error) {
 	if i < 0 {
 		return false, exception()
 	}
+
 	return i > 0, nil
 }
 
@@ -173,9 +190,11 @@ func boolErr2Int(ret bool, err error) C.int {
 		raise(err)
 		return -1
 	}
+
 	if ret {
 		return 1
 	}
+
 	return 0
 }
 
@@ -183,6 +202,7 @@ func ssizeT2Int64Err(s C.Py_ssize_t) (int64, error) {
 	if s < 0 {
 		return 0, exception()
 	}
+
 	return int64(s), nil
 }
 
@@ -190,6 +210,7 @@ func ssizeT2IntErr(s C.Py_ssize_t) (int, error) {
 	if s < 0 {
 		return 0, exception()
 	}
+
 	return int(s), nil
 }
 
@@ -197,6 +218,7 @@ func obj2ObjErr(obj *C.PyObject) (Object, error) {
 	if obj == nil {
 		return nil, exception()
 	}
+
 	return newObject(obj), nil
 }
 

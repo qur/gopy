@@ -179,7 +179,7 @@ func (b *ByteArray) AsMappingMethods() *MappingMethods {
 
 func (b *ByteArray) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_GetItemString(c(b), cKey)
 	return obj2ObjErr(ret)
 }
@@ -192,7 +192,7 @@ func (b *ByteArray) HasKey(key Object) bool {
 
 func (b *ByteArray) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_HasKeyString(c(b), cKey)
 	clearErr();
 	return ret > 0
@@ -205,14 +205,14 @@ func (b *ByteArray) DelItem(key Object) error {
 
 func (b *ByteArray) DelItemString(key string) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyObject_DelItemString(c(b), cKey)
 	return int2Err(ret)
 }
 
 func (b *ByteArray) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_SetItemString(c(b), cKey, c(v))
 	return int2Err(ret)
 }

@@ -61,7 +61,7 @@ func (b *ByteArray) Resize(s int) error {
 // String returns a string representation of the ByteArray.
 func (b *ByteArray) String() string {
 	if b == nil {
-		return "<nil>"
+		return nilValue
 	}
 	return fmt.Sprintf("%v", b.Bytes())
 }

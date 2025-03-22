@@ -338,7 +338,7 @@ func ({{ .name }} *{{ .type }}) AsMappingMethods() *MappingMethods {
 
 func ({{ .name }} *{{ .type }}) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_GetItemString(c({{ .name }}), cKey)
 	return obj2ObjErr(ret)
 }
@@ -351,7 +351,7 @@ func ({{ .name }} *{{ .type }}) HasKey(key Object) bool {
 
 func ({{ .name }} *{{ .type }}) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_HasKeyString(c({{ .name }}), cKey)
 	clearErr();
 	return ret > 0
@@ -370,14 +370,14 @@ func ({{ .name }} *{{ .type }}) DelItem(key Object) error {
 {{- if .funcs.mp_ass_subscript -}}
 func ({{ .name }} *{{ .type }}) DelItemString(key string) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyObject_DelItemString(c({{ .name }}), cKey)
 	return int2Err(ret)
 }
 
 func ({{ .name }} *{{ .type }}) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_SetItemString(c({{ .name }}), cKey, c(v))
 	return int2Err(ret)
 }

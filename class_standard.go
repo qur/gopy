@@ -108,7 +108,7 @@ func goClassDealloc(obj *C.PyObject) {
 
 	// we always want Python to _actually_ free the object, any registered hook
 	// should just be tidying things up on the Go side.
-	free(co)
+	freeObject(co)
 
 	// Decref type for heap types
 	if class.Flags&ClassHeapType != 0 {
@@ -143,6 +143,7 @@ func classDealloc(co ClassObject) bool {
 	} else {
 		ClearClassObject(co)
 	}
+
 	cbo.flags |= classBaseClear
 
 	switch b := class.BaseType.(type) {
@@ -225,6 +226,7 @@ func (cls *Class) new(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 	default:
 		pyObj = C.typeNew(cls.base.o.tp_base, typ, args, kwds)
 	}
+
 	if pyObj == nil {
 		return nil
 	}
@@ -243,6 +245,7 @@ func (cls *Class) new(typ *C.PyTypeObject, args, kwds *C.PyObject) *C.PyObject {
 	}
 
 	registerClassObject(pyObj, cls.base.c(), goObj)
+
 	if typ != cls.base.c() {
 		registerClassObject(pyObj, typ, goObj)
 	}

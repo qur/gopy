@@ -73,9 +73,11 @@ func RichCompareNative[T cmp.Ordered](a, b T, op Op) (Object, error) {
 		//nolint:nilerr
 		return NotImplemented, nil
 	}
+
 	if ret {
 		return True, nil
 	}
+
 	return False, nil
 }
 
@@ -153,26 +155,48 @@ func NewValue(value any) (Object, error) {
 // Decref decrements obj's reference count, obj may be nil.
 func Decref(obj Object) {
 	if o := c(obj); o != nil {
-		refcnt := (*int)(unsafe.Pointer(&o.anon0[0]))
-		if *refcnt == C._Py_IMMORTAL_REFCNT {
-			return
-		}
-		*refcnt--
-		if *refcnt == 0 {
-			C._Py_Dealloc(o)
-		}
+		decref(o)
+	}
+}
+
+func xdecref(obj *C.PyObject) {
+	if obj != nil {
+		decref(obj)
+	}
+}
+
+func decref(obj *C.PyObject) {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
+
+	*refcnt--
+
+	if *refcnt == 0 {
+		C._Py_Dealloc(obj)
 	}
 }
 
 // Incref increments obj's reference count, obj may be nil.
 func Incref(obj Object) {
 	if o := c(obj); o != nil {
-		refcnt := (*int)(unsafe.Pointer(&o.anon0[0]))
-		if *refcnt == C._Py_IMMORTAL_REFCNT {
-			return
-		}
-		*refcnt++
+		incref(o)
 	}
+}
+
+func xincref(obj *C.PyObject) {
+	if obj != nil {
+		incref(obj)
+	}
+}
+
+func incref(obj *C.PyObject) {
+	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
+	if *refcnt == C._Py_IMMORTAL_REFCNT {
+		return
+	}
+	*refcnt++
 }
 
 // RefCount returns a copy of the reference count of the Object. This is
@@ -220,9 +244,9 @@ func ce(obj Object, err error) *C.PyObject {
 	return c(obj)
 }
 
-// free deallocates the storage (in Python) for obj.  After calling this method,
+// freeObject deallocates the storage (in Python) for obj.  After calling this method,
 // obj should no longer be used.
-func free(obj Object) {
+func freeObject(obj Object) {
 	o := c(obj)
 
 	// This can happen if a PyDealloc method on a ClassObject calls Free
@@ -234,8 +258,7 @@ func free(obj Object) {
 	clearClassObject(o)
 
 	// Call Python free function
-	pyType := (*C.PyTypeObject)(unsafe.Pointer(o.ob_type))
-	C.typeFree(pyType, o)
+	C.typeFree((*C.PyTypeObject)(unsafe.Pointer(o.ob_type)), o)
 }
 
 var (

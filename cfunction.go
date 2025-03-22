@@ -5,7 +5,6 @@ import "C"
 
 import (
 	"sync"
-	"unsafe"
 )
 
 // NewCFunction creates a CFunction object from the supplied function.
@@ -38,28 +37,32 @@ func makeCFunction(name string, fn interface{}, doc string, modName *C.PyObject)
 	switch fn.(type) {
 	case func() (Object, error):
 		C.set_call_noargs(&ml.ml_meth)
+
 		ml.ml_flags = C.METH_NOARGS
 
 	case func(Object) (Object, error):
 		C.set_call_single(&ml.ml_meth)
+
 		ml.ml_flags = C.METH_O
 
 	case func(*Tuple) (Object, error):
 		C.set_call_args(&ml.ml_meth)
+
 		ml.ml_flags = C.METH_VARARGS
 
 	case func(*Tuple, *Dict) (Object, error):
 		C.set_call_keywords(&ml.ml_meth)
+
 		ml.ml_flags = C.METH_VARARGS | C.METH_KEYWORDS
 
 	default:
-		C.free(unsafe.Pointer(ml))
+		cfree(ml)
 		return nil, TypeError.Err("CFunction_New: unknown func type for %s", name)
 	}
 
 	ret := C.PyCFunction_NewEx(ml, saveFunc(fn), modName)
 	if ret == nil {
-		C.free(unsafe.Pointer(ml))
+		cfree(ml)
 		return nil, exception()
 	}
 

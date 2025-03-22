@@ -189,7 +189,7 @@ func (b *Bytes) AsMappingMethods() *MappingMethods {
 
 func (b *Bytes) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_GetItemString(c(b), cKey)
 	return obj2ObjErr(ret)
 }
@@ -202,7 +202,7 @@ func (b *Bytes) HasKey(key Object) bool {
 
 func (b *Bytes) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_HasKeyString(c(b), cKey)
 	clearErr();
 	return ret > 0

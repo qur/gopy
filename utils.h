@@ -27,11 +27,6 @@ extern struct _en excName(PyObject *o);
 
 extern int PyCode_GetNumFree_(PyCodeObject *o);
 
-extern void incref(PyObject *o);
-extern void decref(PyObject *o);
-extern void xincref(PyObject *o);
-extern void xdecref(PyObject *o);
-
 extern void *pyTrue(void);
 extern void *pyFalse(void);
 

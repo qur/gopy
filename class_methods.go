@@ -180,10 +180,12 @@ func getMethodAndClass(obj *C.PyObject) (any, *Class, error) {
 	if c == nil {
 		return nil, nil, TypeError.Err("unknown class")
 	}
+
 	t := getClass((*C.PyTypeObject)(unsafe.Pointer(C.PyTuple_GetItem(obj, 1))))
 	if t == nil {
 		return nil, nil, TypeError.Err("unknown type")
 	}
+
 	name := C.GoString(C.PyUnicode_AsUTF8(C.PyTuple_GetItem(obj, 2)))
 	return t.Class[name], c, nil
 }

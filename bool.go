@@ -53,7 +53,7 @@ func (b *Bool) Bool() bool {
 // String returns a printable representation of the Bool "b".
 func (b *Bool) String() string {
 	if b == nil {
-		return "<nil>"
+		return nilValue
 	}
 	return fmt.Sprintf("%v", b.Bool())
 }

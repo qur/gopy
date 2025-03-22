@@ -134,14 +134,14 @@ func (o *ODict) DelItem(key Object) error {
 
 func (o *ODict) DelItemString(key string) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyObject_DelItemString(c(o), cKey)
 	return int2Err(ret)
 }
 
 func (o *ODict) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_SetItemString(c(o), cKey, c(v))
 	return int2Err(ret)
 }

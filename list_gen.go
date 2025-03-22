@@ -177,7 +177,7 @@ func (l *List) AsMappingMethods() *MappingMethods {
 
 func (l *List) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_GetItemString(c(l), cKey)
 	return obj2ObjErr(ret)
 }
@@ -190,7 +190,7 @@ func (l *List) HasKey(key Object) bool {
 
 func (l *List) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_HasKeyString(c(l), cKey)
 	clearErr();
 	return ret > 0
@@ -203,14 +203,14 @@ func (l *List) DelItem(key Object) error {
 
 func (l *List) DelItemString(key string) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyObject_DelItemString(c(l), cKey)
 	return int2Err(ret)
 }
 
 func (l *List) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_SetItemString(c(l), cKey, c(v))
 	return int2Err(ret)
 }

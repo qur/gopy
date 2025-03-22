@@ -55,7 +55,7 @@ func (b *Bytes) Bytes() []byte {
 
 func (b *Bytes) String() string {
 	if b == nil {
-		return "<nil>"
+		return nilValue
 	}
 	return fmt.Sprintf("%v", b.Bytes())
 }

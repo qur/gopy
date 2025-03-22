@@ -139,7 +139,7 @@ func (t *Tuple) Slice() []Object {
 // String will return a string representation of t.
 func (t *Tuple) String() string {
 	if t == nil {
-		return "<nil>"
+		return nilValue
 	}
 	return fmt.Sprintf("%v", t.Slice())
 }

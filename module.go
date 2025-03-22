@@ -6,7 +6,6 @@ import "C"
 import (
 	"fmt"
 	"strings"
-	"unsafe"
 )
 
 // Import tries to import the Python module with the given name. This is
@@ -16,10 +15,10 @@ import (
 // Return value: New Reference.
 func Import(name string) (*Module, error) {
 	s := C.CString(name)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
 
 	pyName := C.PyUnicode_FromString(s)
-	defer C.decref(pyName)
+	defer decref(pyName)
 
 	obj := C.PyImport_Import(pyName)
 	if obj == nil {
@@ -117,11 +116,13 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 // Return value: New Reference.
 func ExecCodeModule(name string, code *Code) (*Module, error) {
 	s := C.CString(name)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
+
 	ret := C.PyImport_ExecCodeModule(s, c(code))
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newModule(ret), nil
 }
 
@@ -130,7 +131,7 @@ func ExecCodeModule(name string, code *Code) (*Module, error) {
 // Return value: New Reference.
 func NewModule(name string) (*Module, error) {
 	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
+	defer cfree(cname)
 
 	ret := C.PyModule_New(cname)
 	if ret == nil {
@@ -229,7 +230,7 @@ func (m *Module) AddObject(name string, obj Object) error {
 	}
 
 	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
+	defer cfree(cname)
 
 	ret := C.PyModule_AddObject(c(m), cname, c(obj))
 	return int2Err(ret)
@@ -243,7 +244,7 @@ func (m *Module) AddObjectRef(name string, obj Object) error {
 	}
 
 	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
+	defer cfree(cname)
 
 	ret := C.PyModule_AddObjectRef(c(m), cname, c(obj))
 	return int2Err(ret)
@@ -253,7 +254,7 @@ func (m *Module) AddObjectRef(name string, obj Object) error {
 // module m with the given name.
 func (m *Module) AddIntConstant(name string, value int) error {
 	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
+	defer cfree(cname)
 
 	ret := C.PyModule_AddIntConstant(c(m), cname, C.long(value))
 	if ret < 0 {
@@ -267,10 +268,10 @@ func (m *Module) AddIntConstant(name string, value int) error {
 // module m with the given name.
 func (m *Module) AddStringConstant(name, value string) error {
 	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
+	defer cfree(cname)
 
 	cvalue := C.CString(value)
-	defer C.free(unsafe.Pointer(cvalue))
+	defer cfree(cvalue)
 
 	ret := C.PyModule_AddStringConstant(c(m), cname, cvalue)
 	if ret < 0 {

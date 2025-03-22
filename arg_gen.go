@@ -93,14 +93,22 @@ func unpackValues(cValues []unsafe.Pointer, values []any) error {
 	return nil
 }
 
-func buildCValues(values []any) ([]C.ArgValue, error) {
+func buildCValues(values []any) ([]C.ArgValue, func(), error) {
 	cValues := make([]C.ArgValue, len(values))
+
+	var strings []*C.char
+
+	cleanup := func(){
+		for _, s := range strings {
+			cfree(s)
+		}
+	}
 
 	for i, value := range values {
 		switch v := value.(type) {
 		case string:
 			s := C.CString(v)
-			defer C.free(unsafe.Pointer(s))
+			strings = append(strings, s)
 			p := (**C.char)(calloc(&v))
 			*p = s
 			cValues[i]._type = &C.ffi_type_pointer
@@ -179,9 +187,9 @@ func buildCValues(values []any) ([]C.ArgValue, error) {
 			cValues[i]._type = &C.ffi_type_double
 			cValues[i].value = unsafe.Pointer(p)
 		default:
-			return nil, TypeError.Err("Unsupported type: %T", v)
+			return nil, nil, TypeError.Err("Unsupported type: %T", v)
 		}
 	}
 
-	return cValues, nil
+	return cValues, cleanup, nil
 }

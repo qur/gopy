@@ -6,7 +6,6 @@ import "C"
 import (
 	"fmt"
 	"sync"
-	"unsafe"
 )
 
 var (
@@ -141,9 +140,10 @@ func setupImporter() error {
 	importOrigin = origin
 
 	mp := C.CString("meta_path")
-	defer C.free(unsafe.Pointer(mp))
+	defer cfree(mp)
 
 	metaPathObj := newObject(C.PySys_GetObject(mp))
+
 	metaPath, ok := metaPathObj.(*List)
 	if !ok {
 		return fmt.Errorf("sys.meta_path should be list, got %T", metaPathObj)

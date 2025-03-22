@@ -36,11 +36,13 @@ func (e *ExceptionClass) Err(format string, args ...interface{}) *Error {
 // Return value: New Reference.
 func NewException(name string, base, dict Object) (*ExceptionClass, error) {
 	cName := C.CString(name)
-	defer C.free(unsafe.Pointer(cName))
+	defer cfree(cName)
+
 	ret := C.PyErr_NewException(cName, c(base), c(dict))
 	if ret == nil {
 		return nil, exception()
 	}
+
 	return newException(ret), nil
 }
 
@@ -51,12 +53,12 @@ func NewException(name string, base, dict Object) (*ExceptionClass, error) {
 // Return value: New Reference.
 func NewExceptionWithDoc(name, doc string, base, dict Object) (*ExceptionClass, error) {
 	cName := C.CString(name)
-	defer C.free(unsafe.Pointer(cName))
+	defer cfree(cName)
 
 	var cDoc *C.char
 	if doc != "" {
 		cDoc = C.CString(doc)
-		defer C.free(unsafe.Pointer(cDoc))
+		defer cfree(cDoc)
 	}
 
 	ret := C.PyErr_NewExceptionWithDoc(cName, cDoc, c(base), c(dict))

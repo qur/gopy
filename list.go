@@ -33,12 +33,14 @@ func NewListFromObjects(objects ...Object) (*List, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	for i, o := range objects {
 		if err := l.SetIndexSteal(i, o); err != nil {
 			l.Decref()
 			return nil, err
 		}
 	}
+
 	return l, nil
 }
 
@@ -186,7 +188,7 @@ func (l *List) Slice() []Object {
 // String returns a string representation of the list l.
 func (l *List) String() string {
 	if l == nil {
-		return "<nil>"
+		return nilValue
 	}
 	return fmt.Sprintf("%v", l.Slice())
 }

@@ -26,7 +26,7 @@ func CompileFile(name string) (*Code, error) {
 	data = append(data, 0)
 
 	cName := C.CString(name)
-	defer C.free(unsafe.Pointer(cName))
+	defer cfree(cName)
 
 	ret := C.Py_CompileString((*C.char)(unsafe.Pointer(&data[0])), cName, C.Py_file_input)
 	if ret == nil {

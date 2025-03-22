@@ -189,7 +189,7 @@ func (u *Unicode) AsMappingMethods() *MappingMethods {
 
 func (u *Unicode) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_GetItemString(c(u), cKey)
 	return obj2ObjErr(ret)
 }
@@ -202,7 +202,7 @@ func (u *Unicode) HasKey(key Object) bool {
 
 func (u *Unicode) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_HasKeyString(c(u), cKey)
 	clearErr();
 	return ret > 0

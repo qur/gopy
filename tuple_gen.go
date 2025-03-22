@@ -177,7 +177,7 @@ func (t *Tuple) AsMappingMethods() *MappingMethods {
 
 func (t *Tuple) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_GetItemString(c(t), cKey)
 	return obj2ObjErr(ret)
 }
@@ -190,7 +190,7 @@ func (t *Tuple) HasKey(key Object) bool {
 
 func (t *Tuple) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_HasKeyString(c(t), cKey)
 	clearErr();
 	return ret > 0

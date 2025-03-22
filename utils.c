@@ -329,11 +329,6 @@ struct _en excName(PyObject *o) {
 
 int PyCode_GetNumFree_(PyCodeObject *o) { return PyCode_GetNumFree(o); }
 
-void incref(PyObject *o) { Py_INCREF(o); }
-void decref(PyObject *o) { Py_DECREF(o); }
-void xincref(PyObject *o) { Py_INCREF(o); }
-void xdecref(PyObject *o) { Py_XDECREF(o); }
-
 void *pyTrue(void) { return Py_True; }
 void *pyFalse(void) { return Py_False; }
 

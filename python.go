@@ -17,6 +17,9 @@ import (
 //go:generate ./gen_types.py python3.13
 //go:generate ./gen_arg.py
 
+// nilValue is the value returned from String methods when the value is nil.
+const nilValue = "<nil>"
+
 // Initialize initialises the Python runtime.
 //
 // You probably want InitAndLockWithSignals though, as it doesn't require the
@@ -54,7 +57,7 @@ func Finalize() {
 // AddToPath appends the given directory to sys.path.
 func AddToPath(dir string) error {
 	p := C.CString("path")
-	defer C.free(unsafe.Pointer(p))
+	defer cfree(p)
 
 	sysPath := C.PySys_GetObject(p)
 	if sysPath == nil {
@@ -62,13 +65,13 @@ func AddToPath(dir string) error {
 	}
 
 	s := C.CString(dir)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
 
 	pDir := C.PyUnicode_FromString(s)
 	if pDir == nil {
 		return exception()
 	}
-	defer C.decref(pDir)
+	defer decref(pDir)
 
 	return int2Err(C.PyList_Append(sysPath, pDir))
 }
@@ -76,7 +79,7 @@ func AddToPath(dir string) error {
 // PrependToPath prepends the given directory to sys.path.
 func PrependToPath(dir string) error {
 	p := C.CString("path")
-	defer C.free(unsafe.Pointer(p))
+	defer cfree(p)
 
 	sysPath := C.PySys_GetObject(p)
 	if sysPath == nil {
@@ -84,13 +87,13 @@ func PrependToPath(dir string) error {
 	}
 
 	s := C.CString(dir)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
 
 	pDir := C.PyUnicode_FromString(s)
 	if pDir == nil {
 		return exception()
 	}
-	defer C.decref(pDir)
+	defer decref(pDir)
 
 	return int2Err(C.PyList_Insert(sysPath, 0, pDir))
 }
@@ -103,7 +106,7 @@ func Main(args []string) int {
 
 	for i, arg := range args {
 		argv[i] = C.CString(arg)
-		defer C.free(unsafe.Pointer(argv[i]))
+		defer cfree(argv[i])
 	}
 
 	return int(C.Py_BytesMain(C.int(len(argv)), &argv[0]))
@@ -118,7 +121,8 @@ func Main(args []string) int {
 // recursion depth).
 func EnterRecursiveCall(where string) bool {
 	s := C.CString(where)
-	defer C.free(unsafe.Pointer(s))
+	defer cfree(s)
+
 	return C.enterRecursive(s) == 0
 }
 
@@ -126,4 +130,8 @@ func EnterRecursiveCall(where string) bool {
 // by EnterRecursiveCall.
 func LeaveRecursiveCall() {
 	C.leaveRecursive()
+}
+
+func cfree[T any](value *T) {
+	C.free(unsafe.Pointer(value))
 }

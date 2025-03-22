@@ -171,8 +171,10 @@ func (lock *Lock) setCount(l int64) {
 		// no current thread state, Python is not initialised on this thread.
 		panic("Python not initialised on this thread")
 	}
+
 	pl := NewLong(l)
 	defer pl.Decref()
+
 	err := dict.SetItemString("gopy.count", pl)
 	if err != nil {
 		panic(err)
@@ -185,14 +187,17 @@ func (lock *Lock) getCount() int64 {
 		// no current thread state, Python is not initialised on this thread.
 		panic("Python not initialised on this thread")
 	}
+
 	val, err := dict.GetItemString("gopy.count")
 	if err != nil {
 		return 0
 	}
+
 	count, ok := val.(*Long)
 	if !ok {
 		return 0
 	}
+
 	return count.Int64()
 }
 
@@ -205,8 +210,10 @@ func (lock *Lock) dec() bool {
 	if count <= 0 {
 		panic("Lock.dec() called with count <1!")
 	}
+
 	count--
 	lock.setCount(count)
+
 	return count == 0
 }
 

@@ -177,7 +177,7 @@ func (m *MemoryView) AsMappingMethods() *MappingMethods {
 
 func (m *MemoryView) GetItemString(key string) (Object, error) {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_GetItemString(c(m), cKey)
 	return obj2ObjErr(ret)
 }
@@ -190,7 +190,7 @@ func (m *MemoryView) HasKey(key Object) bool {
 
 func (m *MemoryView) HasKeyString(key string) bool {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_HasKeyString(c(m), cKey)
 	clearErr();
 	return ret > 0
@@ -203,14 +203,14 @@ func (m *MemoryView) DelItem(key Object) error {
 
 func (m *MemoryView) DelItemString(key string) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyObject_DelItemString(c(m), cKey)
 	return int2Err(ret)
 }
 
 func (m *MemoryView) SetItemString(key string, v Object) error {
 	cKey := C.CString(key)
-	defer C.free(unsafe.Pointer(cKey))
+	defer cfree(cKey)
 	ret := C.PyMapping_SetItemString(c(m), cKey, c(v))
 	return int2Err(ret)
 }
