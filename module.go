@@ -68,53 +68,53 @@ func CreateModule(md *ModuleDef) (*Module, error) {
 
 	rm.Add(mod)
 
-	if md.Package {
-		// mark module as package by adding an empty list as __path__
-		l, err := NewList(0)
-		if err != nil {
-			return nil, err
-		}
-
-		rm.Add(l)
-
-		if err := mod.AddObjectRef("__path__", l); err != nil {
-			return nil, err
-		}
+	if err := mod.makePackage(md.Package); err != nil {
+		return nil, err
 	}
 
-	if len(md.Methods) == 0 {
-		rm.Remove(mod)
-		return mod, nil
+	if err := setupMethods(pyMD.m_name, m, md.Methods); err != nil {
+		return nil, err
 	}
 
-	n := C.PyUnicode_FromString(pyMD.m_name)
+	rm.Remove(mod)
+
+	return mod, nil
+}
+
+func setupMethods(name *C.char, m *C.PyObject, methods []GoMethod) error {
+	if len(methods) == 0 {
+		return nil
+	}
+
+	rm := NewRefManager()
+	defer rm.Decref()
+
+	n := C.PyUnicode_FromString(name)
 	if n == nil {
-		return nil, exception()
+		return exception()
 	}
 
 	rm.add(n)
 
 	d := C.PyModule_GetDict(m)
 	if d == nil {
-		return nil, exception()
+		return exception()
 	}
 
-	for _, method := range md.Methods {
+	for _, method := range methods {
 		pyF, err := makeCFunction(method.Name, method.Func, method.Doc, n)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		rm.Add(pyF)
 
 		if C.PyDict_SetItemString(d, C.CString(method.Name), c(pyF)) != 0 {
-			return nil, exception()
+			return exception()
 		}
 	}
 
-	rm.Remove(mod)
-
-	return mod, nil
+	return nil
 }
 
 // ExecCodeModule builds a Python module from the supplied Code.
@@ -190,6 +190,22 @@ func (m *Module) Name() (string, error) {
 	}
 
 	return C.GoString(ret), nil
+}
+
+func (m *Module) makePackage(pkg bool) error {
+	if !pkg {
+		// package mode not requested, nothing to do
+		return nil
+	}
+
+	// mark module as package by adding an empty list as __path__
+	l, err := NewList(0)
+	if err != nil {
+		return err
+	}
+	defer l.Decref()
+
+	return m.AddObjectRef("__path__", l)
 }
 
 func (m *Module) isPackage() bool {
