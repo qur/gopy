@@ -1,9 +1,11 @@
 package pytesting
 
 import (
+	"fmt"
 	"testing"
 
 	"gopython.xyz/py/v3"
+	"gopython.xyz/py/v3/tests/assert"
 )
 
 func TestFunction(t *testing.T) {
@@ -69,31 +71,27 @@ func TestMethod(t *testing.T) {
 	lock := py.InitAndLock()
 	defer lock.Finalize()
 
-	modDef := py.ModuleDef{
-		Name: "test",
+	m, err := setupTestModule()
+	assert.NilErr(t, err)
+
+	defer m.Decref()
+
+	main, err := setupMain()
+	assert.NilErr(t, err)
+
+	defer main.Decref()
+
+	_, err = py.RunString("import test; a = test.test()", py.SingleInput, main, nil)
+	assert.NilErr(t, err)
+
+	a, err := main.GetItemString("a")
+	assert.NilErr(t, err)
+
+	if a == py.None || a.Type().String() != "<class 'test.test'>" {
+		t.Error(a.Type().String())
 	}
 
-	if main, err := py.NewDict(); err != nil {
-		t.Fatal(err)
-	} else if m, err := py.CreateModule(&modDef); err != nil {
-		t.Fatal(err)
-	} else if err := m.Register(); err != nil {
-		t.Fatal(err)
-	} else if err := exampleClass.Create(); err != nil {
-		t.Fatal(err)
-	} else if g, err := py.GetBuiltins(); err != nil {
-		t.Fatal(err)
-	} else if err := main.SetItemString("__builtins__", g); err != nil {
-		t.Fatal(err)
-	} else if err := m.AddObjectRef("test", &exampleClass); err != nil {
-		t.Fatal(err)
-	} else if _, err := py.RunString("import test; a = test.test()", py.SingleInput, main, nil); err != nil {
-		t.Fatal(err)
-	} else if a, err := main.GetItemString("a"); err != nil {
-		t.Fatal(err)
-	} else if a == py.None || a.Type().String() != "<class 'test.test'>" {
-		t.Error(a.Type().String())
-	} else if _, ok := a.(*ExampleClass); !ok {
+	if _, ok := a.(*ExampleClass); !ok {
 		t.Errorf("wanted *ExampleClass, got %T", a)
 	}
 }
@@ -102,62 +100,81 @@ func TestMethod2(t *testing.T) {
 	lock := py.InitAndLock()
 	defer lock.Finalize()
 
+	m, err := setupTestModule()
+	assert.NilErr(t, err)
+
+	defer m.Decref()
+
+	main, err := setupMain()
+	assert.NilErr(t, err)
+
+	defer main.Decref()
+
+	_, err = py.RunString("import test; a = test.test()", py.SingleInput, main, nil)
+	assert.NilErr(t, err)
+
+	a, err := main.GetItemString("a")
+	assert.NilErr(t, err)
+
+	defer a.Decref()
+
+	type Test struct {
+		m    string
+		pan  string
+		f    string
+		args []interface{}
+	}
+
+	tests := []Test{
+		{"Test", "called", "", nil},
+		{"Test2", "called2", "i", []interface{}{10}},
+		{"__str__", "strcalled", "", nil},
+	}
+
+	// t.Run uses goroutines, so we need to allow other goroutines to grab
+	// the GIL ...
+	lock.UnblockThreads()
+	defer lock.BlockThreads()
+
+	for _, test := range tests {
+		t.Run(test.m, func(t *testing.T) {
+			// make sure that we have the GIL before doing anything else.
+			lock := py.NewLock()
+			defer lock.Unlock()
+
+			defer func() {
+				if i := recover(); i != test.pan {
+					t.Error("Panicked for some other reason:", i)
+				}
+			}()
+
+			_, err := a.Base().CallMethod(test.m, test.f, test.args...)
+			assert.NilErr(t, err)
+		})
+	}
+}
+
+func setupTestModule() (*py.Module, error) {
 	modDef := py.ModuleDef{
 		Name: "test",
 	}
 
-	if main, err := py.NewDict(); err != nil {
-		t.Fatal(err)
-	} else if m, err := py.CreateModule(&modDef); err != nil {
-		t.Fatal(err)
-	} else if err := m.Register(); err != nil {
-		t.Fatal(err)
-	} else if err := exampleClass.Create(); err != nil {
-		t.Fatal(err)
-	} else if g, err := py.GetBuiltins(); err != nil {
-		t.Fatal(err)
-	} else if err := main.SetItemString("__builtins__", g); err != nil {
-		t.Fatal(err)
-	} else if err := m.AddObjectRef("test", &exampleClass); err != nil {
-		t.Fatal(err)
-	} else if _, err := py.RunString("import test; a = test.test()", py.SingleInput, main, nil); err != nil {
-		t.Fatal(err)
-	} else if a, err := main.GetItemString("a"); err != nil {
-		t.Fatal(err)
-	} else {
-		type Test struct {
-			m    string
-			pan  string
-			f    string
-			args []interface{}
-		}
-
-		tests := []Test{
-			{"Test", "called", "", nil},
-			{"Test2", "called2", "i", []interface{}{10}},
-			{"__str__", "strcalled", "", nil},
-		}
-
-		// t.Run uses goroutines, so we need to allow other goroutines to grab
-		// the GIL ...
-		lock.UnblockThreads()
-		defer lock.BlockThreads()
-
-		for _, test := range tests {
-			t.Run(test.m, func(t *testing.T) {
-				// make sure that we have the GIL before doing anything else.
-				lock := py.NewLock()
-				defer lock.Unlock()
-				defer func() {
-					if i := recover(); i != test.pan {
-						t.Error("Panicked for some other reason:", i)
-					}
-				}()
-
-				if _, err := a.Base().CallMethod(test.m, test.f, test.args...); err != nil {
-					t.Error(err)
-				}
-			})
-		}
+	m, err := py.CreateModule(&modDef)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create module: %w", err)
 	}
+
+	if err := m.Register(); err != nil {
+		return nil, fmt.Errorf("failed to register module: %w", err)
+	}
+
+	if err := exampleClass.Create(); err != nil {
+		return nil, fmt.Errorf("failed to create exampleClass: %w", err)
+	}
+
+	if err := m.AddObjectRef("test", &exampleClass); err != nil {
+		return nil, fmt.Errorf("failed to add exampleClass to module: %w", err)
+	}
+
+	return m, nil
 }
