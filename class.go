@@ -505,50 +505,14 @@ func (cls *Class) Create() (err error) {
 	}
 
 	typ := reflect.TypeOf(cls.Object)
-	btyp := typ.Elem()
 
-	slotFlags := C.uint64_t(0)
+	setupSlots(pyHeapType, typ)
 
-	for flag, slot := range slotMap {
-		if typ.Implements(slot) {
-			slotFlags |= flag
-		}
-	}
-
-	C.setSlots(pyHeapType, slotFlags)
-
-	methods := make(map[string]method)
-	props := make(map[string]prop)
-
-	if err := addMethods(methods, cls.Static, C.METH_STATIC); err != nil {
+	if err := cls.setupMethodsAndProperties(pyType, typ); err != nil {
 		return err
 	}
 
-	if err := addMethods(methods, cls.Class, C.METH_CLASS); err != nil {
-		return err
-	}
-
-	if err := extractMethodsAndProperties(methods, props, typ); err != nil {
-		return err
-	}
-
-	if C.typeReady(pyType) < 0 {
-		return exception()
-	}
-
-	for name, method := range methods {
-		s := C.CString(name)
-
-		C.setTypeAttr(pyType, s, C.newMethod(pyType, s, c(method.f), method.flags))
-	}
-
-	for name, prop := range props {
-		s := C.CString(name)
-
-		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, c(prop.get), c(prop.set)))
-	}
-
-	if err := cls.createFields(pyType, btyp); err != nil {
+	if err := cls.setupFields(pyType, typ.Elem()); err != nil {
 		return err
 	}
 
@@ -589,6 +553,53 @@ func (cls *Class) validateBaseType(pyType *C.PyTypeObject) error {
 		pyType.tp_flags |= fastSubclassFlags(raw)
 	default:
 		return fmt.Errorf("%T is not a supported type for BaseType", b)
+	}
+
+	return nil
+}
+
+func setupSlots(pyHeapType *C.PyHeapTypeObject, typ reflect.Type) {
+	slotFlags := C.uint64_t(0)
+
+	for flag, slot := range slotMap {
+		if typ.Implements(slot) {
+			slotFlags |= flag
+		}
+	}
+
+	C.setSlots(pyHeapType, slotFlags)
+}
+
+func (cls *Class) setupMethodsAndProperties(pyType *C.PyTypeObject, typ reflect.Type) error {
+	methods := make(map[string]method)
+	props := make(map[string]prop)
+
+	if err := addMethods(methods, cls.Static, C.METH_STATIC); err != nil {
+		return err
+	}
+
+	if err := addMethods(methods, cls.Class, C.METH_CLASS); err != nil {
+		return err
+	}
+
+	if err := extractMethodsAndProperties(methods, props, typ); err != nil {
+		return err
+	}
+
+	if C.typeReady(pyType) < 0 {
+		return exception()
+	}
+
+	for name, method := range methods {
+		s := C.CString(name)
+
+		C.setTypeAttr(pyType, s, C.newMethod(pyType, s, c(method.f), method.flags))
+	}
+
+	for name, prop := range props {
+		s := C.CString(name)
+
+		C.setTypeAttr(pyType, s, C.newProperty(pyType, s, c(prop.get), c(prop.set)))
 	}
 
 	return nil
@@ -655,95 +666,141 @@ func extractMethodsAndProperties(methods map[string]method, props map[string]pro
 	return nil
 }
 
-func (cls *Class) createFields(pyType *C.PyTypeObject, btyp reflect.Type) error {
+func (cls *Class) setupFields(pyType *C.PyTypeObject, btyp reflect.Type) error {
 	for i := range btyp.NumField() {
-		pyEmbed := false
 		field := btyp.Field(i)
 
-		switch field.Type {
-		case cipType:
-			if _, ok := cls.Object.(tp_iternext); !ok {
-				return fmt.Errorf("%T claimed to implement IteratorProtocol "+
-					"by embedding ClassIteratorProtocol, but doesn't have required methods", cls.Object)
-			}
-
-			pyEmbed = true
-		case cspType:
-			if _, ok := cls.Object.(sq_item); !ok {
-				return fmt.Errorf("%T claimed to implement SequenceProtocol "+
-					"by embedding ClassSequenceProtocol, but doesn't have required methods", cls.Object)
-			}
-
-			pyEmbed = true
-		case cmpType:
-			if _, ok := cls.Object.(mp_subscript); !ok {
-				return fmt.Errorf("%T claimed to implement MappingProtocol "+
-					"by embedding ClassMappingProtocol, but doesn't have required methods", cls.Object)
-			}
-
-			pyEmbed = true
-		case cboType, cnpType:
-			pyEmbed = true
+		ignore, err := cls.ignoreEmbedded(field)
+		if err != nil {
+			return err
 		}
 
-		if pyEmbed || !field.IsExported() {
+		if ignore || !field.IsExported() {
 			// We have some helper types that get embedded in the ClassObject
 			// implementation. Don't export these to Python. We also ignore
 			// anything that isn't exported.
 			continue
 		}
 
-		pyname := field.Tag.Get("py")
-		if pyname == "-" {
+		def, err := newFieldDef(field)
+		if err != nil {
+			return err
+		}
+
+		if def.name == "-" {
 			// tag explicitly set to ignore field
 			continue
 		}
 
-		pydoc := field.Tag.Get("pyDoc")
-		ro := C.int(0)
-
-		parts := strings.Split(pyname, ",")
-		if len(parts) > 0 {
-			pyname = parts[0]
-
-			for _, opt := range parts[1:] {
-				switch opt {
-				case "ro":
-					ro = C.int(1)
-				default:
-					return fmt.Errorf("unknown tag option: %s", opt)
-				}
-			}
+		if err := def.exportToPython(i, pyType, btyp); err != nil {
+			return err
 		}
-
-		if pyname == "" {
-			pyname = field.Name
-		}
-
-		if field.Type.Implements(otyp) {
-			// field is some type of object, so we can use the generic object
-			// member get/set code.
-			s := C.CString(pyname)
-			defer cfree(s)
-
-			C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), C.CString(pydoc), ro))
-
-			continue
-		}
-
-		if exportable[field.Type.Kind()] {
-			// field is a simple exportable native type, we can use the native
-			// member get/set code.
-			s := C.CString(pyname)
-			defer cfree(s)
-
-			C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), C.CString(pydoc), ro))
-
-			continue
-		}
-
-		return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported", btyp.Name(), field.Name, field.Type.Name())
 	}
 
 	return nil
+}
+
+func (cls *Class) ignoreEmbedded(field reflect.StructField) (bool, error) {
+	switch field.Type {
+	case cipType:
+		if _, ok := cls.Object.(tp_iternext); !ok {
+			return false, fmt.Errorf("%T claimed to implement IteratorProtocol "+
+				"by embedding ClassIteratorProtocol, but doesn't have required methods", cls.Object)
+		}
+
+		return true, nil
+
+	case cspType:
+		if _, ok := cls.Object.(sq_item); !ok {
+			return false, fmt.Errorf("%T claimed to implement SequenceProtocol "+
+				"by embedding ClassSequenceProtocol, but doesn't have required methods", cls.Object)
+		}
+
+		return true, nil
+
+	case cmpType:
+		if _, ok := cls.Object.(mp_subscript); !ok {
+			return false, fmt.Errorf("%T claimed to implement MappingProtocol "+
+				"by embedding ClassMappingProtocol, but doesn't have required methods", cls.Object)
+		}
+
+		return true, nil
+
+	case cboType, cnpType:
+		return true, nil
+	}
+
+	return false, nil
+}
+
+type fieldDef struct {
+	name  string
+	doc   string
+	field reflect.StructField
+	ro    C.int
+}
+
+func newFieldDef(field reflect.StructField) (fieldDef, error) {
+	name := field.Tag.Get("py")
+	if name == "" {
+		name = field.Name
+	}
+
+	f := fieldDef{
+		name:  name,
+		doc:   field.Tag.Get("pyDoc"),
+		field: field,
+		ro:    0,
+	}
+
+	if err := f.parseFlags(); err != nil {
+		return fieldDef{}, err
+	}
+
+	return f, nil
+}
+
+func (f *fieldDef) parseFlags() error {
+	parts := strings.Split(f.name, ",")
+	if len(parts) > 0 {
+		f.name = parts[0]
+
+		for _, opt := range parts[1:] {
+			switch opt {
+			case "ro":
+				f.ro = 1
+			default:
+				return fmt.Errorf("unknown tag option: %s", opt)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (f *fieldDef) exportToPython(i int, pyType *C.PyTypeObject, btyp reflect.Type) error {
+	if f.field.Type.Implements(otyp) {
+		// field is some type of object, so we can use the generic object
+		// member get/set code.
+		s := C.CString(f.name)
+		defer cfree(s)
+
+		C.setTypeAttr(pyType, s, C.newObjMember(pyType, s, c(NewLong(int64(i))), C.CString(f.doc), f.ro))
+
+		return nil
+	}
+
+	if exportable[f.field.Type.Kind()] {
+		// field is a simple exportable native type, we can use the native
+		// member get/set code.
+		s := C.CString(f.name)
+		defer cfree(s)
+
+		C.setTypeAttr(pyType, s, C.newNatMember(pyType, s, c(NewLong(int64(i))), C.CString(f.doc), f.ro))
+
+		return nil
+	}
+
+	return fmt.Errorf("cannot export %s.%s to Python: type '%s' unsupported",
+		btyp.Name(), f.field.Name, f.field.Type.Name())
 }

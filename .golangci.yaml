@@ -11,6 +11,7 @@ linters:
     - mnd
     - forcetypeassert
     - depguard
+    - nonamedreturns
 
   presets:
     - bugs
@@ -86,3 +87,5 @@ issues:
 
   max-issues-per-linter: 0
   max-same-issues: 0
+
+  uniq-by-line: false
