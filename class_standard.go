@@ -126,13 +126,7 @@ func classDealloc(co ClassObject) bool {
 
 	if cbo.flags&classBaseClear != 0 {
 		// already cleared, probably called by base class dealloc
-		if _, ok := class.BaseType.(*Type); ok &&
-			class.Flags&ClassHeapType != 0 &&
-			co.Type().o.tp_base.tp_flags&C.Py_TPFLAGS_HEAPTYPE != 0 &&
-			(RefCount(co.Type())%2 != 0) == (cbo.flags&classBaseTypeRefCountOdd != 0) {
-			// refcount should have been decremented, but doesn't seem to have changed, so we do it
-			co.Type().Decref()
-		}
+		ensureTypeRefReleased(co)
 
 		return true
 	}
@@ -149,37 +143,62 @@ func classDealloc(co ClassObject) bool {
 
 	switch b := class.BaseType.(type) {
 	case *Class:
-		co = getClassObjectByType(c(co), b.Type().c())
-		if co != nil {
-			return classDealloc(co)
+		// base is another Go class, so we need to dealloc that too, by
+		// switching to the ClassObject of the base type, and making a recursive
+		// call.
+		if bco := getClassObjectByType(c(co), b.Type().c()); bco != nil {
+			return classDealloc(bco)
 		}
 	case *Type:
-		base := co.Type().o.tp_base
-		if base != nil {
-			// if this type is heap allocated, but base isn't, then we need to
-			// decref co.Type() (if base is also heap allocated, then it's
-			// dealloc will do it for us - unless it doesn't and calls us back,
-			// but the check above should catch that).
-			shouldDecref := class.Flags&ClassHeapType != 0 && base.tp_flags&C.Py_TPFLAGS_HEAPTYPE == 0
-
-			// we lookup co.Type() before calling typeDealloc, as we shouldn't
-			// use co afterwards since the Python object could have been freed.
-			coType := co.Type()
-			if RefCount(coType)%2 != 0 {
-				cbo.flags |= classBaseTypeRefCountOdd
-			}
-
-			C.typeDealloc(base, c(co))
-
-			if shouldDecref {
-				coType.Decref()
-			}
-
-			return true
-		}
+		// base is a type, so we just have to dealloc that.
+		return deallocType(co)
 	}
 
 	return false
+}
+
+func ensureTypeRefReleased(co ClassObject) {
+	cbo := co.getCBO()
+	class := cbo.class
+
+	if _, ok := class.BaseType.(*Type); ok &&
+		class.Flags&ClassHeapType != 0 &&
+		co.Type().o.tp_base.tp_flags&C.Py_TPFLAGS_HEAPTYPE != 0 &&
+		(RefCount(co.Type())%2 != 0) == (cbo.flags&classBaseTypeRefCountOdd != 0) {
+		// refcount should have been decremented, but doesn't seem to have changed, so we do it
+		co.Type().Decref()
+	}
+}
+
+func deallocType(co ClassObject) bool {
+	base := co.Type().o.tp_base
+	if base == nil {
+		return false
+	}
+
+	cbo := co.getCBO()
+	class := cbo.class
+
+	// if this type is heap allocated, but base isn't, then we need to
+	// decref co.Type() (if base is also heap allocated, then it's
+	// dealloc will do it for us - unless it doesn't and calls us back,
+	// but the check above should catch that).
+	shouldDecref := class.Flags&ClassHeapType != 0 && base.tp_flags&C.Py_TPFLAGS_HEAPTYPE == 0
+
+	// we lookup co.Type() before calling typeDealloc, as we shouldn't
+	// use co afterwards since the Python object could have been freed.
+	coType := co.Type()
+	if RefCount(coType)%2 != 0 {
+		cbo.flags |= classBaseTypeRefCountOdd
+	}
+
+	C.typeDealloc(base, c(co))
+
+	if shouldDecref {
+		coType.Decref()
+	}
+
+	return true
 }
 
 //export goClassNew
