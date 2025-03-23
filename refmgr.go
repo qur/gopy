@@ -19,7 +19,7 @@ func NewRefManager() *RefManager {
 	}
 }
 
-// Add adds the given object to RefManager stealing a reference.
+// Add adds the given object to RefManager, stealing a reference.
 //
 // For convenience the passed in value is returned.
 //
@@ -30,13 +30,10 @@ func (r *RefManager) Add(obj Object) Object {
 }
 
 func (r *RefManager) add(o *C.PyObject) Object {
-	obj := newObject(o)
-	r.objects[obj] = true
-
-	return obj
+	return r.Add(newObject(o))
 }
 
-// AddE adds the given object to RefManager stealing a reference. The error
+// AddE adds the given object to RefManager, stealing a reference. The error
 // value is ignored (i.e. if obj and err are both != nil then obj will still be
 // added).
 //
