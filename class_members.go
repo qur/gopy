@@ -51,82 +51,121 @@ func goClassNatGet(obj, idx *C.PyObject) *C.PyObject {
 }
 
 //export goClassNatSet
-func goClassNatSet(obj, obj2, idx *C.PyObject) int {
+func goClassNatSet(obj, obj2, idx *C.PyObject) (ret int) {
+	// obj is the destination object
 	f, t, err := getField(obj, idx)
 	if err != nil {
 		raise(err)
 		return -1
 	}
 
-	// This is the new value we are being asked to set
-	o := newObject(obj2)
+	// it's very unlikely, but calling the `.SetXXX()` methods of
+	// [reflect.Value] can panic, so convert any such panic into a Python
+	// exception instead.
+	defer func() {
+		if v := recover(); v != nil {
+			raise(AttributeError.Err("failed to set %s: %v", t.Name, v))
+
+			ret = -1
+		}
+	}()
+
+	// obj2 is the new value we are being asked to set into obj
 
 	switch f.Type().Kind() {
 	case reflect.Bool:
-		b, ok := o.(*Bool)
-		if !ok {
-			raise(TypeError.Err("field %s is bool, got %s", t.Name, o.Type()))
-			return -1
-		}
-
-		f.SetBool(b.Bool())
-
-		return 0
+		return setBoolField(f, obj2, t.Name)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v := int64(C.PyLong_AsLongLong(obj2))
-
-		if exceptionRaised() {
-			return -1
-		}
-
-		f.SetInt(v)
-
-		return 0
+		return setIntField(f, obj2)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		v := uint64(C.PyLong_AsUnsignedLongLong(obj2))
-
-		if exceptionRaised() {
-			return -1
-		}
-
-		f.SetUint(v)
-
-		return 0
+		return setUintField(f, obj2)
 	case reflect.Float32, reflect.Float64:
-		v := float64(C.PyFloat_AsDouble(obj2))
-
-		if exceptionRaised() {
-			return -1
-		}
-
-		f.SetFloat(v)
-
-		return 0
+		return setFloatField(f, obj2)
 	case reflect.String:
-		v := C.PyUnicode_AsUTF8(obj2)
-
-		if exceptionRaised() {
-			return -1
-		}
-
-		f.SetString(C.GoString(v))
-
-		return 0
+		return setStringField(f, obj2)
 	case reflect.Complex64, reflect.Complex128:
-		v, ok := o.(*Complex)
-		if !ok {
-			raise(TypeError.Err("field %s is complex, got %s", t.Name, o.Type()))
-			return -1
-		}
-
-		f.SetComplex(v.Complex128())
-
-		return 0
+		return setComplexField(f, obj2, t.Name)
 	}
 
 	raise(NotImplementedError.ErrV(None))
 
 	return -1
+}
+
+func setBoolField(f reflect.Value, obj *C.PyObject, name string) int {
+	o := newObject(obj)
+
+	b, ok := o.(*Bool)
+	if !ok {
+		raise(TypeError.Err("field %s is bool, got %s", name, o.Type()))
+		return -1
+	}
+
+	f.SetBool(b.Bool())
+
+	return 0
+}
+
+func setIntField(f reflect.Value, obj *C.PyObject) int {
+	v := int64(C.PyLong_AsLongLong(obj))
+
+	if exceptionRaised() {
+		return -1
+	}
+
+	f.SetInt(v)
+
+	return 0
+}
+
+func setUintField(f reflect.Value, obj *C.PyObject) int {
+	v := uint64(C.PyLong_AsUnsignedLongLong(obj))
+
+	if exceptionRaised() {
+		return -1
+	}
+
+	f.SetUint(v)
+
+	return 0
+}
+
+func setFloatField(f reflect.Value, obj *C.PyObject) int {
+	v := float64(C.PyFloat_AsDouble(obj))
+
+	if exceptionRaised() {
+		return -1
+	}
+
+	f.SetFloat(v)
+
+	return 0
+}
+
+func setStringField(f reflect.Value, obj *C.PyObject) int {
+	v := C.PyUnicode_AsUTF8(obj)
+
+	if exceptionRaised() {
+		return -1
+	}
+
+	f.SetString(C.GoString(v))
+
+	return 0
+}
+
+func setComplexField(f reflect.Value, obj *C.PyObject, name string) int {
+	o := newObject(obj)
+
+	v, ok := o.(*Complex)
+	if !ok {
+		raise(TypeError.Err("field %s is complex, got %s", name, o.Type()))
+		return -1
+	}
+
+	f.SetComplex(v.Complex128())
+
+	return 0
 }
 
 //export goClassObjGet
