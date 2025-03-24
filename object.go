@@ -105,6 +105,19 @@ func NewValue(value any) (Object, error) {
 		return v, nil
 	case AsPython:
 		return v.AsPython()
+	default:
+		return newNativeValue(value)
+	}
+}
+
+// newNativeValue converts the native type value into a Python Object.
+//
+// This function is rather long and messy, but there doesn't seem an easy way to
+// do anything about that.
+//
+//nolint:cyclop,funlen
+func newNativeValue(value any) (Object, error) {
+	switch v := value.(type) {
 	case bool:
 		return NewBool(v), nil
 	case int:
