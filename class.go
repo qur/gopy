@@ -69,16 +69,20 @@ const (
 // contained Objects. The py.Clear and py.ClearClassObject functions can be used
 // to assist.
 //
-// Properties are also supported, by implementing get and set methods:
+// Properties are also supported, by implementing get and set methods, using
+// these signatures (access in Python using the name "XYZ"):
 //
-//	PyGet_XXX() (py.Object, error)
-//	PySet_XXX(value py.Object) error
+//	PyGet_XYZ() (py.Object, error)
+//	PySet_XYZ(value py.Object) error
 //
 // Instance methods on the Python class are implemented by methods on the
-// struct type with the Py_ prefix:
+// struct type with the Py_ prefix with one of the follow signatures (all of
+// these would create a Python method called "ABC"):
 //
+//	Py_ABC() (py.Object, error)
+//	Py_ABC(arg py.Object) (py.Object, error)
 //	Py_ABC(args *py.Tuple) (py.Object, error)
-//	Py_XYX(args *py.Tuple, kwds *py.Dict) (py.Object, error)
+//	Py_ABC(args *py.Tuple, kwds *py.Dict) (py.Object, error)
 //
 // NOTE: All of the methods referred to above should use a pointer receiver.
 //
