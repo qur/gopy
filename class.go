@@ -71,14 +71,14 @@ const (
 //
 // Properties are also supported, by implementing get and set methods:
 //
-//	PyGet_XXX() (py.Object, os.Error)
-//	PySet_XXX(value py.Object) os.Error
+//	PyGet_XXX() (py.Object, error)
+//	PySet_XXX(value py.Object) error
 //
 // Instance methods on the Python class are implemented by methods on the
 // struct type with the Py_ prefix:
 //
-//	Py_ABC(args *py.Tuple) (py.Object, os.Error)
-//	Py_XYX(args *py.Tuple, kwds *py.Dict) (py.Object, os.Error)
+//	Py_ABC(args *py.Tuple) (py.Object, error)
+//	Py_XYX(args *py.Tuple, kwds *py.Dict) (py.Object, error)
 //
 // NOTE: All of the methods referred to above should use a pointer receiver.
 //
