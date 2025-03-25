@@ -84,6 +84,20 @@ const (
 //	Py_ABC(args *py.Tuple) (py.Object, error)
 //	Py_ABC(args *py.Tuple, kwds *py.Dict) (py.Object, error)
 //
+// Since the above naming requires using non-idiomatic method names (which can
+// cause issues with linters), the mapping from Python to Go names can be
+// supplied separately using the Properties and Methods fields. The same
+// function signatures as above apply.
+//
+// Properties defines mappings from Python property names to Go suffixes, where
+// "Get..." and "Set..." methods with the Go suffix will be setup to control the
+// named Python property. Entries in Properties that don't map to actual methods
+// on the Go type will be ignored.
+//
+// Methods defines mappings from Python method names to Go method names. So that
+// a Python method such as "do_something" can be mapped to a Go function such as
+// "DoSomething".
+//
 // NOTE: All of the methods referred to above should use a pointer receiver.
 //
 // Static defines static methods for the Python class.
@@ -101,16 +115,19 @@ const (
 // To create a new instance of the Class in Go, then use the Callable methods
 // (i.e. Call or CallGo), which map to the Python expression "cls(...)".
 type Class struct {
-	Name     string
-	Flags    ClassFlags
-	Doc      string
-	BaseType Object
-	Object   ClassObject
-	Static   map[string]any
-	Class    map[string]any
-	New      func(*Class, *Tuple, *Dict) (ClassObject, error)
-	User     any
-	base     *Type
+	Name       string
+	Flags      ClassFlags
+	Doc        string
+	BaseType   Object
+	Object     ClassObject
+	Properties map[string]string
+	Methods    map[string]string
+	Static     map[string]any
+	Class      map[string]any
+	New        func(*Class, *Tuple, *Dict) (ClassObject, error)
+	User       any
+	base       *Type
+	methodMap  map[string]string
 }
 
 var _ Object = (*Class)(nil)
@@ -586,7 +603,7 @@ func (cls *Class) setupMethodsAndProperties(pyType *C.PyTypeObject, typ reflect.
 		return err
 	}
 
-	if err := extractMethodsAndProperties(methods, props, typ); err != nil {
+	if err := cls.extractMethodsAndProperties(methods, props, typ); err != nil {
 		return err
 	}
 
@@ -630,17 +647,29 @@ func addMethods(methods map[string]method, functions map[string]any, kind C.int)
 	return nil
 }
 
-func extractMethodsAndProperties(methods map[string]method, props map[string]prop, typ reflect.Type) error {
+func (cls *Class) extractMethodsAndProperties(methods map[string]method,
+	props map[string]prop, typ reflect.Type,
+) error {
+	cls.prepareMethodMap()
+
 	for i := range typ.NumMethod() {
 		m := typ.Method(i)
-		if !strings.HasPrefix(m.Name, "Py") {
+		t := m.Func.Type()
+
+		name := m.Name
+		if alias, ok := cls.methodMap[name]; ok {
+			name = alias
+		}
+
+		if !strings.HasPrefix(name, "Py") {
 			continue
 		}
 
-		t := m.Func.Type()
+		// ignore alias when generating name for use in errors, as that will
+		// just be confusing.
 		fn := fmt.Sprintf("%s.%s", typ.Elem().Name(), m.Name)
 
-		switch parts := strings.SplitN(m.Name, "_", 2); parts[0] {
+		switch parts := strings.SplitN(name, "_", 2); parts[0] {
 		case "Py":
 			flags, err := getPythonCallFlags(t)
 			if err != nil {
@@ -668,6 +697,19 @@ func extractMethodsAndProperties(methods map[string]method, props map[string]pro
 	}
 
 	return nil
+}
+
+func (cls *Class) prepareMethodMap() {
+	cls.methodMap = map[string]string{}
+
+	for pyName, goName := range cls.Methods {
+		cls.methodMap[goName] = "Py_" + pyName
+	}
+
+	for pyName, goSuffix := range cls.Properties {
+		cls.methodMap["Get"+goSuffix] = "PyGet_" + pyName
+		cls.methodMap["Set"+goSuffix] = "PySet_" + pyName
+	}
 }
 
 func (cls *Class) setupFields(pyType *C.PyTypeObject, btyp reflect.Type) error {

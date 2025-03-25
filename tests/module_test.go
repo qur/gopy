@@ -42,11 +42,11 @@ type ExampleClass struct {
 	py.ClassBaseObject
 }
 
-func (e *ExampleClass) Py_Test() (py.Object, error) {
+func (e *ExampleClass) Test() (py.Object, error) {
 	panic("called")
 }
 
-func (e *ExampleClass) Py_Test2(args *py.Tuple, _ *py.Dict) (py.Object, error) {
+func (e *ExampleClass) Test2(args *py.Tuple, _ *py.Dict) (py.Object, error) {
 	if v, err := args.GetIndex(0); err != nil {
 		panic(err)
 	} else if i, ok := v.(*py.Long); !ok {
@@ -65,6 +65,10 @@ func (e *ExampleClass) Str() (py.Object, error) {
 var exampleClass = py.Class{
 	Name:   "test.test",
 	Object: &ExampleClass{},
+	Methods: map[string]string{
+		"Test":     "Test",
+		"test_two": "Test2",
+	},
 }
 
 func TestMethod(t *testing.T) {
@@ -127,7 +131,7 @@ func TestMethod2(t *testing.T) {
 
 	tests := []Test{
 		{"Test", "called", "", nil},
-		{"Test2", "called2", "i", []interface{}{10}},
+		{"test_two", "called2", "i", []interface{}{10}},
 		{"__str__", "strcalled", "", nil},
 	}
 
@@ -143,7 +147,7 @@ func TestMethod2(t *testing.T) {
 			defer lock.Unlock()
 
 			defer func() {
-				if i := recover(); i != test.pan {
+				if i := recover(); i != nil && i != test.pan {
 					t.Error("Panicked for some other reason:", i)
 				}
 			}()

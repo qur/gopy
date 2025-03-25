@@ -55,8 +55,8 @@ func NewChan(buffer int) (*Chan, error) {
 	return self, nil
 }
 
-// Py_put provides a c.put() method when this object is used in Python.
-func (c *Chan) Py_put(args *Tuple, kw *Dict) (ret Object, err error) {
+// Put provides a c.put() method when this object is used in Python.
+func (c *Chan) Put(args *Tuple, kw *Dict) (ret Object, err error) {
 	var (
 		obj    Object
 		kwlist = []string{"obj"}
@@ -87,8 +87,8 @@ func (c *Chan) Py_put(args *Tuple, kw *Dict) (ret Object, err error) {
 	return None, nil
 }
 
-// Py_get provides a c.get() method when this object is used in Python.
-func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, error) {
+// Get provides a c.get() method when this object is used in Python.
+func (c *Chan) Get(args *Tuple, kw *Dict) (Object, error) {
 	if err := ParseTupleAndKeywords(args, kw, "", []string{}); err != nil {
 		return nil, err
 	}
@@ -108,8 +108,8 @@ func (c *Chan) Py_get(args *Tuple, kw *Dict) (Object, error) {
 	return obj, nil
 }
 
-// Py_close provides a c.close() method when this object is used in Python.
-func (c *Chan) Py_close(args *Tuple, kw *Dict) (ret Object, err error) {
+// Close provides a c.close() method when this object is used in Python.
+func (c *Chan) Close(args *Tuple, kw *Dict) (ret Object, err error) {
 	if err := ParseTupleAndKeywords(args, kw, "", []string{}); err != nil {
 		return nil, err
 	}
@@ -128,9 +128,9 @@ func (c *Chan) Py_close(args *Tuple, kw *Dict) (ret Object, err error) {
 	return
 }
 
-// Py_monitor calls item with items from the channel in a background goroutine.
-// If closed is provided then it will be called when the channel is closed.
-func (c *Chan) Py_monitor(args *Tuple, kw *Dict) (Object, error) {
+// Monitor calls item with items from the channel in a background goroutine. If
+// closed is provided then it will be called when the channel is closed.
+func (c *Chan) Monitor(args *Tuple, kw *Dict) (Object, error) {
 	var itemCB, closeCB Object
 	if err := ParseTupleAndKeywords(args, kw, "O|$O", []string{"item", "closed"}, &itemCB, &closeCB); err != nil {
 		return nil, err
@@ -208,4 +208,10 @@ var chanClass = Class{
 	Name:   "go.Chan",
 	Object: (*Chan)(nil),
 	New:    newChan,
+	Methods: map[string]string{
+		"put":     "Put",
+		"get":     "Get",
+		"close":   "Close",
+		"monitor": "Monitor",
+	},
 }
