@@ -30,10 +30,17 @@ func Import(name string) (*Module, error) {
 
 // TODO(jp3): add support for other fields of PyModuleDef
 
-// ModuleDef defines a Python module. Name is the module name (including any
-// parent packages, separated by ., e.g. "foo.bar"), Doc is the module docsring,
+// ModuleDef defines a Python module.
+//
+// Name is the module name (including any parent packages, separated by ., e.g.
+// "foo.bar").
+//
+// Doc is the module docstring.
+//
 // Package should be set to true to make the module a package (a module that can
-// have sub-modules), and Methods defined the module's methods.
+// have sub-modules).
+//
+// Methods defined the module's methods.
 //
 // The definition can be turned into an actual module using py.CreateModule, and
 // registered for importing in embedded Python using the Module's Register
