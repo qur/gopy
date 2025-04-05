@@ -390,7 +390,15 @@ func (obj *BaseObject) Not() bool {
 	return ret != 0
 }
 
-// PyObject_TypeCheck : TODO
+// TypeCheck returns true if the object obj is of type t or a subtype of t, and
+// false otherwise. Both parameters must be non-nil.
+func (obj *BaseObject) TypeCheck(t *Type) bool {
+	if obj.Type().c() == t.c() {
+		return true
+	}
+
+	return C.PyType_IsSubtype(obj.Type().c(), t.c()) != 0
+}
 
 // Length returns the length of the Object.  This is equivalent to the Python
 // "len(obj)".
@@ -436,7 +444,19 @@ func (obj *BaseObject) Dir() (Object, error) {
 	return obj2ObjErr(ret)
 }
 
-// PyObject_GetIter : TODO
+// GetIter returns a new iterator for the object obj, or obj itself if it is
+// already an iterator. Returns TypeError if the object cannot be iterated. This
+// is equivalent to the Python "iter(o)".
+//
+// Return value: New Reference.
+func (obj *BaseObject) GetIter() (Iterator, error) {
+	o := C.PyObject_GetIter(c(obj))
+	if o == nil {
+		return nil, exception()
+	}
+
+	return (*IteratorMethods)(unsafe.Pointer(obj.Base())), nil
+}
 
 // CopyData copies the data from src to obj. Unless both obj and src implement
 // the Buffer Protocol this method will return a TypeError. If both obj and src
