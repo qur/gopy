@@ -53,7 +53,31 @@ func GetBuffer(obj Object, flags BufferFlags) (*Buffer, error) {
 
 type BufferFlags int
 
-// TODO(jp3): buffer flags
+// BufferFlags control the type of the Buffer being requested.
+const (
+	BufferSimple    BufferFlags = 0
+	BufferWriteable BufferFlags = 0x0001
+
+	BufferFormat        BufferFlags = 0x0004
+	BufferND            BufferFlags = 0x0008
+	BufferStrides       BufferFlags = 0x0010 | BufferND
+	BufferCContiguous   BufferFlags = 0x0010 | BufferStrides
+	BufferFContiguous   BufferFlags = 0x0040 | BufferStrides
+	BufferAnyContiguous BufferFlags = 0x0080 | BufferStrides
+	BufferIndirect      BufferFlags = 0x0100 | BufferStrides
+
+	BufferContig   BufferFlags = BufferND | BufferWriteable
+	BufferContigRO BufferFlags = BufferND
+
+	BufferStrided   BufferFlags = BufferStrides | BufferWriteable
+	BufferStridedRO BufferFlags = BufferStrides
+
+	BufferRecords   BufferFlags = BufferStrides | BufferWriteable | BufferFormat
+	BufferRecordsRO BufferFlags = BufferStrides | BufferFormat
+
+	BufferFull   BufferFlags = BufferIndirect | BufferWriteable | BufferFormat
+	BufferFullRO BufferFlags = BufferIndirect | BufferFormat
+)
 
 type BufferOrder byte
 
