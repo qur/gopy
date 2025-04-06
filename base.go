@@ -20,18 +20,46 @@ func (obj *BaseObject) raw() *C.PyObject {
 
 // HasAttr returns true if "obj" has the attribute "name".  This is equivalent
 // to the Python "hasattr(obj, name)".
+//
+// Exceptions that happen when this calls __getattr__() and __getattribute__()
+// methods aren't propagated, but instead given to sys.unraiseablehook(). For
+// proper error handling, use HasAttrWithError, GetOptionalAttr or GetAttr
+// instead.
 func (obj *BaseObject) HasAttr(name Object) bool {
 	ret := C.PyObject_HasAttr(c(obj), c(name))
 	return ret == 1
 }
 
+// HasAttrWithError returns true if "obj" has the attribute "name".  This is
+// equivalent to the Python "hasattr(obj, name)".
+func (obj *BaseObject) HasAttrWithError(name Object) (bool, error) {
+	ret := C.PyObject_HasAttrWithError(c(obj), c(name))
+	return int2BoolErr(ret)
+}
+
 // HasAttrString returns true if "obj" has the attribute "name".  This is
 // equivalent to the Python "hasattr(obj, name)".
+//
+// Exceptions that happen when this calls __getattr__() and __getattribute__()
+// methods aren't propagated, but instead given to sys.unraiseablehook(). For
+// proper error handling, use HasAttrStringWithError, GetOptionalAttrString or
+// GetAttrString instead.
 func (obj *BaseObject) HasAttrString(name string) bool {
 	s := C.CString(name)
 	defer cfree(s)
 
 	return C.PyObject_HasAttrString(c(obj), s) == 1
+}
+
+// HasAttrStringWithError returns true if "obj" has the attribute "name".  This
+// is equivalent to the Python "hasattr(obj, name)".
+func (obj *BaseObject) HasAttrStringWithError(name string) (bool, error) {
+	s := C.CString(name)
+	defer cfree(s)
+
+	ret := C.PyObject_HasAttrStringWithError(c(obj), s)
+
+	return int2BoolErr(ret)
 }
 
 // GetAttr returns the attribute of "obj" with the name "name".  This is
@@ -54,6 +82,55 @@ func (obj *BaseObject) GetAttrString(name string) (Object, error) {
 	ret := C.PyObject_GetAttrString(c(obj), s)
 
 	return obj2ObjErr(ret)
+}
+
+// GetOptionalAttr is a variant of GetAttr that doesn't return an AttributeError
+// if the attribute is not found.
+//
+// If the attribute is found, then returns the attribute and true, if it is not
+// found, then returns nil and false. Returns nil and false (along with the
+// error) if an error occurs.
+//
+// Return value: New Reference.
+func (obj *BaseObject) GetOptionalAttr(name Object) (Object, bool, error) {
+	var result *C.PyObject
+
+	ret := C.PyObject_GetOptionalAttr(c(obj), c(name), &result)
+
+	switch ret {
+	case 1:
+		return newObject(result), true, nil
+	case 0:
+		return nil, false, nil
+	default:
+		return nil, false, exception()
+	}
+}
+
+// GetOptionalAttrString is a variant of GetAttrString that doesn't return an
+// AttributeError if the attribute is not found.
+//
+// If the attribute is found, then returns the attribute and true, if it is not
+// found, then returns nil and false. Returns nil and false (along with the
+// error) if an error occurs.
+//
+// Return value: New Reference.
+func (obj *BaseObject) GetOptionalAttrString(name string) (Object, bool, error) {
+	var result *C.PyObject
+
+	s := C.CString(name)
+	defer cfree(s)
+
+	ret := C.PyObject_GetOptionalAttrString(c(obj), s, &result)
+
+	switch ret {
+	case 1:
+		return newObject(result), true, nil
+	case 0:
+		return nil, false, nil
+	default:
+		return nil, false, exception()
+	}
 }
 
 // PyObject_GenericGetAttr : This is an internal helper function - we shouldn't
@@ -363,9 +440,14 @@ func (obj *BaseObject) CallMethodGoArgs(name string, args ...any) (Object, error
 	return obj.CallMethodGo(name, args, nil)
 }
 
-// PyObject_Hash : TODO
+// Hash computes and returns the hash value of the object obj. This equivalent
+// to "hash(obj)" in Python.
+func (obj *BaseObject) Hash() (int, error) {
+	ret := C.PyObject_Hash(c(obj))
+	return ssizeT2IntErr(ret)
+}
 
-// PyObject_HashNotImplement : This is an internal function, that we probably
+// PyObject_HashNotImplemented : This is an internal function, that we probably
 // don't need to export.
 
 // IsTrue returns true if the value of obj is considered to be True.  This is
