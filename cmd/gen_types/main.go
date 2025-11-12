@@ -1,6 +1,6 @@
 package main
 
-// #include <python3.13/Python.h>
+// #include <python3.14/Python.h>
 import "C"
 
 import (

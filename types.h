@@ -4,8 +4,8 @@
 #define _GO_PYTHON_TYPES_H_
 
 #include <ffi.h>
-#include <python3.13/Python.h>
-#include <python3.13/frameobject.h>
+#include <python3.14/Python.h>
+#include <python3.14/frameobject.h>
 
 // ===============================================================
 

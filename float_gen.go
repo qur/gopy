@@ -292,5 +292,6 @@ set fields:
   tp_repr
   tp_richcompare
   tp_vectorcall
+  tp_version_tag
 */
 

@@ -3,4 +3,4 @@
 cd "$(dirname "$0")"
 
 #exec docker buildx build --platform linux/amd64,linux/arm64 --pull -t qurx/gopy-dev:1.20 -f Dockerfile --push .
-exec docker buildx build --platform linux/amd64 --pull -t qurx/gopy-dev:1.24-py3.13 -f Dockerfile --push .
+exec docker buildx build --platform linux/amd64 --pull -t qurx/gopy-dev:1.25.4-py3.14.0 -f Dockerfile --push .

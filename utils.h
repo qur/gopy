@@ -2,8 +2,8 @@
 #define _GO_PYTHON_UTILS_H_
 
 #include <ffi.h>
-#include <python3.13/Python.h>
-#include <python3.13/frameobject.h>
+#include <python3.14/Python.h>
+#include <python3.14/frameobject.h>
 
 #include "class_slots.h"
 #include "types.h"

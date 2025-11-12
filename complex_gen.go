@@ -256,5 +256,6 @@ set fields:
   tp_new
   tp_repr
   tp_richcompare
+  tp_version_tag
 */
 

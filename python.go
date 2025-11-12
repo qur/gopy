@@ -1,7 +1,7 @@
 package py
 
 // #cgo CFLAGS: -Werror
-// #cgo pkg-config: python-3.13-embed libffi
+// #cgo pkg-config: python-3.14-embed libffi
 //
 // #include "utils.h"
 import "C"
@@ -12,9 +12,9 @@ import (
 )
 
 // Code generation commands:
-//go:generate ./gen_exc.py exc.go python3.13
+//go:generate ./gen_exc.py exc.go python3.14
 //go:generate ./gen_slots.py
-//go:generate ./gen_types.py python3.13
+//go:generate ./gen_types.py python3.14
 //go:generate ./gen_arg.py
 
 // nilValue is the value returned from String methods when the value is nil.

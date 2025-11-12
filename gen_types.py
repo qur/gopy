@@ -26,8 +26,14 @@ def get_includes(root: str, files: set) -> set:
         with open(path, 'r', encoding='utf-8') as input:
             for line in input:
                 m = include_re.match(line)
-                if m:
-                    new.add(m.group('name'))
+                if not m:
+                    continue
+                include = m.group('name')
+                if os.path.exists(os.path.join(root, include)):
+                    new.add(include)
+                cdir = os.path.dirname(name)
+                if os.path.exists(os.path.join(root, cdir, include)):
+                    new.add(os.path.join(cdir, include))
     files.update(get_includes(root, new))
     files.update(new)
     return files

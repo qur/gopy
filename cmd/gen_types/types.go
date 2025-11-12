@@ -3,9 +3,9 @@
 package main
 
 // #cgo CFLAGS: -Werror
-// #cgo pkg-config: python-3.13-embed libffi
+// #cgo pkg-config: python-3.14-embed libffi
 //
-// #include <python3.13/Python.h>
+// #include <python3.14/Python.h>
 import "C"
 
 // ===============================================================

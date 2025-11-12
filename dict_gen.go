@@ -268,5 +268,6 @@ set fields:
   tp_richcompare
   tp_traverse
   tp_vectorcall
+  tp_version_tag
 */
 

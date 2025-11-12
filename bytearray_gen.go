@@ -372,5 +372,6 @@ set fields:
   tp_repr
   tp_richcompare
   tp_str
+  tp_version_tag
 */
 

@@ -2,8 +2,8 @@
 
 package main
 
-// #cgo pkg-config: python-3.13-embed
-// #include <python3.13/Python.h>
+// #cgo pkg-config: python-3.14-embed
+// #include <python3.14/Python.h>
 import "C"
 
 import (
