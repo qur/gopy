@@ -23,6 +23,9 @@ on a separate branch.
 
 See the specific branches for more details:
 * [Python 2.6](https://github.com/qur/gopy/tree/python2.6) (broken)
-* [Python 2.6](https://github.com/qur/gopy/tree/python2.7) (broken)
+* [Python 2.7](https://github.com/qur/gopy/tree/python2.7) (broken)
 * [Python 3.11](https://github.com/qur/gopy/tree/python3.11)
+* [Python 3.12](https://github.com/qur/gopy/tree/python3.12)
+* [Python 3.13](https://github.com/qur/gopy/tree/python3.13)
+* [Python 3.14](https://github.com/qur/gopy/tree/python3.14)
 
