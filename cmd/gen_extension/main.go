@@ -24,7 +24,7 @@ import "C"
 import (
 	"unsafe"
 
-	"gopython.xyz/py/v3"
+	"gopython.xyz/py/v14"
 )
 
 //export PyInit_{{ .name }}

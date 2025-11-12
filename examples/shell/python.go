@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopython.xyz/py/v3"
+	"gopython.xyz/py/v14"
 )
 
 var mydir string

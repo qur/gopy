@@ -1,4 +1,4 @@
-module gopython.xyz/py/v3
+module gopython.xyz/py/v14
 
 go 1.22.0
 

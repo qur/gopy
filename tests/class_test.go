@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	"gopython.xyz/py/v3"
+	"gopython.xyz/py/v14"
 )
 
 func TestDynamic(t *testing.T) {

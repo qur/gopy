@@ -3,7 +3,7 @@ package py_test
 import (
 	"fmt"
 
-	"gopython.xyz/py/v3"
+	"gopython.xyz/py/v14"
 )
 
 // myClass is the type that represents the custom class in Go.

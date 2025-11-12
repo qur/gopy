@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"gopython.xyz/py/v3"
-	"gopython.xyz/py/v3/tests/assert"
+	"gopython.xyz/py/v14"
+	"gopython.xyz/py/v14/tests/assert"
 )
 
 func TestFunction(t *testing.T) {

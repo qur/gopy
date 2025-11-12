@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gopython.xyz/py/v3"
+	"gopython.xyz/py/v14"
 )
 
 var shMod *py.Module

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopython.xyz/py/v3"
+	"gopython.xyz/py/v14"
 )
 
 type Wibble struct {

@@ -1,5 +1,5 @@
 /*
-Package py (gopython.xyz/py/v3) provides access to the CPython C API.  This
+Package py (gopython.xyz/py/v14) provides access to the CPython C API.  This
 package presents an idiomatic Go interface to the CPython C API described at
 http://docs.python.org/3/c-api/index.html
 

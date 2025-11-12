@@ -1,5 +1,5 @@
-[![Go Reference](https://pkg.go.dev/badge/gopython.xyz/py/v3.svg)](https://pkg.go.dev/gopython.xyz/py/v3)
-[![Go Report Card](https://goreportcard.com/badge/gopython.xyz/py/v3)](https://goreportcard.com/report/gopython.xyz/py/v3)
+[![Go Reference](https://pkg.go.dev/badge/gopython.xyz/py/v14.svg)](https://pkg.go.dev/gopython.xyz/py/v14)
+[![Go Report Card](https://goreportcard.com/badge/gopython.xyz/py/v14)](https://goreportcard.com/report/gopython.xyz/py/v14)
 
 goPy
 ====
@@ -31,7 +31,7 @@ Installation and Building
 This module can be installed as normal using go get:
 
 ```
-go get gopython.xyz/py/v3
+go get gopython.xyz/py/v14
 ```
 
 However, you will need Python and libffi libraries installed (along with their
