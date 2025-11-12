@@ -22,7 +22,7 @@ What versions of Python are supported?
 --------------------------------------
 
 This codebase only supports a single version of Python at a time, currently this
-is version 3.11 (note that this only applies to Major.Minor, not the patch
+is version 3.14 (note that this only applies to Major.Minor, not the patch
 version). For a different version of Python a different branch is needed.
 
 Installation and Building
