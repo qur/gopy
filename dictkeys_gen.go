@@ -70,7 +70,7 @@ func (d *DictKeys) Type() *Type {
 func (d *DictKeys) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(d))
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 	*refcnt--
@@ -82,7 +82,7 @@ func (d *DictKeys) Decref() {
 // Incref increments d's reference count, d may not be nil.
 func (d *DictKeys) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(d)).anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 	*refcnt++

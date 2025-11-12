@@ -72,7 +72,7 @@ func (l *Long) Type() *Type {
 func (l *Long) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(l))
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 	*refcnt--
@@ -84,7 +84,7 @@ func (l *Long) Decref() {
 // Incref increments l's reference count, l may not be nil.
 func (l *Long) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(l)).anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 	*refcnt++

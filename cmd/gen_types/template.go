@@ -115,7 +115,7 @@ func ({{ .name }} *{{ .type }}) Incref() {}
 func ({{ .name }} *{{ .type }}) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer({{ .name }}))
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 	*refcnt--
@@ -127,7 +127,7 @@ func ({{ .name }} *{{ .type }}) Decref() {
 // Incref increments {{ .name }}'s reference count, {{ .name }} may not be nil.
 func ({{ .name }} *{{ .type }}) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer({{ .name }})).anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 	*refcnt++

@@ -70,7 +70,7 @@ func (ce *Cell) Type() *Type {
 func (ce *Cell) Decref() {
 	obj := (*C.PyObject)(unsafe.Pointer(ce))
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 	*refcnt--
@@ -82,7 +82,7 @@ func (ce *Cell) Decref() {
 // Incref increments ce's reference count, ce may not be nil.
 func (ce *Cell) Incref() {
 	refcnt := (*int)(unsafe.Pointer(&(*C.PyObject)(unsafe.Pointer(ce)).anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 	*refcnt++

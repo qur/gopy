@@ -180,7 +180,7 @@ func xdecref(obj *C.PyObject) {
 
 func decref(obj *C.PyObject) {
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 
@@ -206,7 +206,7 @@ func xincref(obj *C.PyObject) {
 
 func incref(obj *C.PyObject) {
 	refcnt := (*int)(unsafe.Pointer(&obj.anon0[0]))
-	if *refcnt == C._Py_IMMORTAL_REFCNT {
+	if *refcnt >= C._Py_IMMORTAL_MINIMUM_REFCNT {
 		return
 	}
 
