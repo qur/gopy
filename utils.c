@@ -406,6 +406,12 @@ PyModuleDef *newModuleDef(void) { return calloc(1, sizeof(PyModuleDef)); }
 //
 // ----------------------------------
 
+// --- mutex.go helper functions ---
+//
+PyMutex *newMutex(void) { return PyMem_RawCalloc(1, sizeof(PyMutex)); }
+//
+// ----------------------------------
+
 // --- python.go helper functions ---
 //
 int enterRecursive(char *w) { return Py_EnterRecursiveCall(w); }

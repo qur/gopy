@@ -75,11 +75,17 @@ extern void _PyObject_INIT_VAR(PyObject *obj, PyObject *typ, Py_ssize_t n);
 //
 //  ----------------------------------
 
-// --- memory.go helper functions ---
+// --- module.go helper functions ---
 //
-extern PyModuleDef *newModuleDef();
+extern PyModuleDef *newModuleDef(void);
 //
 //  ----------------------------------
+
+// --- mutex.go helper functions ---
+//
+PyMutex *newMutex(void);
+//
+// ----------------------------------
 
 // --- python.go helper functions ---
 //
