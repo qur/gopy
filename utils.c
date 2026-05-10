@@ -383,6 +383,22 @@ int doVisit(PyObject *o, visitproc v, void *a) {
 //
 // ----------------------------------
 
+// --- critical_section.go helper functions ---
+//
+#ifdef Py_GIL_DISABLED
+PyCriticalSection *newCriticalSection(void) {
+  return PyMem_RawCalloc(1, sizeof(PyCriticalSection));
+}
+PyCriticalSection2 *newCriticalSection2(void) {
+  return PyMem_RawCalloc(1, sizeof(PyCriticalSection2));
+}
+#else
+PyCriticalSection *newCriticalSection(void) { return PyMem_RawCalloc(1, 0); }
+PyCriticalSection2 *newCriticalSection2(void) { return PyMem_RawCalloc(1, 0); }
+#endif
+//
+// ----------------------------------
+
 // --- memory.go helper functions ---
 //
 size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n) {

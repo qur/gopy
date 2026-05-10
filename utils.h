@@ -3,6 +3,7 @@
 
 #include <ffi.h>
 #include <python3.14/Python.h>
+#include <python3.14/critical_section.h>
 #include <python3.14/frameobject.h>
 
 #include "class_slots.h"
@@ -32,7 +33,7 @@ extern void *pyFalse(void);
 
 // --- abstract.go helper functions ---
 //
-void typeFree(PyTypeObject *type, PyObject *o);
+extern void typeFree(PyTypeObject *type, PyObject *o);
 //
 // ----------------------------------
 
@@ -65,6 +66,13 @@ extern PyObject *newProperty(PyTypeObject *type, char *name, PyObject *get,
 //
 // ----------------------------------
 
+// --- critical_section.go helper functions ---
+//
+extern PyCriticalSection *newCriticalSection(void);
+extern PyCriticalSection2 *newCriticalSection2(void);
+//
+// ----------------------------------
+
 // --- memory.go helper functions ---
 //
 extern size_t __PyObject_VAR_SIZE(PyObject *obj, Py_ssize_t n);
@@ -83,7 +91,7 @@ extern PyModuleDef *newModuleDef(void);
 
 // --- mutex.go helper functions ---
 //
-PyMutex *newMutex(void);
+extern PyMutex *newMutex(void);
 //
 // ----------------------------------
 
